@@ -72,7 +72,7 @@ async function checkSession() {
   try {
     const res = await fetch('/api/auth/me', { credentials: 'include' });
     if (res.ok) {
-      window.location.href = '/index.html';
+      window.location.href = 'index.html';
     }
   } catch (err) {
     // No valid session, stay on login page
@@ -235,7 +235,7 @@ if (loginForm) {
         }));
         showAlert('Login successful!', true);
         loginForm.reset();
-        setTimeout(() => { window.location.href = '/index.html'; }, 1000);
+        setTimeout(() => { window.location.href = 'index.html'; }, 1000);
       } else {
         showAlert(data.error || 'Login failed.', false);
       }
