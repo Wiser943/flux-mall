@@ -1,0 +1,19 @@
+# ============================================================
+# FLUX MALL - Netlify Configuration
+# Proxies all /api/ requests to Render backend
+# ============================================================
+
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://YOUR-RENDER-URL.onrender.com/api/:splat"
+  status = 200
+  force = true
+
+# Fallback for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
