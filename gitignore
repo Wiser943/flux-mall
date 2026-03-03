@@ -1,3 +1,25 @@
-.envnode_modules/
-.DS_Store
+# ============================================
+# FLUX MALL - Git Ignore
+# ============================================
+
+# Environment variables - NEVER push to GitHub
+.env
+.env.local
+.env.production
+.env.*
+
+# Dependencies - Render/Netlify install these automatically
+node_modules/
+package-lock.json
+
+# Logs
+logs/
 *.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
