@@ -37,7 +37,14 @@ app.use(cors({
 app.use('/api/auth',  require('./routes/auth'));
 app.use('/api/user',  require('./routes/user'));
 app.use('/api/admin', require('./routes/admin'));
+// ─── STATIC FILES (Local Development) ────────────────────
+app.use(express.static(path.join(__dirname, '../')));
+app.use('/account', express.static(path.join(__dirname, '../account')));
+app.use('/cpanel', express.static(path.join(__dirname, '../cpanel')));
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../index.html'));
+});
 // ─── HEALTH CHECK (Render uses this to confirm server is up)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Flux Mall API is running' });
