@@ -16,11 +16,14 @@ const transporter = nodemailer.createTransport({
 // ─── HELPER: set user cookie ───────────────────────────────
 function setUserCookie(res, userId) {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '8h' });
-  res.cookie('userSession', token, {
-    httpOnly: true,
-    sameSite: 'Strict',
-    maxAge: 8 * 60 * 60 * 1000 // 8 hours
-  });
+ 
+res.cookie('userSession', token, {
+  httpOnly: true,
+  secure: true,        // ← must be true in production (HTTPS)
+  sameSite: 'none',    // ← required for cross-domain cookies
+  maxAge: 8 * 60 * 60 * 1000
+});
+
   return token;
 }
 
