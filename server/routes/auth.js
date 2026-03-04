@@ -108,6 +108,12 @@ router.get('/verify-email', async (req, res) => {
 
 // ─── POST /api/auth/login ──────────────────────────────────
 router.post('/login', async (req, res) => {
+  console.log('ENV CHECK:', {
+    jwt: !!process.env.JWT_SECRET,
+    mongo: !!process.env.MONGO_URI,
+    port: process.env.PORT
+  });
+  // ... rest of code
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
