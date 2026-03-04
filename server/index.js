@@ -6,26 +6,29 @@ const cors = require('cors');
 
 const app = express();
 
-// ─── ALLOWED ORIGINS ──────────────────────────────────────
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  process.env.NETLIFY_URL,
-  process.env.CUSTOM_DOMAIN,
-].filter(Boolean);
-
 // ─── MIDDLEWARE ────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // ✅ correct usage
+app.use(cookieParser());
 
 app.use(cors({
   origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'https://fluxmall.online',
+      'https://www.fluxmall.online',
+      process.env.NETLIFY_URL,
+      process.env.CUSTOM_DOMAIN,
+    ].filter(Boolean);
 
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -33,8 +36,8 @@ app.use(cors({
 }));
 
 // ─── API ROUTES ───────────────────────────────────────────
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/user', require('./routes/user'));
+app.use('/api/auth',  require('./routes/auth'));
+app.use('/api/user',  require('./routes/user'));
 app.use('/api/admin', require('./routes/admin'));
 
 // ─── HEALTH CHECK ─────────────────────────────────────────
