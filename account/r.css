@@ -1,0 +1,95 @@
+:root {
+    --bg-dark: #0a0a0a;
+    --card-bg: #141414;
+    --neon-green: #00ff7f;
+    --text-gray: #a0a0a0;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+body { background-color: var(--bg-dark); color: white; min-height: 100vh; }
+
+.container { display: flex; min-height: 100vh; }
+
+/* Promo Side */
+.promo-side {
+    flex: 1.2;
+    background: linear-gradient(135deg, #050505 0%, #111 100%);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.logo { font-size: 1.5rem; font-weight: bold; }
+.logo span { color: var(--neon-green); }
+
+.stats-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+}
+
+.earnings { font-size: 2.5rem; margin: 0.5rem 0; }
+.badge-gold { color: gold; font-weight: bold; }
+
+.promo-text h2 { font-size: 3rem; line-height: 1.1; margin-bottom: 1rem; }
+.promo-text span { color: var(--neon-green); }
+
+/* Login Side */
+.login-side {
+    flex: 1;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.form-wrapper { width: 100%; max-width: 400px; text-align: center; }
+
+.lock-icon { 
+    color: var(--neon-green); 
+    border: 1px solid var(--neon-green); 
+    width: 50px; height: 50px; 
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px; margin: 0 auto 1.5rem;
+}
+
+.input-group { text-align: left; margin-bottom: 1.5rem; }
+.input-group label { font-size: 0.75rem; color: var(--text-gray); display: block; margin-bottom: 0.5rem; }
+
+.input-field {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0.8rem;
+}
+
+.input-field input {
+    background: transparent; border: none; color: white; width: 100%; padding-left: 10px; outline: none;
+}
+
+.login-btn {
+    width: 100%;
+    padding: 1rem;
+    background: var(--neon-green);
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-btn:hover { transform: scale(1.02); opacity: 0.9; }
+
+/* Responsive Media Queries */
+@media (max-width: 900px) {
+    .promo-side { display: none; } /* Hide promo on mobile like the second screenshot suggested */
+    .login-side { flex: 1; }
+}
