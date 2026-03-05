@@ -50,7 +50,11 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({ message: 'Flux Mall API. Frontend is on Netlify.' });
 });
-
+// Keep Render awake - ping every 14 minutes
+setInterval(() => {
+  fetch(`https://flux-mall-api.onrender.com/health`)
+    .catch(() => {});
+}, 14 * 60 * 1000);
 // ─── MONGODB CONNECTION ───────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
