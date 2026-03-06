@@ -11,6 +11,9 @@ const userSchema = new mongoose.Schema({
   refPoints: { type: Number, default: 0 },
   freeSpins: { type: Number, default: 0 },
 
+  // Short User ID for referral links
+  uid: { type: String, unique: true, sparse: true },
+
   // Referral System
   referrerId:      { type: String, default: null },
   referralAwarded: { type: Boolean, default: false },
