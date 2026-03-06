@@ -678,8 +678,9 @@ async function updateVerificationUI() {
   } else {
     if (text) text.innerText = '(Click to verify)';
     if (container) container.className = 'status-badge unverified-bg';
-    if (icon) icon.className = 'ri-error-warning-line';
+    if (icon) icon.className = 'ri-error-warning-line';     
     container.onclick = async () => {
+          if (text.innerHtml==="Email sent!"){ alert("Please try again later"); return}
       try {
         container.style.opacity = '0.5';
         container.style.pointerEvents = 'none';
@@ -736,25 +737,6 @@ function closeModal() {
   if (modal) modal.remove();
 }
 
-/*
-    const formData = new FormData();
-    formData.append('image', file);
-    const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
-    const result = await res.json();
-    if (result.success) {
-      if (statusEl) statusEl.innerHTML = '✅';
-      return result.data.url;
-    } else {
-      if (statusEl) statusEl.innerHTML = '';
-      showToast('Image upload failed.', 'error', 'ri-close-line', 'Upload Error');
-      return null;
-    }
-  } catch (err) {
-    if (statusEl) statusEl.innerHTML = '';
-    showToast('Upload error: ' + err.message, 'error', 'ri-close-line', 'Error');
-    return null;
-  }
-}*/
 
 // ─── START ────────────────────────────────────────────────
 init();
