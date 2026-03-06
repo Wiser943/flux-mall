@@ -736,7 +736,7 @@ function closeModal() {
   if (modal) modal.remove();
 }
 
-
+/*
     const formData = new FormData();
     formData.append('image', file);
     const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
@@ -754,7 +754,7 @@ function closeModal() {
     showToast('Upload error: ' + err.message, 'error', 'ri-close-line', 'Error');
     return null;
   }
-}
+}*/
 
 // ─── START ────────────────────────────────────────────────
 init();
