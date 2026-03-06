@@ -409,4 +409,29 @@ async function handleReferralCommission(depositorUid, depositAmount, tid) {
   }
 }
 
+// GET /api/admin/settings/apikeys
+router.get('/settings/apikeys', verifyAdminToken, async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'apikeys' });
+    res.json({ success: true, apikeys: doc?.value || {} });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/admin/settings/apikeys
+router.put('/settings/apikeys', verifyAdminToken, async (req, res) => {
+  try {
+    const { imgbb, korapay_public, korapay_secret } = req.body;
+    await Settings.findOneAndUpdate(
+      { key: 'apikeys' },
+      { key: 'apikeys', value: { imgbb, korapay_public, korapay_secret } },
+      { upsert: true, new: true }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
