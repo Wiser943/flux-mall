@@ -90,7 +90,8 @@ async function init() {
 
     // Theme
     if (config.theme) applyTheme(config.theme);
-console.log(configRes.siteName)
+console.log(config.siteName);
+    console.log(config.theme)
     // Branding
     if (config.siteName) {
       document.querySelectorAll('.site-name').forEach(el => el.innerText = config.siteName);
