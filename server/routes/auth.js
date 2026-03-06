@@ -25,6 +25,24 @@ function sendEmail(to, subject, html) {
   });
 }
 
+
+// ─── HELPER: Generate short unique uid ────────────────────
+function generateUID() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let uid = '';
+  for (let i = 0; i < 6; i++) uid += chars[Math.floor(Math.random() * chars.length)];
+  return uid;
+}
+
+async function generateUniqueUID() {
+  let uid, exists;
+  do {
+    uid = generateUID();
+    exists = await User.findOne({ uid });
+  } while (exists);
+  return uid;
+}
+
 // ─── HELPER: set user cookie ───────────────────────────────
 function setUserCookie(res, userId) {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '8h' });
@@ -66,11 +84,13 @@ router.post('/signup', async (req, res) => {
     const siteName = configDoc?.value?.siteName || 'Flux Mall';
 
     const hashedPwd = await bcrypt.hash(password, 12);
+    const uid = await generateUniqueUID();
     const user = await User.create({
       username,
       email: email.toLowerCase(),
       password: hashedPwd,
       ib: initBal,
+      uid,
       referrerId: referrerId || null,
     });
 
@@ -195,7 +215,7 @@ router.post('/login', async (req, res) => {
     res.json({
       success: true,
       message: 'Login successful!',
-      user: { _id: user._id, username: user.username, email: user.email, emailVerified: user.emailVerified || false, referrerId: user.referrerId || null }
+      user: { _id: user._id, uid: user.uid, username: user.username, email: user.email, emailVerified: user.emailVerified || false, referrerId: user.referrerId || null }
     });
 
   } catch (err) {
@@ -276,9 +296,13 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // ─── GET /api/auth/referrer/:id ────────────────────────────
+// Supports both short uid (e.g. ZD7K2X) and legacy mongo _id
 router.get('/referrer/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('username');
+    const id = req.params.id;
+    // Try uid first (6-char short ID), fall back to mongo _id for old links
+    let user = await User.findOne({ uid: id }).select('username uid');
+    if (!user && id.length === 24) user = await User.findById(id).select('username uid');
     if (!user) return res.status(404).json({ error: 'Referrer not found.' });
     res.json({ username: user.username });
   } catch (err) {
