@@ -97,7 +97,15 @@ async function init() {
       document.title = config.siteName;
     }
     if (config.siteLogo) {
-      document.querySelectorAll('.logo-img').forEach(img => img.src = config.siteLogo);
+      // Show site logo in all avatar spots
+      document.querySelectorAll('.logo-img').forEach(img => {
+        img.src = config.siteLogo;
+        img.onerror = () => img.style.display = 'none';
+      });
+      // Update browser favicon dynamically
+      let fav = document.querySelector("link[rel='icon']");
+      if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
+      fav.href = config.siteLogo;
     }
 
     // Announcement ticker
@@ -726,6 +734,26 @@ window.copyText = (id) => {
 function closeModal() {
   const modal = document.getElementById('paymentModal');
   if (modal) modal.remove();
+}
+
+
+    const formData = new FormData();
+    formData.append('image', file);
+    const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
+    const result = await res.json();
+    if (result.success) {
+      if (statusEl) statusEl.innerHTML = '✅';
+      return result.data.url;
+    } else {
+      if (statusEl) statusEl.innerHTML = '';
+      showToast('Image upload failed.', 'error', 'ri-close-line', 'Upload Error');
+      return null;
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = '';
+    showToast('Upload error: ' + err.message, 'error', 'ri-close-line', 'Error');
+    return null;
+  }
 }
 
 // ─── START ────────────────────────────────────────────────
