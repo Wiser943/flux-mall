@@ -205,6 +205,7 @@ window.addEventListener('DOMContentLoaded', function() {
             username: data.user.username,
             email:    data.user.email,
             userid:   data.user._id,
+            uid:      data.user.uid || null,
             referrer: data.user.referrerId || null
           }));
           showAlert('Login successful!', true);
