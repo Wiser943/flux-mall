@@ -86,11 +86,11 @@ async function init() {
     const { config, payment, maintenance, wheel } = configRes;
 
     // Maintenance check
-    if (maintenance?.enabled) { renderLockScreen('🛠️ System Maintenance', 'Our site is currently undergoing scheduled upgrades.'); return; }
+    if (maintenance?.enabled) { renderLockScreen('System Maintenance', 'Our site is currently undergoing scheduled upgrades.'); return; }
 
     // Theme
     if (config.theme) applyTheme(config.theme);
-
+console.log(config.siteName)
     // Branding
     if (config.siteName) {
       document.querySelectorAll('.site-name').forEach(el => el.innerText = config.siteName);
