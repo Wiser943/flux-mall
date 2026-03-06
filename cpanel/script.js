@@ -420,7 +420,6 @@ async function loadSettings() {
         });
       };
     }
-
     // 3. Populate all other form fields
     if (s.config) {
       fillSettings(s.config);
@@ -476,7 +475,48 @@ async function loadApiKeys() {
   if (koraPublic)  koraPublic.value  = k.korapay_public || '';
   if (koraSec)     koraSec.value     = k.korapay_secret || '';
 }
+window.applyPreset = (mode, primary, secondary) => {
+	document.getElementById('themeMode').value = mode;
+	document.getElementById('primaryColor').value = primary;
+	document.getElementById('secondaryColor').value = secondary;
+	// Optional: Auto-save immediately for "Click & Go"
+	saveThemeConfig();
+	//	alert(`Selected: ${mode} mode with ${primary}`);
+};
+window.saveThemeConfig = async (e) => {
+    // If this is called from an 'onsubmit', we need to prevent refresh
+    if (e) e.preventDefault();
+    
+    const btn = document.querySelector('#themeForm button'); // Adjust selector as needed
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Publishing...";
+    }
 
+    try {
+        // We wrap them in a 'theme' object to match the original logic
+        const themeData = {
+            theme: {
+                mode: document.getElementById('themeMode').value,
+                primary: document.getElementById('primaryColor').value,
+                secondary: document.getElementById('secondaryColor').value
+            }
+        };
+   
+        // This keeps the structure consistent: config -> theme -> colors
+        await api('/api/admin/settings/config', { 
+            method: 'PUT', 
+            body: JSON.stringify(themeData) 
+        });
+
+        alert("✅ Theme Updated! Users will see it immediately.");
+    } catch (err) {
+        console.error("Theme Update Error:", err);
+        alert("Failed to update theme. Check console for details.");
+    } finally {
+       
+    }
+};
 /*
 window.saveConfig = async () => {
   const fields = ['siteName','minWithdraw','withdrawFee','initBal'];
