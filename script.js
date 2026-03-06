@@ -170,7 +170,7 @@ function renderUserUI() {
     el.onclick = () => navigator.clipboard.writeText(u._id)
       .then(() => showToast('ID Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
   });
-  document.querySelectorAll('.userEmail').forEach(el => el.innerHTML = u.email);
+  document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
   document.querySelectorAll('.tBalance').forEach(el => {
     el.innerHTML = u.ib ? Number(u.ib).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
