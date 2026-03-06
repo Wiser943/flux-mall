@@ -678,7 +678,7 @@ window.showTab = (tabId, el) => {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (el) el.classList.add('active');
 };
-
+/*
 // ─── MODAL HELPER ─────────────────────────────────────────
 window.showModal = ({ id, title, content, buttons }) => {
   document.getElementById(id)?.remove();
@@ -695,6 +695,60 @@ window.showModal = ({ id, title, content, buttons }) => {
     </div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+};*/
+
+/**
+ * @param {Object} cfg - Configuration object
+ * @param {string} cfg.id - Unique ID for the modal
+ * @param {string} cfg.title - Header text
+ * @param {string} cfg.content - The HTML body of the modal
+ * @param {Array} cfg.buttons - Array of button objects {text, class, onclick}
+ */
+window.showModal = (cfg) => {
+	// 1. Cleanup old versions
+	const old = document.getElementById(cfg.id);
+	if (old) old.remove();
+
+	// 2. Create Wrapper
+	const overlay = document.createElement('div');
+	overlay.id = cfg.id;
+	overlay.className = 'modal-overlay';
+	overlay.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); display: flex; align-items: center;
+        justify-content: center; z-index: 9999; backdrop-filter: blur(8px);
+        animation: fadeIn 0.3s ease;
+    `;
+
+	// 3. Generate Buttons HTML
+	const buttonsHTML = (cfg.buttons || []).map(btn => `
+        <button class="${btn.class || 'btn-submit'}" 
+                onclick="${btn.onclick}" 
+                style="${btn.style || ''}">${btn.text}</button>
+    `).join('');
+
+	// 4. Create Card
+	const card = document.createElement('div');
+	card.className = "modal-card";
+	card.style = `
+        background: var(--card); color: var(--text);max-width: ${cfg.width || '450px'};
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border); transform: scale(1);
+    `;
+	card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; font-size:1.4rem;">${cfg.title}</h3>
+            <span onclick="document.getElementById('${cfg.id}').remove()" style="cursor:pointer; opacity:0.5; font-size:1.5rem;">&times;</span>
+        </div>
+        <div class="modal-body" style="margin-bottom:25px;">${cfg.content}</div>
+        <div class="modal-footer" style="display:flex; gap:12px; justify-content:flex-end;">
+            ${buttonsHTML}
+        </div>
+    `;
+	overlay.appendChild(card);
+	document.body.appendChild(overlay);
+	// Close on click outside
+	overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 };
 
 
