@@ -290,17 +290,32 @@ router.get('/settings', requireAdmin, async (req, res) => {
   }
 });
 
-// ─── PUT /api/admin/settings/:key ────────────────────────
+
+// ─── UPDATED PUT /api/admin/settings/:key ────────────────
 router.put('/settings/:key', requireAdmin, async (req, res) => {
   try {
     const { key } = req.params;
-    const value = req.body;
-    await Settings.findOneAndUpdate({ key }, { value }, { upsert: true, new: true });
+    const incomingData = req.body;
+    
+    // Create an update object using dot notation
+    // This tells MongoDB: "Go into 'value' and only change the fields I sent"
+    const updateObj = {};
+    for (const field in incomingData) {
+      updateObj[`value.${field}`] = incomingData[field];
+    }
+
+    await Settings.findOneAndUpdate(
+      { key }, 
+      { $set: updateObj }, // Use $set to only update specific fields
+      { upsert: true, new: true }
+    );
+
     res.json({ success: true, message: `Settings "${key}" updated.` });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ─── SHARES MANAGEMENT ────────────────────────────────────
 router.get('/shares', requireAdmin, async (req, res) => {
