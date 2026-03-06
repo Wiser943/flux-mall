@@ -368,6 +368,7 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
         </div>`
     }).then(() => {
       console.log(`[EMAIL] Verification sent to ${user.email}`);
+      console.log(process.env.APP_URL);
     }).catch(err => {
       console.log(`[EMAIL] Resend failed:`, err.message);
     });
