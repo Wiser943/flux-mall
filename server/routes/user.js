@@ -378,4 +378,14 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/user/apikeys
+router.get('/apikeys', requireAuth, async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'apikeys' });
+    res.json({ success: true, imgbb: doc?.value?.imgbb || null });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
