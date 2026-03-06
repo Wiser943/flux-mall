@@ -64,7 +64,10 @@
             width: 100% !important;
             overflow: hidden;
         }
-
+button:disabled{
+        background:gray;
+        color:#fff;
+}
         /* --- THEME TOGGLE BUTTON --- */
         .theme-control {
             position: absolute;
