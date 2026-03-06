@@ -692,7 +692,97 @@
         .catch(err => console.log('[SW] Registration failed:', err));
     });
   }
-</script>
+
+   
+        /**
+         * Navigation & Tab Switcher Script
+         * Developed by Zaddy
+         */
+        const userName = document.querySelectorAll(".userName")
+        const userId = document.querySelectorAll(".userId")
+        const userEmail = document.querySelectorAll(".email")
+        const tBalance = document.querySelectorAll(".balance")
+        const loaderContainer = document.getElementById('loader-container')
+
+        function showLoading(show) {
+            if (show) {
+                loaderContainer.style.display = 'flex';
+            } else {
+                loaderContainer.style.display = 'none';
+            }
+        }
+
+        // 1. Initialize Lucide Icons immediately 
+        lucide.createIcons();
+        // 2. Select global elements
+        const navItems = document.querySelectorAll('.nav-item');
+        const allPages = document.querySelectorAll('.content');
+
+        /**
+         * Main function to handle page switching based on the URL hash
+         */
+        function switchPageByHash() {
+            // Get the hash from the URL (e.g., "#hometab")
+            // If no hash exists, default to '#hometab'
+            const hash = window.location.hash || '#hometab';
+
+            // Remove the '#' symbol to get the ID (e.g., "hometab")
+            const targetId = hash.substring(1);
+            const targetElement = document.getElementById(targetId);
+
+            // Only proceed if the element with that ID exists in the HTML
+            if (targetElement) {
+                // A. Reset State: Hide all pages and deactivate all nav links
+                allPages.forEach(page => {
+                    page.classList.add('hidden');
+                });
+
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                // B. Activate Content: Show the targeted page
+                targetElement.classList.remove('hidden');
+
+                // C. Activate Nav: Highlight the link that matches the current hash
+                navItems.forEach(item => {
+                    // We use getAttribute to get the exact string like "#hometab"
+                    if (item.getAttribute('href') === hash) {
+                        item.classList.add('active');
+                    }
+                });
+
+                // D. Re-run Lucide (Optional)
+                // If your hidden pages contain icons that aren't rendering, uncomment the line below:
+                // lucide.createIcons();
+
+            } else {
+                console.warn(`Zaddy, the ID "${targetId}" was not found in the document.`);
+            }
+        }
+
+        // 3. Event Listeners
+        // Run when the page is first loaded or refreshed
+        window.addEventListener('DOMContentLoaded', () => {
+            switchPageByHash();
+        });
+        // Run every time the URL hash changes (when a user clicks a nav link)
+        window.addEventListener('hashchange', switchPageByHash);
+        document.querySelectorAll('form').forEach((form) => {
+            const button = form.querySelector("button");
+            if (button) {
+                button.addEventListener('blur', () => {
+                    button.innerHTML = `Please Wait...`;
+                    setTimeout(() => {
+                        button.innerHTML = "Continue";
+                    }, 1500);
+                });
+            }
+        });
+
+
+    </script>
+
 </body>
 
 </html>
