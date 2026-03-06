@@ -249,7 +249,7 @@
                 <div class="settings">
                     <div>
                         <div class="form-container">
-                            <form id="rulesForm">
+                            <form id="rulesForm" onsubmit="event.preventDefault(); saveConfig();">
 
                                 <section
                                     style="overflow: hidden;margin:6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
@@ -447,6 +447,44 @@
                                 </details>
                                 <br />
 
+
+                                <details style="margin:6px 0;background-color:var(--bg);padding:8px 15px;border-radius:12px;">
+                                    <summary style="display:flex;justify-content:space-between;font-size:12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight:bold;">🖼️ Site Logo</span>
+                                    </summary>
+                                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+                                        <img id="logoPreview" src="" alt="Logo Preview"
+                                            style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);background:#eee;"
+                                            onerror="this.style.display='none'">
+                                        <div>
+                                            <label style="display:block;margin-bottom:6px;font-size:12px;">Upload via ImgBB</label>
+                                            <input type="file" accept="image/*" onchange="previewLogo(this)"
+                                                style="font-size:12px;padding:4px;border-radius:6px;border:1px solid #ddd;width:100%">
+                                            <span id="logoUploadStatus" style="font-size:11px;color:var(--primary);margin-top:4px;display:block;"></span>
+                                        </div>
+                                    </div>
+                                </details>
+
+                                <details style="margin:6px 0;background-color:var(--bg);padding:8px 15px;border-radius:12px;">
+                                    <summary style="display:flex;justify-content:space-between;font-size:12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight:bold;">🔑 API Keys</span>
+                                    </summary>
+                                    <p style="font-size:11px;opacity:0.6;margin-bottom:12px;">Stored securely in DB. Synced across all devices.</p>
+                                    <div class="input-group">
+                                        <label>ImgBB API Key <a href="https://api.imgbb.com" target="_blank" style="font-size:10px;color:var(--primary)">(get free key)</a></label>
+                                        <input type="text" id="imgbbKeyInput" placeholder="Your ImgBB API key">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Korapay Public Key</label>
+                                        <input type="text" id="koraPublicKeyInput" placeholder="pk_live_...">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Korapay Secret Key</label>
+                                        <input type="password" id="koraSecretKeyInput" placeholder="sk_live_...">
+                                    </div>
+                                    <button type="button" onclick="saveApiKeys()" class="btn-submit" style="width:100%;margin-top:8px;">Save API Keys</button>
+                                </details>
+
                                 <button type="submit" class="btn-submit">Configure</button>
                             </form>
                         </div>
@@ -540,16 +578,10 @@
     </div>
 
     <script src="script.js"></script>
-    Sw register snippet · HTML
-Copy
-
-<!-- PWA Service Worker Registration - Add before </body> in all HTML files -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('[SW] Registered:', reg.scope))
-        .catch(err => console.log('[SW] Registration failed:', err));
+      navigator.serviceWorker.register('/service-worker.js').catch(() => {});
     });
   }
 </script>
