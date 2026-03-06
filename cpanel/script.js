@@ -586,7 +586,7 @@ window.openSharesModal = async () => {
         <input type="file" id="newShareImgFile" accept="image/*" style="padding:6px;border-radius:8px;border:1px solid #ddd;width:100%">
         <span id="shareImgStatus" style="font-size:12px;color:var(--primary)"></span>
         <input type="hidden" id="newShareImg">
-      </div>\`,
+      </div>`,
     buttons: [
       { text: 'Add Share', class: 'btn-submit', onclick: 'addShare()' },
       { text: 'Close', class: 'btn-sec', onclick: "document.getElementById('sharesModal').remove()" }
