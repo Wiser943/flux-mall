@@ -166,8 +166,8 @@ async function init() {
 function renderUserUI() {
   const u = currentUserData;
   document.querySelectorAll('.userId').forEach(el => {
-    el.innerHTML = u._id.substring(0, 8);
-    el.onclick = () => navigator.clipboard.writeText(u._id)
+    el.innerHTML = u.uid || u._id.substring(0, 8);
+    el.onclick = () => navigator.clipboard.writeText(u.uid || u._id)
       .then(() => showToast('ID Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
   });
   document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);
@@ -556,7 +556,8 @@ async function loadTeamData() {
 
 function generateReferralLink() {
   if (!currentUserData) return;
-  const link = `${window.location.origin}/account/account.html?ref=${currentUserData._id}#signup-page`;
+  const refId = currentUserData.uid || currentUserData._id; // use short uid, fallback to _id
+  const link = `${window.location.origin}/account/account.html?ref=${refId}#signup-page`;
   document.querySelectorAll('.refLink').forEach(el => el.innerText = link);
   window.copyRefLink = () => {
     navigator.clipboard.writeText(link)
@@ -680,7 +681,7 @@ async function updateVerificationUI() {
     if (container) container.className = 'status-badge unverified-bg';
     if (icon) icon.className = 'ri-error-warning-line';     
     container.onclick = async () => {
-          if (text.innerHtml==="Email sent!"){ alert("Please try again later"); return}
+          if (text.innerHtml==="Email Sent!"){ alert("Please try again later"); return}
       try {
         container.style.opacity = '0.5';
         container.style.pointerEvents = 'none';
