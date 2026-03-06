@@ -495,6 +495,18 @@ window.saveConfig = async () => {
   alert('✅ Config saved!');
 };
 */
+
+// 1. Listen for any invalid input inside the form
+document.getElementById('rulesForm').addEventListener('invalid', (e) => {
+    // 2. Find if the invalid input is inside a <details> tag
+    const details = e.target.closest('details');
+    
+    // 3. If it is, open it!
+    if (details) {
+        details.open = true;
+    }
+}, true); // The "true" here is important to catch the event as it happens
+
 	document.getElementById('rulesForm').onsubmit = async (e) => {
     e.preventDefault();
     
@@ -511,7 +523,6 @@ window.saveConfig = async () => {
     // 2. Visual Feedback: Disable button so they can't double-click
     btn.disabled = true;
     btn.innerText = "Saving...";
-
     try {
         let logoUrl = null;
 
