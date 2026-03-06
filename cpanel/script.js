@@ -19,6 +19,41 @@ async function api(path, options = {}) {
   return res.json();
 }
 
+
+// ─── IMGBB UPLOAD UTILITY ─────────────────────────────────
+// Fetches API key from DB config, uploads image, returns URL
+async function uploadToImgBB(file, statusEl) {
+  if (statusEl) statusEl.innerHTML = '<i class="ri-loader-line"></i> Uploading...';
+  try {
+    // Fetch imgbb key from settings/apikeys
+    const settingsData = await api('/api/admin/settings/apikeys');
+    const imgbbKey = settingsData?.apikeys?.imgbb;
+    if (!imgbbKey) {
+      if (statusEl) statusEl.innerHTML = '';
+      alert('⚠️ ImgBB API key not set. Go to Settings → API Keys and save your ImgBB key first.');
+      return null;
+    }
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+      method: 'POST', body: formData
+    });
+    const result = await res.json();
+    if (result.success) {
+      if (statusEl) statusEl.innerHTML = '✅ Uploaded';
+      return result.data.url;
+    } else {
+      if (statusEl) statusEl.innerHTML = '';
+      alert('❌ ImgBB upload failed. Check your API key in Settings → API Keys.');
+      return null;
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = '';
+    alert('❌ Upload error: ' + err.message);
+    return null;
+  }
+}
+
 // ─── FLASH TITLE ─────────────────────────────────────────
 window.startFlash = (msg) => {
   if (flashInterval) return;
@@ -380,7 +415,26 @@ async function loadSettings() {
       const el = document.getElementById(f);
       if (el && s.config[f] !== undefined) el.value = s.config[f];
     });
+    if (s.config.siteLogo) {
+      const preview = document.getElementById('logoPreview');
+      if (preview) preview.src = s.config.siteLogo;
+    }
   }
+  // Load API keys
+  await loadApiKeys();
+}
+
+// ─── LOAD API KEYS ────────────────────────────────────────
+async function loadApiKeys() {
+  const data = await api('/api/admin/settings/apikeys');
+  if (!data?.apikeys) return;
+  const k = data.apikeys;
+  const imgbbInput = document.getElementById('imgbbKeyInput');
+  const koraPublic = document.getElementById('koraPublicKeyInput');
+  const koraSec    = document.getElementById('koraSecretKeyInput');
+  if (imgbbInput) imgbbInput.value = k.imgbb || '';
+  if (koraPublic)  koraPublic.value  = k.korapay_public || '';
+  if (koraSec)     koraSec.value     = k.korapay_secret || '';
 }
 
 window.saveConfig = async () => {
@@ -527,7 +581,12 @@ window.openSharesModal = async () => {
       <div class="input-group"><label>Price</label><input type="number" id="newSharePrice" placeholder="5000"></div>
       <div class="input-group"><label>Daily Income</label><input type="number" id="newShareDaily" placeholder="200"></div>
       <div class="input-group"><label>Duration (Days)</label><input type="number" id="newShareDuration" placeholder="30"></div>
-      <div class="input-group"><label>Image URL</label><input id="newShareImg" placeholder="https://..."></div>`,
+      <div class="input-group">
+        <label>Share Image</label>
+        <input type="file" id="newShareImgFile" accept="image/*" style="padding:6px;border-radius:8px;border:1px solid #ddd;width:100%">
+        <span id="shareImgStatus" style="font-size:12px;color:var(--primary)"></span>
+        <input type="hidden" id="newShareImg">
+      </div>\`,
     buttons: [
       { text: 'Add Share', class: 'btn-submit', onclick: 'addShare()' },
       { text: 'Close', class: 'btn-sec', onclick: "document.getElementById('sharesModal').remove()" }
@@ -536,14 +595,22 @@ window.openSharesModal = async () => {
 };
 
 window.addShare = async () => {
-  const share = {
-    name:        document.getElementById('newShareName').value,
-    price:       Number(document.getElementById('newSharePrice').value),
-    dailyIncome: Number(document.getElementById('newShareDaily').value),
-    duration:    Number(document.getElementById('newShareDuration').value),
-    img:         document.getElementById('newShareImg').value
-  };
-  if (!share.name || !share.price) return alert('Please fill all fields.');
+  const name     = document.getElementById('newShareName').value;
+  const price    = Number(document.getElementById('newSharePrice').value);
+  const daily    = Number(document.getElementById('newShareDaily').value);
+  const duration = Number(document.getElementById('newShareDuration').value);
+  if (!name || !price) return alert('Please fill all required fields.');
+
+  // Upload image to imgbb if file selected
+  let imgUrl = document.getElementById('newShareImg').value;
+  const fileInput = document.getElementById('newShareImgFile');
+  if (fileInput?.files[0]) {
+    const statusEl = document.getElementById('shareImgStatus');
+    imgUrl = await uploadToImgBB(fileInput.files[0], statusEl);
+    if (!imgUrl) return; // upload failed
+  }
+
+  const share = { name, price, dailyIncome: daily, duration, img: imgUrl || '' };
   await api('/api/admin/shares', { method: 'POST', body: JSON.stringify(share) });
   document.getElementById('sharesModal')?.remove();
   alert('✅ Share added!');
@@ -628,6 +695,42 @@ window.showModal = ({ id, title, content, buttons }) => {
     </div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+};
+
+
+// ─── LOGO UPLOAD VIA IMGBB ────────────────────────────────
+window.previewLogo = async (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  // Show local preview instantly
+  const reader = new FileReader();
+  reader.onload = e => { const p = document.getElementById('logoPreview'); if (p) p.src = e.target.result; };
+  reader.readAsDataURL(file);
+  // Upload to imgbb
+  const statusEl = document.getElementById('logoUploadStatus');
+  const url = await uploadToImgBB(file, statusEl);
+  if (!url) return;
+  // Save to config
+  const confData = await api('/api/admin/settings');
+  const config   = confData?.settings?.config || {};
+  config.siteLogo = url;
+  await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(config) });
+  const preview = document.getElementById('logoPreview');
+  if (preview) preview.src = url;
+  alert('✅ Logo uploaded and saved!');
+};
+
+// ─── SAVE API KEYS ────────────────────────────────────────
+window.saveApiKeys = async () => {
+  const imgbb          = document.getElementById('imgbbKeyInput')?.value.trim();
+  const korapay_public = document.getElementById('koraPublicKeyInput')?.value.trim();
+  const korapay_secret = document.getElementById('koraSecretKeyInput')?.value.trim();
+  const data = await api('/api/admin/settings/apikeys', {
+    method: 'PUT',
+    body: JSON.stringify({ imgbb, korapay_public, korapay_secret })
+  });
+  if (data?.success) alert('✅ API Keys saved!');
+  else alert(data?.error || 'Error saving API keys.');
 };
 
 // ─── INIT ─────────────────────────────────────────────────
