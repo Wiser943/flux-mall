@@ -1,1 +1,2 @@
 /api/*  https://flux-mall-api.onrender.com/api/:splat  200
+https://flash-sales.netlify.app/* https://fluxmall.online/:splat 301!
