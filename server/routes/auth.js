@@ -2,26 +2,26 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const User = require('../models/User');
 const { Settings } = require('../models/Models');
 const { requireAuth } = require('../middleware/auth');
 
-// ─── EMAIL TRANSPORTER ─────────────────────────────────────
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
-});
+// ─── RESEND CLIENT ─────────────────────────────────────────
+// Uses HTTPS (port 443) — works on Render free tier unlike Gmail SMTP
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ─── HELPER: Send email fire-and-forget (non-blocking) ────
 function sendEmail(to, subject, html) {
-  transporter.sendMail({
-    from: `"Flux Mall" <${process.env.EMAIL_USER}>`,
-    to, subject, html
+  resend.emails.send({
+    from: process.env.EMAIL_FROM || 'Flux Mall <noreply@fluxmall.online>',
+    to,
+    subject,
+    html
   }).then(() => {
     console.log(`[EMAIL] Sent to ${to}`);
   }).catch(err => {
-    console.log(`[EMAIL] Failed to ${to}:`, err.message);
+    console.log(`[EMAIL] Resend failed:`, err.message);
   });
 }
 
@@ -51,7 +51,6 @@ router.post('/signup', async (req, res) => {
   try {
     const { username, email, password, referrerId } = req.body;
 
-    // Validation
     if (!username || !email || !password)
       return res.status(400).json({ error: 'All fields are required.' });
     if (username.length < 2 || username.length > 15 || username.includes('@') || username.includes('.'))
@@ -59,19 +58,14 @@ router.post('/signup', async (req, res) => {
     if (password.length < 6)
       return res.status(400).json({ error: 'Password must be at least 6 characters.' });
 
-    // Check existing user
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) return res.status(400).json({ error: 'An account with this email already exists.' });
 
-    // Get initial balance from settings
     const configDoc = await Settings.findOne({ key: 'config' });
-    const initBal = configDoc?.value?.initBal || 0;
+    const initBal  = configDoc?.value?.initBal || 0;
     const siteName = configDoc?.value?.siteName || 'Flux Mall';
 
-    // Hash password
     const hashedPwd = await bcrypt.hash(password, 12);
-
-    // Create user
     const user = await User.create({
       username,
       email: email.toLowerCase(),
@@ -80,13 +74,13 @@ router.post('/signup', async (req, res) => {
       referrerId: referrerId || null,
     });
 
-    // ─── Respond immediately — don't wait for email ────────
+    // Respond immediately — don't wait for email
     res.status(201).json({
       success: true,
       message: 'Account created successfully! Check your email to verify your account.'
     });
 
-    // ─── Send welcome + verification email (non-blocking) ──
+    // Send welcome + verification email (non-blocking)
     const verifyToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     const verifyUrl  = `${process.env.APP_URL}/api/auth/verify-email?token=${verifyToken}`;
 
@@ -99,7 +93,7 @@ router.post('/signup', async (req, res) => {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          body { margin: 0; padding: 0; background: #f4f7fe; font-family: 'Inter', Arial, sans-serif; }
+          body { margin: 0; padding: 0; background: #f4f7fe; font-family: Arial, sans-serif; }
           .container { max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
           .header { background: linear-gradient(135deg, #4318ff 0%, #868cff 100%); padding: 40px 32px; text-align: center; }
           .header h1 { color: #ffffff; font-size: 28px; margin: 0 0 8px; font-weight: 700; }
@@ -108,12 +102,12 @@ router.post('/signup', async (req, res) => {
           .greeting { font-size: 18px; font-weight: 600; color: #2b3674; margin-bottom: 12px; }
           .text { font-size: 15px; color: #6b7a99; line-height: 1.7; margin-bottom: 24px; }
           .btn { display: block; width: fit-content; margin: 0 auto 24px; padding: 14px 36px; background: linear-gradient(135deg, #4318ff, #868cff); color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 16px; font-weight: 600; text-align: center; }
-          .divider { height: 1px; background: #e8eaf6; margin: 24px 0; }
           .features { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
           .feature { flex: 1; min-width: 120px; background: #f4f7fe; border-radius: 10px; padding: 14px; text-align: center; }
           .feature .icon { font-size: 24px; margin-bottom: 6px; }
           .feature .label { font-size: 12px; color: #6b7a99; font-weight: 500; }
           .warning { background: #fff8e6; border-left: 3px solid #f6ad55; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #7b5c00; margin-bottom: 24px; }
+          .divider { height: 1px; background: #e8eaf6; margin: 24px 0; }
           .footer { background: #f4f7fe; padding: 20px 32px; text-align: center; }
           .footer p { font-size: 12px; color: #a3adc2; margin: 0; line-height: 1.8; }
         </style>
@@ -126,47 +120,22 @@ router.post('/signup', async (req, res) => {
           </div>
           <div class="body">
             <p class="greeting">Hi ${username},</p>
-            <p class="text">
-              Thank you for joining <strong>${siteName}</strong>! We're excited to have you on board.
-              To get started and unlock all platform features, please verify your email address.
-            </p>
-
+            <p class="text">Thank you for joining <strong>${siteName}</strong>! Please verify your email to unlock all features.</p>
             <a href="${verifyUrl}" class="btn">✅ Verify My Email</a>
-
             <div class="features">
-              <div class="feature">
-                <div class="icon">💰</div>
-                <div class="label">Deposits & Withdrawals</div>
-              </div>
-              <div class="feature">
-                <div class="icon">🎡</div>
-                <div class="label">Spin Wheel</div>
-              </div>
-              <div class="feature">
-                <div class="icon">📈</div>
-                <div class="label">Investment Shares</div>
-              </div>
-              <div class="feature">
-                <div class="icon">👥</div>
-                <div class="label">Referral Rewards</div>
-              </div>
+              <div class="feature"><div class="icon">💰</div><div class="label">Deposits & Withdrawals</div></div>
+              <div class="feature"><div class="icon">🎡</div><div class="label">Spin Wheel</div></div>
+              <div class="feature"><div class="icon">📈</div><div class="label">Investment Shares</div></div>
+              <div class="feature"><div class="icon">👥</div><div class="label">Referral Rewards</div></div>
             </div>
-
-            <div class="warning">
-              ⚠️ This verification link expires in <strong>24 hours</strong>. 
-              If you did not create this account, please ignore this email.
-            </div>
-
+            <div class="warning">⚠️ This link expires in <strong>24 hours</strong>. If you didn't sign up, ignore this email.</div>
             <div class="divider"></div>
             <p class="text" style="font-size:13px;">
-              If the button above doesn't work, copy and paste this link into your browser:<br>
+              If the button doesn't work, paste this link in your browser:<br>
               <a href="${verifyUrl}" style="color:#4318ff;word-break:break-all;">${verifyUrl}</a>
             </p>
           </div>
-          <div class="footer">
-            <p>© ${new Date().getFullYear()} ${siteName}. All rights reserved.<br>
-            You received this email because you signed up at ${siteName}.</p>
-          </div>
+          <div class="footer"><p>© ${new Date().getFullYear()} ${siteName}. All rights reserved.</p></div>
         </div>
       </body>
       </html>`
@@ -184,15 +153,14 @@ router.get('/verify-email', async (req, res) => {
     const { token } = req.query;
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     await User.findByIdAndUpdate(decoded.id, { emailVerified: true });
-    res.redirect(`${process.env.APP_URL || 'https://fluxmall.online'}/?verified=true`);
+    res.redirect(`${process.env.NETLIFY_URL || 'https://fluxmall.online'}/?verified=true`);
   } catch (err) {
     res.status(400).send(`
       <html><body style="font-family:Arial;text-align:center;padding:60px;background:#0b1437;color:#fff">
         <h2>❌ Invalid or Expired Link</h2>
         <p>This verification link has expired or is invalid.</p>
         <p>Please log in and request a new verification email.</p>
-        <a href="https://fluxmall.online/account/account.html" 
-           style="color:#868cff">← Back to Login</a>
+        <a href="https://fluxmall.online/account/account.html" style="color:#868cff">← Back to Login</a>
       </body></html>
     `);
   }
@@ -207,41 +175,27 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ error: 'No account found with that email.' });
 
-    // Check ban
     if (user.status === 'Banned')
       return res.status(403).json({ error: '⛔ This account has been suspended. Contact support.' });
 
-    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       const newAttempts = (user.attempts || 0) + 1;
       if (newAttempts >= 3) {
-        await User.findByIdAndUpdate(user._id, {
-          attempts: newAttempts, status: 'Banned', banReason: '3 failed login attempts'
-        });
+        await User.findByIdAndUpdate(user._id, { attempts: newAttempts, status: 'Banned', banReason: '3 failed login attempts' });
         return res.status(403).json({ error: '⛔ Too many failed attempts. Your account is now suspended.' });
-      } else {
-        await User.findByIdAndUpdate(user._id, { attempts: newAttempts });
-        return res.status(401).json({ error: `Incorrect password. ${3 - newAttempts} attempt(s) left before suspension.` });
       }
+      await User.findByIdAndUpdate(user._id, { attempts: newAttempts });
+      return res.status(401).json({ error: `Incorrect password. ${3 - newAttempts} attempt(s) left before suspension.` });
     }
 
-    // Reset attempts on success
     await User.findByIdAndUpdate(user._id, { attempts: 0 });
-
-    // Set cookie
     setUserCookie(res, user._id);
 
     res.json({
       success: true,
       message: 'Login successful!',
-      user: {
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        emailVerified: user.emailVerified || false,
-        referrerId: user.referrerId || null
-      }
+      user: { _id: user._id, username: user.username, email: user.email, emailVerified: user.emailVerified || false, referrerId: user.referrerId || null }
     });
 
   } catch (err) {
@@ -252,11 +206,7 @@ router.post('/login', async (req, res) => {
 
 // ─── POST /api/auth/logout ─────────────────────────────────
 router.post('/logout', (req, res) => {
-  res.clearCookie('userSession', {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'none'
-  });
+  res.clearCookie('userSession', { httpOnly: true, secure: true, sameSite: 'none' });
   res.json({ success: true });
 });
 
@@ -265,15 +215,13 @@ router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(404).json({ error: "No account found with that email." });
+    if (!user) return res.status(404).json({ error: 'No account found with that email.' });
 
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const resetUrl  = `${process.env.APP_URL}/account/account.html?token=${resetToken}#reset-password-page`;
+    const resetUrl  = `${process.env.NETLIFY_URL}/account/account.html?token=${resetToken}#reset-password-page`;
 
-    // Respond immediately
     res.json({ success: true, message: 'A password reset link has been sent to your email.' });
 
-    // Send email non-blocking
     sendEmail(
       user.email,
       'Password Reset — Flux Mall',
@@ -296,10 +244,9 @@ router.post('/forgot-password', async (req, res) => {
         <div class="container">
           <div class="header"><h1>🔐 Password Reset</h1></div>
           <div class="body">
-            <p class="text">Hi <strong>${user.username}</strong>,<br><br>
-            We received a request to reset your Flux Mall password. Click the button below to set a new password.</p>
+            <p class="text">Hi <strong>${user.username}</strong>,<br><br>Click below to reset your password.</p>
             <a href="${resetUrl}" class="btn">Reset My Password</a>
-            <div class="warning">⚠️ This link expires in <strong>1 hour</strong>. If you didn't request this, ignore this email — your password won't change.</div>
+            <div class="warning">⚠️ Expires in <strong>1 hour</strong>. If you didn't request this, ignore this email.</div>
           </div>
           <div class="footer">© ${new Date().getFullYear()} Flux Mall. All rights reserved.</div>
         </div>
@@ -313,17 +260,15 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-// ─── POST /api/auth/reset-password ────────────────────────
+// ─── POST /api/auth/reset-password ─────────────────────────
 router.post('/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!newPassword || newPassword.length < 6)
       return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const hashed  = await bcrypt.hash(newPassword, 12);
     await User.findByIdAndUpdate(decoded.id, { password: hashed, attempts: 0 });
-
     res.json({ success: true, message: 'Password reset successfully! You can now log in.' });
   } catch (err) {
     res.status(400).json({ error: 'Invalid or expired reset link.' });
