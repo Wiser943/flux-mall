@@ -395,33 +395,73 @@ window.copyAndMove = (uid) => {
 
 // ─── SETTINGS ─────────────────────────────────────────────
 async function loadSettings() {
-  const data = await api('/api/admin/settings');
-  if (!data?.success) return;
-  const s = data.settings;
-
-  // Maintenance toggle
-  const mToggle = document.getElementById('maintenanceToggle');
-  if (mToggle && s.maintenance) mToggle.checked = s.maintenance.enabled || false;
-  if (mToggle) {
-    mToggle.onchange = async (e) => {
-      await api('/api/admin/settings/maintenance', { method: 'PUT', body: JSON.stringify({ enabled: e.target.checked }) });
-    };
-  }
-
-  // Config fields
-  if (s.config) {
-    const fields = ['siteName','minWithdraw','withdrawFee','initBal'];
-    fields.forEach(f => {
-      const el = document.getElementById(f);
-      if (el && s.config[f] !== undefined) el.value = s.config[f];
-    });
-    if (s.config.siteLogo) {
-      const preview = document.getElementById('logoPreview');
-      if (preview) preview.src = s.config.siteLogo;
+  try {
+    // 1. Load keys and fetch data
+    await loadApiKeys();
+    const data = await api('/api/admin/settings');
+    
+    if (!data?.success) {
+      console.error("Failed to fetch settings:", data?.message);
+      return;
     }
+
+    const s = data.settings;
+
+    // 2. Handle Maintenance Toggle (Isolated logic)
+    const mToggle = document.getElementById('maintenanceToggle');
+    if (mToggle && s.maintenance) {
+      mToggle.checked = s.maintenance.enabled || false;
+      
+      // Use an arrow function to preserve 'this' or use 'e.target'
+      mToggle.onchange = async (e) => {
+        await api('/api/admin/settings/maintenance', { 
+          method: 'PUT', 
+          body: JSON.stringify({ enabled: e.target.checked }) 
+        });
+      };
+    }
+
+    // 3. Populate all other form fields
+    if (s.config) {
+      fillSettings(s.config);
+    }
+
+  } catch (err) {
+    console.error("Error in loadSettings:", err);
   }
-  // Load API keys
-  await loadApiKeys();
+}
+
+function fillSettings(data) {
+    // Helper to safely set values only if the element exists
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val ?? ""; // Use nullish coalescing
+    };
+
+    // Main Config Fields
+    setVal('initBal', data.initBal);
+    setVal('descText', data.siteAbout);
+    setVal('waLink', data.whatsappLink);
+    setVal('tgLink', data.telegramLink);
+    setVal('siteNameInput', data.siteName);
+    setVal('signinAmt', data.dailyCheckInAmount);
+    
+    // Withdrawal Fields (Added these here for consistency)
+    setVal('minWithdraw', data.minWithdraw);
+    setVal('withdrawFee', data.withdrawFee);
+
+    // Logo Preview
+    const preview = document.getElementById('logoPreview');
+    if (preview) {
+        preview.src = data.siteLogo || "assets/img/placeholder-logo.png";
+    }
+
+    // Referral Logic (Mapping array to individual inputs)
+    if (Array.isArray(data.referralPercents)) {
+        setVal('ref1', data.referralPercents[0]);
+        setVal('ref2', data.referralPercents[1]);
+        setVal('ref3', data.referralPercents[2]);
+    }
 }
 
 // ─── LOAD API KEYS ────────────────────────────────────────
@@ -437,6 +477,7 @@ async function loadApiKeys() {
   if (koraSec)     koraSec.value     = k.korapay_secret || '';
 }
 
+/*
 window.saveConfig = async () => {
   const fields = ['siteName','minWithdraw','withdrawFee','initBal'];
   const value = {};
@@ -453,7 +494,74 @@ window.saveConfig = async () => {
   await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(value) });
   alert('✅ Config saved!');
 };
+*/
+	document.getElementById('rulesForm').onsubmit = async (e) => {
+    e.preventDefault();
+    
+    // 1. Grab elements and values
+    const btn = e.target.querySelector('button');
+    const siteName = document.getElementById('siteNameInput').value;
+    const desc = document.getElementById('descText').value;
+    const wa = document.getElementById('waLink').value;
+    const tg = document.getElementById('tgLink').value;
+    const initBal = document.getElementById('initBal').value; // Get value here
+    const fileInput = document.getElementById('logoFileInput');
+    const file = fileInput.files[0];
 
+    // 2. Visual Feedback: Disable button so they can't double-click
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    try {
+        let logoUrl = null;
+
+        // (Your ImgBB logic can go here later when you're ready)
+
+        // 3. Create the Config Object
+        const newConfig = {
+            siteName: siteName,
+            siteAbout: desc,
+            whatsappLink: wa,
+            telegramLink: tg,
+            initBal: Number(initBal), // Ensure it's a number
+            dailyCheckInAmount: Number(document.getElementById('signinAmt').value),
+            referralPercents: [
+                Number(document.getElementById('ref1').value),
+                Number(document.getElementById('ref2').value),
+                Number(document.getElementById('ref3').value)
+            ],
+        };
+
+        // 4. Update via API (Fixed the typo here: newConfig)
+        await api('/api/admin/settings/config', { 
+            method: 'PUT', 
+            body: JSON.stringify(newConfig) 
+        });
+
+        // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ Branding updated! Logo and site name are now live.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        });
+
+    } catch (err) {
+        console.error("Update Error:", err);
+        alert("Error updating branding. Check your connection.");
+    } finally {
+        // 6. Re-enable the button
+        btn.disabled = false;
+        btn.innerText = "Save Identity";
+    }
+};
 // ─── PAYMENT SETTINGS ─────────────────────────────────────
 window.openBindBankModal = async () => {
   const data = await api('/api/admin/settings');
