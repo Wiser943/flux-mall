@@ -570,7 +570,7 @@ document.getElementById('rulesForm').addEventListener('invalid', (e) => {
     } finally {
         // 6. Re-enable the button
         btn.disabled = false;
-        btn.innerText = "Save Identity";
+        btn.innerText = "Save Config";
     }
 };
 // ─── PAYMENT SETTINGS ─────────────────────────────────────
