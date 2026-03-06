@@ -678,24 +678,7 @@ window.showTab = (tabId, el) => {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (el) el.classList.add('active');
 };
-/*
-// ─── MODAL HELPER ─────────────────────────────────────────
-window.showModal = ({ id, title, content, buttons }) => {
-  document.getElementById(id)?.remove();
-  const modal = document.createElement('div');
-  modal.id = id;
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal-content" style="max-height:90vh;overflow-y:auto;">
-      <h3>${title}</h3>
-      ${content}
-      <div style="display:flex;gap:10px;margin-top:15px;flex-wrap:wrap;">
-        ${buttons.map(b => `<button class="${b.class}" onclick="${b.onclick}" id="${b.id || ''}">${b.text}</button>`).join('')}
-      </div>
-    </div>`;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-};*/
+
 
 /**
  * @param {Object} cfg - Configuration object
