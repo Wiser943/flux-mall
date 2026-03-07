@@ -355,7 +355,6 @@ button:disabled:hover {
     /* Light blue tint */
     padding: 12px;text-align:center;
     border-radius: 10px;
-    margin-bottom: 20px;
     border: 1px solid rgba(67, 24, 255, 0.1);
     animation: fadeIn 0.5s ease;
 }
