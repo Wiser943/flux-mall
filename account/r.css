@@ -353,7 +353,7 @@ button:disabled:hover {
 .referrer-box {
     background: #f0f4ff;
     /* Light blue tint */
-    padding: 12px;text-align:center;
+    padding: 12px;
     border-radius: 10px;
     border: 1px solid rgba(67, 24, 255, 0.1);
     animation: fadeIn 0.5s ease;
@@ -362,7 +362,7 @@ button:disabled:hover {
 .referrer-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 10px; text-align: center;
     font-size: 0.9rem;
     color: #4a5568;margin:0 auto;
 }
