@@ -246,7 +246,8 @@ button {
 /* Login Side */
 .right-side {
     flex: 1;
-    background: #000;
+   color:var(--text-white);
+    background-color: var(--right-panel-bg);
     display: flex;
     align-items: center;
     justify-content: center;
