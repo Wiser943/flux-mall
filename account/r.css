@@ -285,8 +285,8 @@ button {
 }
 
 .input-wrapper {
-    background: #111;
-    border: 1px solid #222;
+    background: transparent;
+    border: 1px solid var(--text-gray);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -306,7 +306,7 @@ button {
 .login-btn {
     width: 100%;
     padding: 1rem;
-    background: var(--neon-green);
+    background: var(--accent-green);
     border: none;
     border-radius: 8px;
     font-weight: bold;
@@ -353,7 +353,7 @@ button:disabled:hover {
 .referrer-box {
     background: #f0f4ff;
     /* Light blue tint */
-    padding: 12px;
+    padding: 12px;text-align:center;
     border-radius: 10px;
     margin-bottom: 20px;
     border: 1px solid rgba(67, 24, 255, 0.1);
