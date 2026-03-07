@@ -89,60 +89,75 @@
         </div>
     </section>
 
-    <section id="login-page" class="page hidden">
-        <div class="login-card">
-            <div class="info-side">
-                <div class="brand-logo">
-                    <img width="35" class="logo-img" height="35" src="/img/logo.png" alt="logo" />
-                    <h1 class="site-name">Flux Mall</h1>
+      <section id="login-page" class="page hidden">
+        <div class="left-side">
+            <div class="logo site-name"></div>
+            
+            <div class="stats-card">
+                <div class="card-header">
+                    <span>LIVE FEED</span>
+                    <span>100% ENERGY</span>
+                </div>
+                <p class="label">LIFETIME EARNINGS</p>
+                <h1 class="earnings">₦2,850,000</h1>
+                <div class="chart-placeholder">
+                    <svg viewBox="0 0 100 30">
+                        <path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#00ff7f" stroke-width="2" />
+                    </svg>
+                </div>
+                <div class="badge-row">
+                    <div class="badge">TASKS: 842</div>
+                    <div class="badge-gold">RANK: ELITE</div>
                 </div>
             </div>
-
-            <div class="form-side">
-                <div class="form-header">
-                    <h2>Login Your Account</h2>
-                    <p>Fill in the details to proceed.</p>
-                </div>
-
-                <form class="signup-form" id="loginForm">
+            
+            <div class="promo-text">
+                <h2>Unlock Your <br><span>Earning Potential.</span></h2>
+                <p>Welcome back to the #1 GPT Platform in Nigeria.</p>
+            </div>
+        </div>
+        
+        <div class="right-side">
+            <div class="form-wrapper">
+                <div class="lock-icon"><i class="fas fa-lock"></i></div>
+                <h1>Welcome Back</h1>
+                <p class="subtitle">Enter credentials to unlock dashboard.</p>
+                <br>
+                <form id="loginForm">
                     <div class="input-group">
-                        <label for="login-email">Registered Email: <span>*</span></label>
+                        <label for="login-email">EMAIL <span>*</span></label>
                         <div class="input-wrapper">
                             <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="loginEmail" name="login-email" placeholder="Enter your Email"
-                                required>
+                            <input type="email" id="loginEmail" name="login-email" placeholder="blikv74@gmail.com" required>
                         </div>
                         <p id="loginEmailError" class="error-message"></p>
                     </div>
                     <div class="input-group">
-                        <label for="signup-password">Password: <span>*</span></label>
+                        <label for="signup-password">PASSWORD<span>*</span></label>
                         <div class="input-wrapper">
                             <i class="fas fa-key input-icon"></i>
-                            <input type="password" id="loginPassword" name="login-password" placeholder="Enter Password"
-                                required>
+                            <input type="password" id="loginPassword" name="login-password" placeholder="•••••••••••••" required>
                             <i onclick="togglePassword(loginPassword)" class="fas fa-eye"></i>
                         </div>
                         <p id="loginPasswordError" class="error-message"></p>
                     </div>
                     <div style="display:flex; justify-content: space-between;width:100%;margin-bottom: 15px;">
-                        <p class="checkbox-group">
+                        <p class="checkbox-group" style="display: flex;gap: 6px;">
                             <input type="checkbox" name="recall" id="recall">
                             <label for="recall">Remember me</label>
                         </p>
                         <a class="create-link" href="#forgot-password-page">Retrieve password</a>
                     </div>
-
-                    <button class="signin-btn" type="submit">Sign in</button>
+                    
+                    <button type="submit" class="login-btn signin-btn">LOGIN &rarr;</button>
                     <div id="loginFormMessage" class="message-box"></div>
-                    <div class="form-footer">
-                        <a href="#signup-page">Don't have an account? <span class="create-link">Create
-                                one</span>
-                        </a>
-                    </div>
                 </form>
+                
+                <p class="footer-link">Don't have an account yet? <a href="#signup-page">Create now</a></p>
             </div>
         </div>
     </section>
+
 
     <section id="signup-page" class="page hidden">
         <div class="login-card">
