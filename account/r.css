@@ -365,7 +365,7 @@ button:disabled:hover {
     align-items: center;
     gap: 10px;
     font-size: 0.9rem;
-    color: #4a5568;
+    color: #4a5568;margin:0 auto;
 }
 
 .referrer-info i {
