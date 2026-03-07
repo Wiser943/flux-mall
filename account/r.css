@@ -1,3 +1,33 @@
+/* --- CSS Variables & Reset --- */
+:root {
+    --bg-gradient-start: #2b0f20;
+    /* Deep reddish-purple for body bg */
+    --bg-gradient-end: #0a0a0a;
+    /* Almost black for body bg */
+    --accent-green: #00d084;
+    /* The vibrant green color */
+    --text-white: #ffffff;
+    --text-gray: #a0a0a0;
+    --left-panel-bg-start: #1a1a3a;
+    /* Dark blue/purple for left panel */
+    --left-panel-bg-end: #251835;
+    --right-panel-bg: #121212;
+    /* Dark gray for form panel */
+    --input-bg: #1f1f1f;
+    --alert-bg: #3d1a1a;
+    /* Dark red background */
+    --alert-text: #ff5c5c;
+    /* Red text color */
+    --primary-blue: #3b82f6;
+    /* The 'Select JIT plan' blue */
+    
+}
+
+form a {
+    text-decoration: none;
+    cursor: pointer;
+}
+
 :root {
     --bg-dark: #0a0a0a;
     --card-bg: #141414;
@@ -5,15 +35,33 @@
     --text-gray: #a0a0a0;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
 
-body { background-color: var(--bg-dark); color: white; min-height: 100vh; }
+body {
+    background-color: var(--bg-dark);
+    color: white;
+    min-height: 100vh;
+}
 
-.container { display: flex; min-height: 100vh; }
+.page {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    align-items: center;
+}
+
+.page.hidden {
+    display: none;
+}
 
 /* Promo Side */
-.promo-side {
-    flex: 1.2;
+.left-side {
+    flex: 0.8;
     background: linear-gradient(135deg, #050505 0%, #111 100%);
     padding: 3rem;
     display: flex;
@@ -21,8 +69,14 @@ body { background-color: var(--bg-dark); color: white; min-height: 100vh; }
     justify-content: space-between;
 }
 
-.logo { font-size: 1.5rem; font-weight: bold; }
-.logo span { color: var(--neon-green); }
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.logo span {
+    color: var(--neon-green);
+}
 
 .stats-card {
     background: rgba(255, 255, 255, 0.03);
@@ -33,14 +87,28 @@ body { background-color: var(--bg-dark); color: white; min-height: 100vh; }
     backdrop-filter: blur(10px);
 }
 
-.earnings { font-size: 2.5rem; margin: 0.5rem 0; }
-.badge-gold { color: gold; font-weight: bold; }
+.earnings {
+    font-size: 2.5rem;
+    margin: 0.5rem 0;
+}
 
-.promo-text h2 { font-size: 3rem; line-height: 1.1; margin-bottom: 1rem; }
-.promo-text span { color: var(--neon-green); }
+.badge-gold {
+    color: gold;
+    font-weight: bold;
+}
+
+.promo-text h2 {
+    font-size: 3rem;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+}
+
+.promo-text span {
+    color: var(--neon-green);
+}
 
 /* Login Side */
-.login-side {
+.right-side {
     flex: 1;
     background: #000;
     display: flex;
@@ -49,32 +117,55 @@ body { background-color: var(--bg-dark); color: white; min-height: 100vh; }
     padding: 2rem;
 }
 
-.form-wrapper { width: 100%; max-width: 400px; text-align: center; }
-
-.lock-icon { 
-    color: var(--neon-green); 
-    border: 1px solid var(--neon-green); 
-    width: 50px; height: 50px; 
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 12px; margin: 0 auto 1.5rem;
+.form-wrapper {
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
 }
 
-.input-group { text-align: left; margin-bottom: 1.5rem; }
-.input-group label { font-size: 0.75rem; color: var(--text-gray); display: block; margin-bottom: 0.5rem; }
+.lock-icon {
+    color: var(--neon-green);
+    border: 1px solid var(--neon-green);
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    margin: 0 auto 1.5rem;
+}
 
-.input-field {
+.input-group {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    font-size: 0.75rem;
+    color: var(--text-gray);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.input-wrapper {
     background: #111;
     border: 1px solid #222;
     border-radius: 8px;
     display: flex;
     align-items: center;
-    padding: 0.8rem;
+    padding: 0.8rem;&:hover{
+        border:1px solid var(--accent-green)
+    }
 }
 
-.input-field input {
-    background: transparent; border: none; color: white; width: 100%; padding-left: 10px; outline: none;
+.input-wrapper input {
+    background: transparent;
+    border: none;
+    color: white;
+    width: 100%;
+    padding-left: 10px;
+    outline: none;
 }
-
 .login-btn {
     width: 100%;
     padding: 1rem;
@@ -86,10 +177,38 @@ body { background-color: var(--bg-dark); color: white; min-height: 100vh; }
     transition: 0.3s;
 }
 
-.login-btn:hover { transform: scale(1.02); opacity: 0.9; }
+button:disabled,
+button:disabled:hover {
+    background: gray;
+    color: #fff;
+}
+
+.login-btn:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
+
+.footer-link {
+    margin-top: 10px;
+}
+
+.create-link {
+    color: var(--accent-green);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+
 
 /* Responsive Media Queries */
-@media (max-width: 900px) {
-    .promo-side { display: none; } /* Hide promo on mobile like the second screenshot suggested */
-    .login-side { flex: 1; }
+@media (width < 700px) {
+    .left-side {
+        display: none !important;
+    }
+    
+    /* Hide promo on mobile like the second screenshot suggested */
+    .right-side {
+        flex: 1;
+    }
 }
