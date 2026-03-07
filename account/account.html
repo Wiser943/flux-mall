@@ -49,44 +49,61 @@
     </section>
 
 
-    <section id="forgot-password-page" class="page hidden">
-        <div class="login-card">
-            <div class="info-side">
-                <div class="brand-logo">
-                    <img width="35" class="logo-img" height="35" src="/img/logo.png" alt="logo" />
-                    <h1 class="site-name">Flux Mall</h1>
-                </div>
-                <div class="info-content">
-                    <h2>Password Reset</h2>
-                    <p>Enter your email and we'll send you a recovery link.</p>
-                </div>
-            </div>
-
-            <div class="form-side">
-                <div class="form-header">
-                    <div class="security-alert">
-                        <p><i class="fas fa-warning"></i>Only enter a Registered Email</p>
+       <section id="forgot-password-page" style="flex-direction: row-reverse;" class="page hidden">
+        <div class="left-side">
+            <div class="logo site-name"></div>
+                
+                <div class="stats-card">
+                    <div class="card-header">
+                        <span>LIVE FEED</span>
+                        <span>100% ENERGY</span>
+                    </div>
+                    <p class="label">LIFETIME EARNINGS</p>
+                    <h1 class="earnings">₦2,850,000</h1>
+                    <div class="chart-placeholder">
+                        <svg viewBox="0 0 100 30">
+                            <path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#00ff7f" stroke-width="2" />
+                        </svg>
+                    </div>
+                    <div class="badge-row">
+                        <div class="badge">TASKS: 842</div>
+                        <div class="badge-gold">RANK: ELITE</div>
                     </div>
                 </div>
-                <form class="signup-form" id="resetForm">
-                    <div class="input-group">
-                        <label for="reset-email">Registered Email: <span>*</span></label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="resetEmail" name="reset-email"
-                                placeholder="Enter a registered Email" required>
+                
+                <div class="promo-text">
+                    <h2>Unlock Your <br><span>Earning Potential.</span></h2>
+                    <p>Welcome back to the #1 GPT Platform in Nigeria.</p>
+                </div>
+            </div>
+            
+            <div class="right-side">
+                <div class="form-wrapper">
+                    <div class="lock-icon"><i class="fas fa-unlock"></i></div>
+                    <h1>Password Reset</h1>
+                    <p class="subtitle">Enter your email and we'll send you a recovery link.</p>
+                    
+                    <br>
+                    <form id="resetForm">
+                        <div class="input-group">
+                            <label for="reset-email">Registered Email: <span>*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="resetEmail" name="reset-email" placeholder="blazè7@gmail.com" required>
+                            </div>
+                            <p id="resetEmailError" class="error-message"></p>
                         </div>
-                        <p id="resetEmailError" class="error-message"></p>
-                    </div>
-
-                    <button type="submit" class="signin-btn" disabled>Send Reset Link</button>
-                    <div class="form-footer">
-                        <a href="#login-page" class="create-link"><i class="fas fa-arrow-left"></i>
-                            Back to Login</a>
-                    </div>
-                </form>
+                        
+                        <button type="submit" class="login-btn signin-btn" disabled>Send Reset Link</button>
+                        <div class="footer-link">
+                            <a href="#login-page" class="create-link"><i class="fas fa-arrow-left"></i>
+                                Back to Login</a>
+                        </div>
+                    </form>
+                    
+                </div>
             </div>
-        </div>
+            
     </section>
 
       <section id="login-page" class="page hidden">
