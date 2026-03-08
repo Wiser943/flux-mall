@@ -62,7 +62,7 @@ router.get('/deposit-amounts', requireAuth, async (req, res) => {
 // ─── PUT /api/user/bank-details ────────────────────────────
 router.put('/bank-details', requireAuth, async (req, res) => {
   try {
-    const { bankName, accountNumber, accountName } = req.body;
+    const { bankName, bankCode, accountNumber, accountName } = req.body;
     if (!bankName || accountNumber?.length < 10 || !accountName)
       return res.status(400).json({ error: 'Please fill all fields correctly.' });
     const config         = await Settings.findOne({ key: 'config' });
@@ -71,10 +71,66 @@ router.put('/bank-details', requireAuth, async (req, res) => {
     if (isMasterLocked && hasExistingBank)
       return res.status(403).json({ error: '⛔ System locked. Contact Admin to change bank details.' });
     await User.findByIdAndUpdate(req.user._id, {
-      bankDetails: { bankName, accountNumber, accountName, updatedAt: new Date() },
+      bankDetails: { bankName, bankCode, accountNumber, accountName, updatedAt: new Date() },
       canEditBank: true
     });
     res.json({ success: true, message: 'Bank details saved successfully!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/user/banks ──────────────────────────────────
+// Fetches Nigerian bank list from Korapay
+router.get('/banks', requireAuth, async (req, res) => {
+  try {
+    const apikeys = await Settings.findOne({ key: 'apikeys' });
+    const secretKey = apikeys?.value?.korapay_secret;
+    if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
+
+    const response = await fetch('https://api.korapay.com/merchant/api/v1/misc/banks?countryCode=NG', {
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const result = await response.json();
+    if (result.status) {
+      res.json({ success: true, banks: result.data });
+    } else {
+      res.status(400).json({ error: 'Failed to fetch banks.' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/user/verify-account ───────────────────────
+// Verifies account number with Korapay and returns account name
+router.post('/verify-account', requireAuth, async (req, res) => {
+  try {
+    const { accountNumber, bankCode } = req.body;
+    if (!accountNumber || !bankCode)
+      return res.status(400).json({ error: 'Account number and bank code required.' });
+
+    const apikeys = await Settings.findOne({ key: 'apikeys' });
+    const secretKey = apikeys?.value?.korapay_secret;
+    if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
+
+    const response = await fetch('https://api.korapay.com/merchant/api/v1/misc/banks/resolve', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ account_number: accountNumber, bank_code: bankCode })
+    });
+    const result = await response.json();
+    if (result.status && result.data?.account_name) {
+      res.json({ success: true, accountName: result.data.account_name });
+    } else {
+      res.status(400).json({ error: 'Could not verify account. Check number and bank.' });
+    }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -341,10 +397,8 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
     const verifyToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
     const verifyUrl   = `${process.env.APP_URL}/api/auth/verify-email?token=${verifyToken}`;
 
-    // Respond immediately
     res.json({ success: true, message: 'Verification email sent! Check your inbox.' });
 
-    // Send via Resend — non-blocking, uses HTTPS not SMTP
     resend.emails.send({
       from: process.env.EMAIL_FROM || 'Flux Mall <noreply@fluxmall.online>',
       to: user.email,
@@ -368,7 +422,6 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
         </div>`
     }).then(() => {
       console.log(`[EMAIL] Verification sent to ${user.email}`);
-      console.log(process.env.APP_URL);
     }).catch(err => {
       console.log(`[EMAIL] Resend failed:`, err.message);
     });
@@ -378,7 +431,7 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/user/apikeys
+// ─── GET /api/user/apikeys ────────────────────────────────
 router.get('/apikeys', requireAuth, async (req, res) => {
   try {
     const doc = await Settings.findOne({ key: 'apikeys' });
