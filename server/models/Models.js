@@ -91,7 +91,23 @@ const chatMessageSchema = new mongoose.Schema({
   polarQuestion: { type: String, default: '' },
   polarAnswer:   { type: String, default: '' },
   read:          { type: Boolean, default: false },
+  delivered:     { type: Boolean, default: false },
+  edited:        { type: Boolean, default: false },
+  deleted:       { type: Boolean, default: false },
+  replyTo: {
+    msgId:   { type: String, default: '' },
+    sender:  { type: String, default: '' },
+    preview: { type: String, default: '' },
+  },
+  reactions: { type: mongoose.Schema.Types.Mixed, default: {} },
 }, { timestamps: true });
+
+// ─── TYPING INDICATOR ──────────────────────────────────────
+const typingSchema = new mongoose.Schema({
+  sessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'ChatSession', required: true },
+  sender:    { type: String, enum: ['user', 'admin'], required: true },
+  updatedAt: { type: Date, default: Date.now },
+});
 
 module.exports = {
   Deposit:        mongoose.model('Deposit', depositSchema),
@@ -104,4 +120,5 @@ module.exports = {
   DepositAmt:     mongoose.model('DepositAmt', depositAmtSchema),
   ChatSession:    mongoose.model('ChatSession', chatSessionSchema),
   ChatMessage:    mongoose.model('ChatMessage', chatMessageSchema),
+  Typing:         mongoose.model('Typing', typingSchema),
 };
