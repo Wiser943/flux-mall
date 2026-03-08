@@ -16,6 +16,18 @@
         href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@500..700&display=swap"
         rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+
+    <style>
+    /* Chat settings toggle */
+    .toggle-switch { position:relative;display:inline-block;width:44px;height:24px; }
+    .toggle-switch input { opacity:0;width:0;height:0; }
+    .slider { position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s; }
+    .slider:before { position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s; }
+    .toggle-switch input:checked + .slider { background:var(--primary,#4318ff); }
+    .toggle-switch input:checked + .slider:before { transform:translateX(20px); }
+    .settings-row { display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border,#f0f0f0); }
+    @keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
+    </style>
 </head>
 
 <body>
@@ -34,6 +46,10 @@
                 </div>
                 <div class="nav-item" onclick="showTab('settings-tab', this)">
                     <i class="ri-draggable"></i> <span>Settings</span>
+                </div>
+                <div class="nav-item" onclick="showTab('chat-tab', this); loadAdminChatSessions()">
+                    <i class="ri-message-3-line"></i> <span>Chat</span>
+                    <span id="adminChatBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;align-items:center;justify-content:center;font-weight:700;margin-left:4px;">0</span>
                 </div>
             </nav>
         </aside>
@@ -571,6 +587,122 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+
+            <!-- ══ CHAT TAB ═══════════════════════════════════════ -->
+            <section id="chat-tab" class="tab-content">
+                <div style="display:flex;height:calc(100vh - 60px);gap:0;">
+
+                    <!-- Session List -->
+                    <div id="chatSessionList" style="width:300px;min-width:260px;border-right:1px solid var(--border,#e0e5f2);overflow-y:auto;background:var(--card-bg,#fff);">
+                        <div style="padding:16px;border-bottom:1px solid var(--border,#e0e5f2);font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;">
+                            <span>💬 Chats</span>
+                            <button onclick="loadAdminChatSessions()" style="background:none;border:none;cursor:pointer;color:var(--primary);font-size:18px;"><i class="ri-refresh-line"></i></button>
+                        </div>
+                        <div id="chatSessionItems">
+                            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Window -->
+                    <div id="chatWindow" style="flex:1;display:flex;flex-direction:column;background:var(--bg-color,#f4f7fe);">
+
+                        <!-- Empty state -->
+                        <div id="chatWindowEmpty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;">
+                            <div style="font-size:48px;margin-bottom:12px;">💬</div>
+                            <div style="font-size:15px;">Select a chat to open</div>
+                        </div>
+
+                        <!-- Active chat -->
+                        <div id="chatWindowActive" style="display:none;flex-direction:column;height:100%;">
+
+                            <!-- Chat top bar -->
+                            <div id="adminChatHeader" style="padding:14px 16px;background:var(--card-bg,#fff);border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
+                                <img id="adminChatUserLogo" src="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;background:#eee;">
+                                <div style="flex:1;">
+                                    <div id="adminChatUsername" style="font-weight:700;font-size:14px;"></div>
+                                    <div id="adminChatSessionStatus" style="font-size:11px;color:#aaa;"></div>
+                                </div>
+                                <div style="display:flex;gap:8px;">
+                                    <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send Polar Question" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;">❓ Polar</button>
+                                    <button onclick="endAdminChatSession()" title="End Session" style="background:#f39c12;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;">⏹ End</button>
+                                    <button onclick="deleteAdminChatSession()" title="Delete Chat" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;">🗑</button>
+                                </div>
+                            </div>
+
+                            <!-- Messages -->
+                            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;"></div>
+
+                            <!-- Polar input (hidden by default) -->
+                            <div id="polarInputArea" style="display:none;padding:10px 16px;background:#fffbea;border-top:1px solid #f1c40f;">
+                                <div style="font-size:12px;color:#888;margin-bottom:6px;">❓ Polar Question (user answers Yes/No)</div>
+                                <div style="display:flex;gap:8px;">
+                                    <input type="text" id="polarQuestionInput" placeholder="e.g. Did you complete the transfer?" style="flex:1;padding:8px 12px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
+                                    <button onclick="sendAdminPolar()" style="background:#f1c40f;color:#333;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;">Send</button>
+                                    <button onclick="togglePolarInput()" style="background:#eee;color:#666;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;">✕</button>
+                                </div>
+                            </div>
+
+                            <!-- Input bar -->
+                            <div style="padding:12px 16px;background:var(--card-bg,#fff);border-top:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:8px;" id="adminChatInputBar">
+                                <label for="adminImgInput" style="cursor:pointer;padding:4px;color:var(--primary);" title="Send image">
+                                    <i class="ri-image-add-line" style="font-size:22px;"></i>
+                                    <input type="file" id="adminImgInput" accept="image/*" style="display:none;" onchange="sendAdminImage(this)">
+                                </label>
+                                <input type="text" id="adminChatInput" placeholder="Type a reply..." maxlength="500"
+                                    style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 16px;font-size:14px;outline:none;"
+                                    onkeydown="if(event.key==='Enter')sendAdminMessage()">
+                                <button onclick="sendAdminMessage()" style="background:var(--primary,#4318ff);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                                    <i class="ri-send-plane-fill" style="color:#fff;font-size:17px;"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Chat Settings Panel -->
+                    <div id="chatSettingsPanel" style="width:280px;min-width:240px;border-left:1px solid var(--border,#e0e5f2);background:var(--card-bg,#fff);overflow-y:auto;padding:16px;">
+                        <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:var(--primary);">⚙️ Chat Settings</div>
+
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Chat Available</label>
+                            <label class="toggle-switch"><input type="checkbox" id="cs_available" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Sound Alerts</label>
+                            <label class="toggle-switch"><input type="checkbox" id="cs_sound" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Allow User Images</label>
+                            <label class="toggle-switch"><input type="checkbox" id="cs_allowImages" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Require Email Verification</label>
+                            <label class="toggle-switch"><input type="checkbox" id="cs_requireVerified"><span class="slider"></span></label>
+                        </div>
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Auto-Reply Message</div>
+                        <textarea id="cs_autoReply" rows="3" placeholder="e.g. Thanks for reaching out! We'll reply shortly." style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;resize:vertical;"></textarea>
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Office Hours</div>
+                        <label class="toggle-switch" style="margin-bottom:8px;"><input type="checkbox" id="cs_officeHoursEnabled"><span class="slider"></span></label>
+                        <div style="display:flex;gap:8px;margin-top:8px;">
+                            <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Open (hr)</div><input type="number" id="cs_open" min="0" max="23" value="9" style="width:100%;padding:6px;border:1px solid var(--border,#e0e5f2);border-radius:6px;"></div>
+                            <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Close (hr)</div><input type="number" id="cs_close" min="0" max="23" value="18" style="width:100%;padding:6px;border:1px solid var(--border,#e0e5f2);border-radius:6px;"></div>
+                        </div>
+                        <input type="text" id="cs_offlineMsg" placeholder="Offline message..." style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;margin-top:8px;">
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Auto-close Inactive (hours)</div>
+                        <input type="number" id="cs_autoClose" value="48" min="1" style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Message Char Limit</div>
+                        <input type="number" id="cs_charLimit" value="500" min="50" style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
+
+                        <button onclick="saveChatSettings()" style="width:100%;margin-top:16px;background:var(--primary,#4318ff);color:#fff;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;">Save Settings</button>
+                    </div>
+
                 </div>
             </section>
 
