@@ -796,29 +796,36 @@ init();
 
 
 // ═══════════════════════════════════════════════════════════
-// CHAT SYSTEM
+
+
+// ═══════════════════════════════════════════════════════════
+// CHAT SYSTEM — Professional FB-style
 // ═══════════════════════════════════════════════════════════
 
-let chatSessionId  = null;
+let chatSessionId     = null;
 let chatSessionStatus = 'active';
-let chatPollTimer  = null;
-let lastMsgCount   = 0;
-let chatSoundEnabled = true;
-let chatSiteLogo   = '';
+let chatPollTimer     = null;
+let chatTypingTimer   = null;
+let chatTypingPollTimer = null;
+let lastMsgCount      = 0;
+let chatSoundEnabled  = true;
+let chatSiteLogo      = '';
+let replyingTo        = null;   // { msgId, sender, preview }
+let editingMsgId      = null;
+let chatAllMessages   = [];     // full message cache for reply lookup
+const EMOJIS          = ['👍','❤️','😂','😮','😢','🔥'];
 
-// Audio beep for new messages
+// ─── AUDIO BEEP ───────────────────────────────────────────
 function playChatSound() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    osc.connect(gain); gain.connect(ctx.destination);
     osc.frequency.value = 880;
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
   } catch(e) {}
 }
 
@@ -827,7 +834,6 @@ window.openChat = async function() {
   window.location.hash = '#chat';
   lucide.createIcons();
 
-  // Set admin logo = site logo
   const logo = document.getElementById('chatAdminLogo');
   if (logo && chatSiteLogo) logo.src = chatSiteLogo;
 
@@ -835,18 +841,16 @@ window.openChat = async function() {
   const loadingEl  = document.getElementById('chatLoading');
   if (loadingEl) loadingEl.style.display = 'block';
 
-  // Load chat settings to enforce image toggle + sound
+  // Load settings to enforce image toggle + sound
   const settingsRes = await api('/api/user/chat/settings');
   if (settingsRes?.success) {
     chatSoundEnabled = settingsRes.settings?.sound !== false;
-    // Show/hide image upload button based on admin setting
     const imgLabel = document.querySelector('label[for="chatImgInput"]');
     if (imgLabel) imgLabel.style.display = settingsRes.settings?.allowImages === false ? 'none' : 'flex';
   }
 
   const sessionRes = await api('/api/user/chat/session');
 
-  // Handle offline (chat disabled or outside office hours)
   if (sessionRes?.offline) {
     if (messagesEl) messagesEl.innerHTML = `
       <div style="text-align:center;padding:40px 20px;">
@@ -861,11 +865,12 @@ window.openChat = async function() {
 
   if (!sessionRes?.success) return;
 
-  chatSessionId = sessionRes.session._id;
+  chatSessionId     = sessionRes.session._id;
   chatSessionStatus = sessionRes.session.status;
 
   await loadChatMessages();
   startChatPolling();
+  startTypingPoll();
 };
 
 // ─── LOAD MESSAGES ────────────────────────────────────────
@@ -873,15 +878,15 @@ async function loadChatMessages() {
   const data = await api('/api/user/chat/messages');
   if (!data?.success) return;
 
-  chatSessionId     = data.sessionId || chatSessionId;
+  chatSessionId     = data.sessionId     || chatSessionId;
   chatSessionStatus = data.sessionStatus || chatSessionStatus;
+  chatAllMessages   = data.messages;
 
   renderChatMessages(data.messages);
   updateChatSessionUI();
 
-  // Update unread badge on service page
   const badge = document.getElementById('chatUnreadBadge');
-  if (badge) { badge.style.display = 'none'; }
+  if (badge) badge.style.display = 'none';
 
   lastMsgCount = data.messages.length;
 }
@@ -890,55 +895,217 @@ async function loadChatMessages() {
 function renderChatMessages(messages) {
   const container = document.getElementById('chatMessages');
   if (!container) return;
+  const loading = document.getElementById('chatLoading');
+  if (loading) loading.style.display = 'none';
 
   container.innerHTML = '';
   if (!messages.length) {
-    container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">No messages yet. Say hello! 👋</div>`;
+    container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">No messages yet. Say hello 👋</div>`;
     return;
   }
 
+  // Group messages by date
+  let lastDate = '';
   messages.forEach(msg => {
-    container.appendChild(buildMessageBubble(msg));
+    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+    if (dateStr !== lastDate) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'text-align:center;margin:12px 0;';
+      divider.innerHTML = `<span style="background:rgba(0,0,0,0.08);color:var(--text-muted);border-radius:12px;padding:3px 12px;font-size:11px;">${dateStr}</span>`;
+      container.appendChild(divider);
+      lastDate = dateStr;
+    }
+    container.appendChild(buildMsgBubble(msg, 'user'));
   });
 
-  // Scroll to bottom
   container.scrollTop = container.scrollHeight;
 }
 
 // ─── BUILD MESSAGE BUBBLE ─────────────────────────────────
-function buildMessageBubble(msg) {
-  const isUser  = msg.sender === 'user';
-  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function buildMsgBubble(msg, perspective) {
+  const isMe    = (perspective === 'user') ? msg.sender === 'user' : msg.sender === 'admin';
+  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
   const wrapper = document.createElement('div');
-  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isUser ? 'flex-end' : 'flex-start'};gap:3px;`;
+  wrapper.dataset.msgId = msg._id;
+  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
 
+  // ── Reply thread quote ──
+  let replyHtml = '';
+  if (msg.replyTo?.msgId) {
+    replyHtml = `
+      <div style="background:rgba(0,0,0,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:var(--text-muted);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+        <span style="font-weight:700;color:var(--primary);margin-right:6px;">${msg.replyTo.sender === 'user' ? 'You' : 'Support'}</span>${msg.replyTo.preview}
+      </div>`;
+  }
+
+  // ── Main content ──
   let bubbleContent = '';
-
-  if (msg.type === 'image' && msg.imageUrl) {
+  if (msg.deleted) {
+    bubbleContent = `<span style="font-style:italic;opacity:0.6;font-size:13px;">🚫 This message was deleted</span>`;
+  } else if (msg.type === 'image' && msg.imageUrl) {
     bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
   } else if (msg.type === 'polar') {
-    // Polar question — show yes/no buttons if not answered
     const answered = msg.polarAnswer;
+    const disabledAttr = answered ? 'disabled' : '';
+    const disabledStyle = answered ? 'opacity:0.5;cursor:not-allowed;' : 'cursor:pointer;';
     bubbleContent = `
-      <div style="font-size:14px;margin-bottom:8px;">❓ ${msg.polarQuestion}</div>
+      <div style="font-size:13px;margin-bottom:8px;font-weight:600;">❓ ${msg.polarQuestion}</div>
       ${answered
-        ? `<div style="font-weight:700;color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered === 'yes' ? '✅ Yes' : '❌ No'}</div>`
+        ? `<div style="padding:6px 12px;border-radius:8px;font-weight:700;background:rgba(255,255,255,0.2);color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered==='yes'?'✅ You answered: Yes':'❌ You answered: No'}</div>`
         : `<div style="display:flex;gap:8px;margin-top:4px;">
-            <button onclick="answerPolar('${msg._id}','yes',this)" style="background:#10ac84;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">✅ Yes</button>
-            <button onclick="answerPolar('${msg._id}','no',this)" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">❌ No</button>
+            <button onclick="answerPolar('${msg._id}','yes',this)" ${disabledAttr} style="background:#10ac84;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-weight:600;${disabledStyle}">✅ Yes</button>
+            <button onclick="answerPolar('${msg._id}','no',this)" ${disabledAttr} style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-weight:600;${disabledStyle}">❌ No</button>
           </div>`
       }`;
   } else {
-    bubbleContent = `<span style="font-size:14px;line-height:1.5;">${msg.content}</span>`;
+    bubbleContent = `<span style="font-size:14px;line-height:1.5;word-break:break-word;">${msg.content}</span>`;
   }
 
+  // ── Ticks (only for user's own messages) ──
+  let ticksHtml = '';
+  if (isMe && !msg.deleted) {
+    const tickColor = msg.read ? '#4fc3f7' : msg.delivered ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)';
+    const tickLabel = msg.read ? '✓✓' : msg.delivered ? '✓✓' : '✓';
+    ticksHtml = `<span style="font-size:11px;color:${isMe ? tickColor : 'var(--text-muted)'};margin-left:4px;">${tickLabel}</span>`;
+  }
+
+  // ── Edit/deleted label ──
+  const editedHtml = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.6;margin-left:4px;">edited</span>` : '';
+
+  // ── Reactions ──
+  const reactEntries = Object.entries(msg.reactions || {}).filter(([,v]) => v.length > 0);
+  const reactionsHtml = reactEntries.length ? `
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
+      ${reactEntries.map(([emoji, users]) => `
+        <span onclick="toggleReaction('${msg._id}','${emoji}')" style="background:rgba(0,0,0,0.08);border-radius:12px;padding:2px 7px;font-size:12px;cursor:pointer;border:1px solid ${users.includes('user')?'var(--primary)':'transparent'};">
+          ${emoji} ${users.length}
+        </span>`).join('')}
+    </div>` : '';
+
+  // ── Emoji reaction bar (shown on hover/long-press) ──
+  const emojiBarId = `ebar-${msg._id}`;
+  const emojiBarHtml = msg.deleted ? '' : `
+    <div id="${emojiBarId}" style="display:none;position:absolute;${isMe?'right:0':'left:0'};bottom:calc(100% + 4px);background:var(--card-bg,#fff);border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);display:none;gap:6px;z-index:100;white-space:nowrap;">
+      ${EMOJIS.map(e => `<span onclick="toggleReaction('${msg._id}','${e}');hideEmojiBar('${emojiBarId}')" style="font-size:20px;cursor:pointer;transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${e}</span>`).join('')}
+      ${isMe && !msg.deleted ? `<span onclick="startReply('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Reply">↩️</span>
+      <span onclick="startEdit('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Edit">✏️</span>
+      <span onclick="deleteMsg('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Delete">🗑️</span>` :
+      !isMe && !msg.deleted ? `<span onclick="startReply('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Reply">↩️</span>` : ''}
+    </div>`;
+
   wrapper.innerHTML = `
-    <div style="max-width:75%;background:${isUser ? 'var(--primary)' : 'var(--card-bg,#fff)'};color:${isUser ? '#fff' : 'var(--text-main)'};border-radius:${isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px'};padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
-      ${bubbleContent}
+    ${emojiBarHtml}
+    <div class="chat-bubble" data-msg-id="${msg._id}"
+      style="max-width:78%;background:${isMe?'var(--primary)':'var(--card-bg,#fff)'};color:${isMe?'#fff':'var(--text-main)'};border-radius:${isMe?'18px 18px 4px 18px':'18px 18px 18px 4px'};padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
+      oncontextmenu="showEmojiBar(event,'${emojiBarId}')"
+      ontouchstart="handleTouchStart(event,'${emojiBarId}')"
+      ontouchend="handleTouchEnd()"
+    >
+      ${replyHtml}${bubbleContent}
     </div>
-    <span style="font-size:10px;color:var(--text-muted);">${time}</span>`;
+    <div style="display:flex;align-items:center;gap:3px;padding:0 4px;">
+      <span style="font-size:10px;color:var(--text-muted);">${time}</span>${editedHtml}${ticksHtml}
+    </div>
+    ${reactionsHtml}`;
+
   return wrapper;
 }
+
+// ─── EMOJI BAR SHOW/HIDE ──────────────────────────────────
+let longPressTimer = null;
+
+window.showEmojiBar = function(e, barId) {
+  e.preventDefault();
+  hideAllEmojiBars();
+  const bar = document.getElementById(barId);
+  if (bar) bar.style.display = 'flex';
+};
+
+window.hideEmojiBar = function(barId) {
+  const bar = document.getElementById(barId);
+  if (bar) bar.style.display = 'none';
+};
+
+function hideAllEmojiBars() {
+  document.querySelectorAll('[id^="ebar-"]').forEach(b => b.style.display = 'none');
+}
+
+window.handleTouchStart = function(e, barId) {
+  longPressTimer = setTimeout(() => showEmojiBar(e, barId), 500);
+};
+
+window.handleTouchEnd = function() {
+  clearTimeout(longPressTimer);
+};
+
+// Close emoji bars when tapping elsewhere
+document.addEventListener('click', e => {
+  if (!e.target.closest('[id^="ebar-"]') && !e.target.closest('.chat-bubble')) {
+    hideAllEmojiBars();
+  }
+});
+
+// ─── REACTIONS ────────────────────────────────────────────
+window.toggleReaction = async function(msgId, emoji) {
+  const data = await api('/api/user/chat/react', {
+    method: 'POST',
+    body: JSON.stringify({ msgId, emoji })
+  });
+  if (data?.success) await loadChatMessages();
+};
+
+// ─── REPLY ────────────────────────────────────────────────
+window.startReply = function(msgId) {
+  const msg = chatAllMessages.find(m => m._id === msgId);
+  if (!msg) return;
+  editingMsgId = null;
+  replyingTo = {
+    msgId,
+    sender: msg.sender,
+    preview: msg.type === 'image' ? '📷 Image' : msg.content?.substring(0, 80) || ''
+  };
+  const bar = document.getElementById('chatReplyBar');
+  const barText = document.getElementById('chatReplyBarText');
+  const barSender = document.getElementById('chatReplyBarSender');
+  if (bar) bar.style.display = 'flex';
+  if (barSender) barSender.textContent = msg.sender === 'user' ? 'You' : 'Support';
+  if (barText) barText.textContent = replyingTo.preview;
+  document.getElementById('chatInput')?.focus();
+};
+
+window.cancelReply = function() {
+  replyingTo = null;
+  editingMsgId = null;
+  const bar = document.getElementById('chatReplyBar');
+  if (bar) bar.style.display = 'none';
+  const input = document.getElementById('chatInput');
+  if (input) input.value = '';
+  input?.setAttribute('placeholder', 'Type a message...');
+};
+
+// ─── EDIT ─────────────────────────────────────────────────
+window.startEdit = function(msgId) {
+  const msg = chatAllMessages.find(m => m._id === msgId);
+  if (!msg || msg.deleted) return;
+  replyingTo = null;
+  editingMsgId = msgId;
+  const input = document.getElementById('chatInput');
+  if (input) { input.value = msg.content; input.focus(); }
+  const bar = document.getElementById('chatReplyBar');
+  const barSender = document.getElementById('chatReplyBarSender');
+  const barText = document.getElementById('chatReplyBarText');
+  if (bar) bar.style.display = 'flex';
+  if (barSender) barSender.textContent = '✏️ Editing';
+  if (barText) barText.textContent = msg.content?.substring(0, 80);
+};
+
+// ─── DELETE ───────────────────────────────────────────────
+window.deleteMsg = async function(msgId) {
+  if (!confirm('Delete this message?')) return;
+  const data = await api(`/api/user/chat/message/${msgId}`, { method: 'DELETE' });
+  if (data?.success) await loadChatMessages();
+  else showToast(data?.error || 'Failed', 'error', 'ri-close-line', 'Error');
+};
 
 // ─── SEND MESSAGE ─────────────────────────────────────────
 window.sendChatMessage = async function() {
@@ -946,25 +1113,47 @@ window.sendChatMessage = async function() {
   const input = document.getElementById('chatInput');
   const text  = input?.value.trim();
   if (!text) return;
+
+  // Handle edit
+  if (editingMsgId) {
+    const data = await api(`/api/user/chat/message/${editingMsgId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content: text })
+    });
+    if (data?.success) { cancelReply(); await loadChatMessages(); }
+    else showToast(data?.error || 'Failed', 'error', 'ri-close-line', 'Error');
+    return;
+  }
+
   input.value = '';
+
+  const body = { content: text, type: 'text' };
+  if (replyingTo) body.replyTo = replyingTo;
+  cancelReply();
 
   const data = await api('/api/user/chat/send', {
     method: 'POST',
-    body: JSON.stringify({ content: text, type: 'text', sessionId: chatSessionId })
+    body: JSON.stringify(body)
   });
   if (data?.success) {
-    appendChatMessage(data.message);
+    chatAllMessages.push(data.message);
+    const container = document.getElementById('chatMessages');
+    const empty = container?.querySelector('[style*="No messages"]');
+    if (empty) empty.remove();
+    container?.appendChild(buildMsgBubble(data.message, 'user'));
+    container.scrollTop = container.scrollHeight;
+    lastMsgCount++;
   } else {
     showToast(data?.error || 'Failed to send.', 'error', 'ri-close-line', 'Error');
   }
 };
 
-// ─── ANSWER POLAR QUESTION ────────────────────────────────
+// ─── ANSWER POLAR ─────────────────────────────────────────
 window.answerPolar = async function(msgId, answer, btnEl) {
-  // Disable both buttons immediately to prevent double answer
+  // Disable both buttons immediately
   if (btnEl) {
     const parent = btnEl.closest('div');
-    if (parent) parent.querySelectorAll('button').forEach(b => b.disabled = true);
+    if (parent) parent.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'not-allowed'; });
   }
 
   const data = await api('/api/user/chat/send', {
@@ -972,13 +1161,12 @@ window.answerPolar = async function(msgId, answer, btnEl) {
     body: JSON.stringify({ content: answer, type: 'polar_answer', polarMsgId: msgId })
   });
   if (data?.success) {
-    await loadChatMessages(); // reload to show updated polar bubble
+    await loadChatMessages();
   } else {
     showToast(data?.error || 'Failed to answer.', 'error', 'ri-close-line', 'Error');
-    // Re-enable if failed
     if (btnEl) {
       const parent = btnEl.closest('div');
-      if (parent) parent.querySelectorAll('button').forEach(b => b.disabled = false);
+      if (parent) parent.querySelectorAll('button').forEach(b => { b.disabled = false; b.style.opacity = '1'; b.style.cursor = 'pointer'; });
     }
   }
 };
@@ -991,42 +1179,58 @@ window.handleChatImageUpload = async function(input) {
 
   showToast('Uploading image...', 'info', 'ri-loader-line', 'Uploading');
 
-  // Get ImgBB key
-  const keysRes = await api('/api/user/apikeys');
+  const keysRes  = await api('/api/user/apikeys');
   const imgbbKey = keysRes?.imgbb;
   if (!imgbbKey) return showToast('Image upload not configured.', 'error', 'ri-close-line', 'Error');
 
   const formData = new FormData();
   formData.append('image', file);
-  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
+  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
   const result = await res.json();
   if (!result.success) return showToast('Upload failed.', 'error', 'ri-close-line', 'Error');
 
-  const imageUrl = result.data.url;
-  const data = await api('/api/user/chat/send', {
-    method: 'POST',
-    body: JSON.stringify({ type: 'image', imageUrl, content: '📷 Image', sessionId: chatSessionId })
-  });
-  if (data?.success) appendChatMessage(data.message);
+  const body = { type: 'image', imageUrl: result.data.url, content: '📷 Image' };
+  if (replyingTo) body.replyTo = replyingTo;
+  cancelReply();
+
+  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify(body) });
+  if (data?.success) {
+    chatAllMessages.push(data.message);
+    const container = document.getElementById('chatMessages');
+    container?.appendChild(buildMsgBubble(data.message, 'user'));
+    container.scrollTop = container.scrollHeight;
+    lastMsgCount++;
+  }
   input.value = '';
 };
 
-// ─── APPEND SINGLE MESSAGE ────────────────────────────────
-function appendChatMessage(msg) {
-  const container = document.getElementById('chatMessages');
-  if (!container) return;
-  // Remove empty state
-  const empty = container.querySelector('[style*="No messages"]');
-  if (empty) empty.remove();
-  container.appendChild(buildMessageBubble(msg));
-  container.scrollTop = container.scrollHeight;
-  lastMsgCount++;
+// ─── TYPING INDICATOR ─────────────────────────────────────
+window.onChatInputKeydown = function(e) {
+  if (e.key === 'Enter') { sendChatMessage(); return; }
+  clearTimeout(chatTypingTimer);
+  chatTypingTimer = setTimeout(() => {
+    api('/api/user/chat/typing', { method:'POST', body:'{}' });
+  }, 300);
+};
+
+function startTypingPoll() {
+  stopTypingPoll();
+  chatTypingPollTimer = setInterval(async () => {
+    if (window.location.hash !== '#chat' || !chatSessionId) return;
+    const data = await api('/api/user/chat/typing');
+    const el = document.getElementById('chatTypingIndicator');
+    if (el) el.style.display = data?.typing ? 'flex' : 'none';
+  }, 2000);
+}
+
+function stopTypingPoll() {
+  if (chatTypingPollTimer) clearInterval(chatTypingPollTimer);
 }
 
 // ─── UPDATE SESSION UI ────────────────────────────────────
 function updateChatSessionUI() {
-  const ended   = chatSessionStatus === 'ended';
-  const badge   = document.getElementById('chatEndedBadge');
+  const ended    = chatSessionStatus === 'ended';
+  const badge    = document.getElementById('chatEndedBadge');
   const inputBar = document.getElementById('chatInputBar');
   const statusDot = document.getElementById('chatStatusDot');
   if (badge) badge.style.display = ended ? 'block' : 'none';
@@ -1041,10 +1245,10 @@ function startChatPolling() {
     if (window.location.hash !== '#chat') return;
     const data = await api('/api/user/chat/messages');
     if (!data?.success) return;
-    if (data.messages.length > lastMsgCount) {
-      // Check if any NEW messages are from admin — only then play sound
-      const newMsgs = data.messages.slice(lastMsgCount);
+    if (data.messages.length !== lastMsgCount || JSON.stringify(data.messages.map(m=>m.reactions)) !== JSON.stringify(chatAllMessages.map(m=>m.reactions))) {
+      const newMsgs    = data.messages.slice(lastMsgCount);
       const hasAdminMsg = newMsgs.some(m => m.sender === 'admin');
+      chatAllMessages  = data.messages;
       renderChatMessages(data.messages);
       if (chatSoundEnabled && hasAdminMsg) playChatSound();
       lastMsgCount = data.messages.length;
@@ -1058,10 +1262,10 @@ function stopChatPolling() {
   if (chatPollTimer) clearInterval(chatPollTimer);
 }
 
-// ─── POLL UNREAD FOR BADGE ────────────────────────────────
+// ─── POLL UNREAD BADGE ────────────────────────────────────
 async function pollChatUnread() {
   if (window.location.hash === '#chat') { setTimeout(pollChatUnread, 10000); return; }
-  const data = await api('/api/user/chat/unread');
+  const data  = await api('/api/user/chat/unread');
   const badge = document.getElementById('chatUnreadBadge');
   if (badge && data?.unread > 0) {
     badge.textContent = data.unread;
@@ -1072,13 +1276,6 @@ async function pollChatUnread() {
   setTimeout(pollChatUnread, 10000);
 }
 
-// Hook into init to set chatSiteLogo and start unread polling
-const _origInit = init;
 window.addEventListener('DOMContentLoaded', () => {
-  // Start unread polling after 3s
   setTimeout(pollChatUnread, 3000);
 });
-
-// Capture site logo for chat header
-const _origApplyConfig = window.applyConfig;
-document.addEventListener('chatLogoSet', e => { chatSiteLogo = e.detail; });
