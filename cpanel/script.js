@@ -1230,15 +1230,62 @@ function stopAdminChatPolling() {
 }
 
 // Poll unread badge even when not on chat tab
+// ─── BROWSER NOTIFICATION PERMISSION ─────────────────────
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    await Notification.requestPermission();
+  }
+}
+requestNotifPermission();
+
+function sendBrowserNotif(username, message) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+  // Don't notify if admin panel is the active focused tab
+  if (document.visibilityState === 'visible') return;
+
+  const notif = new Notification(`💬 ${username}`, {
+    body: message,
+    icon: adminSiteLogo || '/favicon.ico',
+    badge: '/favicon.ico',
+    tag: 'flux-chat',       // replaces previous notif instead of stacking
+    requireInteraction: true // stays until dismissed
+  });
+  notif.onclick = () => {
+    window.focus();
+    notif.close();
+  };
+}
+
+// ─── UNREAD POLLING (with browser notif) ─────────────────
+let lastKnownUnread = 0;
+
 setInterval(async () => {
   const data  = await api('/api/admin/chat/unread');
   const badge = document.getElementById('adminChatBadge');
-  if (badge && data?.unread > 0) {
-    badge.textContent = data.unread;
-    badge.style.display = 'flex';
-    if (adminSoundEnabled) playAdminChatSound();
-  } else if (badge) {
-    badge.style.display = 'none';
+
+  if (data?.unread > 0) {
+    if (badge) { badge.textContent = data.unread; badge.style.display = 'flex'; }
+
+    // Only trigger sound + notif when unread count goes UP (new message arrived)
+    if (data.unread > lastKnownUnread) {
+      if (adminSoundEnabled) playAdminChatSound();
+
+      // Get latest session to know who sent it
+      const sessions = await api('/api/admin/chat/sessions');
+      if (sessions?.sessions?.length) {
+        // Find session with most recent unread message
+        const active = sessions.sessions
+          .filter(s => s.unreadAdmin > 0)
+          .sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt))[0];
+        if (active) sendBrowserNotif(active.username, active.lastMessage || 'New message');
+      }
+    }
+    lastKnownUnread = data.unread;
+  } else {
+    if (badge) badge.style.display = 'none';
+    lastKnownUnread = 0;
   }
 }, 15000);
 
