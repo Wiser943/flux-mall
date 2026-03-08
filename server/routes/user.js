@@ -5,7 +5,8 @@ const { Resend } = require('resend');
 const User = require('../models/User');
 const {
   Deposit, Withdrawal, Notification, Activity,
-  Share, PurchasedShare, Settings, DepositAmt
+  Share, PurchasedShare, Settings, DepositAmt,
+  ChatSession, ChatMessage,
 } = require('../models/Models');
 const { requireAuth } = require('../middleware/auth');
 
@@ -441,5 +442,104 @@ router.get('/apikeys', requireAuth, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// CHAT ROUTES
+// ═══════════════════════════════════════════════════════════
+
+// ─── GET /api/user/chat/session ───────────────────────────
+// Get or create user's chat session
+router.get('/chat/session', requireAuth, async (req, res) => {
+  try {
+    const chatSettings = await Settings.findOne({ key: 'chat' });
+    const isAvailable  = chatSettings?.value?.available !== false;
+    const officeHours  = chatSettings?.value?.officeHours;
+    const autoReply    = chatSettings?.value?.autoReply || '';
+
+    // Check office hours
+    if (officeHours?.enabled) {
+      const now    = new Date();
+      const hour   = now.getHours();
+      const open   = parseInt(officeHours.open  || '9');
+      const close  = parseInt(officeHours.close || '18');
+      if (hour < open || hour >= close) {
+        return res.json({ success: true, offline: true, offlineMsg: officeHours.offlineMsg || "We're offline. Leave a message and we'll reply soon." });
+      }
+    }
+
+    let session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
+    if (!session) {
+      session = await ChatSession.create({ userId: req.user._id, username: req.user.username });
+      // Send auto-reply if configured
+      if (autoReply) {
+        await ChatMessage.create({ sessionId: session._id, sender: 'admin', type: 'text', content: autoReply });
+        await ChatSession.findByIdAndUpdate(session._id, { lastMessage: autoReply, lastMessageAt: new Date(), unreadUser: 1 });
+      }
+    }
+    res.json({ success: true, session, available: isAvailable });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/user/chat/messages ─────────────────────────
+router.get('/chat/messages', requireAuth, async (req, res) => {
+  try {
+    const session = await ChatSession.findOne({ userId: req.user._id });
+    if (!session) return res.json({ success: true, messages: [] });
+
+    const messages = await ChatMessage.find({ sessionId: session._id }).sort({ createdAt: 1 });
+
+    // Mark admin messages as read
+    await ChatMessage.updateMany(
+      { sessionId: session._id, sender: 'admin', read: false },
+      { read: true }
+    );
+    await ChatSession.findByIdAndUpdate(session._id, { unreadUser: 0 });
+
+    res.json({ success: true, messages, sessionId: session._id, sessionStatus: session.status });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/user/chat/send ─────────────────────────────
+router.post('/chat/send', requireAuth, async (req, res) => {
+  try {
+    const { content, type, imageUrl, polarAnswer, sessionId } = req.body;
+
+    const session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
+    if (!session) return res.status(400).json({ error: 'No active chat session.' });
+
+    const msg = await ChatMessage.create({
+      sessionId: session._id,
+      sender: 'user',
+      type: type || 'text',
+      content: content || '',
+      imageUrl: imageUrl || '',
+      polarAnswer: polarAnswer || '',
+    });
+
+    const preview = type === 'image' ? '📷 Image' : content?.substring(0, 60) || '';
+    await ChatSession.findByIdAndUpdate(session._id, {
+      lastMessage: preview,
+      lastMessageAt: new Date(),
+      $inc: { unreadAdmin: 1 }
+    });
+
+    res.json({ success: true, message: msg });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/user/chat/unread ────────────────────────────
+router.get('/chat/unread', requireAuth, async (req, res) => {
+  try {
+    const session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
+    res.json({ success: true, unread: session?.unreadUser || 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
