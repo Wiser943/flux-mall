@@ -835,20 +835,31 @@ window.openChat = async function() {
   const loadingEl  = document.getElementById('chatLoading');
   if (loadingEl) loadingEl.style.display = 'block';
 
+  // Load chat settings to enforce image toggle + sound
+  const settingsRes = await api('/api/user/chat/settings');
+  if (settingsRes?.success) {
+    chatSoundEnabled = settingsRes.settings?.sound !== false;
+    // Show/hide image upload button based on admin setting
+    const imgLabel = document.querySelector('label[for="chatImgInput"]');
+    if (imgLabel) imgLabel.style.display = settingsRes.settings?.allowImages === false ? 'none' : 'flex';
+  }
+
   const sessionRes = await api('/api/user/chat/session');
-  if (!sessionRes?.success) {
-    if (sessionRes?.offline) {
-      if (messagesEl) messagesEl.innerHTML = `
-        <div style="text-align:center;padding:40px 20px;">
-          <div style="font-size:40px;margin-bottom:12px;">🌙</div>
-          <div style="font-weight:700;color:var(--text-main);margin-bottom:8px;">We're Offline</div>
-          <div style="color:var(--text-muted);font-size:13px;">${sessionRes.offlineMsg}</div>
-        </div>`;
-      const inputBar = document.getElementById('chatInputBar');
-      if (inputBar) inputBar.style.display = 'none';
-    }
+
+  // Handle offline (chat disabled or outside office hours)
+  if (sessionRes?.offline) {
+    if (messagesEl) messagesEl.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;">
+        <div style="font-size:40px;margin-bottom:12px;">🌙</div>
+        <div style="font-weight:700;color:var(--text-main);margin-bottom:8px;">Unavailable</div>
+        <div style="color:var(--text-muted);font-size:13px;">${sessionRes.offlineMsg}</div>
+      </div>`;
+    const inputBar = document.getElementById('chatInputBar');
+    if (inputBar) inputBar.style.display = 'none';
     return;
   }
+
+  if (!sessionRes?.success) return;
 
   chatSessionId = sessionRes.session._id;
   chatSessionStatus = sessionRes.session.status;
@@ -913,8 +924,8 @@ function buildMessageBubble(msg) {
       ${answered
         ? `<div style="font-weight:700;color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered === 'yes' ? '✅ Yes' : '❌ No'}</div>`
         : `<div style="display:flex;gap:8px;margin-top:4px;">
-            <button onclick="answerPolar('${msg._id}','yes')" style="background:#10ac84;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">✅ Yes</button>
-            <button onclick="answerPolar('${msg._id}','no')" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">❌ No</button>
+            <button onclick="answerPolar('${msg._id}','yes',this)" style="background:#10ac84;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">✅ Yes</button>
+            <button onclick="answerPolar('${msg._id}','no',this)" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">❌ No</button>
           </div>`
       }`;
   } else {
@@ -949,14 +960,26 @@ window.sendChatMessage = async function() {
 };
 
 // ─── ANSWER POLAR QUESTION ────────────────────────────────
-window.answerPolar = async function(msgId, answer) {
+window.answerPolar = async function(msgId, answer, btnEl) {
+  // Disable both buttons immediately to prevent double answer
+  if (btnEl) {
+    const parent = btnEl.closest('div');
+    if (parent) parent.querySelectorAll('button').forEach(b => b.disabled = true);
+  }
+
   const data = await api('/api/user/chat/send', {
     method: 'POST',
-    body: JSON.stringify({ content: answer === 'yes' ? '✅ Yes' : '❌ No', type: 'text', sessionId: chatSessionId })
+    body: JSON.stringify({ content: answer, type: 'polar_answer', polarMsgId: msgId })
   });
   if (data?.success) {
-    // Mark the polar msg as answered visually
-    await loadChatMessages();
+    await loadChatMessages(); // reload to show updated polar bubble
+  } else {
+    showToast(data?.error || 'Failed to answer.', 'error', 'ri-close-line', 'Error');
+    // Re-enable if failed
+    if (btnEl) {
+      const parent = btnEl.closest('div');
+      if (parent) parent.querySelectorAll('button').forEach(b => b.disabled = false);
+    }
   }
 };
 
@@ -1019,8 +1042,11 @@ function startChatPolling() {
     const data = await api('/api/user/chat/messages');
     if (!data?.success) return;
     if (data.messages.length > lastMsgCount) {
+      // Check if any NEW messages are from admin — only then play sound
+      const newMsgs = data.messages.slice(lastMsgCount);
+      const hasAdminMsg = newMsgs.some(m => m.sender === 'admin');
       renderChatMessages(data.messages);
-      if (chatSoundEnabled) playChatSound();
+      if (chatSoundEnabled && hasAdminMsg) playChatSound();
       lastMsgCount = data.messages.length;
     }
     chatSessionStatus = data.sessionStatus;
