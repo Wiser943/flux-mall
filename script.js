@@ -75,71 +75,56 @@ function renderLockScreen(title, msg) {
 
 // ─── MAIN INIT ────────────────────────────────────────────
 async function init() {
-  // 1. Auth check
   const meRes = await api('/api/auth/me');
   if (!meRes?.success) { logoutUser(); return; }
   currentUserData = meRes.user;
 
-  // 2. Load config (theme, branding, announcement, wheel)
   const configRes = await api('/api/user/config');
   if (configRes?.success) {
     const { config, payment, maintenance, wheel } = configRes;
 
-    // Maintenance check
     if (maintenance?.enabled) { renderLockScreen('System Maintenance', 'Our site is currently undergoing scheduled upgrades.'); return; }
 
-    // Theme
     if (config.theme) applyTheme(config.theme);
-console.log(config.siteName);
-    console.log(config.theme)
-    // Branding
+
     if (config.siteName) {
       document.querySelectorAll('.site-name').forEach(el => el.innerText = config.siteName);
       document.title = config.siteName;
     }
     if (config.siteLogo) {
-      // Show site logo in all avatar spots
       document.querySelectorAll('.logo-img').forEach(img => {
         img.src = config.siteLogo;
         img.onerror = () => img.style.display = 'none';
       });
-      // Update browser favicon dynamically
       let fav = document.querySelector("link[rel='icon']");
       if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
       fav.href = config.siteLogo;
     }
 
-    // Announcement ticker
     const ticker = document.getElementById('ticker-wrapper');
     if (ticker && config.announcement?.active) {
       ticker.style.display = 'flex';
       document.querySelectorAll('.ticker-text').forEach(el => el.textContent = config.announcement.text || '');
     } else if (ticker) ticker.style.display = 'none';
 
-    // Global withdraw config
     if (config.minWithdraw) globalConfig.minWithdraw = config.minWithdraw;
     if (config.withdrawFee !== undefined) globalConfig.withdrawFee = config.withdrawFee;
 
-    // Payment config (store globally for deposit)
     window.paymentConfig = payment;
 
-    // Wheel prizes
     if (wheel?.prizes?.length) {
       prizes = wheel.prizes;
       drawWheel();
     }
   }
 
-  // 3. Render user data
   renderUserUI();
 
-  // 4. Security check (ban status)
   if (currentUserData.status === 'Banned') {
     renderLockScreen('🚫 Account Banned', 'Your account has been suspended for violating our terms of service.');
     return;
   }
 
-  // 5. Load all dashboard data
   loadDeposits();
   loadWithdrawals();
   loadTeamData();
@@ -153,7 +138,6 @@ console.log(config.siteName);
   fetchUserHistory();
   pollNotifications();
 
-  // 6. Check-in status
   const today = new Date().toDateString();
   if (currentUserData.lastCheckIn === today) {
     const btn = document.getElementById('checkinBtn');
@@ -244,7 +228,6 @@ window.initiateDeposit = async function (amount) {
     return;
   }
 
-  // Manual bank transfer
   const bankName = config.manual?.bankName || 'Contact Admin';
   const accNum   = config.manual?.accountNumber || '0000000000';
   const accName  = config.manual?.accountName || 'Admin';
@@ -361,17 +344,27 @@ window.updateWithdrawPreview = () => {
 };
 
 // ─── BANK SYNC ───────────────────────────────────────────
-function initBankSync() {
+async function initBankSync() {
   const u = currentUserData;
+
+  // Load banks dropdown from Korapay
+  await loadBanksDropdown();
+
+  // Pre-fill existing bank details
   if (u.bankDetails?.accountNumber) {
-    const b = u.bankDetails;
-    const bn = document.getElementById('bankName');
+    const b  = u.bankDetails;
     const an = document.getElementById('accNumber');
     const ac = document.getElementById('accName');
-    if (bn) bn.value = b.bankName || '';
     if (an) an.value = b.accountNumber || '';
     if (ac) ac.value = b.accountName || '';
+    // Match bank in dropdown by name or code
+    const bn = document.getElementById('bankName');
+    if (bn) {
+      const match = Array.from(bn.options).find(o => o.text === b.bankName || o.value === b.bankCode);
+      if (match) bn.value = match.value;
+    }
   }
+
   // Apply global lock
   const isMasterLocked = window.paymentConfig?.globalBankLock || false;
   const saveBtn = document.getElementById('saveBtn');
@@ -383,20 +376,93 @@ function initBankSync() {
   }
 }
 
+// ─── LOAD BANKS DROPDOWN ─────────────────────────────────
+async function loadBanksDropdown() {
+  const select = document.getElementById('bankName');
+  if (!select) return;
+  select.innerHTML = '<option value="">⏳ Loading banks...</option>';
+  try {
+    const data = await api('/api/user/banks');
+    if (!data?.success || !data.banks?.length) {
+      select.innerHTML = '<option value="">❌ Could not load banks</option>';
+      return;
+    }
+    select.innerHTML = '<option value="">-- Select your Bank --</option>';
+    data.banks.forEach(bank => {
+      const opt = document.createElement('option');
+      opt.value = bank.code;
+      opt.text  = bank.name;
+      opt.dataset.name = bank.name;
+      select.appendChild(opt);
+    });
+    // If account number already exists, trigger verify
+    const accNum = document.getElementById('accNumber')?.value;
+    if (accNum?.length === 10) handleAccNumberInput(accNum);
+  } catch (err) {
+    select.innerHTML = '<option value="">❌ Could not load banks</option>';
+  }
+}
+
+// ─── ACCOUNT NUMBER AUTO-VERIFY ──────────────────────────
+let verifyTimer = null;
+window.handleAccNumberInput = (value) => {
+  const statusEl = document.getElementById('verifyStatus');
+  const accName  = document.getElementById('accName');
+  if (accName) accName.value = '';
+  if (statusEl) statusEl.innerHTML = '';
+  if (value.length !== 10) return;
+  // Debounce — wait 700ms after typing stops
+  clearTimeout(verifyTimer);
+  verifyTimer = setTimeout(() => verifyAccount(value), 700);
+};
+
+async function verifyAccount(accountNumber) {
+  const bankSelect = document.getElementById('bankName');
+  const statusEl   = document.getElementById('verifyStatus');
+  const accName    = document.getElementById('accName');
+  const bankCode   = bankSelect?.value;
+
+  if (!bankCode) {
+    if (statusEl) statusEl.innerHTML = '<span style="color:orange">⚠️ Please select a bank first</span>';
+    return;
+  }
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">🔍 Verifying account...</span>';
+
+  const data = await api('/api/user/verify-account', {
+    method: 'POST',
+    body: JSON.stringify({ accountNumber, bankCode })
+  });
+
+  if (data?.success) {
+    if (accName) accName.value = data.accountName;
+    if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName}</span>`;
+  } else {
+    if (accName) accName.value = '';
+    if (statusEl) statusEl.innerHTML = `<span style="color:red">❌ ${data?.error || 'Verification failed'}</span>`;
+  }
+}
+
 window.handleSave = async () => {
-  const bName = document.getElementById('bankName').value.trim();
-  const aNum  = document.getElementById('accNumber').value.trim();
-  const aName = document.getElementById('accName').value.trim();
-  if (!bName || aNum.length < 10 || !aName)
-    return showToast('Please fill all fields correctly. Account number must be 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
+  const bankSelect = document.getElementById('bankName');
+  const bankCode   = bankSelect?.value;
+  const bankLabel  = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
+  const aNum       = document.getElementById('accNumber').value.trim();
+  const aName      = document.getElementById('accName').value.trim();
+
+  if (!bankCode)
+    return showToast('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (aNum.length !== 10)
+    return showToast('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (!aName)
+    return showToast('Account not verified yet. Wait for auto-verification.', 'warning', 'ri-close-line', 'Not Verified');
 
   const data = await api('/api/user/bank-details', {
     method: 'PUT',
-    body: JSON.stringify({ bankName: bName, accountNumber: aNum, accountName: aName })
+    body: JSON.stringify({ bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName })
   });
   if (data?.success) {
     showToast('✅ Bank details saved successfully!', 'info', 'ri-check-line', 'Success');
-    currentUserData.bankDetails = { bankName: bName, accountNumber: aNum, accountName: aName };
+    currentUserData.bankDetails = { bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName };
   } else {
     showToast(data?.error || 'Error saving bank details.', 'error', 'ri-close-line', 'Error');
   }
@@ -535,29 +601,22 @@ async function collectDailyEarnings() {
 async function loadTeamData() {
   const data = await api('/api/user/team');
   if (!data?.success) return;
-
   const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
   setEl('level1Count', data.level1.count);
   setEl('level2Count', data.level2.count);
   setEl('level3Count', data.level3.count);
-
-  // Render level 1 users if container exists
   const teamContainer = document.getElementById('teamContainer');
   if (teamContainer) {
     teamContainer.innerHTML = '';
     data.level1.users.forEach(u => {
-      teamContainer.innerHTML += `
-        <div class="team-member">
-          <span>${u.username}</span>
-          <span>${u.email}</span>
-        </div>`;
+      teamContainer.innerHTML += `<div class="team-member"><span>${u.username}</span><span>${u.email}</span></div>`;
     });
   }
 }
 
 function generateReferralLink() {
   if (!currentUserData) return;
-  const refId = currentUserData.uid || currentUserData._id; // use short uid, fallback to _id
+  const refId = currentUserData.uid || currentUserData._id;
   const link = `${window.location.origin}/account/account.html?ref=${refId}#signup-page`;
   document.querySelectorAll('.refLink').forEach(el => el.innerText = link);
   window.copyRefLink = () => {
@@ -597,28 +656,21 @@ function drawWheel() {
 window.spinWheel = async () => {
   if (isSpinning) return;
   const spinBtn = document.getElementById('spinBtn');
-
   isSpinning = true;
   if (spinBtn) spinBtn.disabled = true;
-
-  // Animate first, then validate on server
   const randomStop = Math.floor(Math.random() * 360);
   currentRotation += (7 * 360) + randomStop;
   if (canvas) canvas.style.transform = `rotate(${currentRotation}deg)`;
-
   setTimeout(async () => {
     const data = await api('/api/user/spin', { method: 'POST' });
     isSpinning = false;
     if (spinBtn) spinBtn.disabled = false;
-
     if (!data?.success) {
       showToast(data?.error || 'Spin failed.', 'error', 'ri-close-line', 'Error');
-      // Revert rotation visually
       currentRotation -= (7 * 360) + randomStop;
       if (canvas) canvas.style.transform = `rotate(${currentRotation}deg)`;
       return;
     }
-
     const win = data.prize;
     if (win.value > 0) {
       showToast(`🎉 You're Lucky! Won ${win.label}!`, 'success', 'ri-check-line', "You're Lucky!");
@@ -639,7 +691,7 @@ async function pollNotifications() {
     if (age < 30) showToast(`${latest.title}\n${latest.message}`, 'info', 'ri-information-line', 'Notification');
     lastNotifCount = data.notifications.length;
   }
-  setTimeout(pollNotifications, 15000); // Poll every 15 seconds
+  setTimeout(pollNotifications, 15000);
 }
 
 // ─── ACTIVITY / HISTORY ───────────────────────────────────
@@ -670,7 +722,6 @@ async function updateVerificationUI() {
   const text      = document.getElementById('verificationText');
   const icon      = document.getElementById('verificationIcon');
   if (!container) return;
-
   const u = currentUserData;
   if (u.emailVerified) {
     if (text) text.innerText = 'Verified';
@@ -680,9 +731,9 @@ async function updateVerificationUI() {
   } else {
     if (text) text.innerText = '(Click to verify)';
     if (container) container.className = 'status-badge unverified-bg';
-    if (icon) icon.className = 'ri-error-warning-line';     
+    if (icon) icon.className = 'ri-error-warning-line';
     container.onclick = async () => {
-          if (text.innerHtml==="Email Sent!"){ alert("Please try again later"); return}
+      if (text.innerText === 'Email Sent!') { alert('Please try again later'); return; }
       try {
         container.style.opacity = '0.5';
         container.style.pointerEvents = 'none';
@@ -738,7 +789,6 @@ function closeModal() {
   const modal = document.getElementById('paymentModal');
   if (modal) modal.remove();
 }
-
 
 // ─── START ────────────────────────────────────────────────
 init();
