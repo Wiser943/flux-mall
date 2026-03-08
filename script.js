@@ -92,6 +92,7 @@ async function init() {
       document.title = config.siteName;
     }
     if (config.siteLogo) {
+      chatSiteLogo = config.siteLogo; // capture for chat header
       document.querySelectorAll('.logo-img').forEach(img => {
         img.src = config.siteLogo;
         img.onerror = () => img.style.display = 'none';
@@ -792,3 +793,266 @@ function closeModal() {
 
 // ─── START ────────────────────────────────────────────────
 init();
+
+
+// ═══════════════════════════════════════════════════════════
+// CHAT SYSTEM
+// ═══════════════════════════════════════════════════════════
+
+let chatSessionId  = null;
+let chatSessionStatus = 'active';
+let chatPollTimer  = null;
+let lastMsgCount   = 0;
+let chatSoundEnabled = true;
+let chatSiteLogo   = '';
+
+// Audio beep for new messages
+function playChatSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+}
+
+// ─── OPEN CHAT ────────────────────────────────────────────
+window.openChat = async function() {
+  window.location.hash = '#chat';
+  lucide.createIcons();
+
+  // Set admin logo = site logo
+  const logo = document.getElementById('chatAdminLogo');
+  if (logo && chatSiteLogo) logo.src = chatSiteLogo;
+
+  const messagesEl = document.getElementById('chatMessages');
+  const loadingEl  = document.getElementById('chatLoading');
+  if (loadingEl) loadingEl.style.display = 'block';
+
+  const sessionRes = await api('/api/user/chat/session');
+  if (!sessionRes?.success) {
+    if (sessionRes?.offline) {
+      if (messagesEl) messagesEl.innerHTML = `
+        <div style="text-align:center;padding:40px 20px;">
+          <div style="font-size:40px;margin-bottom:12px;">🌙</div>
+          <div style="font-weight:700;color:var(--text-main);margin-bottom:8px;">We're Offline</div>
+          <div style="color:var(--text-muted);font-size:13px;">${sessionRes.offlineMsg}</div>
+        </div>`;
+      const inputBar = document.getElementById('chatInputBar');
+      if (inputBar) inputBar.style.display = 'none';
+    }
+    return;
+  }
+
+  chatSessionId = sessionRes.session._id;
+  chatSessionStatus = sessionRes.session.status;
+
+  await loadChatMessages();
+  startChatPolling();
+};
+
+// ─── LOAD MESSAGES ────────────────────────────────────────
+async function loadChatMessages() {
+  const data = await api('/api/user/chat/messages');
+  if (!data?.success) return;
+
+  chatSessionId     = data.sessionId || chatSessionId;
+  chatSessionStatus = data.sessionStatus || chatSessionStatus;
+
+  renderChatMessages(data.messages);
+  updateChatSessionUI();
+
+  // Update unread badge on service page
+  const badge = document.getElementById('chatUnreadBadge');
+  if (badge) { badge.style.display = 'none'; }
+
+  lastMsgCount = data.messages.length;
+}
+
+// ─── RENDER MESSAGES ──────────────────────────────────────
+function renderChatMessages(messages) {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+
+  container.innerHTML = '';
+  if (!messages.length) {
+    container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">No messages yet. Say hello! 👋</div>`;
+    return;
+  }
+
+  messages.forEach(msg => {
+    container.appendChild(buildMessageBubble(msg));
+  });
+
+  // Scroll to bottom
+  container.scrollTop = container.scrollHeight;
+}
+
+// ─── BUILD MESSAGE BUBBLE ─────────────────────────────────
+function buildMessageBubble(msg) {
+  const isUser  = msg.sender === 'user';
+  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isUser ? 'flex-end' : 'flex-start'};gap:3px;`;
+
+  let bubbleContent = '';
+
+  if (msg.type === 'image' && msg.imageUrl) {
+    bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
+  } else if (msg.type === 'polar') {
+    // Polar question — show yes/no buttons if not answered
+    const answered = msg.polarAnswer;
+    bubbleContent = `
+      <div style="font-size:14px;margin-bottom:8px;">❓ ${msg.polarQuestion}</div>
+      ${answered
+        ? `<div style="font-weight:700;color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered === 'yes' ? '✅ Yes' : '❌ No'}</div>`
+        : `<div style="display:flex;gap:8px;margin-top:4px;">
+            <button onclick="answerPolar('${msg._id}','yes')" style="background:#10ac84;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">✅ Yes</button>
+            <button onclick="answerPolar('${msg._id}','no')" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 18px;cursor:pointer;font-weight:600;">❌ No</button>
+          </div>`
+      }`;
+  } else {
+    bubbleContent = `<span style="font-size:14px;line-height:1.5;">${msg.content}</span>`;
+  }
+
+  wrapper.innerHTML = `
+    <div style="max-width:75%;background:${isUser ? 'var(--primary)' : 'var(--card-bg,#fff)'};color:${isUser ? '#fff' : 'var(--text-main)'};border-radius:${isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px'};padding:10px 14px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+      ${bubbleContent}
+    </div>
+    <span style="font-size:10px;color:var(--text-muted);">${time}</span>`;
+  return wrapper;
+}
+
+// ─── SEND MESSAGE ─────────────────────────────────────────
+window.sendChatMessage = async function() {
+  if (chatSessionStatus === 'ended') return showToast('This chat session has ended.', 'warning', 'ri-close-line', 'Ended');
+  const input = document.getElementById('chatInput');
+  const text  = input?.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  const data = await api('/api/user/chat/send', {
+    method: 'POST',
+    body: JSON.stringify({ content: text, type: 'text', sessionId: chatSessionId })
+  });
+  if (data?.success) {
+    appendChatMessage(data.message);
+  } else {
+    showToast(data?.error || 'Failed to send.', 'error', 'ri-close-line', 'Error');
+  }
+};
+
+// ─── ANSWER POLAR QUESTION ────────────────────────────────
+window.answerPolar = async function(msgId, answer) {
+  const data = await api('/api/user/chat/send', {
+    method: 'POST',
+    body: JSON.stringify({ content: answer === 'yes' ? '✅ Yes' : '❌ No', type: 'text', sessionId: chatSessionId })
+  });
+  if (data?.success) {
+    // Mark the polar msg as answered visually
+    await loadChatMessages();
+  }
+};
+
+// ─── UPLOAD IMAGE ─────────────────────────────────────────
+window.handleChatImageUpload = async function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (chatSessionStatus === 'ended') return showToast('Session ended.', 'warning', 'ri-close-line', 'Ended');
+
+  showToast('Uploading image...', 'info', 'ri-loader-line', 'Uploading');
+
+  // Get ImgBB key
+  const keysRes = await api('/api/user/apikeys');
+  const imgbbKey = keysRes?.imgbb;
+  if (!imgbbKey) return showToast('Image upload not configured.', 'error', 'ri-close-line', 'Error');
+
+  const formData = new FormData();
+  formData.append('image', file);
+  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
+  const result = await res.json();
+  if (!result.success) return showToast('Upload failed.', 'error', 'ri-close-line', 'Error');
+
+  const imageUrl = result.data.url;
+  const data = await api('/api/user/chat/send', {
+    method: 'POST',
+    body: JSON.stringify({ type: 'image', imageUrl, content: '📷 Image', sessionId: chatSessionId })
+  });
+  if (data?.success) appendChatMessage(data.message);
+  input.value = '';
+};
+
+// ─── APPEND SINGLE MESSAGE ────────────────────────────────
+function appendChatMessage(msg) {
+  const container = document.getElementById('chatMessages');
+  if (!container) return;
+  // Remove empty state
+  const empty = container.querySelector('[style*="No messages"]');
+  if (empty) empty.remove();
+  container.appendChild(buildMessageBubble(msg));
+  container.scrollTop = container.scrollHeight;
+  lastMsgCount++;
+}
+
+// ─── UPDATE SESSION UI ────────────────────────────────────
+function updateChatSessionUI() {
+  const ended   = chatSessionStatus === 'ended';
+  const badge   = document.getElementById('chatEndedBadge');
+  const inputBar = document.getElementById('chatInputBar');
+  const statusDot = document.getElementById('chatStatusDot');
+  if (badge) badge.style.display = ended ? 'block' : 'none';
+  if (inputBar) inputBar.style.display = ended ? 'none' : 'flex';
+  if (statusDot) statusDot.textContent = ended ? '● Session Ended' : '● Online';
+}
+
+// ─── POLL FOR NEW MESSAGES ────────────────────────────────
+function startChatPolling() {
+  stopChatPolling();
+  chatPollTimer = setInterval(async () => {
+    if (window.location.hash !== '#chat') return;
+    const data = await api('/api/user/chat/messages');
+    if (!data?.success) return;
+    if (data.messages.length > lastMsgCount) {
+      renderChatMessages(data.messages);
+      if (chatSoundEnabled) playChatSound();
+      lastMsgCount = data.messages.length;
+    }
+    chatSessionStatus = data.sessionStatus;
+    updateChatSessionUI();
+  }, 4000);
+}
+
+function stopChatPolling() {
+  if (chatPollTimer) clearInterval(chatPollTimer);
+}
+
+// ─── POLL UNREAD FOR BADGE ────────────────────────────────
+async function pollChatUnread() {
+  if (window.location.hash === '#chat') { setTimeout(pollChatUnread, 10000); return; }
+  const data = await api('/api/user/chat/unread');
+  const badge = document.getElementById('chatUnreadBadge');
+  if (badge && data?.unread > 0) {
+    badge.textContent = data.unread;
+    badge.style.display = 'flex';
+  } else if (badge) {
+    badge.style.display = 'none';
+  }
+  setTimeout(pollChatUnread, 10000);
+}
+
+// Hook into init to set chatSiteLogo and start unread polling
+const _origInit = init;
+window.addEventListener('DOMContentLoaded', () => {
+  // Start unread polling after 3s
+  setTimeout(pollChatUnread, 3000);
+});
+
+// Capture site logo for chat header
+const _origApplyConfig = window.applyConfig;
+document.addEventListener('chatLogoSet', e => { chatSiteLogo = e.detail; });
