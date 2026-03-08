@@ -763,7 +763,7 @@ window.handleCheckIn = async () => {
     const btn = document.getElementById('checkinBtn');
     const msg = document.getElementById('checkinMsg');
     if (msg) msg.innerText = 'Already claimed! Check back tomorrow.';
-    if (btn) { btn.style.opacity = '0.5'; btn.className = 'check-box active'; }
+    if (btn) { btn.style.opacity = '0.5'; btn.className = 'check-box active'; btn.innerHTML=`ri-check-line`;}
     refreshBalance();
   } else {
     showToast(data?.error || 'Check-in failed.', 'warning', 'ri-close-line', 'Error');
