@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { Resend } = require('resend');
 const User = require('../models/User');
 const {
   Deposit, Withdrawal, Notification, Activity,
@@ -9,6 +10,9 @@ const {
   ChatSession, ChatMessage,
 } = require('../models/Models');
 const { requireAdmin } = require('../middleware/auth');
+
+// ─── RESEND CLIENT ─────────────────────────────────────────
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ─── POST /api/admin/login ────────────────────────────────
 router.post('/login', async (req, res) => {
