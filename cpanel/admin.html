@@ -44,9 +44,9 @@
                 <div class="nav-item" onclick="showTab('users-tab', this)">
                     <i class="ri-p2p-line"></i> <span>Management</span>
                 </div>
-    <div class="nav-item" onclick="showTab('chat-tab', this); loadAdminChatSessions()">
-                    <i class="ri-message-3-line"></i> 
-                    <p id="adminChatBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;align-items:center;justify-content:center;font-weight:700;">0</p>
+  <div class="nav-item" onclick="showTab('chat-tab', this); loadAdminChatSessions()">
+                    <i class="ri-message-3-line"></i>
+                    <span id="adminChatBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;align-items:center;justify-content:center;font-weight:700;margin-left:-2px;">0</span>
                 </div>
                 <div class="nav-item" onclick="showTab('settings-tab', this)">
                     <i class="ri-draggable"></i> <span>Settings</span>
@@ -633,9 +633,28 @@
                             </div>
 
                             <!-- Messages -->
-                            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;"></div>
+                            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:4px;"></div>
 
-                            <!-- Polar input (hidden by default) -->
+                            <!-- Typing indicator -->
+                            <div id="adminTypingIndicator" style="display:none;padding:6px 16px;align-items:center;gap:6px;background:var(--bg-color,#f4f7fe);">
+                                <span style="font-size:12px;color:#aaa;">User is typing</span>
+                                <span style="display:flex;gap:3px;">
+                                    <span style="width:5px;height:5px;background:#aaa;border-radius:50%;animation:typingDot 1.2s infinite 0s;"></span>
+                                    <span style="width:5px;height:5px;background:#aaa;border-radius:50%;animation:typingDot 1.2s infinite 0.2s;"></span>
+                                    <span style="width:5px;height:5px;background:#aaa;border-radius:50%;animation:typingDot 1.2s infinite 0.4s;"></span>
+                                </span>
+                            </div>
+
+                            <!-- Reply/Edit bar -->
+                            <div id="adminReplyBar" style="display:none;padding:8px 12px;background:var(--card-bg,#fff);border-top:2px solid #4318ff;flex-direction:row;align-items:center;gap:8px;">
+                                <div style="flex:1;border-left:3px solid #4318ff;padding:4px 8px;">
+                                    <div id="adminReplyBarSender" style="font-size:11px;font-weight:700;color:#4318ff;"></div>
+                                    <div id="adminReplyBarText" style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;"></div>
+                                </div>
+                                <button onclick="cancelAdminReply()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;">✕</button>
+                            </div>
+
+                            <!-- Polar input -->
                             <div id="polarInputArea" style="display:none;padding:10px 16px;background:#fffbea;border-top:1px solid #f1c40f;">
                                 <div style="font-size:12px;color:#888;margin-bottom:6px;">❓ Polar Question (user answers Yes/No)</div>
                                 <div style="display:flex;gap:8px;">
@@ -653,11 +672,15 @@
                                 </label>
                                 <input type="text" id="adminChatInput" placeholder="Type a reply..." maxlength="500"
                                     style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 16px;font-size:14px;outline:none;"
-                                    onkeydown="if(event.key==='Enter')sendAdminMessage()">
+                                    onkeydown="onAdminInputKeydown(event)">
                                 <button onclick="sendAdminMessage()" style="background:var(--primary,#4318ff);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
                                     <i class="ri-send-plane-fill" style="color:#fff;font-size:17px;"></i>
                                 </button>
                             </div>
+
+                            <style>
+                            @keyframes typingDot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+                            </style>
                         </div>
 
                     </div>
