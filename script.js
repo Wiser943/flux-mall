@@ -173,7 +173,7 @@ function renderUserUI() {
   });
   document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
-  document.querySelectorAll('.tBalance').forEach(el => {
+  document.querySelectorAll('.balance').forEach(el => {
     el.innerHTML = u.ib ? Number(u.ib).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
   });
   document.getElementById('spinsLeft').innerText = u.freeSpins || 0;
