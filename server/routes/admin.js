@@ -269,14 +269,26 @@ router.post('/create-user', requireAdmin, async (req, res) => {
 });
 
 // ─── DELETE /api/admin/users/:id ─────────────────────────
+// Cascade deletes user + ALL related documents across collections
 router.delete('/users/:id', requireAdmin, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ success: true });
+    const uid = req.params.id;
+
+    await Promise.all([
+      User.findByIdAndDelete(uid),
+      Deposit.deleteMany({ userId: uid }),
+      Withdrawal.deleteMany({ userId: uid }),
+      Activity.deleteMany({ userId: uid }),
+      Notification.deleteMany({ userId: uid }),
+      PurchasedShare.deleteMany({ userId: uid }),
+    ]);
+
+    res.json({ success: true, message: 'User and all related data deleted.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ─── GET /api/admin/settings ─────────────────────────────
 router.get('/settings', requireAdmin, async (req, res) => {
