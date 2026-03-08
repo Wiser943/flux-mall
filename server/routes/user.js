@@ -6,7 +6,7 @@ const User = require('../models/User');
 const {
   Deposit, Withdrawal, Notification, Activity,
   Share, PurchasedShare, Settings, DepositAmt,
-  ChatSession, ChatMessage,
+  ChatSession, ChatMessage, Typing,
 } = require('../models/Models');
 const { requireAuth } = require('../middleware/auth');
 
@@ -508,7 +508,7 @@ router.get('/chat/messages', requireAuth, async (req, res) => {
 // ─── POST /api/user/chat/send ─────────────────────────────
 router.post('/chat/send', requireAuth, async (req, res) => {
   try {
-    const { content, type, imageUrl, polarAnswer, polarMsgId } = req.body;
+    const { content, type, imageUrl, polarAnswer, polarMsgId, replyTo } = req.body;
 
     // Check chat settings
     const chatSettings = await Settings.findOne({ key: 'chat' });
@@ -554,6 +554,7 @@ router.post('/chat/send', requireAuth, async (req, res) => {
       type: type || 'text',
       content: content || '',
       imageUrl: imageUrl || '',
+      replyTo: replyTo || {},
     });
 
     const preview = type === 'image' ? '📷 Image' : content?.substring(0, 60) || '';
@@ -635,6 +636,80 @@ router.get('/chat/settings', requireAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+
+// ─── POST /api/user/chat/typing ───────────────────────────
+router.post('/chat/typing', requireAuth, async (req, res) => {
+  try {
+    const session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
+    if (!session) return res.json({ success: false });
+    await Typing.findOneAndUpdate(
+      { sessionId: session._id, sender: 'user' },
+      { sessionId: session._id, sender: 'user', updatedAt: new Date() },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── GET /api/user/chat/typing ────────────────────────────
+router.get('/chat/typing', requireAuth, async (req, res) => {
+  try {
+    const session = await ChatSession.findOne({ userId: req.user._id });
+    if (!session) return res.json({ typing: false });
+    const t = await Typing.findOne({ sessionId: session._id, sender: 'admin' });
+    const isTyping = t && (Date.now() - new Date(t.updatedAt).getTime() < 4000);
+    res.json({ typing: !!isTyping });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── POST /api/user/chat/react ────────────────────────────
+router.post('/chat/react', requireAuth, async (req, res) => {
+  try {
+    const { msgId, emoji } = req.body;
+    const msg = await ChatMessage.findById(msgId);
+    if (!msg) return res.status(404).json({ error: 'Message not found.' });
+    const reactions = msg.reactions || {};
+    if (!reactions[emoji]) reactions[emoji] = [];
+    const idx = reactions[emoji].indexOf('user');
+    if (idx > -1) reactions[emoji].splice(idx, 1); // toggle off
+    else reactions[emoji].push('user');             // toggle on
+    if (!reactions[emoji].length) delete reactions[emoji];
+    await ChatMessage.findByIdAndUpdate(msgId, { reactions });
+    res.json({ success: true, reactions });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── DELETE /api/user/chat/message/:id ───────────────────
+router.delete('/chat/message/:id', requireAuth, async (req, res) => {
+  try {
+    const msg = await ChatMessage.findById(req.params.id);
+    if (!msg) return res.status(404).json({ error: 'Not found.' });
+    // Only delete own messages
+    const session = await ChatSession.findOne({ userId: req.user._id });
+    if (!session || msg.sessionId.toString() !== session._id.toString())
+      return res.status(403).json({ error: 'Forbidden.' });
+    if (msg.sender !== 'user') return res.status(403).json({ error: 'Cannot delete admin messages.' });
+    await ChatMessage.findByIdAndUpdate(req.params.id, { deleted: true, content: 'This message was deleted.' });
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── PUT /api/user/chat/message/:id ──────────────────────
+router.put('/chat/message/:id', requireAuth, async (req, res) => {
+  try {
+    const { content } = req.body;
+    const msg = await ChatMessage.findById(req.params.id);
+    if (!msg) return res.status(404).json({ error: 'Not found.' });
+    const session = await ChatSession.findOne({ userId: req.user._id });
+    if (!session || msg.sessionId.toString() !== session._id.toString())
+      return res.status(403).json({ error: 'Forbidden.' });
+    if (msg.sender !== 'user') return res.status(403).json({ error: 'Cannot edit admin messages.' });
+    if (msg.deleted) return res.status(400).json({ error: 'Cannot edit deleted message.' });
+    await ChatMessage.findByIdAndUpdate(req.params.id, { content, edited: true });
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 module.exports = router;
