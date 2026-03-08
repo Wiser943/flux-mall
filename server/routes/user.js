@@ -440,5 +440,7 @@ router.get('/apikeys', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+console.log('[BANKS] Secret key:', secretKey ? 'found' : 'MISSING');
+console.log('[BANKS] Korapay response:', JSON.stringify(result));
 
 module.exports = router;
