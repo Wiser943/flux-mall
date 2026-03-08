@@ -455,12 +455,16 @@ router.get('/chat/session', requireAuth, async (req, res) => {
     const officeHours  = chatSettings?.value?.officeHours;
     const autoReply    = chatSettings?.value?.autoReply || '';
 
+    // Fix 1: Block if chat turned off
+    if (!isAvailable)
+      return res.json({ success: true, offline: true, offlineMsg: '🔒 Chat is currently unavailable. Please try again later.' });
+
     // Check office hours
     if (officeHours?.enabled) {
-      const now    = new Date();
-      const hour   = now.getHours();
-      const open   = parseInt(officeHours.open  || '9');
-      const close  = parseInt(officeHours.close || '18');
+      const now   = new Date();
+      const hour  = now.getHours();
+      const open  = parseInt(officeHours.open  || '9');
+      const close = parseInt(officeHours.close || '18');
       if (hour < open || hour >= close) {
         return res.json({ success: true, offline: true, offlineMsg: officeHours.offlineMsg || "We're offline. Leave a message and we'll reply soon." });
       }
@@ -469,7 +473,6 @@ router.get('/chat/session', requireAuth, async (req, res) => {
     let session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
     if (!session) {
       session = await ChatSession.create({ userId: req.user._id, username: req.user.username });
-      // Send auto-reply if configured
       if (autoReply) {
         await ChatMessage.create({ sessionId: session._id, sender: 'admin', type: 'text', content: autoReply });
         await ChatSession.findByIdAndUpdate(session._id, { lastMessage: autoReply, lastMessageAt: new Date(), unreadUser: 1 });
@@ -505,10 +508,45 @@ router.get('/chat/messages', requireAuth, async (req, res) => {
 // ─── POST /api/user/chat/send ─────────────────────────────
 router.post('/chat/send', requireAuth, async (req, res) => {
   try {
-    const { content, type, imageUrl, polarAnswer, sessionId } = req.body;
+    const { content, type, imageUrl, polarAnswer, polarMsgId } = req.body;
+
+    // Check chat settings
+    const chatSettings = await Settings.findOne({ key: 'chat' });
+    const cs = chatSettings?.value || {};
+
+    // Fix 1: Block if chat is turned off
+    if (cs.available === false)
+      return res.status(403).json({ error: '🔒 Chat is currently unavailable.' });
+
+    // Fix 3: Block image if admin disabled it
+    if (type === 'image' && cs.allowImages === false)
+      return res.status(403).json({ error: '🚫 Image uploads are disabled.' });
 
     const session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
     if (!session) return res.status(400).json({ error: 'No active chat session.' });
+
+    // Fix 4: Polar answer — only allow once
+    if (type === 'polar_answer') {
+      if (!polarMsgId) return res.status(400).json({ error: 'Missing polar message ID.' });
+      const polarMsg = await ChatMessage.findById(polarMsgId);
+      if (!polarMsg) return res.status(404).json({ error: 'Polar question not found.' });
+      if (polarMsg.polarAnswer) return res.status(400).json({ error: 'Already answered.' });
+      await ChatMessage.findByIdAndUpdate(polarMsgId, { polarAnswer: content });
+      const msg = await ChatMessage.create({
+        sessionId: session._id,
+        sender: 'user',
+        type: 'text',
+        content: content === 'yes' ? '✅ Yes' : '❌ No',
+      });
+      await ChatSession.findByIdAndUpdate(session._id, {
+        lastMessage: content === 'yes' ? '✅ Yes' : '❌ No',
+        lastMessageAt: new Date(),
+        $inc: { unreadAdmin: 1 }
+      });
+      // Notify admin of polar answer (non-blocking)
+      notifyAdmin(req.user.username, content === 'yes' ? '✅ Yes' : '❌ No').catch(() => {});
+      return res.json({ success: true, message: msg });
+    }
 
     const msg = await ChatMessage.create({
       sessionId: session._id,
@@ -516,7 +554,6 @@ router.post('/chat/send', requireAuth, async (req, res) => {
       type: type || 'text',
       content: content || '',
       imageUrl: imageUrl || '',
-      polarAnswer: polarAnswer || '',
     });
 
     const preview = type === 'image' ? '📷 Image' : content?.substring(0, 60) || '';
@@ -527,16 +564,74 @@ router.post('/chat/send', requireAuth, async (req, res) => {
     });
 
     res.json({ success: true, message: msg });
+
+    // Notify admin (non-blocking — runs after response sent)
+    notifyAdmin(req.user.username, preview).catch(() => {});
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── HELPER: Notify admin via email ──────────────────────
+async function notifyAdmin(username, messagePreview) {
+  try {
+    // Get admin email from DB
+    const admin = await User.findOne({ role: 'admin' }).select('email');
+    if (!admin?.email) return;
+
+    const config = await Settings.findOne({ key: 'config' });
+    const siteName = config?.value?.siteName || 'Flux Mall';
+    const adminPanelUrl = process.env.APP_URL
+      ? `${process.env.APP_URL}/cpanel/admin.html`
+      : 'https://fluxmall.online/cpanel/admin.html';
+
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM || `${siteName} <noreply@fluxmall.online>`,
+      to: admin.email,
+      subject: `💬 New message from ${username} — ${siteName}`,
+      html: `
+        <div style="font-family:Arial;max-width:480px;margin:auto;padding:28px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+          <div style="background:linear-gradient(135deg,#4318ff,#868cff);padding:22px;border-radius:10px;text-align:center;margin-bottom:20px;">
+            <h2 style="color:#fff;margin:0;font-size:20px;">💬 New Chat Message</h2>
+          </div>
+          <p style="color:#2b3674;font-size:15px;margin-bottom:6px;">
+            <strong>${username}</strong> sent you a message:
+          </p>
+          <div style="background:#f4f7fe;border-left:4px solid #4318ff;padding:12px 16px;border-radius:6px;margin:16px 0;color:#444;font-size:14px;">
+            ${messagePreview}
+          </div>
+          <div style="text-align:center;margin-top:24px;">
+            <a href="${adminPanelUrl}" style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#4318ff,#868cff);color:#fff;border-radius:10px;text-decoration:none;font-size:15px;font-weight:600;">
+              Open Admin Panel →
+            </a>
+          </div>
+          <p style="color:#a3adc2;font-size:11px;text-align:center;margin-top:16px;">Reply via the admin chat panel</p>
+        </div>`
+    });
+    console.log(`[CHAT] Admin notified of message from ${username}`);
+  } catch (err) {
+    console.log(`[CHAT] Admin email notify failed:`, err.message);
+  }
+}
 
 // ─── GET /api/user/chat/unread ────────────────────────────
 router.get('/chat/unread', requireAuth, async (req, res) => {
   try {
     const session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
     res.json({ success: true, unread: session?.unreadUser || 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/user/chat/settings ─────────────────────────
+// Returns only safe settings the user needs (sound, allowImages)
+router.get('/chat/settings', requireAuth, async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'chat' });
+    const s   = doc?.value || {};
+    res.json({ success: true, settings: { sound: s.sound !== false, allowImages: s.allowImages !== false } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
