@@ -5,7 +5,8 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const {
   Deposit, Withdrawal, Notification, Activity,
-  Share, PurchasedShare, Settings, DepositAmt
+  Share, PurchasedShare, Settings, DepositAmt,
+  ChatSession, ChatMessage,
 } = require('../models/Models');
 const { requireAdmin } = require('../middleware/auth');
 
@@ -453,6 +454,122 @@ router.put('/settings/apikeys', requireAdmin, async (req, res) => {
     await Settings.findOneAndUpdate(
       { key: 'apikeys' },
       { key: 'apikeys', value: { imgbb, korapay_public, korapay_secret } },
+      { upsert: true, new: true }
+    );
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// ADMIN CHAT ROUTES
+// ═══════════════════════════════════════════════════════════
+
+// ─── GET /api/admin/chat/sessions ────────────────────────
+router.get('/chat/sessions', requireAdmin, async (req, res) => {
+  try {
+    const sessions = await ChatSession.find().sort({ lastMessageAt: -1 });
+    res.json({ success: true, sessions });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/admin/chat/messages/:sessionId ─────────────
+router.get('/chat/messages/:sessionId', requireAdmin, async (req, res) => {
+  try {
+    const messages = await ChatMessage.find({ sessionId: req.params.sessionId }).sort({ createdAt: 1 });
+    // Mark user messages as read
+    await ChatMessage.updateMany(
+      { sessionId: req.params.sessionId, sender: 'user', read: false },
+      { read: true }
+    );
+    await ChatSession.findByIdAndUpdate(req.params.sessionId, { unreadAdmin: 0 });
+    res.json({ success: true, messages });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/admin/chat/send ────────────────────────────
+router.post('/chat/send', requireAdmin, async (req, res) => {
+  try {
+    const { sessionId, content, type, imageUrl, polarQuestion } = req.body;
+    if (!sessionId) return res.status(400).json({ error: 'sessionId required.' });
+
+    const msg = await ChatMessage.create({
+      sessionId,
+      sender: 'admin',
+      type: type || 'text',
+      content: content || '',
+      imageUrl: imageUrl || '',
+      polarQuestion: polarQuestion || '',
+    });
+
+    const preview = type === 'image' ? '📷 Image' : type === 'polar' ? `❓ ${polarQuestion}` : content?.substring(0, 60) || '';
+    await ChatSession.findByIdAndUpdate(sessionId, {
+      lastMessage: preview,
+      lastMessageAt: new Date(),
+      $inc: { unreadUser: 1 }
+    });
+
+    res.json({ success: true, message: msg });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── DELETE /api/admin/chat/session/:id ──────────────────
+router.delete('/chat/session/:id', requireAdmin, async (req, res) => {
+  try {
+    await ChatMessage.deleteMany({ sessionId: req.params.id });
+    await ChatSession.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/admin/chat/session/:id/end ─────────────────
+router.put('/chat/session/:id/end', requireAdmin, async (req, res) => {
+  try {
+    await ChatSession.findByIdAndUpdate(req.params.id, { status: 'ended' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/admin/chat/unread ───────────────────────────
+router.get('/chat/unread', requireAdmin, async (req, res) => {
+  try {
+    const result = await ChatSession.aggregate([
+      { $group: { _id: null, total: { $sum: '$unreadAdmin' } } }
+    ]);
+    res.json({ success: true, unread: result[0]?.total || 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/admin/chat/settings ────────────────────────
+router.get('/chat/settings', requireAdmin, async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'chat' });
+    res.json({ success: true, settings: doc?.value || {} });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/admin/chat/settings ────────────────────────
+router.put('/chat/settings', requireAdmin, async (req, res) => {
+  try {
+    const { available, autoReply, officeHours, sound, allowImages, autoClose, maxImageSize, requireVerified, charLimit } = req.body;
+    await Settings.findOneAndUpdate(
+      { key: 'chat' },
+      { key: 'chat', value: { available, autoReply, officeHours, sound, allowImages, autoClose, maxImageSize, requireVerified, charLimit } },
       { upsert: true, new: true }
     );
     res.json({ success: true });
