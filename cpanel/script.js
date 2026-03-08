@@ -931,3 +931,364 @@ window.saveApiKeys = async () => {
 
 // ─── INIT ─────────────────────────────────────────────────
 checkAdminSession();
+
+
+// ═══════════════════════════════════════════════════════════
+// ADMIN CHAT SYSTEM
+// ═══════════════════════════════════════════════════════════
+
+let activeSessionId   = null;
+let adminChatPollTimer = null;
+let adminLastMsgCount  = 0;
+let adminSoundEnabled  = true;
+let adminSiteLogo      = '';
+let adminChatSessionStatus = 'active';
+
+// Grab site logo for chat avatars
+async function getAdminSiteLogo() {
+  if (adminSiteLogo) return adminSiteLogo;
+  const data = await api('/api/admin/settings');
+  adminSiteLogo = data?.config?.siteLogo || '';
+  return adminSiteLogo;
+}
+
+// Audio alert
+function playAdminChatSound() {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 660;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+// ─── LOAD SESSION LIST ────────────────────────────────────
+window.loadAdminChatSessions = async function() {
+  const container = document.getElementById('chatSessionItems');
+  if (!container) return;
+
+  const logo = await getAdminSiteLogo();
+  const data = await api('/api/admin/chat/sessions');
+  if (!data?.success) { container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;">Failed to load chats.</div>'; return; }
+
+  if (!data.sessions.length) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">No chats yet.</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  data.sessions.forEach(s => {
+    const isActive  = s._id === activeSessionId;
+    const hasUnread = s.unreadAdmin > 0;
+    const timeStr   = s.lastMessageAt ? new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const ended     = s.status === 'ended';
+    const div = document.createElement('div');
+    div.style.cssText = `padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;background:${isActive ? 'rgba(67,24,255,0.06)' : 'transparent'};transition:background 0.2s;`;
+    div.onmouseenter = () => { if (!isActive) div.style.background = 'rgba(0,0,0,0.03)'; };
+    div.onmouseleave = () => { if (!isActive) div.style.background = 'transparent'; };
+    div.onclick = () => openAdminChatSession(s._id, s.username, s.status);
+    div.innerHTML = `
+      <img src="${logo}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#eee;border:2px solid ${ended ? '#e74c3c' : '#10ac84'};">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:700;font-size:13px;color:var(--text-main);">${s.username}</span>
+          <span style="font-size:10px;color:#aaa;">${timeStr}</span>
+        </div>
+        <div style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${s.lastMessage || 'No messages'}</div>
+      </div>
+      ${hasUnread ? `<span style="background:#e74c3c;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">${s.unreadAdmin}</span>` : ''}
+      ${ended ? `<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 6px;font-size:10px;flex-shrink:0;">Ended</span>` : ''}`;
+    container.appendChild(div);
+  });
+
+  // Update badge
+  const totalUnread = data.sessions.reduce((a, s) => a + (s.unreadAdmin || 0), 0);
+  const badge = document.getElementById('adminChatBadge');
+  if (badge) {
+    badge.textContent = totalUnread;
+    badge.style.display = totalUnread > 0 ? 'flex' : 'none';
+  }
+};
+
+// ─── OPEN SESSION ─────────────────────────────────────────
+window.openAdminChatSession = async function(sessionId, username, status) {
+  activeSessionId = sessionId;
+  adminChatSessionStatus = status || 'active';
+
+  const logo = await getAdminSiteLogo();
+
+  // Show chat window
+  document.getElementById('chatWindowEmpty').style.display  = 'none';
+  const activeWin = document.getElementById('chatWindowActive');
+  activeWin.style.display = 'flex';
+
+  // Set header
+  document.getElementById('adminChatUsername').textContent = username;
+  document.getElementById('adminChatUserLogo').src = logo;
+  document.getElementById('adminChatSessionStatus').textContent = status === 'ended' ? '🔴 Session Ended' : '🟢 Active';
+
+  // Show/hide input based on status
+  const inputBar = document.getElementById('adminChatInputBar');
+  const polarBtn = document.getElementById('adminPolarBtn');
+  if (inputBar) inputBar.style.display = status === 'ended' ? 'none' : 'flex';
+  if (polarBtn) polarBtn.style.display = status === 'ended' ? 'none' : 'inline-block';
+
+  await loadAdminMessages(sessionId);
+  startAdminChatPolling(sessionId);
+  loadAdminChatSessions(); // refresh list to clear unread
+};
+
+// ─── LOAD MESSAGES ────────────────────────────────────────
+async function loadAdminMessages(sessionId) {
+  const container = document.getElementById('adminChatMessages');
+  if (!container) return;
+
+  const data = await api(`/api/admin/chat/messages/${sessionId}`);
+  if (!data?.success) return;
+
+  container.innerHTML = '';
+  if (!data.messages.length) {
+    container.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">No messages yet.</div>';
+    adminLastMsgCount = 0;
+    return;
+  }
+
+  const logo = await getAdminSiteLogo();
+  data.messages.forEach(msg => {
+    container.appendChild(buildAdminMsgBubble(msg, logo));
+  });
+  container.scrollTop = container.scrollHeight;
+  adminLastMsgCount = data.messages.length;
+}
+
+// ─── BUILD BUBBLE ─────────────────────────────────────────
+function buildAdminMsgBubble(msg, logo) {
+  const isAdmin = msg.sender === 'admin';
+  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isAdmin ? 'flex-end' : 'flex-start'};gap:3px;`;
+
+  let bubbleContent = '';
+  if (msg.type === 'image' && msg.imageUrl) {
+    bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
+  } else if (msg.type === 'polar') {
+    const answered = msg.polarAnswer;
+    bubbleContent = `
+      <div style="font-size:13px;margin-bottom:6px;">❓ ${msg.polarQuestion}</div>
+      ${answered ? `<div style="font-weight:700;color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered==='yes'?'✅ Yes':'❌ No'}</div>` : '<div style="color:#aaa;font-size:12px;">Awaiting answer...</div>'}`;
+  } else {
+    bubbleContent = `<span style="font-size:13px;line-height:1.5;">${msg.content}</span>`;
+  }
+
+  wrapper.innerHTML = `
+    <div style="display:flex;align-items:flex-end;gap:6px;${isAdmin ? 'flex-direction:row-reverse;' : ''}">
+      <img src="${logo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#eee;">
+      <div style="max-width:70%;background:${isAdmin ? 'var(--primary,#4318ff)' : '#fff'};color:${isAdmin ? '#fff' : '#333'};border-radius:${isAdmin ? '16px 16px 4px 16px' : '16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+        ${bubbleContent}
+      </div>
+    </div>
+    <span style="font-size:10px;color:#aaa;">${time}</span>`;
+  return wrapper;
+}
+
+// ─── SEND MESSAGE ─────────────────────────────────────────
+window.sendAdminMessage = async function() {
+  if (adminChatSessionStatus === 'ended') return alert('Session ended.');
+  const input = document.getElementById('adminChatInput');
+  const text  = input?.value.trim();
+  if (!text || !activeSessionId) return;
+  input.value = '';
+
+  const data = await api('/api/admin/chat/send', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId: activeSessionId, content: text, type: 'text' })
+  });
+  if (data?.success) {
+    const logo = await getAdminSiteLogo();
+    const container = document.getElementById('adminChatMessages');
+    const empty = container?.querySelector('[style*="No messages"]');
+    if (empty) empty.remove();
+    container?.appendChild(buildAdminMsgBubble(data.message, logo));
+    if (container) container.scrollTop = container.scrollHeight;
+    adminLastMsgCount++;
+  }
+};
+
+// ─── SEND IMAGE ───────────────────────────────────────────
+window.sendAdminImage = async function(input) {
+  const file = input.files[0];
+  if (!file || !activeSessionId) return;
+  if (adminChatSessionStatus === 'ended') return alert('Session ended.');
+
+  const keysRes  = await api('/api/admin/settings/apikeys');
+  const imgbbKey = keysRes?.apikeys?.imgbb;
+  if (!imgbbKey) return alert('ImgBB API key not set in Settings → API Keys.');
+
+  const formData = new FormData();
+  formData.append('image', file);
+  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
+  const result = await res.json();
+  if (!result.success) return alert('Image upload failed.');
+
+  const data = await api('/api/admin/chat/send', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId: activeSessionId, type: 'image', imageUrl: result.data.url, content: '📷 Image' })
+  });
+  if (data?.success) {
+    const logo = await getAdminSiteLogo();
+    const container = document.getElementById('adminChatMessages');
+    container?.appendChild(buildAdminMsgBubble(data.message, logo));
+    if (container) container.scrollTop = container.scrollHeight;
+    adminLastMsgCount++;
+  }
+  input.value = '';
+};
+
+// ─── POLAR QUESTION ───────────────────────────────────────
+window.togglePolarInput = function() {
+  const area = document.getElementById('polarInputArea');
+  if (area) area.style.display = area.style.display === 'none' ? 'block' : 'none';
+};
+
+window.sendAdminPolar = async function() {
+  const question = document.getElementById('polarQuestionInput')?.value.trim();
+  if (!question || !activeSessionId) return;
+
+  const data = await api('/api/admin/chat/send', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId: activeSessionId, type: 'polar', polarQuestion: question, content: `❓ ${question}` })
+  });
+  if (data?.success) {
+    const logo = await getAdminSiteLogo();
+    const container = document.getElementById('adminChatMessages');
+    container?.appendChild(buildAdminMsgBubble(data.message, logo));
+    if (container) container.scrollTop = container.scrollHeight;
+    document.getElementById('polarQuestionInput').value = '';
+    togglePolarInput();
+    adminLastMsgCount++;
+  }
+};
+
+// ─── END SESSION ──────────────────────────────────────────
+window.endAdminChatSession = async function() {
+  if (!activeSessionId) return;
+  if (!confirm('End this chat session? The user will no longer be able to send messages.')) return;
+  const data = await api(`/api/admin/chat/session/${activeSessionId}/end`, { method: 'PUT' });
+  if (data?.success) {
+    adminChatSessionStatus = 'ended';
+    document.getElementById('adminChatSessionStatus').textContent = '🔴 Session Ended';
+    const inputBar = document.getElementById('adminChatInputBar');
+    const polarBtn = document.getElementById('adminPolarBtn');
+    if (inputBar) inputBar.style.display = 'none';
+    if (polarBtn) polarBtn.style.display = 'none';
+    loadAdminChatSessions();
+  }
+};
+
+// ─── DELETE SESSION ───────────────────────────────────────
+window.deleteAdminChatSession = async function() {
+  if (!activeSessionId) return;
+  if (!confirm('Delete this entire chat? This cannot be undone.')) return;
+  const data = await api(`/api/admin/chat/session/${activeSessionId}`, { method: 'DELETE' });
+  if (data?.success) {
+    activeSessionId = null;
+    document.getElementById('chatWindowEmpty').style.display = 'flex';
+    document.getElementById('chatWindowActive').style.display = 'none';
+    stopAdminChatPolling();
+    loadAdminChatSessions();
+  }
+};
+
+// ─── POLLING ──────────────────────────────────────────────
+function startAdminChatPolling(sessionId) {
+  stopAdminChatPolling();
+  adminChatPollTimer = setInterval(async () => {
+    if (!activeSessionId) return;
+    const data = await api(`/api/admin/chat/messages/${sessionId}`);
+    if (!data?.success) return;
+    if (data.messages.length > adminLastMsgCount) {
+      const logo = await getAdminSiteLogo();
+      const container = document.getElementById('adminChatMessages');
+      if (container) {
+        const newMsgs = data.messages.slice(adminLastMsgCount);
+        newMsgs.forEach(msg => container.appendChild(buildAdminMsgBubble(msg, logo)));
+        container.scrollTop = container.scrollHeight;
+      }
+      if (adminSoundEnabled) playAdminChatSound();
+      adminLastMsgCount = data.messages.length;
+      loadAdminChatSessions();
+    }
+  }, 4000);
+}
+
+function stopAdminChatPolling() {
+  if (adminChatPollTimer) clearInterval(adminChatPollTimer);
+}
+
+// Poll unread badge even when not on chat tab
+setInterval(async () => {
+  const data  = await api('/api/admin/chat/unread');
+  const badge = document.getElementById('adminChatBadge');
+  if (badge && data?.unread > 0) {
+    badge.textContent = data.unread;
+    badge.style.display = 'flex';
+    if (adminSoundEnabled) playAdminChatSound();
+  } else if (badge) {
+    badge.style.display = 'none';
+  }
+}, 15000);
+
+// ─── LOAD & SAVE CHAT SETTINGS ────────────────────────────
+async function loadChatSettings() {
+  const data = await api('/api/admin/chat/settings');
+  if (!data?.success) return;
+  const s = data.settings;
+  const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  const setVal   = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setCheck('cs_available',       s.available !== false);
+  setCheck('cs_sound',           s.sound !== false);
+  setCheck('cs_allowImages',     s.allowImages !== false);
+  setCheck('cs_requireVerified', !!s.requireVerified);
+  setCheck('cs_officeHoursEnabled', !!s.officeHours?.enabled);
+  setVal('cs_autoReply',  s.autoReply);
+  setVal('cs_open',       s.officeHours?.open  || 9);
+  setVal('cs_close',      s.officeHours?.close || 18);
+  setVal('cs_offlineMsg', s.officeHours?.offlineMsg);
+  setVal('cs_autoClose',  s.autoClose || 48);
+  setVal('cs_charLimit',  s.charLimit || 500);
+  adminSoundEnabled = s.sound !== false;
+}
+
+window.saveChatSettings = async function() {
+  const getCheck = id => document.getElementById(id)?.checked;
+  const getVal   = id => document.getElementById(id)?.value;
+  const body = {
+    available:       getCheck('cs_available'),
+    sound:           getCheck('cs_sound'),
+    allowImages:     getCheck('cs_allowImages'),
+    requireVerified: getCheck('cs_requireVerified'),
+    autoReply:       getVal('cs_autoReply'),
+    autoClose:       parseInt(getVal('cs_autoClose')) || 48,
+    charLimit:       parseInt(getVal('cs_charLimit')) || 500,
+    officeHours: {
+      enabled:    getCheck('cs_officeHoursEnabled'),
+      open:       getVal('cs_open'),
+      close:      getVal('cs_close'),
+      offlineMsg: getVal('cs_offlineMsg'),
+    }
+  };
+  const data = await api('/api/admin/chat/settings', { method: 'PUT', body: JSON.stringify(body) });
+  if (data?.success) {
+    adminSoundEnabled = body.sound;
+    alert('✅ Chat settings saved!');
+  } else {
+    alert(data?.error || 'Error saving settings.');
+  }
+};
+
+// Load chat settings on init
+loadChatSettings();
