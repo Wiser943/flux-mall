@@ -331,39 +331,71 @@
             </div>
         </main>
 
-        <main id="service" class="content hidden" style="position: relative;padding-top: 0;">
-            <div style="background: var(--primary-gradient);padding: 30px 20px 60px 20px;border-bottom-left-radius: 30px;border-bottom-right-radius: 30px;color: #fff;">
-                <h2 style="font-size: 24px;font-weight: 700;">Customer Service</h2>
+        <main id="service" class="content hidden" style="position:relative;padding-top:0;">
+            <div style="background:var(--primary-gradient);padding:30px 20px 60px 20px;border-bottom-left-radius:30px;border-bottom-right-radius:30px;color:#fff;">
+                <h2 style="font-size:24px;font-weight:700;">Customer Service</h2>
             </div>
             <div class="active-orders">
-                <div class="order-card" style="color: var(--text-main);display: flex;justify-content: space-between;align-items: center;width: 100%;margin-top: -20px;padding:20px 10px;">
-                    <div style="display: flex; align-items: center;">
-                        <div class="avatar status-badge" style="width:45px;height:45px;border-radius:50%;margin-right:10px;font-weight:500;display:flex;align-items:center;justify-content:center;font-size:24px;">
-                            <i class="ri-customer-service-2-line"></i>
+                <!-- Live Chat Entry -->
+                <div class="order-card" style="color:var(--text-main);display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:-20px;padding:20px 10px;cursor:pointer;" onclick="openChat()">
+                    <div style="display:flex;align-items:center;">
+                        <div style="width:45px;height:45px;border-radius:50%;margin-right:10px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:22px;">
+                            <i class="ri-customer-service-2-line" style="color:#fff;"></i>
                         </div>
                         <div>
-                            <div style="font-weight: bold;" class="status-badge">Online Service</div>
-                            <div style="font-size: 12px;">24/7 Available Now</div>
+                            <div style="font-weight:bold;">Live Support</div>
+                            <div style="font-size:12px;color:var(--text-muted);">Chat with our team</div>
                         </div>
                     </div>
-                    <button style="background: var(--success); color: white;" class="btn btn-secondar">Contact<i class="ri-flashlight-fill" style="color:#f1c40f"></i></button>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span id="chatUnreadBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;align-items:center;justify-content:center;font-weight:700;">0</span>
+                        <i class="ri-arrow-right-s-line" style="color:var(--text-muted);font-size:20px;"></i>
+                    </div>
                 </div>
-                <h4 style="margin: 20px 0 10px; color: var(--primary);">More Services</h4>
+                <h4 style="margin:20px 0 10px;color:var(--primary);">More Services</h4>
                 <a class="service-list-item waLink" href="#">
-                    <i class="ri-whatsapp-line service-icon" style="color: #0088cc;"></i>
-                    <div class="service-text"><div style="font-weight: bold;">Whatsapp group</div><div style="font-size: 12px; color: #777;">Join community</div></div>
-                    <i class="ri-arrow-right-s-line text-muted" style="margin-left: auto;"></i>
+                    <i class="ri-whatsapp-line service-icon" style="color:#25d366;"></i>
+                    <div class="service-text"><div style="font-weight:bold;">Whatsapp group</div><div style="font-size:12px;color:#777;">Join community</div></div>
+                    <i class="ri-arrow-right-s-line text-muted" style="margin-left:auto;"></i>
                 </a>
                 <a class="service-list-item tgLink" href="#">
-                    <i class="ri-telegram-line service-icon" style="color: #0088cc;"></i>
-                    <div class="service-text"><div style="font-weight: bold;">Telegram channel</div><div style="font-size: 12px; color: #777;">Get updates</div></div>
-                    <i class="ri-arrow-right-s-line text-muted" style="margin-left: auto;"></i>
+                    <i class="ri-telegram-line service-icon" style="color:#0088cc;"></i>
+                    <div class="service-text"><div style="font-weight:bold;">Telegram channel</div><div style="font-size:12px;color:#777;">Get updates</div></div>
+                    <i class="ri-arrow-right-s-line text-muted" style="margin-left:auto;"></i>
                 </a>
                 <a class="service-list-item" href="#guide">
-                    <i class="ri-book-read-line service-icon" style="color: #0088cc;"></i>
-                    <div class="service-text"><div style="font-weight: bold;">Platform Guide</div><div style="font-size: 12px; color: #777;">Get useful informations</div></div>
-                    <i class="ri-arrow-right-s-line text-muted" style="margin-left: auto;"></i>
+                    <i class="ri-book-read-line service-icon" style="color:#0088cc;"></i>
+                    <div class="service-text"><div style="font-weight:bold;">Platform Guide</div><div style="font-size:12px;color:#777;">Get useful informations</div></div>
+                    <i class="ri-arrow-right-s-line text-muted" style="margin-left:auto;"></i>
                 </a>
+            </div>
+        </main>
+
+        <!-- ═══ CHAT PAGE ═════════════════════════════════════════ -->
+        <main id="chat" class="content hidden" style="position:relative;padding:0;display:flex;flex-direction:column;height:100vh;">
+            <div id="chatHeader" style="background:var(--primary-gradient);padding:16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;">
+                <i data-lucide="chevron-left" style="color:#fff;cursor:pointer;flex-shrink:0;" onclick="history.back()"></i>
+                <img id="chatAdminLogo" src="" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;background:rgba(255,255,255,0.2);">
+                <div style="flex:1;">
+                    <div style="color:#fff;font-weight:700;font-size:15px;">Support Team</div>
+                    <div id="chatStatusDot" style="color:rgba(255,255,255,0.8);font-size:11px;">● Online</div>
+                </div>
+                <span id="chatEndedBadge" style="display:none;background:rgba(255,255,255,0.2);color:#fff;border-radius:20px;padding:3px 10px;font-size:11px;">Session Ended</span>
+            </div>
+            <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px 12px 90px 12px;display:flex;flex-direction:column;gap:10px;background:var(--bg-color,#f4f7fe);">
+                <div id="chatLoading" style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">Loading messages...</div>
+            </div>
+            <div id="chatInputBar" style="position:fixed;bottom:0;left:0;right:0;background:var(--card-bg,#fff);border-top:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:8px;z-index:20;">
+                <label for="chatImgInput" style="cursor:pointer;padding:6px;color:var(--primary);">
+                    <i class="ri-image-add-line" style="font-size:22px;"></i>
+                    <input type="file" id="chatImgInput" accept="image/*" style="display:none;" onchange="handleChatImageUpload(this)">
+                </label>
+                <input type="text" id="chatInput" placeholder="Type a message..." maxlength="500"
+                    style="flex:1;border:none;outline:none;background:var(--input-bg,#f4f7fe);border-radius:20px;padding:10px 16px;font-size:14px;color:var(--text-main);"
+                    onkeydown="if(event.key==='Enter')sendChatMessage()">
+                <button onclick="sendChatMessage()" style="background:var(--primary);border:none;border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                    <i class="ri-send-plane-fill" style="color:#fff;font-size:18px;"></i>
+                </button>
             </div>
         </main>
 
