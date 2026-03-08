@@ -7,7 +7,7 @@ const User = require('../models/User');
 const {
   Deposit, Withdrawal, Notification, Activity,
   Share, PurchasedShare, Settings, DepositAmt,
-  ChatSession, ChatMessage,
+  ChatSession, ChatMessage, Typing,
 } = require('../models/Models');
 const { requireAdmin } = require('../middleware/auth');
 
@@ -499,7 +499,7 @@ router.get('/chat/messages/:sessionId', requireAdmin, async (req, res) => {
 // ─── POST /api/admin/chat/send ────────────────────────────
 router.post('/chat/send', requireAdmin, async (req, res) => {
   try {
-    const { sessionId, content, type, imageUrl, polarQuestion } = req.body;
+    const { sessionId, content, type, imageUrl, polarQuestion, replyTo } = req.body;
     if (!sessionId) return res.status(400).json({ error: 'sessionId required.' });
 
     const msg = await ChatMessage.create({
@@ -509,6 +509,7 @@ router.post('/chat/send', requireAdmin, async (req, res) => {
       content: content || '',
       imageUrl: imageUrl || '',
       polarQuestion: polarQuestion || '',
+      replyTo: replyTo || {},
     });
 
     const preview = type === 'image' ? '📷 Image' : type === 'polar' ? `❓ ${polarQuestion}` : content?.substring(0, 60) || '';
@@ -580,6 +581,68 @@ router.put('/chat/settings', requireAdmin, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+
+// ─── POST /api/admin/chat/typing ─────────────────────────
+router.post('/chat/typing', requireAdmin, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+    await Typing.findOneAndUpdate(
+      { sessionId, sender: 'admin' },
+      { sessionId, sender: 'admin', updatedAt: new Date() },
+      { upsert: true }
+    );
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── GET /api/admin/chat/typing/:sessionId ────────────────
+router.get('/chat/typing/:sessionId', requireAdmin, async (req, res) => {
+  try {
+    const t = await Typing.findOne({ sessionId: req.params.sessionId, sender: 'user' });
+    const isTyping = t && (Date.now() - new Date(t.updatedAt).getTime() < 4000);
+    res.json({ typing: !!isTyping });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── POST /api/admin/chat/react ───────────────────────────
+router.post('/chat/react', requireAdmin, async (req, res) => {
+  try {
+    const { msgId, emoji } = req.body;
+    const msg = await ChatMessage.findById(msgId);
+    if (!msg) return res.status(404).json({ error: 'Message not found.' });
+    const reactions = msg.reactions || {};
+    if (!reactions[emoji]) reactions[emoji] = [];
+    const idx = reactions[emoji].indexOf('admin');
+    if (idx > -1) reactions[emoji].splice(idx, 1);
+    else reactions[emoji].push('admin');
+    if (!reactions[emoji].length) delete reactions[emoji];
+    await ChatMessage.findByIdAndUpdate(msgId, { reactions });
+    res.json({ success: true, reactions });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── DELETE /api/admin/chat/message/:id ──────────────────
+router.delete('/chat/message/:id', requireAdmin, async (req, res) => {
+  try {
+    const msg = await ChatMessage.findById(req.params.id);
+    if (!msg) return res.status(404).json({ error: 'Not found.' });
+    await ChatMessage.findByIdAndUpdate(req.params.id, { deleted: true, content: 'This message was deleted.' });
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── PUT /api/admin/chat/message/:id ─────────────────────
+router.put('/chat/message/:id', requireAdmin, async (req, res) => {
+  try {
+    const { content } = req.body;
+    const msg = await ChatMessage.findById(req.params.id);
+    if (!msg) return res.status(404).json({ error: 'Not found.' });
+    if (msg.deleted) return res.status(400).json({ error: 'Cannot edit deleted message.' });
+    await ChatMessage.findByIdAndUpdate(req.params.id, { content, edited: true });
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 module.exports = router;
