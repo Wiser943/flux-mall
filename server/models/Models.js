@@ -49,14 +49,14 @@ const shareSchema = new mongoose.Schema({
 
 // ─── PURCHASED SHARE ───────────────────────────────────────
 const purchasedShareSchema = new mongoose.Schema({
-  userId:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  shareName:    { type: String },
-  pricePaid:    { type: Number },
-  dailyIncome:  { type: Number },
-  duration:     { type: Number },
-  status:       { type: String, default: 'active' },
-  lastClaimDate:{ type: Date, default: Date.now },
-  purchaseDate: { type: Date, default: Date.now },
+  userId:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  shareName:     { type: String },
+  pricePaid:     { type: Number },
+  dailyIncome:   { type: Number },
+  duration:      { type: Number },
+  status:        { type: String, default: 'active' },
+  lastClaimDate: { type: Date, default: Date.now },
+  purchaseDate:  { type: Date, default: Date.now },
 }, { timestamps: true });
 
 // ─── SETTINGS (single doc approach) ────────────────────────
@@ -70,6 +70,29 @@ const depositAmtSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
 }, { timestamps: true });
 
+// ─── CHAT SESSION ──────────────────────────────────────────
+const chatSessionSchema = new mongoose.Schema({
+  userId:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username:      { type: String, required: true },
+  status:        { type: String, enum: ['active', 'ended'], default: 'active' },
+  lastMessage:   { type: String, default: '' },
+  lastMessageAt: { type: Date, default: Date.now },
+  unreadAdmin:   { type: Number, default: 0 },
+  unreadUser:    { type: Number, default: 0 },
+}, { timestamps: true });
+
+// ─── CHAT MESSAGE ──────────────────────────────────────────
+const chatMessageSchema = new mongoose.Schema({
+  sessionId:     { type: mongoose.Schema.Types.ObjectId, ref: 'ChatSession', required: true },
+  sender:        { type: String, enum: ['user', 'admin'], required: true },
+  type:          { type: String, enum: ['text', 'image', 'polar'], default: 'text' },
+  content:       { type: String, default: '' },
+  imageUrl:      { type: String, default: '' },
+  polarQuestion: { type: String, default: '' },
+  polarAnswer:   { type: String, default: '' },
+  read:          { type: Boolean, default: false },
+}, { timestamps: true });
+
 module.exports = {
   Deposit:        mongoose.model('Deposit', depositSchema),
   Withdrawal:     mongoose.model('Withdrawal', withdrawalSchema),
@@ -79,4 +102,6 @@ module.exports = {
   PurchasedShare: mongoose.model('PurchasedShare', purchasedShareSchema),
   Settings:       mongoose.model('Settings', settingsSchema),
   DepositAmt:     mongoose.model('DepositAmt', depositAmtSchema),
+  ChatSession:    mongoose.model('ChatSession', chatSessionSchema),
+  ChatMessage:    mongoose.model('ChatMessage', chatMessageSchema),
 };
