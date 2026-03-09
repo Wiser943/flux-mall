@@ -38,9 +38,9 @@
                     <i class="ri-message-3-line"></i>
                     <span id="adminChatBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;align-items:center;justify-content:center;font-weight:700;margin-left:-2px;">0</span>
                 </a>
-                <div class="nav-item" onclick="showTab('settings-tab', this)">
+                <a class="nav-item" href="settings">
                     <i class="ri-settings-line"></i> <span>Settings</span>
-                </div>
+                </a>
             </nav>
         </aside>
 
@@ -232,7 +232,7 @@
                 </div>
             </section>
 
-            <section id="settings-tab" class="tab-content">
+            <section id="settings" class="tab-content">
                 <div class="header-row">
                     <h2>Settings</h2>
                     <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
@@ -244,8 +244,6 @@
                         <div style="display: flex; font-size: 18pt;gap: 15px;cursor: pointer;">
                             <i style="color:green;background: none;" onclick="openBindBankModal()"
                                 class="ri-visa-fill"></i>
-                            <i style="color:green;background: none;" onclick="openCreateNewsModal()"
-                                class="ri-megaphone-line"></i>
                             <i style="color:red;background: none;" onclick="adminLogout()"
                                 class="ri-logout-box-line"></i>
                         </div>
