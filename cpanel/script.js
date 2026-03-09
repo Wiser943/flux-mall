@@ -70,11 +70,11 @@ window.stopFlash = () => {
 // ─── AUTH CHECK ───────────────────────────────────────────
 async function checkAdminSession() {
   const data = await fetch('/api/admin/me', { credentials: 'include' });
-  if (data.ok) {
-    showTab('analytics-tab');
+  if (data.ok) 
+window.location.href = '#analytics';
     initDashboard();
   } else {
-    showTab('login');
+window.location.href = '#login';
   }
 }
 
@@ -93,7 +93,7 @@ window.handleAdminLogin = async (e) => {
   });
 
   if (data?.success) {
-    showTab('analytics-tab');
+window.location.href = '#analytics';
     initDashboard();
   } else {
     alert(data?.error || 'Login failed.');
@@ -105,7 +105,7 @@ window.handleAdminLogin = async (e) => {
 // ─── ADMIN LOGOUT ─────────────────────────────────────────
 window.adminLogout = async () => {
   await api('/api/admin/logout', { method: 'POST' });
-  showTab('login');
+window.location.href = '#login';
 };
 
 // ─── INIT DASHBOARD ───────────────────────────────────────
@@ -907,15 +907,6 @@ const navItems = document.querySelectorAll('.nav-item');
 
       window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
       window.addEventListener('hashchange', switchPageByHash);
-
-
-window.showTab = (tabId, el) => {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  const tab = document.getElementById(tabId);
-  if (tab) tab.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if (el) el.classList.add('active');
-};
 
 
 /**
