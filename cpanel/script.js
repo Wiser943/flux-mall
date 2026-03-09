@@ -677,14 +677,14 @@ window.toggleGlobalBankLock = async (isChecked) => {
   alert(`🔒 Master Bank Lock is now ${isChecked ? 'ACTIVATED' : 'DEACTIVATED'}`);
 };
 
+  <!-- Chat Settings Panel -->
 window.openChatModal = async () => {
  
   showModal({
     id: 'createChatModal', title: 'Chat settings',
     content: `
-  <!-- Chat Settings Panel -->
                     <div id="chatSettingsPanel">
-                        <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:var(--primary);">⚙️ Chat Settings</div>
+                        <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:var(--primary);"></div>
 
                         <div class="settings-row">
                             <label style="font-size:13px;font-weight:600;">Chat Available</label>
