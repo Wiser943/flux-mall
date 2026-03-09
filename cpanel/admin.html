@@ -31,13 +31,13 @@
                 <a class="nav-item" href="#deposits">
                     <i class="ri-coins-fill"></i> <span>Transactions</span>
                 </a>
-                <div class="nav-item" onclick="showTab('users-tab', this)">
+                <a class="nav-item" href="#users">
                     <i class="ri-p2p-line"></i> <span>Management</span>
-                </div>
-  <div class="nav-item" onclick="showTab('chat-tab', this)">
+                </a>
+  <a class="nav-item" href="#chats">
                     <i class="ri-message-3-line"></i>
                     <span id="adminChatBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;align-items:center;justify-content:center;font-weight:700;margin-left:-2px;">0</span>
-                </div>
+                </a>
                 <div class="nav-item" onclick="showTab('settings-tab', this)">
                     <i class="ri-settings-line"></i> <span>Settings</span>
                 </div>
@@ -210,7 +210,7 @@
             </section>
 
 
-            <section id="users-tab" class="tab-content">
+            <section id="users" class="tab-content">
                 <div class="header-row">
                     <button class="btn-export" onclick="openCreateUserModal()">Create user<i
                             class="ri-add-line"></i></button>
@@ -582,7 +582,7 @@
 
 
             <!-- ══ CHAT TAB ═══════════════════════════════════════ -->
-            <section id="chat-tab" class="tab-content">
+            <section id="chats" class="tab-content">
   <div class="header-row">
                     <h2>Live Chats</h2>
                     <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
