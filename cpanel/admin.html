@@ -589,6 +589,7 @@
                         <div style="display:flex;font-size:18pt;gap:15px;cursor:pointer;">
                             <i style="color:green;background:none;" onclick="openCreateNewsModal()" class="ri-megaphone-line"></i>
                             <i style="color:green;background:none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
+<i style="color:green;background:none;" onclick="openChatSettings()" class="ri-draggable-line"></i>
                         </div>
                     </div>
                 </div>
@@ -598,7 +599,7 @@
                 #chatLayout {
                     display: flex;
                     height: calc(100vh - 150px);
-                    border: 2px solid var(--primary);
+                    border: 1px solid var(--primary);
                     border-radius: 12px;
                     overflow: hidden;
                     position: relative;
@@ -610,7 +611,6 @@
                     overflow-y: auto;
                     flex-shrink: 0;
                     transition: transform 0.25s ease;
-                    background: var(--card-bg, #fff);
                 }
                 #chatWindow {
                     flex: 1;
@@ -648,7 +648,7 @@
                     #adminBlockLabel { display: none; }
                     #adminBlockBtn { padding: 6px 8px; }
                     /* Tighten header actions on mobile */
-                    #adminChatHeader { padding: 8px 10px; gap: 6px; }
+                    #adminChatHeader { padding: 10px 7px; gap: 6px; }
                     #adminChatHeader .action-btns { gap: 0; }
                 }
                 </style>
@@ -675,7 +675,7 @@
                         <div id="chatWindowActive" style="display:none;flex-direction:column;height:100%;">
 
                             <!-- ── Chat Header ─────────────────────────────── -->
-                            <div id="adminChatHeader" style="padding:10px;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
+                            <div id="adminChatHeader" style="padding:10px 8px;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
 
                                 <!-- Back button — mobile only -->
                                 <button id="chatBackBtn" onclick="closeChatOnMobile()" title="Back to chats"
