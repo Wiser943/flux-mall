@@ -626,91 +626,134 @@
                         <!-- Active chat -->
                         <div id="chatWindowActive" style="display:none;flex-direction:column;height:100%;">
 
-                            <!-- Chat top bar -->
-                            <div id="adminChatHeader" style="padding:12px 16px;background:var(--card-bg,#fff);border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
-                                <!-- Clickable avatar → viewUserDetails -->
-                                <img id="adminChatUserLogo" src="" title="View user profile"
-                                    onclick="openChatUserProfile()"
-                                    style="width:38px;height:38px;border-radius:50%;object-fit:cover;background:#eee;cursor:pointer;border:2px solid var(--primary);flex-shrink:0;">
+                            <!-- ── Chat Header ─────────────────────────────── -->
+                            <div id="adminChatHeader" style="padding:10px 14px;background:var(--card-bg,#fff);border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
+
+                                <!-- Avatar — clickable → user profile -->
+                                <img id="adminChatUserLogo" src="" title="View profile" onclick="openChatUserProfile()"
+                                    style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;cursor:pointer;border:2px solid var(--primary);flex-shrink:0;">
+
+                                <!-- Name + ticker -->
                                 <div style="flex:1;min-width:0;cursor:pointer;" onclick="openChatUserProfile()">
-                                    <div id="adminChatUsername" style="font-weight:700;font-size:14px;"></div>
-                                    <!-- Ticker: cycles between status and session ID -->
-                                    <div id="adminChatSessionStatus" style="font-size:11px;color:#aaa;transition:opacity 0.4s;"></div>
+                                    <div id="adminChatUsername" style="font-weight:700;font-size:14px;color:var(--text-main);line-height:1.3;"></div>
+                                    <div id="adminChatSessionStatus" style="font-size:11px;color:#aaa;transition:opacity 0.4s;line-height:1.3;"></div>
                                 </div>
-                                <div style="display:flex;gap:6px;align-items:center;">
-                                    <!-- Quick block/unblock -->
-                                    <button id="adminBlockBtn" onclick="toggleBlockFromChat()" title="Block/Unblock user"
-                                        style="border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:11px;font-weight:600;">
-                                        🚫 Block
+
+                                <!-- Action icon buttons -->
+                                <div style="display:flex;align-items:center;gap:2px;">
+
+                                    <!-- Block / Unblock -->
+                                    <button id="adminBlockBtn" onclick="toggleBlockFromChat()" title="Block user"
+                                        style="display:flex;align-items:center;gap:4px;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:600;background:#fdecea;color:#e74c3c;">
+                                        <i class="ri-forbid-line" style="font-size:15px;"></i>
+                                        <span id="adminBlockLabel">Block</span>
                                     </button>
-                                    <!-- Search messages -->
+
+                                    <!-- Search -->
                                     <button onclick="toggleChatSearch()" title="Search messages"
-                                        style="background:#f4f7fe;color:#444;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;">🔍</button>
-                                    <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send Polar Question"
-                                        style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;">❓ Polar</button>
-                                    <button onclick="endAdminChatSession()" title="End Session"
-                                        style="background:#f39c12;color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;">⏹</button>
-                                    <button onclick="deleteAdminChatSession()" title="Delete Chat"
-                                        style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;">🗑</button>
+                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--text-muted,#aaa);cursor:pointer;">
+                                        <i class="ri-search-line" style="font-size:18px;"></i>
+                                    </button>
+
+                                    <!-- Polar question -->
+                                    <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send polar question"
+                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;">
+                                        <i class="ri-questionnaire-line" style="font-size:18px;"></i>
+                                    </button>
+
+                                    <!-- End session -->
+                                    <button onclick="endAdminChatSession()" title="End session"
+                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
+                                        <i class="ri-stop-circle-line" style="font-size:18px;"></i>
+                                    </button>
+
+                                    <!-- Delete chat -->
+                                    <button onclick="deleteAdminChatSession()" title="Delete chat"
+                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
+                                        <i class="ri-delete-bin-line" style="font-size:18px;"></i>
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- Search bar (hidden by default) -->
-                            <div id="chatSearchBar" style="display:none;padding:8px 14px;background:#f4f7fe;border-bottom:1px solid var(--border,#e0e5f2);">
-                                <input type="text" id="chatSearchInput" placeholder="Search messages..."
-                                    oninput="searchChatMessages(this.value)"
-                                    style="width:100%;padding:7px 14px;border:1px solid var(--border,#e0e5f2);border-radius:20px;font-size:13px;outline:none;">
-                                <div id="chatSearchResults" style="margin-top:6px;font-size:12px;color:#aaa;"></div>
+                            <!-- ── Search Bar ───────────────────────────────── -->
+                            <div id="chatSearchBar" style="display:none;padding:8px 14px;background:var(--bg-color,#f4f7fe);border-bottom:1px solid var(--border,#e0e5f2);">
+                                <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg,#fff);border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:0 14px;">
+                                    <i class="ri-search-line" style="color:#aaa;font-size:16px;flex-shrink:0;"></i>
+                                    <input type="text" id="chatSearchInput" placeholder="Search messages..."
+                                        oninput="searchChatMessages(this.value)"
+                                        style="flex:1;border:none;outline:none;padding:8px 0;font-size:13px;background:transparent;">
+                                    <i class="ri-close-line" onclick="toggleChatSearch()" style="color:#aaa;font-size:18px;cursor:pointer;flex-shrink:0;"></i>
+                                </div>
+                                <div id="chatSearchResults" style="margin-top:5px;font-size:12px;padding-left:4px;"></div>
                             </div>
 
-                            <!-- Messages -->
-                            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:4px;"></div>
+                            <!-- ── Messages ─────────────────────────────────── -->
+                            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:4px;background:var(--bg-color,#f4f7fe);"></div>
 
-                            <!-- Typing indicator -->
-                            <div id="adminTypingIndicator" style="display:none;padding:6px 16px;align-items:center;gap:6px;background:var(--bg-color,#f4f7fe);">
+                            <!-- ── Typing Indicator ─────────────────────────── -->
+                            <div id="adminTypingIndicator" style="display:none;padding:6px 16px;align-items:center;gap:8px;background:var(--bg-color,#f4f7fe);">
+                                <i class="ri-more-line" style="color:#aaa;font-size:16px;"></i>
                                 <span style="font-size:12px;color:#aaa;">User is typing</span>
-                                <span style="display:flex;gap:3px;">
-                                    <span style="width:5px;height:5px;background:#aaa;border-radius:50%;animation:typingDot 1.2s infinite 0s;"></span>
-                                    <span style="width:5px;height:5px;background:#aaa;border-radius:50%;animation:typingDot 1.2s infinite 0.2s;"></span>
-                                    <span style="width:5px;height:5px;background:#aaa;border-radius:50%;animation:typingDot 1.2s infinite 0.4s;"></span>
+                                <span style="display:flex;gap:3px;align-items:center;">
+                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0s;display:inline-block;"></span>
+                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.2s;display:inline-block;"></span>
+                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.4s;display:inline-block;"></span>
                                 </span>
                             </div>
 
-                            <!-- Reply/Edit bar -->
-                            <div id="adminReplyBar" style="display:none;padding:8px 12px;background:var(--card-bg,#fff);border-top:2px solid #4318ff;flex-direction:row;align-items:center;gap:8px;">
-                                <div style="flex:1;border-left:3px solid #4318ff;padding:4px 8px;">
-                                    <div id="adminReplyBarSender" style="font-size:11px;font-weight:700;color:#4318ff;"></div>
-                                    <div id="adminReplyBarText" style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;"></div>
+                            <!-- ── Reply / Edit Bar ─────────────────────────── -->
+                            <div id="adminReplyBar" style="display:none;padding:8px 14px;background:var(--card-bg,#fff);border-top:2px solid var(--primary);flex-direction:row;align-items:center;gap:10px;">
+                                <i class="ri-reply-line" style="color:var(--primary);font-size:18px;flex-shrink:0;"></i>
+                                <div style="flex:1;min-width:0;">
+                                    <div id="adminReplyBarSender" style="font-size:11px;font-weight:700;color:var(--primary);"></div>
+                                    <div id="adminReplyBarText" style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
                                 </div>
-                                <button onclick="cancelAdminReply()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;">✕</button>
+                                <button onclick="cancelAdminReply()"
+                                    style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,0.06);cursor:pointer;flex-shrink:0;">
+                                    <i class="ri-close-line" style="font-size:15px;color:#888;"></i>
+                                </button>
                             </div>
 
-                            <!-- Polar input -->
-                            <div id="polarInputArea" style="display:none;padding:10px 16px;background:#fffbea;border-top:1px solid #f1c40f;">
-                                <div style="font-size:12px;color:#888;margin-bottom:6px;">❓ Polar Question (user answers Yes/No)</div>
+                            <!-- ── Polar Question Input ─────────────────────── -->
+                            <div id="polarInputArea" style="display:none;padding:10px 14px;background:#fffde7;border-top:2px solid #f1c40f;">
+                                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                                    <i class="ri-questionnaire-line" style="color:#f39c12;font-size:16px;"></i>
+                                    <span style="font-size:12px;color:#888;font-weight:600;">Polar Question — user answers Yes or No</span>
+                                </div>
                                 <div style="display:flex;gap:8px;">
-                                    <input type="text" id="polarQuestionInput" placeholder="e.g. Did you complete the transfer?" style="flex:1;padding:8px 12px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
-                                    <button onclick="sendAdminPolar()" style="background:#f1c40f;color:#333;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;">Send</button>
-                                    <button onclick="togglePolarInput()" style="background:#eee;color:#666;border:none;border-radius:8px;padding:8px 10px;cursor:pointer;">✕</button>
+                                    <input type="text" id="polarQuestionInput" placeholder="e.g. Did you complete the transfer?"
+                                        style="flex:1;padding:8px 12px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;outline:none;">
+                                    <button onclick="sendAdminPolar()"
+                                        style="display:flex;align-items:center;gap:5px;background:#f1c40f;color:#333;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:13px;">
+                                        <i class="ri-send-plane-line" style="font-size:15px;"></i> Send
+                                    </button>
+                                    <button onclick="togglePolarInput()"
+                                        style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#eee;border:none;border-radius:8px;cursor:pointer;">
+                                        <i class="ri-close-line" style="font-size:17px;color:#666;"></i>
+                                    </button>
                                 </div>
                             </div>
 
-                            <!-- Input bar -->
-                            <div style="padding:12px 16px;background:var(--card-bg,#fff);border-top:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:8px;" id="adminChatInputBar">
-                                <label for="adminImgInput" style="cursor:pointer;padding:4px;color:var(--primary);" title="Send image">
-                                    <i class="ri-image-add-line" style="font-size:22px;"></i>
+                            <!-- ── Input Bar ────────────────────────────────── -->
+                            <div id="adminChatInputBar" style="padding:10px 14px;background:var(--card-bg,#fff);border-top:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:8px;">
+                                <label for="adminImgInput" title="Send image"
+                                    style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;cursor:pointer;color:var(--text-muted,#aaa);flex-shrink:0;transition:color 0.2s;"
+                                    onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted,#aaa)'">
+                                    <i class="ri-image-2-line" style="font-size:20px;"></i>
                                     <input type="file" id="adminImgInput" accept="image/*" style="display:none;" onchange="sendAdminImage(this)">
                                 </label>
                                 <input type="text" id="adminChatInput" placeholder="Type a reply..." maxlength="500"
-                                    style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 16px;font-size:14px;outline:none;"
+                                    style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 16px;font-size:14px;outline:none;background:var(--bg-color,#f4f7fe);color:var(--text-main);"
                                     onkeydown="onAdminInputKeydown(event)">
-                                <button onclick="sendAdminMessage()" style="background:var(--primary,#4318ff);border:none;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                                <button onclick="sendAdminMessage()" title="Send"
+                                    style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:none;border-radius:50%;background:var(--primary,#4318ff);cursor:pointer;flex-shrink:0;">
                                     <i class="ri-send-plane-fill" style="color:#fff;font-size:17px;"></i>
                                 </button>
                             </div>
 
                             <style>
                             @keyframes typingDot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+                            #adminChatHeader button:hover { opacity: 0.8; }
                             </style>
                         </div>
 
