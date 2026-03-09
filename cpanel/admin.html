@@ -675,7 +675,7 @@
                         <div id="chatWindowActive" style="display:none;flex-direction:column;height:100%;">
 
                             <!-- ── Chat Header ─────────────────────────────── -->
-                            <div id="adminChatHeader" style="padding:10px 14px;background:var(--card-bg,#fff);border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
+                            <div id="adminChatHeader" style="padding:10px 14px;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
 
                                 <!-- Back button — mobile only -->
                                 <button id="chatBackBtn" onclick="closeChatOnMobile()" title="Back to chats"
@@ -710,7 +710,7 @@
                                     </button>
 
                                     <!-- End session -->
-                                    <button onclick="endAdminChatSession()" title="End session"
+                                    <button onclick="endAdminChatSession()" style="display:none;" title="End session"
                                         style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
                                         <i class="ri-stop-circle-line" style="font-size:18px;"></i>
                                     </button>
