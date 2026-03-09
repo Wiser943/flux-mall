@@ -115,7 +115,7 @@ async function initDashboard() {
   await loadAnalytics();
   await renderUsers();
   await loadWithdrawals();
-  await loadSettings();
+  await loadSettings();loadAdminChatSessions();
   // Poll for updates every 30 seconds
   setInterval(async () => {
     await loadAnalytics();
