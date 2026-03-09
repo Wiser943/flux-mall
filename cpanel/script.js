@@ -1626,16 +1626,16 @@ function startStatusTicker(sessionId, sessionStatus, userStatus) {
     // State 1: user status
     () => {
       if (isEnded) {
-        el.innerHTML = `<span style="color:#e74c3c;">⏹ Session Ended</span>`;
+        el.innerHTML = `<span style="color:#e74c3c;display:flex;align-items:center;gap:4px;"><i class="ri-stop-circle-line"></i> Session Ended</span>`;
       } else if (isBlocked) {
-        el.innerHTML = `<span style="color:#e74c3c;">🔴 Offline — Blocked</span>`;
+        el.innerHTML = `<span style="color:#e74c3c;display:flex;align-items:center;gap:4px;"><i class="ri-forbid-line"></i> Offline — Blocked</span>`;
       } else {
-        el.innerHTML = `<span style="color:#10ac84;">🟢 Online — Active</span>`;
+        el.innerHTML = `<span style="color:#10ac84;display:flex;align-items:center;gap:4px;"><i class="ri-radio-button-line"></i> Online — Active</span>`;
       }
     },
     // State 2: session ID
     () => {
-      el.innerHTML = `<span style="color:#aaa;">🔑 Chat ID: <code style="font-size:10px;background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:4px;">${shortId}</code></span>`;
+      el.innerHTML = `<span style="color:#aaa;display:flex;align-items:center;gap:4px;"><i class="ri-fingerprint-line"></i> ID: <code style="font-size:10px;background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:4px;">${shortId}</code></span>`;
     }
   ];
 
@@ -1654,12 +1654,16 @@ function startStatusTicker(sessionId, sessionStatus, userStatus) {
 
 // ─── 3. BLOCK / UNBLOCK FROM CHAT ─────────────────────────
 function updateBlockBtn(userStatus) {
-  const btn = document.getElementById('adminBlockBtn');
+  const btn   = document.getElementById('adminBlockBtn');
+  const label = document.getElementById('adminBlockLabel');
   if (!btn) return;
   const isBlocked = userStatus === 'blocked';
-  btn.textContent  = isBlocked ? '✅ Unblock' : '🚫 Block';
-  btn.style.background = isBlocked ? '#10ac84' : '#e74c3c';
-  btn.style.color = '#fff';
+  const icon = btn.querySelector('i');
+  if (icon) icon.className = isBlocked ? 'ri-shield-check-line' : 'ri-forbid-line';
+  if (label) label.textContent = isBlocked ? 'Unblock' : 'Block';
+  btn.style.background = isBlocked ? '#e8f8f1' : '#fdecea';
+  btn.style.color      = isBlocked ? '#10ac84' : '#e74c3c';
+  btn.title = isBlocked ? 'Unblock user' : 'Block user';
 }
 
 window.toggleBlockFromChat = async function() {
