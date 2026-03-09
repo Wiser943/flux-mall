@@ -25,12 +25,12 @@
         <aside class="sidebar">
             <div class="logo">CPANEL</div>
             <nav>
-                <div class="nav-item active" onclick="showTab('analytics-tab', this)">
+                <a class="nav-item active" href="#analytics">
                     <i class="ri-bubble-chart-line"></i> <span>Analytics</span>
-                </div>
-                <div class="nav-item" onclick="showTab('deposits-tab', this)">
+                </a>
+                <a class="nav-item" href="#deposits">
                     <i class="ri-coins-fill"></i> <span>Transactions</span>
-                </div>
+                </a>
                 <div class="nav-item" onclick="showTab('users-tab', this)">
                     <i class="ri-p2p-line"></i> <span>Management</span>
                 </div>
@@ -74,7 +74,7 @@
                 <span class="theme-dot" onclick="setTheme('blue', this)"><i class="ri-moon-clear-line"></i></span>
             </div>
 
-            <section id="analytics-tab" class="tab-content active">
+            <section id="analytics" class="tab-content active">
                 <div class="header-row">
                     <button class="btn-export" onclick="exportCSV()">Export CSV <i
                             class="ri-arrow-right-up-fill"></i></button>
@@ -132,7 +132,7 @@
                 </div>
             </section>
 
-            <section id="deposits-tab" class="tab-content">
+            <section id="deposits" class="tab-content">
                 <div class="header-row">
                     <h2>Deposit Requests</h2>
                     <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
