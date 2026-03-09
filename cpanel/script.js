@@ -997,6 +997,8 @@ checkAdminSession();
 // ═══════════════════════════════════════════════════════════
 
 let activeSessionId      = null;
+let activeUserData       = null;   // full user object from session.userId
+let statusTickerTimer    = null;   // cycles status line in header
 let adminChatPollTimer   = null;
 let adminTypingPollTimer = null;
 let adminTypingTimer     = null;
@@ -1053,7 +1055,7 @@ window.loadAdminChatSessions = async function() {
     const ended     = s.status === 'ended';
     const div = document.createElement('div');
     div.style.cssText = `padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;background:${isActive?'rgba(67,24,255,0.06)':'transparent'};`;
-    div.onclick = () => openAdminChatSession(s._id, s.username, s.status);
+    div.onclick = () => openAdminChatSession(s._id, s.username, s.status, s.userId);
     div.innerHTML = `
       <img src="${logo}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#eee;border:2px solid ${ended?'#e74c3c':'#10ac84'};">
       <div style="flex:1;min-width:0;">
@@ -1074,8 +1076,9 @@ window.loadAdminChatSessions = async function() {
 };
 
 // ─── OPEN SESSION ─────────────────────────────────────────
-window.openAdminChatSession = async function(sessionId, username, status) {
+window.openAdminChatSession = async function(sessionId, username, status, userData) {
   activeSessionId = sessionId;
+  activeUserData  = userData || null;
   adminChatSessionStatus = status || 'active';
   adminAllMessages = [];
   adminReplyingTo  = null;
@@ -1089,7 +1092,12 @@ window.openAdminChatSession = async function(sessionId, username, status) {
 
   document.getElementById('adminChatUsername').textContent = username;
   document.getElementById('adminChatUserLogo').src = logo;
-  document.getElementById('adminChatSessionStatus').textContent = status === 'ended' ? '🔴 Session Ended' : '🟢 Active';
+
+  // Update block button state
+  updateBlockBtn(userData?.status);
+
+  // Start status ticker
+  startStatusTicker(sessionId, status, userData?.status);
 
   const inputBar = document.getElementById('adminChatInputBar');
   const polarBtn = document.getElementById('adminPolarBtn');
@@ -1137,6 +1145,7 @@ async function loadAdminMessages(sessionId) {
   });
   container.scrollTop = container.scrollHeight;
   adminLastMsgCount = data.messages.length;
+  setTimeout(() => updateSeenLabel(data.messages), 100);
 }
 
 // ─── BUILD BUBBLE ─────────────────────────────────────────
@@ -1480,6 +1489,8 @@ function startAdminChatPolling(sessionId) {
       if (adminSoundEnabled && hasUserMsg) playAdminChatSound();
       adminLastMsgCount = data.messages.length;
       loadAdminChatSessions();
+      // Update seen labels
+      setTimeout(() => updateSeenLabel(data.messages), 100);
     }
   }, 4000);
 }
@@ -1575,3 +1586,227 @@ window.saveChatSettings = async function() {
 };
 
 loadChatSettings();
+
+
+// ═══════════════════════════════════════════════════════════
+// CHAT — NEW FEATURES
+// ═══════════════════════════════════════════════════════════
+
+// ─── 1. VIEW USER PROFILE FROM CHAT ──────────────────────
+window.openChatUserProfile = function() {
+  if (!activeUserData) return alert('User data not available.');
+  const u = activeUserData;
+  viewUserDetails(
+    u._id || u,
+    u.status || 'active',
+    u.username || 'Unknown',
+    u.email || '',
+    u.ib || 0,
+    u.emailVerified || false,
+    u.createdAt || '',
+    u.refPoints || 0,
+    u.referrerId || ''
+  );
+};
+
+// ─── 2. STATUS TICKER ─────────────────────────────────────
+// Cycles: status → session ID → status → ...
+function startStatusTicker(sessionId, sessionStatus, userStatus) {
+  if (statusTickerTimer) clearInterval(statusTickerTimer);
+
+  const el = document.getElementById('adminChatSessionStatus');
+  if (!el) return;
+
+  const shortId = sessionId ? sessionId.toString().slice(-8).toUpperCase() : '--------';
+
+  const isBlocked = userStatus === 'blocked';
+  const isEnded   = sessionStatus === 'ended';
+
+  const states = [
+    // State 1: user status
+    () => {
+      if (isEnded) {
+        el.innerHTML = `<span style="color:#e74c3c;">⏹ Session Ended</span>`;
+      } else if (isBlocked) {
+        el.innerHTML = `<span style="color:#e74c3c;">🔴 Offline — Blocked</span>`;
+      } else {
+        el.innerHTML = `<span style="color:#10ac84;">🟢 Online — Active</span>`;
+      }
+    },
+    // State 2: session ID
+    () => {
+      el.innerHTML = `<span style="color:#aaa;">🔑 Chat ID: <code style="font-size:10px;background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:4px;">${shortId}</code></span>`;
+    }
+  ];
+
+  let idx = 0;
+  states[0](); // show immediately
+
+  statusTickerTimer = setInterval(() => {
+    el.style.opacity = '0';
+    setTimeout(() => {
+      idx = (idx + 1) % states.length;
+      states[idx]();
+      el.style.opacity = '1';
+    }, 300);
+  }, 3500);
+}
+
+// ─── 3. BLOCK / UNBLOCK FROM CHAT ─────────────────────────
+function updateBlockBtn(userStatus) {
+  const btn = document.getElementById('adminBlockBtn');
+  if (!btn) return;
+  const isBlocked = userStatus === 'blocked';
+  btn.textContent  = isBlocked ? '✅ Unblock' : '🚫 Block';
+  btn.style.background = isBlocked ? '#10ac84' : '#e74c3c';
+  btn.style.color = '#fff';
+}
+
+window.toggleBlockFromChat = async function() {
+  if (!activeSessionId) return;
+  const isBlocked = activeUserData?.status === 'blocked';
+  const action    = isBlocked ? 'unblock' : 'block';
+  if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} this user?`)) return;
+
+  const data = await api(`/api/admin/chat/session/${activeSessionId}/block`, {
+    method: 'PUT',
+    body: JSON.stringify({ block: !isBlocked })
+  });
+
+  if (data?.success) {
+    if (activeUserData) activeUserData.status = data.userStatus;
+    updateBlockBtn(data.userStatus);
+    // Restart ticker with updated status
+    startStatusTicker(activeSessionId, isBlocked ? 'active' : 'ended', data.userStatus);
+    // If blocked, hide input bar
+    if (!isBlocked) {
+      adminChatSessionStatus = 'ended';
+      document.getElementById('adminChatInputBar').style.display = 'none';
+      document.getElementById('adminPolarBtn').style.display = 'none';
+    } else {
+      adminChatSessionStatus = 'active';
+      document.getElementById('adminChatInputBar').style.display = 'flex';
+      document.getElementById('adminPolarBtn').style.display = 'inline-block';
+    }
+    loadAdminChatSessions();
+  } else {
+    alert(data?.error || 'Failed.');
+  }
+};
+
+// ─── 4. SEARCH MESSAGES ───────────────────────────────────
+window.toggleChatSearch = function() {
+  const bar = document.getElementById('chatSearchBar');
+  if (!bar) return;
+  const isVisible = bar.style.display !== 'none';
+  bar.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) document.getElementById('chatSearchInput')?.focus();
+  else {
+    document.getElementById('chatSearchInput').value = '';
+    document.getElementById('chatSearchResults').textContent = '';
+    // Remove all highlights
+    document.querySelectorAll('.search-highlight').forEach(el => {
+      el.outerHTML = el.textContent;
+    });
+  }
+};
+
+window.searchChatMessages = function(query) {
+  const resultsEl = document.getElementById('chatSearchResults');
+  // Remove previous highlights
+  document.querySelectorAll('.search-highlight').forEach(el => {
+    const text = document.createTextNode(el.textContent);
+    el.parentNode.replaceChild(text, el);
+  });
+
+  if (!query.trim()) { if (resultsEl) resultsEl.textContent = ''; return; }
+
+  const q = query.toLowerCase();
+  const bubbles = document.querySelectorAll('#adminChatMessages .admin-bubble');
+  let matchCount = 0;
+  let firstMatch = null;
+
+  bubbles.forEach(bubble => {
+    const spans = bubble.querySelectorAll('span');
+    spans.forEach(span => {
+      if (span.children.length > 0) return; // skip non-text spans
+      const text = span.textContent;
+      if (text.toLowerCase().includes(q)) {
+        matchCount++;
+        // Highlight the match
+        const highlighted = text.replace(
+          new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+          '<mark class="search-highlight" style="background:#fff176;border-radius:3px;padding:0 2px;">$1</mark>'
+        );
+        span.innerHTML = highlighted;
+        if (!firstMatch) firstMatch = bubble;
+      }
+    });
+  });
+
+  if (resultsEl) {
+    resultsEl.textContent = matchCount > 0 ? `${matchCount} result${matchCount > 1 ? 's' : ''} found` : 'No results found';
+    resultsEl.style.color = matchCount > 0 ? '#10ac84' : '#e74c3c';
+  }
+
+  // Scroll to first match
+  if (firstMatch) firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+// ─── 5. SCROLL TO BOTTOM BUTTON ───────────────────────────
+function initScrollToBottom() {
+  const container = document.getElementById('adminChatMessages');
+  if (!container) return;
+
+  // Create the button if not exists
+  let btn = document.getElementById('scrollToBottomBtn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'scrollToBottomBtn';
+    btn.innerHTML = '↓';
+    btn.style.cssText = 'display:none;position:absolute;bottom:80px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:50;';
+    btn.onclick = () => { container.scrollTop = container.scrollHeight; };
+    container.parentElement.style.position = 'relative';
+    container.parentElement.appendChild(btn);
+  }
+
+  container.onscroll = () => {
+    const distFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    btn.style.display = distFromBottom > 120 ? 'flex' : 'none';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+  };
+}
+
+// Call initScrollToBottom when a session is opened
+const _origLoadAdminMsgs = loadAdminMessages;
+// Hook into openAdminChatSession — initScrollToBottom runs after messages load
+const _origOpen = window.openAdminChatSession;
+window.openAdminChatSession = async function(sessionId, username, status, userData) {
+  await _origOpen(sessionId, username, status, userData);
+  setTimeout(initScrollToBottom, 200);
+};
+
+// ─── 6. SEEN RECEIPT ──────────────────────────────────────
+// Already handled by message ticks (✓✓ blue = read). 
+// Additionally show "Seen" label under the last admin message.
+function updateSeenLabel(messages) {
+  // Remove existing seen labels
+  document.querySelectorAll('.seen-label').forEach(el => el.remove());
+
+  // Find last admin message that was read
+  const lastReadAdminMsg = [...messages].reverse().find(m => m.sender === 'admin' && m.read && !m.deleted);
+  if (!lastReadAdminMsg) return;
+
+  const bubble = document.querySelector(`[data-msg-id="${lastReadAdminMsg._id}"]`);
+  if (!bubble) return;
+
+  const label = document.createElement('div');
+  label.className = 'seen-label';
+  label.style.cssText = 'font-size:10px;color:#4fc3f7;text-align:right;padding:0 42px;margin-top:-4px;';
+  label.textContent = 'Seen ✓✓';
+  bubble.after(label);
+}
+
+// Patch startAdminChatPolling to call updateSeenLabel
+const _origPollFn = startAdminChatPolling;
