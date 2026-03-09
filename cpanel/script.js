@@ -1258,8 +1258,7 @@ function buildAdminMsgBubble(msg, logo) {
 
   wrapper.innerHTML = `
     ${emojiBarHtml}
-    <div style="display:flex;align-items:flex-end;gap:6px;${isMe?'flex-direction:row-reverse;':''}">
-      <img src="${logo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#eee;">
+    <div>
       <div class="admin-bubble" data-msg-id="${msg._id}"
         style="max-width:72%;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
         oncontextmenu="adminShowEmojiBar(event,'${emojiBarId}')"
