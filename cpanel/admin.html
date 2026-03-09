@@ -583,6 +583,25 @@
 
             <!-- ══ CHAT TAB ═══════════════════════════════════════ -->
             <section id="chat-tab" class="tab-content">
+  <div class="header-row">
+                    <h2>Settings</h2>
+                    <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
+                        <div class="search-box">
+                            <button class="btn-export" onclick="resetBrandingSecure()" id="resetBrandingBtn">Reset
+                                default<i class="ri-arrow-right-up-fill"></i></button>
+                        </div>
+
+                        <div style="display: flex; font-size: 18pt;gap: 15px;cursor: pointer;">
+                            <i style="color:green;background: none;" onclick="openBindBankModal()"
+                                class="ri-visa-fill"></i>
+                            <i style="color:green;background: none;" onclick="openCreateNewsModal()"
+                                class="ri-megaphone-line"></i>
+                            <i style="color:red;background: none;" onclick="adminLogout()"
+                                class="ri-logout-box-line"></i>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display:flex;height:calc(100vh - 60px);gap:0;">
 
                     <!-- Session List -->
