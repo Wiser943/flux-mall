@@ -324,7 +324,12 @@ button:disabled{
             color: #f4f4f4;
             border-radius: 0;
         }
-
+ 
+    /* Chat settings toggle */
+    
+.settings-row { display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border,#f0f0f0); }
+    @keyframes spin { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
+    
         .switch {
             position: relative;
             display: inline-block;
