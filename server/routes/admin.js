@@ -473,7 +473,7 @@ router.put('/settings/apikeys', requireAdmin, async (req, res) => {
 // ─── GET /api/admin/chat/sessions ────────────────────────
 router.get('/chat/sessions', requireAdmin, async (req, res) => {
   try {
-    const sessions = await ChatSession.find().sort({ lastMessageAt: -1 });
+    const sessions = await ChatSession.find().sort({ lastMessageAt: -1 }).populate('userId', 'username email ib status emailVerified createdAt refPoints referrerId');
     res.json({ success: true, sessions });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -643,6 +643,24 @@ router.put('/chat/message/:id', requireAdmin, async (req, res) => {
     await ChatMessage.findByIdAndUpdate(req.params.id, { content, edited: true });
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+
+// ─── PUT /api/admin/chat/session/:id/block ───────────────
+// Quick block/unblock user directly from chat
+router.put('/chat/session/:id/block', requireAdmin, async (req, res) => {
+  try {
+    const { block } = req.body; // true = block, false = unblock
+    const session = await ChatSession.findById(req.params.id).populate('userId');
+    if (!session?.userId) return res.status(404).json({ error: 'User not found.' });
+    const newStatus = block ? 'blocked' : 'active';
+    await User.findByIdAndUpdate(session.userId._id, { status: newStatus });
+    // Also end the chat session if blocking
+    if (block) await ChatSession.findByIdAndUpdate(req.params.id, { status: 'ended' });
+    res.json({ success: true, userStatus: newStatus });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
