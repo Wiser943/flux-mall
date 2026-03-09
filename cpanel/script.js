@@ -706,7 +706,14 @@ window.openChatModal = async () => {
                         <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Auto-Reply Message</div>
                         <textarea id="cs_autoReply" rows="3" placeholder="e.g. Thanks for reaching out! We'll reply shortly." style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;resize:vertical;"></textarea>
 
-                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Office Hours</div>
+       <details
+                                    style="margin:6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
+
+                                    <summary style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight: bold;">More settings</span>
+                                    </summary>
+
+                               <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Office Hours</div>
                         <label class="switch" style="margin-bottom:8px;"><input type="checkbox" id="cs_officeHoursEnabled"><span class="slider"></span></label>
                         <div style="display:flex;gap:8px;margin-top:8px;">
                             <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Open (hr)</div><input type="number" id="cs_open" min="0" max="23" value="9" style="width:100%;padding:6px;border:1px solid var(--border,#e0e5f2);border-radius:6px;"></div>
@@ -719,7 +726,7 @@ window.openChatModal = async () => {
 
                         <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Message Char Limit</div>
                         <input type="number" id="cs_charLimit" value="500" min="50" style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
-
+                                </details>
       </div>`,
     buttons: [
       { text: 'Cancel',   class: 'btn-sec',    onclick: "document.getElementById('createChatModal').remove()" },
