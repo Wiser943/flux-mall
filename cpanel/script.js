@@ -71,7 +71,7 @@ window.stopFlash = () => {
 async function checkAdminSession() {
   const data = await fetch('/api/admin/me', { credentials: 'include' });
   if (data.ok) {
-window.location.href = '#analytics';
+//window.location.href = '#analytics';
     initDashboard();
   } else {
 window.location.href = '#login';
@@ -830,7 +830,20 @@ window.addShare = async () => {
   const share = { name, price, dailyIncome: daily, duration, img: imgUrl || '' };
   await api('/api/admin/shares', { method: 'POST', body: JSON.stringify(share) });
   document.getElementById('sharesModal')?.remove();
-  alert('✅ Share added!');
+	 // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ Share added.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        });
 };
 
 window.deleteShare = async (id) => {
@@ -866,7 +879,20 @@ window.createUser = async () => {
   };
   const data = await api('/api/admin/create-user', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
-    alert('✅ User created!');
+	   // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ User created.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        });
     document.getElementById('createUserModal')?.remove();
     renderUsers();
   } else {
@@ -1593,7 +1619,20 @@ window.saveChatSettings = async function() {
     }
   };
   const data = await api('/api/admin/chat/settings', { method:'PUT', body: JSON.stringify(body) });
-  if (data?.success) { adminSoundEnabled = body.sound; alert('✅ Chat settings saved!'); }
+  if (data?.success) { adminSoundEnabled = body.sound;  // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ Chat settings saved.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        }); }
   else alert(data?.error || 'Error saving settings.');
 };
 
