@@ -2,6 +2,13 @@
 // FLUX MALL - Admin Panel Script (No Firebase)
 // All operations via REST API to Node.js/MongoDB backend
 // ============================================================
+window.showTab = (tabId, el) => {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  const tab = document.getElementById(tabId);
+  if (tab) tab.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+};
 
 let allData = [];
 let allUsers = [];
