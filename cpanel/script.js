@@ -677,6 +677,59 @@ window.toggleGlobalBankLock = async (isChecked) => {
   alert(`🔒 Master Bank Lock is now ${isChecked ? 'ACTIVATED' : 'DEACTIVATED'}`);
 };
 
+
+
+window.openChatModal = async () => {
+ 
+  showModal({
+    id: 'createChatModal', title: 'Chat settings',
+    content: `
+  <!-- Chat Settings Panel -->
+                    <div id="chatSettingsPanel" style="width:280px;min-width:240px;border-left:1px solid var(--border,#e0e5f2);background:var(--card-bg,#fff);overflow-y:auto;padding:16px;">
+                        <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:var(--primary);">⚙️ Chat Settings</div>
+
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Chat Available</label>
+                            <label class="switch"><input type="checkbox" id="cs_available" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Sound Alerts</label>
+                            <label class="switch"><input type="checkbox" id="cs_sound" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Allow User Images</label>
+                            <label class="switch"><input type="checkbox" id="cs_allowImages" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Require Email Verification</label>
+                            <label class="switch"><input type="checkbox" id="cs_requireVerified"><span class="slider"></span></label>
+                        </div>
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Auto-Reply Message</div>
+                        <textarea id="cs_autoReply" rows="3" placeholder="e.g. Thanks for reaching out! We'll reply shortly." style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;resize:vertical;"></textarea>
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Office Hours</div>
+                        <label class="switch" style="margin-bottom:8px;"><input type="checkbox" id="cs_officeHoursEnabled"><span class="slider"></span></label>
+                        <div style="display:flex;gap:8px;margin-top:8px;">
+                            <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Open (hr)</div><input type="number" id="cs_open" min="0" max="23" value="9" style="width:100%;padding:6px;border:1px solid var(--border,#e0e5f2);border-radius:6px;"></div>
+                            <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Close (hr)</div><input type="number" id="cs_close" min="0" max="23" value="18" style="width:100%;padding:6px;border:1px solid var(--border,#e0e5f2);border-radius:6px;"></div>
+                        </div>
+                        <input type="text" id="cs_offlineMsg" placeholder="Offline message..." style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;margin-top:8px;">
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Auto-close Inactive (hours)</div>
+                        <input type="number" id="cs_autoClose" value="48" min="1" style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Message Char Limit</div>
+                        <input type="number" id="cs_charLimit" value="500" min="50" style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
+
+      </div>`,
+    buttons: [
+      { text: 'Cancel',   class: 'btn-sec',    onclick: "document.getElementById('createChatModal').remove()" },
+      { text: 'Save Settings', class: 'btn-submit',  onclick: 'saveChatSettings()' }
+    ]
+  });
+};
+
 // ─── ANNOUNCEMENT ─────────────────────────────────────────
 window.openCreateNewsModal = async () => {
   const data = await api('/api/admin/settings');
