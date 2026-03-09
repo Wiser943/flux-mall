@@ -888,6 +888,27 @@ window.setTheme = (theme, el) => {
 };
 
 // ─── TAB NAVIGATION ───────────────────────────────────────
+const navItems = document.querySelectorAll('.nav-item');
+      const allPages = document.querySelectorAll('.tab-content');
+
+      function switchPageByHash() {
+        const hash = window.location.hash || '#home';
+        const targetId = hash.substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          allPages.forEach(page => page.classList.remove('active'));
+          navItems.forEach(item => item.classList.remove('active'));
+          targetElement.classList.add('active');
+          navItems.forEach(item => {
+            if (item.getAttribute('href') === hash) item.classList.add('active');
+          });
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
+      window.addEventListener('hashchange', switchPageByHash);
+
+
 window.showTab = (tabId, el) => {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   const tab = document.getElementById(tabId);
