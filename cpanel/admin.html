@@ -582,29 +582,88 @@
 
             <!-- ══ CHAT TAB ═══════════════════════════════════════ -->
             <section id="chats" class="tab-content">
-  <div class="header-row">
+                <div class="header-row">
                     <h2>Live Chats</h2>
-                    <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
-<div class="search-box"></div>
-                        <div style="display: flex; font-size: 18pt;gap: 15px;cursor: pointer;">
-<i style="color:green;background: none;" onclick="openCreateNewsModal()"                         class="ri-megaphone-line"></i>
-<i style="color:green;background: none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
-<i style="color:green;background: none;" onclick="openChatModal()" class="ri-draggable"></i>
+                    <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
+                        <div class="search-box"></div>
+                        <div style="display:flex;font-size:18pt;gap:15px;cursor:pointer;">
+                            <i style="color:green;background:none;" onclick="openCreateNewsModal()" class="ri-megaphone-line"></i>
+                            <i style="color:green;background:none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
                         </div>
                     </div>
                 </div>
 
-                <div style="display:flex;height:calc(100vh - 150px);gap:0;border:2px solid var(--primary);" class="table-container">
+                <style>
+                /* ── Chat responsive layout ───────────────────── */
+                #chatLayout {
+                    display: flex;
+                    height: calc(100vh - 150px);
+                    border: 2px solid var(--primary);
+                    border-radius: 12px;
+                    overflow: hidden;
+                    position: relative;
+                }
+                #chatSessionList {
+                    width: 300px;
+                    min-width: 260px;
+                    border-right: 1px solid var(--border, #e0e5f2);
+                    overflow-y: auto;
+                    flex-shrink: 0;
+                    transition: transform 0.25s ease;
+                    background: var(--card-bg, #fff);
+                }
+                #chatWindow {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    min-width: 0;
+                }
+                /* Mobile: stack panels, session list slides out */
+                @media (max-width: 700px) {
+                    #chatLayout {
+                        height: calc(100vh - 130px);
+                        border-radius: 8px;
+                    }
+                    #chatSessionList {
+                        position: absolute;
+                        top: 0; left: 0; bottom: 0;
+                        width: 100%;
+                        min-width: unset;
+                        z-index: 10;
+                        border-right: none;
+                        transform: translateX(0);
+                    }
+                    #chatSessionList.slide-out {
+                        transform: translateX(-100%);
+                        pointer-events: none;
+                    }
+                    #chatWindow {
+                        width: 100%;
+                    }
+                    /* Back button — only visible on mobile */
+                    #chatBackBtn {
+                        display: flex !important;
+                    }
+                    /* Hide block label text on mobile, show only icon */
+                    #adminBlockLabel { display: none; }
+                    #adminBlockBtn { padding: 6px 8px; }
+                    /* Tighten header actions on mobile */
+                    #adminChatHeader { padding: 8px 10px; gap: 6px; }
+                    #adminChatHeader .action-btns { gap: 0; }
+                }
+                </style>
+
+                <div id="chatLayout" class="table-container">
 
                     <!-- Session List -->
-                    <div id="chatSessionList" style="width:300px;min-width:260px;border-right:1px solid var(--border,#e0e5f2);overflow-y:auto;">
+                    <div id="chatSessionList">
                         <div id="chatSessionItems">
                             <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
                         </div>
                     </div>
 
                     <!-- Chat Window -->
-                    <div id="chatWindow" style="flex:1;display:flex;flex-direction:column;">
+                    <div id="chatWindow">
 
                         <!-- Empty state -->
                         <div id="chatWindowEmpty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;">
@@ -617,6 +676,12 @@
 
                             <!-- ── Chat Header ─────────────────────────────── -->
                             <div id="adminChatHeader" style="padding:10px 14px;background:var(--card-bg,#fff);border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
+
+                                <!-- Back button — mobile only -->
+                                <button id="chatBackBtn" onclick="closeChatOnMobile()" title="Back to chats"
+                                    style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;flex-shrink:0;">
+                                    <i class="ri-arrow-left-line" style="font-size:20px;"></i>
+                                </button>
 
                                 <!-- Avatar — clickable → user profile -->
                                 <img id="adminChatUserLogo" src="" title="View profile" onclick="openChatUserProfile()"
@@ -747,8 +812,6 @@
                         </div>
 
                     </div>
-
-                  
 
                 </div>
             </section>
