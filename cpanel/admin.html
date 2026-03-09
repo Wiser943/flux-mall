@@ -594,7 +594,7 @@
                     </div>
                 </div>
 
-                <div style="display:flex;height:calc(100vh - 200px);gap:0;" class="table-container">
+                <div style="display:flex;height:calc(100vh - 150px);gap:0;" class="table-container">
 
                     <!-- Session List -->
                     <div id="chatSessionList" style="width:300px;min-width:260px;border-right:1px solid var(--border,#e0e5f2);overflow-y:auto;">
@@ -642,12 +642,6 @@
                                     <button onclick="toggleChatSearch()" title="Search messages"
                                         style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--text-muted,#aaa);cursor:pointer;">
                                         <i class="ri-search-line" style="font-size:18px;"></i>
-                                    </button>
-
-                                    <!-- Polar question -->
-                                    <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send polar question"
-                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;">
-                                        <i class="ri-questionnaire-line" style="font-size:18px;"></i>
                                     </button>
 
                                     <!-- End session -->
@@ -731,6 +725,12 @@
                                     <i class="ri-image-2-line" style="font-size:20px;"></i>
                                     <input type="file" id="adminImgInput" accept="image/*" style="display:none;" onchange="sendAdminImage(this)">
                                 </label>
+                                   <!-- Polar question -->
+                                    <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send polar question"
+                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;">
+                                        <i class="ri-questionnaire-line" style="font-size:18px;"></i>
+                                    </button>
+                                
                                 <input type="text" id="adminChatInput" placeholder="Type a reply..." maxlength="500"
                                     style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 16px;font-size:14px;outline:none;background:var(--bg-color,#f4f7fe);color:var(--text-main);"
                                     onkeydown="onAdminInputKeydown(event)">
