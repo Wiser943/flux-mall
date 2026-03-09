@@ -1128,6 +1128,13 @@ window.openAdminChatSession = async function(sessionId, username, status, userDa
   const activeWin = document.getElementById('chatWindowActive');
   activeWin.style.display = 'flex';
 
+  // Mobile: slide session list out
+  if (window.innerWidth <= 700) {
+    document.getElementById('chatSessionList')?.classList.add('slide-out');
+    const backBtn = document.getElementById('chatBackBtn');
+    if (backBtn) backBtn.style.display = 'flex';
+  }
+
   document.getElementById('adminChatUsername').textContent = username;
   document.getElementById('adminChatUserLogo').src = logo;
 
@@ -1865,3 +1872,22 @@ function updateSeenLabel(messages) {
 
 // Patch startAdminChatPolling to call updateSeenLabel
 const _origPollFn = startAdminChatPolling;
+
+// ─── MOBILE: Back to session list ─────────────────────────
+window.closeChatOnMobile = function() {
+  document.getElementById('chatSessionList')?.classList.remove('slide-out');
+  document.getElementById('chatWindowActive').style.display = 'none';
+  document.getElementById('chatWindowEmpty').style.display = 'flex';
+  const backBtn = document.getElementById('chatBackBtn');
+  if (backBtn) backBtn.style.display = 'none';
+  stopAdminChatPolling();
+  activeSessionId = null;
+};
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 700) {
+    document.getElementById('chatSessionList')?.classList.remove('slide-out');
+    const backBtn = document.getElementById('chatBackBtn');
+    if (backBtn) backBtn.style.display = 'none';
+  }
+});
