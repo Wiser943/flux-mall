@@ -1,5 +1,10 @@
 /* --- CSS Variables & Reset --- */
 :root {
+    
+    --bg-dark: #0a0a0a;
+    --card-bg: #141414;
+    --neon-green: #00ff7f;
+    --text-gray: #a0a0a0;
     --bg-gradient-start: #2b0f20;
     /* Deep reddish-purple for body bg */
     --bg-gradient-end: #0a0a0a;
@@ -28,18 +33,12 @@ form a {
     cursor: pointer;
 }
 
-:root {
-    --bg-dark: #0a0a0a;
-    --card-bg: #141414;
-    --neon-green: #00ff7f;
-    --text-gray: #a0a0a0;
-}
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
+    outline-color:transparent!important;
 }
 
 body {
