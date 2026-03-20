@@ -66,7 +66,7 @@ function applyTheme(theme) {
 async function checkSession() {
   try {
     var res = await fetch('/api/auth/me', { credentials: 'include' });
-    if (res.ok) window.location.href = '/index.html';
+    if (res.ok) window.location.href = '/m1/index.html';
   } catch (err) {}
 }
 
@@ -210,7 +210,7 @@ window.addEventListener('DOMContentLoaded', function() {
           }));
           showAlert('Login successful!', true);
           loginForm.reset();
-          setTimeout(function() { window.location.href = '/index.html'; }, 1000);
+          setTimeout(function() { window.location.href = '/m1/index.html'; }, 1000);
         } else {
           showAlert(data.error || 'Login failed. Please check your credentials.', false);
         }
