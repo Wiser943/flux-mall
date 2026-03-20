@@ -296,7 +296,7 @@ button {
 }
 
 .input-wrapper input {
-    background: transparent;
+    background: transparent !important;
     border: none;
     color: var(--text-gray);
     width: 100%;
