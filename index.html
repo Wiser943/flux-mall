@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,78 +8,148 @@
     <meta name="description" content="Unlock your financial future with Fluxmall Exchange. Secure investments, fast transactions, and global access to asset management. Join thousands of smart investors today.">
     <meta name="keywords" content="Fluxmall Exchange, Fluxmall exchange, crypto investment, asset management, secure trading, financial growth, USDT investment, smart trading">
     <meta name="author" content="Fluxmall Exchange Ltd">
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-
+        
         :root {
-           --gold: #2E7D52;        /* rich forest green  */
---gold-light: #4CAF7D;  /* fresh mid-green    */
---gold-dark: #1B4D32;   /* deep dark green    */
---gold-pale: #EAF5EE;   /* near-white mint    */
---dark: #0A1F14;      
+            --gold: #2E7D52;
+            /* rich forest green  */
+            --gold-light: #4CAF7D;
+            /* fresh mid-green    */
+            --gold-dark: #1B4D32;
+            /* deep dark green    */
+            --gold-pale: #EAF5EE;
+            /* near-white mint    */
+            --dark: #0A1F14;
         }
-
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fdfaf3; color: #1a1200; }
-
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #fdfaf3;
+            color: #1a1200;
+        }
+        
         /* Golden theme classes */
-        .bg-gold       { background-color: var(--gold); }
-        .bg-gold-light { background-color: var(--gold-light); }
-        .text-gold     { color: var(--gold); }
-        .text-gold-light { color: var(--gold-light); }
-        .border-gold   { border-color: var(--gold); }
-
-        .hero-gradient { background: radial-gradient(circle at top right, #fdf6e0, #f5e9b8); }
-
+        .bg-gold {
+            background-color: var(--gold);
+        }
+        
+        .bg-gold-light {
+            background-color: var(--gold-light);
+        }
+        
+        .text-gold {
+            color: var(--gold);
+        }
+        
+        .text-gold-light {
+            color: var(--gold-light);
+        }
+        
+        .border-gold {
+            border-color: var(--gold);
+        }
+        
+        .hero-gradient {
+            background: radial-gradient(circle at top right, #fdf6e0, #f5e9b8);
+        }
+        
         /* Floating animation */
-        .floating { animation: float 6s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
 
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+            
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+        
         /* WhatsApp Floating Button */
         .whatsapp-float {
-            position: fixed; width: 60px; height: 60px;
-            bottom: 30px; right: 30px;
-            background-color: #25D366; color: white;
-            border-radius: 50px; text-align: center; font-size: 28px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.3); z-index: 9999;
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none; transition: transform 0.3s ease;
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25D366;
+            color: white;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 28px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: transform 0.3s ease;
         }
-        .whatsapp-float:hover { transform: scale(1.1); }
-
+        
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+        }
+        
         .social-icon {
-            width: 38px; height: 38px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: transform 0.2s ease, opacity 0.2s ease;
         }
-        .social-icon:hover { transform: scale(1.15); opacity: 0.85; }
-
+        
+        .social-icon:hover {
+            transform: scale(1.15);
+            opacity: 0.85;
+        }
+        
         .contact-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 1rem; padding: 1.25rem;
-            display: flex; align-items: flex-start; gap: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
             transition: background 0.2s;
         }
-        .contact-card:hover { background: rgba(255,255,255,0.09); }
-
+        
+        .contact-card:hover {
+            background: rgba(255, 255, 255, 0.09);
+        }
+        
         /* Stats counter animation */
-        .stat-number { font-variant-numeric: tabular-nums; }
-
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+        
         /* Testimonial card */
         .testi-card {
             background: white;
             border: 1px solid #f0e0a0;
             border-radius: 1.5rem;
             padding: 2rem;
-            box-shadow: 0 4px 24px rgba(212,160,23,0.08);
+            box-shadow: 0 4px 24px rgba(212, 160, 23, 0.08);
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .testi-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(212,160,23,0.18); }
-
+        
+        .testi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(212, 160, 23, 0.18);
+        }
+        
         /* Security card */
         .sec-card {
             background: white;
@@ -87,11 +158,16 @@
             padding: 2rem;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        .sec-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(212,160,23,0.15); }
+        
+        .sec-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(212, 160, 23, 0.15);
+        }
     </style>
 </head>
-<body>
 
+<body>
+    
     <!-- Navigation -->
     <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-yellow-100 px-6 py-4 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -103,18 +179,18 @@
                 <span class="text-xl font-extrabold tracking-tight">Fluxmall <span class="text-gold" style="color:var(--gold)">Exchange</span></span>
             </div>
             <div class="hidden md:flex gap-6 text-sm font-bold text-slate-600">
-                <a href="#features"     class="hover:text-yellow-600 transition">Features</a>
-                <a href="#stats"        class="hover:text-yellow-600 transition">Stats</a>
-                <a href="#plans"        class="hover:text-yellow-600 transition">Plans</a>
-                <a href="#security"     class="hover:text-yellow-600 transition">Security</a>
+                <a href="#features" class="hover:text-yellow-600 transition">Features</a>
+                <a href="#stats" class="hover:text-yellow-600 transition">Stats</a>
+                <a href="#plans" class="hover:text-yellow-600 transition">Plans</a>
+                <a href="#security" class="hover:text-yellow-600 transition">Security</a>
                 <a href="#testimonials" class="hover:text-yellow-600 transition">Reviews</a>
-                <a href="#deposit"      class="hover:text-yellow-600 transition">Deposit</a>
-                <a href="#contact"      class="hover:text-yellow-600 transition">Contact</a>
+                <a href="#deposit" class="hover:text-yellow-600 transition">Deposit</a>
+                <a href="#contact" class="hover:text-yellow-600 transition">Contact</a>
             </div>
-            <a href="account/account.html" class="text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition" style="background:var(--gold)">Get Started</a>
+         <!--   <a href="account/account.html" class="text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition" style="background:var(--gold)">Get Started</a>-->
         </div>
     </nav>
-
+    
     <!-- Hero Section -->
     <section class="pt-32 pb-20 px-6 hero-gradient overflow-hidden">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
@@ -123,18 +199,16 @@
                     <span class="w-2 h-2 rounded-full animate-pulse" style="background:var(--gold)"></span>
                     <span class="text-xs font-bold uppercase tracking-widest" style="color:var(--gold)">✦ Now Live: Platinum Plan 2026</span>
                 </div>
-                <h1 class="text-5xl md:text-7xl font-extrabold leading-tight text-slate-900">
-                    Unlock Your <br><span style="color:var(--gold)">Music world</span>
+                <h1 class="text-5xl md:text-7xl font-extrabold leading-tight text-slate-900">One Platform,<br><span style="color:var(--gold)">Infinite Returns</span>
                 </h1>
                 <p class="text-lg text-slate-600 max-w-lg leading-relaxed font-medium">
-                    Precision-engineered sonic Experience for the modern era. Join over <strong>50,000+</strong> streamers/listeners globally.
+                    Precision-engineered wealth platform for the modern era. Join over <strong>50,000+</strong>investors & shoppers growing daily.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                    <a href="account/account.html" class="text-white px-10 py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-2 hover:opacity-90 transition" style="background:var(--gold);box-shadow:0 8px 24px rgba(212,160,23,0.3)">
-                        Join Now <i class="fas fa-arrow-right text-xs"></i>
+                    <a href="account/account.html" class="text-white px-10 py-4 rounded-2xl font-bold shadow-xl flex items-center justify-center gap-2 hover:opacity-90 transition" style="background:var(--gold);box-shadow:0 8px 24px rgba(212,160,23,0.3)">Get started <i class="fas fa-arrow-right text-xs"></i>
                     </a>
                     <a href="#plans" class="bg-white text-slate-700 border border-yellow-200 px-10 py-4 rounded-2xl font-bold flex items-center justify-center hover:bg-yellow-50 transition">
-                        View Musics
+                        View Plans
                     </a>
                 </div>
             </div>
@@ -156,7 +230,7 @@
             </div>
         </div>
     </section>
-
+    
     <!-- Features Section -->
     <section id="features" class="py-24 px-6 bg-white">
         <div class="max-w-7xl mx-auto">
@@ -189,7 +263,7 @@
             </div>
         </div>
     </section>
-
+    
     <!-- Statistics Section -->
     <section id="stats" class="py-24 px-6" style="background:linear-gradient(135deg,#1a1200 0%,#2e1f00 100%)">
         <div class="max-w-7xl mx-auto">
@@ -203,25 +277,25 @@
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-                    <p class="text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="50000">0</p>
+                    <p class="font-black stat-number text-3xl md:text-5xl" style="color:var(--gold-light)" data-target="50000">0</p>
                     <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Active Investors</p>
                 </div>
                 <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-                    <p class="text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="10">0</p>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">$M+ Total Paid Out</p>
+                    <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="10">0</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Total Paid Out</p>
                 </div>
                 <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-                    <p class="text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="99">0</p>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">% Satisfaction Rate</p>
+                    <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="99">0</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Satisfaction Rate</p>
                 </div>
                 <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-                    <p class="text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="24">0</p>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">/ 7 Support Hours</p>
+                    <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="24/7">0</p>
+                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Support Hours</p>
                 </div>
             </div>
         </div>
     </section>
-
+    
     <!-- Investment Plans Section -->
     <section id="plans" class="py-24 px-6" style="background:#fdf6e0">
         <div class="max-w-7xl mx-auto">
@@ -233,9 +307,9 @@
                 <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">Choose Your <span style="color:var(--gold)">Growth Plan</span></h2>
                 <p class="text-slate-500 text-base max-w-xl mx-auto">Start with as little as <strong>$10</strong>. Pick a plan that fits your goals and watch your investment grow.</p>
             </div>
-
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
-
+                
                 <!-- Starter -->
                 <div class="bg-white rounded-3xl shadow-lg border border-yellow-100 p-8 flex flex-col gap-6 hover:shadow-xl transition hover:-translate-y-1">
                     <div>
@@ -264,7 +338,7 @@
                     </ul>
                     <a href="account/account.html" class="block text-center text-white py-3 rounded-2xl font-bold hover:opacity-90 transition" style="background:var(--gold)">Start Investing</a>
                 </div>
-
+                
                 <!-- Silver -->
                 <div class="bg-white rounded-3xl shadow-lg border border-yellow-100 p-8 flex flex-col gap-6 hover:shadow-xl transition hover:-translate-y-1">
                     <div>
@@ -293,7 +367,7 @@
                     </ul>
                     <a href="account/account.html" class="block text-center bg-slate-700 text-white py-3 rounded-2xl font-bold hover:bg-slate-800 transition">Start Investing</a>
                 </div>
-
+                
                 <!-- Gold — MOST POPULAR -->
                 <div class="rounded-3xl shadow-2xl p-8 flex flex-col gap-6 hover:-translate-y-2 transition relative" style="background:linear-gradient(160deg,var(--gold) 0%,var(--gold-dark) 100%)">
                     <div class="absolute -top-4 left-1/2 -translate-x-1/2">
@@ -325,7 +399,7 @@
                     </ul>
                     <a href="account/account.html" class="block text-center bg-white py-3 rounded-2xl font-extrabold hover:bg-yellow-50 transition" style="color:var(--gold-dark)">Start Investing</a>
                 </div>
-
+                
                 <!-- Platinum -->
                 <div class="bg-white rounded-3xl shadow-lg border border-yellow-100 p-8 flex flex-col gap-6 hover:shadow-xl transition hover:-translate-y-1">
                     <div>
@@ -354,15 +428,15 @@
                     </ul>
                     <a href="account/account.html" class="block text-center bg-purple-600 text-white py-3 rounded-2xl font-bold hover:bg-purple-700 transition">Start Investing</a>
                 </div>
-
+                
             </div>
-
+            
             <div class="mt-12 text-center bg-white border border-yellow-100 rounded-2xl p-6 max-w-2xl mx-auto">
                 <p class="text-slate-500 text-sm"><i class="fas fa-info-circle mr-2" style="color:var(--gold)"></i>All plans include <strong>capital return</strong> at end of duration. Profits are paid <strong>daily</strong> directly to your account. <a href="#contact" class="font-bold hover:underline" style="color:var(--gold)">Contact us</a> for questions.</p>
             </div>
         </div>
     </section>
-
+    
     <!-- Security Section -->
     <section id="security" class="py-24 px-6 bg-white">
         <div class="max-w-7xl mx-auto">
@@ -374,7 +448,7 @@
                 <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3">Bank-Grade <span style="color:var(--gold)">Security</span></h2>
                 <p class="text-slate-500 text-base max-w-xl mx-auto">Your funds and personal information are protected by multiple layers of advanced security protocols.</p>
             </div>
-
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="sec-card">
                     <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5" style="background:#fdf3dc;color:var(--gold)">
@@ -419,7 +493,7 @@
                     <p class="text-slate-500 text-sm leading-relaxed">Every plan comes with a written payout commitment. Your daily returns and capital are guaranteed to be delivered as promised — no delays, no excuses.</p>
                 </div>
             </div>
-
+            
             <!-- Security Badge Bar -->
             <div class="mt-14 flex flex-wrap justify-center gap-6">
                 <div class="flex items-center gap-2 px-5 py-3 rounded-full border font-bold text-sm" style="background:#fdf3dc;border-color:#f5c842;color:var(--gold-dark)">
@@ -440,7 +514,7 @@
             </div>
         </div>
     </section>
-
+    
     <!-- Testimonials Section -->
     <section id="testimonials" class="py-24 px-6" style="background:#fdf6e0">
         <div class="max-w-7xl mx-auto">
@@ -452,9 +526,9 @@
                 <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-3">What Our <span style="color:var(--gold)">Investors Say</span></h2>
                 <p class="text-slate-500 text-base max-w-xl mx-auto">Real words from real investors who have experienced the power of Fluxmall Exchange.</p>
             </div>
-
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
+                
                 <!-- Testimonial 1 -->
                 <div class="testi-card">
                     <div class="flex items-center gap-4 mb-4">
@@ -468,7 +542,7 @@
                     <p class="text-slate-600 text-sm leading-relaxed">"I started with the Starter plan at just $10 and received my profit the very next day. I was shocked! Fluxmall Exchange is 100% legit. I have now upgraded to the Gold plan and profits are amazing."</p>
                     <p class="text-xs text-slate-300 mt-4 font-medium">Gold Plan Investor · Verified ✓</p>
                 </div>
-
+                
                 <!-- Testimonial 2 -->
                 <div class="testi-card">
                     <div class="flex items-center gap-4 mb-4">
@@ -482,7 +556,7 @@
                     <p class="text-slate-600 text-sm leading-relaxed">"The Silver plan has been life-changing for me. I invest every month and the daily returns come in consistently. Withdrawals are fast and the customer support team on WhatsApp always replies quickly. Highly recommended!"</p>
                     <p class="text-xs text-slate-300 mt-4 font-medium">Silver Plan Investor · Verified ✓</p>
                 </div>
-
+                
                 <!-- Testimonial 3 -->
                 <div class="testi-card">
                     <div class="flex items-center gap-4 mb-4">
@@ -496,7 +570,7 @@
                     <p class="text-slate-600 text-sm leading-relaxed">"Been on the Platinum plan for 2 months now. The 15% daily return is no joke — my investment has grown beyond what I expected. The team is honest and transparent. This is the best investment platform I've ever used."</p>
                     <p class="text-xs text-slate-300 mt-4 font-medium">Platinum Plan Investor · Verified ✓</p>
                 </div>
-
+                
                 <!-- Testimonial 4 -->
                 <div class="testi-card">
                     <div class="flex items-center gap-4 mb-4">
@@ -510,7 +584,7 @@
                     <p class="text-slate-600 text-sm leading-relaxed">"I was skeptical at first but after seeing my friend's results, I decided to try the Starter plan. Within a week I got all my returns plus capital back. Now I am on Gold and loving every day. Trust the process!"</p>
                     <p class="text-xs text-slate-300 mt-4 font-medium">Gold Plan Investor · Verified ✓</p>
                 </div>
-
+                
                 <!-- Testimonial 5 -->
                 <div class="testi-card">
                     <div class="flex items-center gap-4 mb-4">
@@ -524,7 +598,7 @@
                     <p class="text-slate-600 text-sm leading-relaxed">"What I love most is how simple it is. You send your money, send your proof on WhatsApp, and your plan is activated the same day. Profits hit daily. Fluxmall Exchange is the real deal — no stress, no drama."</p>
                     <p class="text-xs text-slate-300 mt-4 font-medium">Silver Plan Investor · Verified ✓</p>
                 </div>
-
+                
                 <!-- Testimonial 6 -->
                 <div class="testi-card">
                     <div class="flex items-center gap-4 mb-4">
@@ -538,11 +612,11 @@
                     <p class="text-slate-600 text-sm leading-relaxed">"As a student at UNN, I needed extra income. A classmate told me about Fluxmall Exchange and it has been a blessing. I invest small amounts and earn daily. The support team is very responsive and trustworthy!"</p>
                     <p class="text-xs text-slate-300 mt-4 font-medium">Starter Plan Investor · Verified ✓</p>
                 </div>
-
+                
             </div>
         </div>
     </section>
-
+    
     <!-- Deposit / Bank Details Section -->
     <section id="deposit" class="py-24 px-6 bg-white">
         <div class="max-w-4xl mx-auto">
@@ -554,12 +628,12 @@
                 <h2 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">How To <span class="text-green-600">Deposit</span></h2>
                 <p class="text-slate-500 text-base max-w-xl mx-auto">Send your investment to our Exchange bank account below, then contact us with your payment proof to activate your plan.</p>
             </div>
-
+            
             <!-- Bank Card -->
             <div class="relative rounded-3xl p-8 md:p-10 shadow-2xl text-white overflow-hidden mb-10" style="background:linear-gradient(135deg,#1a1200 0%,#2e1f00 100%)">
                 <div class="absolute top-0 right-0 w-64 h-64 rounded-full -translate-y-1/2 translate-x-1/2" style="background:rgba(212,160,23,0.1)"></div>
                 <div class="absolute bottom-0 left-0 w-48 h-48 rounded-full translate-y-1/2 -translate-x-1/2" style="background:rgba(212,160,23,0.07)"></div>
-
+                
                 <div class="flex items-center justify-between mb-8 relative z-10">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center text-white text-2xl font-extrabold shadow-lg">O</div>
@@ -573,7 +647,7 @@
                         <span class="text-xs font-bold text-green-400">Active Account</span>
                     </div>
                 </div>
-
+                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
                     <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
                         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2"><i class="fas fa-user mr-2 text-yellow-400"></i>Account Name</p>
@@ -595,7 +669,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <!-- Steps -->
             <div class="rounded-3xl p-8 border border-yellow-100" style="background:#fdf6e0">
                 <h3 class="text-lg font-extrabold text-slate-900 mb-6 flex items-center gap-2">
@@ -604,19 +678,31 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="flex items-start gap-4">
                         <div class="w-9 h-9 text-white rounded-full flex items-center justify-center font-extrabold text-sm flex-shrink-0" style="background:var(--gold)">1</div>
-                        <div><p class="font-bold text-slate-800 text-sm">Choose Your Plan</p><p class="text-slate-500 text-xs mt-0.5">Select a plan from the investment plans above that matches your budget.</p></div>
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">Choose Your Plan</p>
+                            <p class="text-slate-500 text-xs mt-0.5">Select a plan from the investment plans above that matches your budget.</p>
+                        </div>
                     </div>
                     <div class="flex items-start gap-4">
                         <div class="w-9 h-9 text-white rounded-full flex items-center justify-center font-extrabold text-sm flex-shrink-0" style="background:var(--gold)">2</div>
-                        <div><p class="font-bold text-slate-800 text-sm">Transfer Your Investment</p><p class="text-slate-500 text-xs mt-0.5">Send your investment amount to the OPay account number above.</p></div>
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">Transfer Your Investment</p>
+                            <p class="text-slate-500 text-xs mt-0.5">Send your investment amount to the OPay account number above.</p>
+                        </div>
                     </div>
                     <div class="flex items-start gap-4">
                         <div class="w-9 h-9 text-white rounded-full flex items-center justify-center font-extrabold text-sm flex-shrink-0" style="background:var(--gold)">3</div>
-                        <div><p class="font-bold text-slate-800 text-sm">Send Payment Proof</p><p class="text-slate-500 text-xs mt-0.5">Screenshot your receipt and send it to us via WhatsApp or Email.</p></div>
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">Send Payment Proof</p>
+                            <p class="text-slate-500 text-xs mt-0.5">Screenshot your receipt and send it to us via WhatsApp or Email.</p>
+                        </div>
                     </div>
                     <div class="flex items-start gap-4">
                         <div class="w-9 h-9 bg-green-600 text-white rounded-full flex items-center justify-center font-extrabold text-sm flex-shrink-0">4</div>
-                        <div><p class="font-bold text-slate-800 text-sm">Plan Activated! 🎉</p><p class="text-slate-500 text-xs mt-0.5">Your plan will be activated within minutes and daily profits start immediately.</p></div>
+                        <div>
+                            <p class="font-bold text-slate-800 text-sm">Plan Activated! 🎉</p>
+                            <p class="text-slate-500 text-xs mt-0.5">Your plan will be activated within minutes and daily profits start immediately.</p>
+                        </div>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-4 mt-8">
@@ -630,7 +716,7 @@
             </div>
         </div>
     </section>
-
+    
     <!-- Contact Section -->
     <section id="contact" class="py-24 px-6" style="background:#1a1200">
         <div class="max-w-7xl mx-auto">
@@ -642,7 +728,7 @@
                 <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-4">Contact <span style="color:var(--gold-light)">Us</span></h2>
                 <p class="text-slate-400 text-base max-w-lg mx-auto">We're here to help! Reach out to us anytime through any of the channels below.</p>
             </div>
-
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
                 <a href="/cdn-cgi/l/email-protection#e083998e9488898185988388818e8785d5a0878d81898cce838f8d" class="contact-card group">
                     <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style="background:rgba(212,160,23,0.15);color:var(--gold-light)">
@@ -685,7 +771,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="text-center">
                 <p class="text-slate-400 text-sm font-semibold uppercase tracking-widest mb-6">Follow &amp; Connect With Us</p>
                 <div class="flex justify-center gap-4 flex-wrap">
@@ -700,7 +786,7 @@
             </div>
         </div>
     </section>
-
+    
     <!-- Footer -->
     <footer class="text-white py-20 px-6" style="background:#0f0a00">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12 border-b pb-12 mb-12" style="border-color:rgba(212,160,23,0.15)">
@@ -745,42 +831,44 @@
             &copy; 2026 Fluxmall Exchange Ltd. All rights reserved.
         </p>
     </footer>
-
+    
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/2349168650523" target="_blank" class="whatsapp-float" title="Chat with us on WhatsApp">
         <i class="fab fa-whatsapp"></i>
     </a>
-<script src="script.js"></script>
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script src="script.js"></script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    <script>
         // Copy account number
         function copyAcctNum() {
             const num = document.getElementById('acctNum').innerText;
             navigator.clipboard.writeText(num).then(() => {
                 const btn = document.querySelector('[onclick="copyAcctNum()"]');
                 btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                btn.classList.replace('bg-green-500','bg-green-700');
+                btn.classList.replace('bg-green-500', 'bg-green-700');
                 setTimeout(() => {
                     btn.innerHTML = '<i class="fas fa-copy"></i> Copy';
-                    btn.classList.replace('bg-green-700','bg-green-500');
+                    btn.classList.replace('bg-green-700', 'bg-green-500');
                 }, 2000);
             });
         }
-
+        
         // Animated counter
         function animateCounter(el) {
             const target = parseInt(el.getAttribute('data-target'));
             const suffix = el.nextElementSibling?.innerText?.includes('$M') ? 'M+' :
-                           el.nextElementSibling?.innerText?.includes('%') ? '%' :
-                           el.nextElementSibling?.innerText?.includes('/') ? '' : '+';
+                el.nextElementSibling?.innerText?.includes('%') ? '%' :
+                el.nextElementSibling?.innerText?.includes('/') ? '' : '+';
             let count = 0;
             const step = Math.ceil(target / 80);
             const timer = setInterval(() => {
                 count += step;
-                if (count >= target) { count = target; clearInterval(timer); }
+                if (count >= target) { count = target;
+                    clearInterval(timer); }
                 el.innerText = count.toLocaleString() + suffix;
             }, 20);
         }
-
+        
         // Trigger counter when stats section is visible
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -792,7 +880,7 @@
         }, { threshold: 0.3 });
         const statsSection = document.getElementById('stats');
         if (statsSection) observer.observe(statsSection);
-
+        
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
@@ -803,4 +891,5 @@
         });
     </script>
 </body>
+
 </html>
