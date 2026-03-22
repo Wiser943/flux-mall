@@ -1,514 +1,706 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#4318ff">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Flux Mall">
-    <link rel="shortcut icon" href="/img/logo.png" type="image/x-icon" />
-    <title>Account | Flux Mall</title>
-    <link rel="stylesheet" href="r.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@300..700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#2E7D52">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Fluxmall Exchange">
+  <link rel="shortcut icon" href="/img/logo.png" type="image/x-icon" />
+  <title>Account | Fluxmall Exchange</title>
+  <link rel="stylesheet" href="r.css">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
+
+  <style>
+    :root {
+      --gold: #2E7D52;
+      --gold-light: #4CAF7D;
+      --gold-dark: #1B4D32;
+      --gold-pale: #EAF5EE;
+      --dark: #0A1F14;
+      --font-display: 'Sora', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg-body: #0A1F14;
+      --bg-right: #ffffff;
+      --bg-input: #fafafa;
+      --bg-input-focus: #ffffff;
+      --text-heading: #0A1F14;
+      --text-body: #6b7280;
+      --text-label: #374151;
+      --text-placeholder: #c4c4c4;
+      --border-color: #e5e7eb;
+      --modal-bg: #ffffff;
+      --modal-overlay: rgba(0,0,0,0.55);
+      --modal-text: #0A1F14;
+      --modal-sub: #64748b;
+      --btn-sec-bg: #f1f5f9;
+      --btn-sec-text: #0A1F14;
+      --btn-sec-border: #e2e8f0;
+      --error: #dc2626;
+    }
+
+    [data-theme="dark"] {
+      --bg-body: #060f0a;
+      --bg-right: #0f1f16;
+      --bg-input: #172410;
+      --bg-input-focus: #1e2f1a;
+      --text-heading: #f0faf4;
+      --text-body: #8faf97;
+      --text-label: #a3c4ae;
+      --text-placeholder: #4a6b55;
+      --border-color: #1e3828;
+      --modal-bg: #0f1f16;
+      --modal-overlay: rgba(0,0,0,0.75);
+      --modal-text: #f0faf4;
+      --modal-sub: #8faf97;
+      --btn-sec-bg: #172410;
+      --btn-sec-text: #f0faf4;
+      --btn-sec-border: #1e3828;
+      --error: #f87171;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background 0.3s ease;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 0%, rgba(46,125,82,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(76,175,125,0.1) 0%, transparent 55%);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── THEME TOGGLE ── */
+    .theme-toggle-btn {
+      position: fixed; top: 16px; right: 16px; z-index: 500;
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 1.5px solid rgba(76,175,125,0.25);
+      background: var(--modal-bg); color: var(--gold-light);
+      font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      transition: background 0.3s, border-color 0.3s, transform 0.2s;
+    }
+    .theme-toggle-btn:hover { transform: scale(1.08); border-color: var(--gold-light); }
+    .icon-moon { display: block; }
+    .icon-sun  { display: none; }
+    [data-theme="dark"] .icon-moon { display: none; }
+    [data-theme="dark"] .icon-sun  { display: block; }
+
+    /* ── PAGE SYSTEM ── */
+    .page { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: stretch; }
+    .page.hidden { display: none !important; }
+
+    /* ── LEFT SIDE ── */
+    .left-side {
+      width: 42%;
+      background: linear-gradient(160deg, var(--gold-dark) 0%, var(--dark) 100%);
+      padding: 48px 40px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+    .left-side::before {
+      content: ''; position: absolute; top: -80px; right: -80px;
+      width: 300px; height: 300px; border-radius: 50%;
+      background: rgba(76,175,125,0.08);
+    }
+    .left-side::after {
+      content: ''; position: absolute; bottom: -60px; left: -60px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: rgba(76,175,125,0.06);
+    }
+
+    .logo-area { display: flex; align-items: center; gap: 10px; }
+    .logo-icon {
+      width: 38px; height: 38px; background: var(--gold); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center; color: white; font-size: 16px;
+    }
+    .logo-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: white; }
+    .logo-name span { color: var(--gold-light); }
+
+    .stats-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(76,175,125,0.2);
+      border-radius: 20px; padding: 24px; backdrop-filter: blur(10px);
+    }
+    .card-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
+    .card-header span { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; color: var(--gold-light); opacity: 0.8; }
+    .stats-card .label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; color: rgba(255,255,255,0.45); margin-bottom: 6px; }
+    .stats-card .earnings { font-family: var(--font-display); font-size: 2rem; font-weight: 800; color: white; margin-bottom: 14px; }
+    .chart-placeholder { margin-bottom: 16px; opacity: 0.7; }
+    .badge-row { display: flex; gap: 8px; }
+    .badge { background: rgba(76,175,125,0.12); border: 1px solid rgba(76,175,125,0.25); color: var(--gold-light); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; padding: 4px 10px; border-radius: 20px; }
+    .badge-gold { background: rgba(46,125,82,0.2); border: 1px solid rgba(46,125,82,0.4); color: #a3e4bf; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; padding: 4px 10px; border-radius: 20px; }
+    .promo-text h2 { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; color: white; line-height: 1.25; margin-bottom: 10px; }
+    .promo-text h2 span { color: var(--gold-light); }
+    .promo-text p { font-size: 0.85rem; color: rgba(255,255,255,0.45); line-height: 1.5; }
+
+    /* ── RIGHT SIDE ── */
+    .right-side {
+      flex: 1; background: var(--bg-right);
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 32px; transition: background 0.3s ease;
+    }
+    .form-wrapper { width: 100%; max-width: 400px; animation: fadeUp 0.45s ease both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .lock-icon {
+      width: 52px; height: 52px; background: var(--gold-pale);
+      border: 2px solid rgba(46,125,82,0.2); border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; color: var(--gold); margin-bottom: 20px;
+    }
+    [data-theme="dark"] .lock-icon { background: rgba(46,125,82,0.15); border-color: rgba(76,175,125,0.2); }
+
+    .form-wrapper h1 { font-family: var(--font-display); font-size: 1.75rem; font-weight: 800; color: var(--text-heading); margin-bottom: 6px; transition: color 0.3s; }
+    .subtitle { font-size: 0.875rem; color: var(--text-body); margin-bottom: 28px; transition: color 0.3s; }
+    .input-group { margin-bottom: 18px; }
+    .input-group label { display: block; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text-label); margin-bottom: 7px; transition: color 0.3s; }
+    .input-group label span { color: var(--gold); }
+    .input-wrapper { position: relative; display: flex; align-items: center; }
+    .input-icon { position: absolute; left: 14px; color: #9ca3af; font-size: 0.85rem; pointer-events: none; }
+    .input-wrapper input {
+      width: 100%; padding: 12px 14px 12px 38px;
+      border: 1.5px solid var(--border-color); border-radius: 10px;
+      font-family: var(--font-body); font-size: 0.9rem;
+      color: var(--text-heading); background: var(--bg-input); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.3s, color 0.3s;
+    }
+    .input-wrapper input:focus { border-color: var(--gold); background: var(--bg-input-focus); box-shadow: 0 0 0 3px rgba(46,125,82,0.1); }
+    .input-wrapper input::placeholder { color: var(--text-placeholder); }
+    .input-wrapper .fa-eye, .input-wrapper .fa-eye-slash { position: absolute; right: 14px; color: #9ca3af; cursor: pointer; font-size: 0.85rem; transition: color 0.2s; }
+    .input-wrapper .fa-eye:hover, .input-wrapper .fa-eye-slash:hover { color: var(--gold); }
+
+    .remember-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .checkbox-group { display: flex; align-items: center; gap: 7px; }
+    .checkbox-group input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; }
+    .checkbox-group label { font-size: 0.83rem; color: var(--text-label); cursor: pointer; transition: color 0.3s; }
+
+    .create-link { font-size: 0.83rem; font-weight: 600; color: var(--gold); text-decoration: none; transition: color 0.2s; }
+    .create-link:hover { color: var(--gold-dark); }
+
+    .signin-btn {
+      width: 100%; padding: 13px; background: var(--gold); color: white;
+      border: none; border-radius: 10px; font-family: var(--font-display);
+      font-size: 0.9rem; font-weight: 700; letter-spacing: 0.05em; cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(46,125,82,0.3);
+    }
+    .signin-btn:hover { background: var(--gold-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(46,125,82,0.4); }
+    .signin-btn:active { transform: translateY(0); }
+    .signin-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .footer-link { text-align: center; margin-top: 20px; font-size: 0.85rem; color: var(--text-body); transition: color 0.3s; }
+    .error-message { font-size: 0.75rem; color: var(--error); margin-top: 5px; min-height: 16px; }
+    .message-box { margin-top: 12px; font-size: 0.82rem; text-align: center; min-height: 18px; color: var(--text-body); }
+
+    /* ── REFERRER ── */
+    .referrer-box { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--gold-pale); border-bottom: 1px solid rgba(46,125,82,0.2); padding: 10px 20px; display: flex; align-items: center; justify-content: center; }
+    .referrer-info { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--gold-dark); font-weight: 500; }
+
+    /* ── 404 ── */
+    .error-container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .error-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(76,175,125,0.15); border-radius: 24px; padding: 48px 40px; text-align: center; max-width: 420px; width: 100%; }
+    .brand-logo { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; }
+    .status-tag { display: inline-block; background: rgba(76,175,125,0.1); border: 1px solid rgba(76,175,125,0.25); color: var(--gold-light); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; padding: 4px 14px; border-radius: 20px; margin-bottom: 16px; }
+    .error-card p { color: rgba(255,255,255,0.5); font-size: 0.9rem; margin-bottom: 24px; }
+    .back-link { display: block; margin-top: 14px; font-size: 0.85rem; color: rgba(255,255,255,0.4); cursor: pointer; transition: color 0.2s; }
+    .back-link:hover { color: var(--gold-light); }
+
+    /* ── SUSPENDED ── */
+    #admin-contact-page { align-items: center; justify-content: center; padding: 40px 20px; }
+    .login-card { background: var(--modal-bg); border-radius: 24px; overflow: hidden; max-width: 780px; width: 100%; display: flex; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+    .info-side { background: linear-gradient(160deg, var(--gold-dark), var(--dark)); padding: 40px 32px; width: 45%; display: flex; flex-direction: column; gap: 20px; }
+    .info-side h2 { font-family: var(--font-display); font-size: 1.3rem; color: white; }
+    .info-side p { font-size: 0.85rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+    .form-side { flex: 1; padding: 40px 32px; }
+    .form-side h2 { font-family: var(--font-display); font-size: 1.4rem; font-weight: 700; color: var(--text-heading); margin-bottom: 8px; }
+    .form-side p { font-size: 0.85rem; color: var(--text-body); }
+    #request-review { width: 100%; padding: 12px; background: var(--gold); color: white; border: none; border-radius: 10px; font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: background 0.2s; margin-top: 16px; }
+    #request-review:hover { background: var(--gold-dark); }
+
+    /* ── LOADER ── */
+    .loader-container { position: fixed; inset: 0; background: var(--dark); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+    .loader { width: 40px; height: 40px; border: 3px solid rgba(76,175,125,0.15); border-top-color: var(--gold-light); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════
+       BOTTOM SHEET MODALS
+    ══════════════════════════════════════ */
+    .modal {
+      position: fixed; inset: 0;
+      background: var(--modal-overlay);
+      display: none; align-items: flex-end;
+      z-index: 10000; backdrop-filter: blur(3px);
+    }
+    .modal.show { display: flex; animation: overlayIn 0.3s ease forwards; }
+    @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-content {
+      background: var(--modal-bg); width: 100%;
+      border-radius: 22px 22px 0 0; padding: 10px 24px 40px;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      max-height: 80vh; overflow-y: auto;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+    }
+    .modal.show .modal-content { transform: translateY(0); }
+
+    .modal-handle { width: 40px; height: 4px; background: var(--border-color); border-radius: 4px; margin: 10px auto 18px; }
+
+    .modal-content h2 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--modal-text); margin-bottom: 6px; }
+    .modal-message { font-size: 0.88rem; color: var(--modal-sub); line-height: 1.6; margin-bottom: 20px; }
+    .close-button { float: right; font-size: 1.3rem; color: var(--text-body); cursor: pointer; line-height: 1; transition: color 0.2s; }
+    .close-button:hover { color: var(--modal-text); }
+
+    .modal-detail {
+      background: var(--bg-input); border: 1px solid var(--border-color);
+      border-radius: 10px; padding: 12px 16px; margin-bottom: 20px;
+      font-size: 0.83rem; color: var(--modal-sub); line-height: 2;
+    }
+    .modal-detail strong { display: block; color: var(--modal-text); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 1px; }
+
+    #alert-ok-button {
+      width: 100%; padding: 13px; background: var(--gold); color: white;
+      border: none; border-radius: 10px; font-family: var(--font-display);
+      font-weight: 700; font-size: 0.9rem; cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      box-shadow: 0 4px 16px rgba(46,125,82,0.25);
+    }
+    #alert-ok-button:hover { background: var(--gold-dark); transform: translateY(-1px); }
+
+    .confirm-buttons { display: flex; flex-direction: column; gap: 10px; }
+    .confirm-buttons button { width: 100%; padding: 13px; border-radius: 10px; font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; cursor: pointer; border: none; transition: background 0.2s, transform 0.15s; }
+    #confirm-yes-button { background: var(--gold); color: white; box-shadow: 0 4px 16px rgba(46,125,82,0.25); }
+    #confirm-yes-button:hover { background: var(--gold-dark); transform: translateY(-1px); }
+    #confirm-no-button { background: var(--btn-sec-bg); color: var(--btn-sec-text); border: 1px solid var(--btn-sec-border) !important; }
+    #confirm-no-button:hover { opacity: 0.82; }
+
+    .shape { display: none; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .page { flex-direction: column; }
+      .left-side { width: 100%; display:none;padding: 24px 20px; }
+      .stats-card, .promo-text { display: none; }
+      .right-side { padding: 32px 20px 48px; }
+      .form-wrapper h1 { font-size: 1.5rem; }
+      .login-card { flex-direction: column; }
+      .info-side { width: 100%; }
+      .theme-toggle-btn { top: 12px; right: 12px; }
+    }
+  </style>
 </head>
 
 <body>
-    <div class="shape shape-1"></div>
-    <div id="referrerSection" style="display: none;" class="referrer-box">
-        <div class="referrer-info">
-            <i class="fast fa-user-follow"></i>
-            <span>Your friend <b id="referrerName" style="color: var(--primary);text-transform:uppercase;">...</b> Invited you</span>
-        </div>
+
+  <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle theme">
+    <i class="fas fa-moon icon-moon"></i>
+    <i class="fas fa-sun icon-sun"></i>
+  </button>
+
+  <div class="shape shape-1"></div>
+
+  <div id="referrerSection" style="display:none;" class="referrer-box">
+    <div class="referrer-info">
+      <i class="fas fa-user-plus"></i>
+      <span>Your friend <b id="referrerName" style="color:var(--gold);text-transform:uppercase;">...</b> invited you</span>
     </div>
-    <section class="page"></section>
-    <section class="page hidden" id="404Page">
-        <div class="error-container">
-            <div class="error-card">
-                <div class="brand-logo">
-                    <img width="35" height="35" style="margin: 0 auto;" src="/img/logo.png" alt="logo" />
-                </div>
-                <h1 style="  font-size: 5rem;
-            font-weight: 800;
-            letter-spacing: -2px;
-            background: linear-gradient(to bottom, #fff, #64748b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;">404</h1>
-                <span class="status-tag">Page Not Found</span>
-                <p style="color: #f4f4f4;;">The requested page cannot be found right now on this server </p><br>
-                <a class="signin-btn" href="#login-page">Return Home</a>
-                <span class="back-link" onclick="history.back()">← Go Back</span>
-            </div>
-        </div>
-    </section>
+  </div>
 
-    
-    <section id="forgot-password-page" style="flex-direction: row-reverse;" class="page hidden">
-        <div class="left-side">
-            <div class="logo site-name"></div>
-            
-            <div class="stats-card">
-                <div class="card-header">
-                    <span>LIVE FEED</span>
-                    <span>100% ENERGY</span>
-                </div>
-                <p class="label">LIFETIME EARNINGS</p>
-                <h1 class="earnings">₦2,850,000</h1>
-                <div class="chart-placeholder">
-                    <svg viewBox="0 0 100 30">
-                        <path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#00ff7f" stroke-width="2" />
-                    </svg>
-                </div>
-                <div class="badge-row">
-                    <div class="badge">TASKS: 842</div>
-                    <div class="badge-gold">RANK: ELITE</div>
-                </div>
-            </div>
-            
-            <div class="promo-text">
-                <h2>Unlock Your <br><span>Earning Potential.</span></h2>
-                <p>Welcome back to the #1 GPT Platform in Nigeria.</p>
-            </div>
-        </div>
-        
-        <div class="right-side">
-            <div class="form-wrapper">
-                <div class="lock-icon"><i class="fas fa-unlock"></i></div>
-                <h1>Password Reset</h1>
-                <p class="subtitle">Enter your email and we'll send you a recovery link.</p>
-                
-                <br>
-                <form id="resetForm">
-                    <div class="input-group">
-                        <label for="reset-email">EMAIL <span>*</span></label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="resetEmail" name="reset-email" placeholder="blazè7@gmail.com" required>
-                        </div>
-                        <p id="resetEmailError" class="error-message"></p>
-                    </div>
-                    
-                    <button type="submit" class="login-btn signin-btn" disabled>Send Reset Link</button>
-                    <div class="footer-link">
-                        <a href="#login-page" class="create-link"><i class="fas fa-arrow-left"></i>
-                            Back to Login</a>
-                    </div>
-                </form>
-                
-            </div>
-        </div>
-        
-    </section>
-    
-    <section id="login-page" class="page hidden">
-        <div class="left-side">
-            <div class="logo site-name"></div>
-            
-            <div class="stats-card">
-                <div class="card-header">
-                    <span>LIVE FEED</span>
-                    <span>100% ENERGY</span>
-                </div>
-                <p class="label">LIFETIME EARNINGS</p>
-                <h1 class="earnings">₦2,850,000</h1>
-                <div class="chart-placeholder">
-                    <svg viewBox="0 0 100 30">
-                        <path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#00ff7f" stroke-width="2" />
-                    </svg>
-                </div>
-                <div class="badge-row">
-                    <div class="badge">TASKS: 842</div>
-                    <div class="badge-gold">RANK: ELITE</div>
-                </div>
-            </div>
-            
-            <div class="promo-text">
-                <h2>Unlock Your <br><span>Earning Potential.</span></h2>
-                <p>Welcome back to the #1 GPT Platform in Nigeria.</p>
-            </div>
-        </div>
-        
-        <div class="right-side">
-            <div class="form-wrapper">
-                <div class="lock-icon"><i class="fas fa-lock"></i></div>
-                <h1>Welcome Back</h1>
-                <p class="subtitle">Enter credentials to unlock dashboard.</p>
-                <br>
-                <form id="loginForm">
-                    <div class="input-group">
-                        <label for="login-email">EMAIL <span>*</span></label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="loginEmail" name="login-email" placeholder="blikv74@gmail.com" required>
-                        </div>
-                        <p id="loginEmailError" class="error-message"></p>
-                    </div>
-                    <div class="input-group">
-                        <label for="signup-password">PASSWORD<span>*</span></label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-key input-icon"></i>
-                            <input type="password" id="loginPassword" name="login-password" placeholder="•••••••••••••" required>
-                            <i onclick="togglePassword(loginPassword)" class="fas fa-eye"></i>
-                        </div>
-                        <p id="loginPasswordError" class="error-message"></p>
-                    </div>
-                    <div style="display:flex; justify-content: space-between;width:100%;margin-bottom: 15px;">
-                        <p class="checkbox-group" style="display: flex;gap: 6px;">
-                            <input type="checkbox" name="recall" id="recall">
-                            <label for="recall">Remember me</label>
-                        </p>
-                        <a class="create-link" href="#forgot-password-page">Retrieve password</a>
-                    </div>
-                    
-                    <button type="submit" class="login-btn signin-btn">LOGIN &rarr;</button>
-                    <div id="loginFormMessage" class="message-box"></div>
-                </form>
-                
-                <p class="footer-link">Don't have an account? <a href="#signup-page" class="create-link">Create now</a></p>
-            </div>
-        </div>
-    </section>
-    
-    
-    <section id="signup-page" class="page hidden" style="flex-direction: row-reverse;">
-        <div class="left-side">
-            <div class="logo site-name"></div>
-            
-            <div class="stats-card">
-                <div class="card-header">
-                    <span>LIVE FEED</span>
-                    <span>100% ENERGY</span>
-                </div>
-                <p class="label">LIFETIME EARNINGS</p>
-                <h1 class="earnings">₦2,850,000</h1>
-                <div class="chart-placeholder">
-                    <svg viewBox="0 0 100 30">
-                        <path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#00ff7f" stroke-width="2" />
-                    </svg>
-                </div>
-                <div class="badge-row">
-                    <div class="badge">TASKS: 842</div>
-                    <div class="badge-gold">RANK: ELITE</div>
-                </div>
-            </div>
-            
-            <div class="promo-text">
-                <h2>Unlock Your <br><span>Earning Potential.</span></h2>
-                <p>Welcome back to the #1 GPT Platform in Nigeria.</p>
-            </div>
-        </div>
-        <div class="right-side">
-            <div class="form-wrapper">
-                <div class="lock-icon"><i class="fas fa-key"></i></div>
-                <h1>Create Account</h1>
-                <p class="subtitle">Fill in the details to get started.</p>
-                <br>
-                <form id="signupForm" class="signup-form">
-                    <div class="input-group">
-                        <label for="username">USERNAME<span>*</span></label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-user input-icon"></i>
-                            <input type="text" id="username" name="username" placeholder="E.g Carlos brown" required>
-                        </div>
-                        <p id="usernameError" class="error-message"></p>
-                    </div>
-                    <div class="input-group">
-                        <label for="signup-email">EMAIL<span>*</span></label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-envelope input-icon"></i>
-                            <input type="email" id="email" name="signup-email" placeholder="maveric5@gmail.com" required>
-                        </div>
-                        <p id="emailError" class="error-message"></p>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="signup-password">PASSWORD<span>*</span></label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-key input-icon"></i>
-                            <input type="password" id="password" name="signup-password" placeholder="•••••••••••••" required>
-                            <i onclick="togglePassword(password)" class="fas fa-eye"></i>
-                        </div>
-                        <p id="passwordError" class="error-message"></p>
-                    </div>
-                    
-                    <div class="input-group" id="refPnt">
-                        <label for="referralCode">REFERER</label>
-                        <div class="input-wrapper">
-                            <i class="fas fa-users input-icon"></i>
-                            <input type="text" id="referralCode" name="referralCode" placeholder="Enter Invite code (Optional)">
-                        </div>
-                    </div>
-                    
-                    <button type="submit" id="submit-signup" class="login-btn signin-btn">SIGNUP &rarr;</button>
-                    <div id="formMessage" class="message-box"></div>
-                    
-                </form>
-                
-                <p class="footer-link">Had an account? <a href="#login-page" class="create-link">Login now</a></p>
-            </div>
-        </div>
-    </section>
-    
+  <section class="page"></section>
 
-    <section id="admin-contact-page" class="page hidden">
-        <div class="login-card">
-            <div class="info-side">
-                <div class="brand-logo">
-                    <img width="35" class="logo-img" height="35" src="/img/logo.png" alt="logo" />
-                    <h1 class="site-name">Flux Mall</h1>
-                </div>
-                <div class="info-content">
-                    <h2 style="color: red;">Account Suspended <i class="fas fa-warning"></i></h2>
-                    <p>Our bot flagged that your account actions didn't follow our system's code of conduct <span
-                            onclick="showPage('privacy-policy-page')" style="color: green;">see terms</span></p>
-                </div>
-            </div>
-            <div class="form-side"><br>
-                <div class="form-header">
-                    <h2>Request Review!</h2>
-                    <p>If you think this was a mistake you can choose to request a review or <span
-                            style="color: green;">contact us</span> for assistance.</p>
-                </div>
-                <br>
-                <strong><i class="fas fa-robot" style="color: red;"></i> Bot's Overview</strong>
-                <p><strong>status</strong> Profile has some Issues -</p>
-                <p><strong>Reason:</strong> User actions didn't follow our standards to be considered as a valid
-                    profile-</p>
-                <p><strong>Tip</strong> User should try requesting a review if it would work-</p>
-                <br>
-                <button id="request-review">Request Review</button>
-            </div>
-        </div>
-    </section>
-
-
-
-
-    <!-- Loader container -->
-    <div class="loader-container" id="loader-container">
-        <div class="loader"></div>
-        <!---     <p>Hang on</p>--->
+  <!-- 404 -->
+  <section class="page hidden" id="404Page">
+    <div class="error-container">
+      <div class="error-card">
+        <div class="brand-logo"><div class="logo-icon"><i class="fas fa-coins"></i></div></div>
+        <h1 style="font-family:'Sora',sans-serif;font-size:5rem;font-weight:800;letter-spacing:-2px;background:linear-gradient(to bottom,#fff,#4CAF7D);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">404</h1>
+        <span class="status-tag">Page Not Found</span>
+        <p>The requested page cannot be found on this server.</p>
+        <a class="signin-btn" href="#login-page" style="display:block;text-align:center;text-decoration:none;padding:13px;">Return Home</a>
+        <span class="back-link" onclick="history.back()">← Go Back</span>
+      </div>
     </div>
+  </section>
 
-    <div id="custom-alert-modal" class="modal" style="display:none">
-        <div class="modal-content">
-            <h2>Alert</h2>
-            <span class="close-button">&times;</span>
-            <br />
-            <p id="alert-message" class="modal-message"></p>
-            <button id="alert-ok-button">Got It</button>
-        </div>
+  <!-- FORGOT PASSWORD -->
+  <section id="forgot-password-page" style="flex-direction:row-reverse;" class="page hidden">
+    <div class="left-side">
+      <div class="logo-area"><div class="logo-icon"><i class="fas fa-coins"></i></div><span class="logo-name">Fluxmall <span>Exchange</span></span></div>
+      <div class="stats-card">
+        <div class="card-header"><span>LIVE FEED</span><span>100% ENERGY</span></div>
+        <p class="label">LIFETIME EARNINGS</p><h1 class="earnings">₦2,850,000</h1>
+        <div class="chart-placeholder"><svg viewBox="0 0 100 30"><path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#4CAF7D" stroke-width="2"/></svg></div>
+        <div class="badge-row"><div class="badge">TASKS: 842</div><div class="badge-gold">RANK: ELITE</div></div>
+      </div>
+      <div class="promo-text"><h2>Reset &<br><span>Get Back In.</span></h2><p>We'll send you a secure recovery link instantly.</p></div>
     </div>
-
-    <div id="custom-confirm-modal" class="modal" style="display:none">
-        <div class="modal-content">
-            <h2>Alert</h2>
-            <br />
-            <p id="confirm-message" class="modal-message"></p>
-            <div class="confirm-buttons">
-                <button id="confirm-yes-button">Yes</button>
-                <button id="confirm-no-button">Not now</button>
+    <div class="right-side">
+      <div class="form-wrapper">
+        <div class="lock-icon"><i class="fas fa-unlock"></i></div>
+        <h1>Password Reset</h1>
+        <p class="subtitle">Enter your email and we'll send a recovery link.</p>
+        <form id="resetForm">
+          <div class="input-group">
+            <label for="resetEmail">EMAIL <span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="resetEmail" name="reset-email" placeholder="yourmail@gmail.com" required>
             </div>
-        </div>
+            <p id="resetEmailError" class="error-message"></p>
+          </div>
+          <button type="submit" class="signin-btn" id="resetSubmitBtn" disabled>Send Reset Link</button>
+          <div class="footer-link" style="margin-top:16px;">
+            <a href="#login-page" class="create-link"><i class="fas fa-arrow-left" style="margin-right:5px;"></i>Back to Login</a>
+          </div>
+        </form>
+      </div>
     </div>
-    <!-- PWA Service Worker Registration - Add before </body> in all HTML files -->
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('[SW] Registered:', reg.scope))
-        .catch(err => console.log('[SW] Registration failed:', err));
-    });
-  }
-</script>
-</body>
+  </section>
 
+  <!-- LOGIN -->
+  <section id="login-page" class="page hidden">
+    <div class="left-side">
+      <div class="logo-area"><div class="logo-icon"><i class="fas fa-coins"></i></div><span class="logo-name">Fluxmall <span>Exchange</span></span></div>
+      <div class="stats-card">
+        <div class="card-header"><span>LIVE FEED</span><span>100% ENERGY</span></div>
+        <p class="label">LIFETIME EARNINGS</p><h1 class="earnings">₦2,850,000</h1>
+        <div class="chart-placeholder"><svg viewBox="0 0 100 30"><path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#4CAF7D" stroke-width="2"/></svg></div>
+        <div class="badge-row"><div class="badge">TASKS: 842</div><div class="badge-gold">RANK: ELITE</div></div>
+      </div>
+      <div class="promo-text"><h2>Big Money.<br><span>Bigger Moves.</span></h2><p>The #1 investment & exchange platform in Nigeria.</p></div>
+    </div>
+    <div class="right-side">
+      <div class="form-wrapper">
+        <div class="lock-icon"><i class="fas fa-lock"></i></div>
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Enter your credentials to access your dashboard.</p>
+        <form id="loginForm">
+          <div class="input-group">
+            <label for="loginEmail">EMAIL <span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="loginEmail" name="login-email" placeholder="yourmail@gmail.com" required>
+            </div>
+            <p id="loginEmailError" class="error-message"></p>
+          </div>
+          <div class="input-group">
+            <label for="loginPassword">PASSWORD <span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-key input-icon"></i>
+              <input type="password" id="loginPassword" name="login-password" placeholder="•••••••••••••" required>
+              <i onclick="togglePassword(loginPassword)" class="fas fa-eye"></i>
+            </div>
+            <p id="loginPasswordError" class="error-message"></p>
+          </div>
+          <div class="remember-row">
+            <p class="checkbox-group">
+              <input type="checkbox" name="recall" id="recall">
+              <label for="recall">Remember me</label>
+            </p>
+            <a class="create-link" href="#forgot-password-page">Forgot password?</a>
+          </div>
+          <button type="submit" class="signin-btn">LOGIN &rarr;</button>
+          <div id="loginFormMessage" class="message-box"></div>
+        </form>
+        <p class="footer-link">Don't have an account? <a href="#signup-page" class="create-link">Create now</a></p>
+      </div>
+    </div>
+  </section>
 
+  <!-- SIGNUP -->
+  <section id="signup-page" class="page hidden" style="flex-direction:row-reverse;">
+    <div class="left-side">
+      <div class="logo-area"><div class="logo-icon"><i class="fas fa-coins"></i></div><span class="logo-name">Fluxmall <span>Exchange</span></span></div>
+      <div class="stats-card">
+        <div class="card-header"><span>LIVE FEED</span><span>100% ENERGY</span></div>
+        <p class="label">LIFETIME EARNINGS</p><h1 class="earnings">₦2,850,000</h1>
+        <div class="chart-placeholder"><svg viewBox="0 0 100 30"><path d="M0 25 Q 25 25, 50 15 T 100 10" fill="transparent" stroke="#4CAF7D" stroke-width="2"/></svg></div>
+        <div class="badge-row"><div class="badge">TASKS: 842</div><div class="badge-gold">RANK: ELITE</div></div>
+      </div>
+      <div class="promo-text"><h2>Join the<br><span>Smart Money.</span></h2><p>Over 50,000 investors growing with Fluxmall Exchange.</p></div>
+    </div>
+    <div class="right-side">
+      <div class="form-wrapper">
+        <div class="lock-icon"><i class="fas fa-key"></i></div>
+        <h1>Create Account</h1>
+        <p class="subtitle">Fill in your details to get started.</p>
+        <form id="signupForm">
+          <div class="input-group">
+            <label for="username">USERNAME <span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" id="username" name="username" placeholder="E.g Carlos Brown" required>
+            </div>
+            <p id="usernameError" class="error-message"></p>
+          </div>
+          <div class="input-group">
+            <label for="email">EMAIL <span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="email" name="signup-email" placeholder="yourmail@gmail.com" required>
+            </div>
+            <p id="emailError" class="error-message"></p>
+          </div>
+          <div class="input-group">
+            <label for="password">PASSWORD <span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-key input-icon"></i>
+              <input type="password" id="password" name="signup-password" placeholder="•••••••••••••" required>
+              <i onclick="togglePassword(password)" class="fas fa-eye"></i>
+            </div>
+            <p id="passwordError" class="error-message"></p>
+          </div>
+          <div class="input-group" id="refPnt">
+            <label for="referralCode">REFERRAL CODE <span style="color:var(--text-body);font-weight:400;">(optional)</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-users input-icon"></i>
+              <input type="text" id="referralCode" name="referralCode" placeholder="Enter invite code">
+            </div>
+          </div>
+          <button type="submit" id="submit-signup" class="signin-btn">SIGN UP &rarr;</button>
+          <div id="formMessage" class="message-box"></div>
+        </form>
+        <p class="footer-link">Already have an account? <a href="#login-page" class="create-link">Login now</a></p>
+      </div>
+    </div>
+  </section>
 
+  <!-- SUSPENDED -->
+  <section id="admin-contact-page" class="page hidden">
+    <div class="login-card">
+      <div class="info-side">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="logo-icon"><i class="fas fa-coins"></i></div>
+          <span style="font-family:'Sora',sans-serif;font-size:1rem;font-weight:700;color:white;">Fluxmall <span style="color:var(--gold-light);">Exchange</span></span>
+        </div>
+        <div>
+          <h2 style="color:#fca5a5;">Account Suspended <i class="fas fa-triangle-exclamation"></i></h2>
+          <p style="margin-top:8px;">Our bot flagged your account for violating our code of conduct. <span onclick="showPage('privacy-policy-page')" style="color:var(--gold-light);cursor:pointer;">See terms</span></p>
+        </div>
+      </div>
+      <div class="form-side">
+        <h2>Request Review</h2>
+        <p>Think this was a mistake? Request a review or <span style="color:var(--gold);cursor:pointer;">contact us</span>.</p>
+        <br>
+        <strong style="font-size:0.85rem;color:var(--text-label);"><i class="fas fa-robot" style="color:#dc2626;margin-right:5px;"></i>Bot's Overview</strong><br><br>
+        <p style="font-size:0.82rem;color:var(--text-label);"><strong>Status:</strong> Profile has some issues</p>
+        <p style="font-size:0.82rem;color:var(--text-label);margin-top:6px;"><strong>Reason:</strong> User actions didn't meet our standards</p>
+        <p style="font-size:0.82rem;color:var(--text-label);margin-top:6px;"><strong>Tip:</strong> Try requesting a review — it may resolve this</p>
+        <button id="request-review">Request Review</button>
+      </div>
+    </div>
+  </section>
 
-<script src="script.js"></script>
+  <!-- Loader -->
+  <div class="loader-container" id="loader-container">
+    <div class="loader"></div>
+  </div>
 
-<script>
-    //For universal or Global scripting
-    // --- DOM Elements ---
-    const submitSignupBtn = document.getElementById('submit-signup');
-    const usernameInput = document.getElementById('username');
-    const signupForm = document.getElementById('signupForm');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const referralCodeInput = document.getElementById('referralCode');
-    const usernameError = document.getElementById('usernameError');
-    const resetForm = document.getElementById('resetForm');
-    const emailError = document.getElementById('emailError');
-    const passwordError = document.getElementById('passwordError');
-    //for login Dom
-    const loginEmailInput = document.getElementById('loginEmail');
-    const loginPasswordInput = document.getElementById('loginPassword');
-    const loginForm = document.getElementById('loginForm')
-    const upgradeForm = document.getElementById("upgradeForm")
-    const loginEmailError = document.getElementById('loginEmailError');
-    const loginPasswordError = document.getElementById('loginPasswordError');
-    const loginFormMessage = document.getElementById('loginFormMessage');
-    const formMessage = document.getElementById('formMessage');
-    const reviewBtn = document.querySelector("#request-review");
-    const referer = document.getElementById('inviter');
-    const refferalCode = document.getElementById('refferalCode');
-    // Custom Alert Modal elements
-    const customAlertModal = document.getElementById('custom-alert-modal');
-    const alertMessage = document.getElementById('alert-message');
-    const alertOkButton = document.getElementById('alert-ok-button');
-    const closeAlertButton = document.querySelector('#custom-alert-modal .close-button');
-    const loaderContainer = document.getElementById('loader-container');
-    // Custom Confirm Modal elements
-    const customConfirmModal = document.getElementById('custom-confirm-modal');
-    const confirmMessage = document.getElementById('confirm-message');
-    const confirmYesButton = document.getElementById('confirm-yes-button');
-    const confirmNoButton = document.getElementById('confirm-no-button');
-    const tabItems = document.querySelectorAll('.tab-item');
+  <!-- Alert Modal -->
+  <div id="custom-alert-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-handle"></div>
+      <h2>Notice <span class="close-button" id="closeAlertBtn">&times;</span></h2>
+      <p id="alert-message" class="modal-message"></p>
+      <button id="alert-ok-button">Got It</button>
+    </div>
+  </div>
 
-    function togglePassword(password) {
-        if (password && password.type === 'text') {
-            password.type = 'password';
-            password.parentNode.querySelector('span:last-child').innerHTML = "👁️";
-        } else if (password) {
-            password.type = 'text';
-            password.parentNode.querySelector('span:last-child').innerHTML = "🙈";
-        }
+  <!-- Confirm Modal -->
+  <div id="custom-confirm-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-handle"></div>
+      <h2 id="confirm-title">Confirm Details</h2>
+      <p id="confirm-message" class="modal-message"></p>
+      <div id="confirm-detail" class="modal-detail" style="display:none;"></div>
+      <div class="confirm-buttons">
+        <button id="confirm-yes-button">Proceed</button>
+        <button id="confirm-no-button">Recheck Details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('[SW] Registered:', reg.scope))
+          .catch(err => console.log('[SW] Registration failed:', err));
+      });
     }
-    //for form offline control
-    document.querySelectorAll('form').forEach((form) => {
-        form.addEventListener('submit', (e) => {
-            e.preventDefault()
-        })
-    })
+  </script>
 
-    // to get object params from searchlist
+  <!-- ══════════════════════════════════════
+       INLINE BOOTSTRAP SCRIPT
+       Declares ALL shared vars + helpers BEFORE script.js loads.
+       script.js uses these — do NOT redeclare them there.
+  ══════════════════════════════════════ -->
+  <script>
+    // ── URL Params ──
     const urlParams = new URLSearchParams(window.location.search);
-    const tabParam = urlParams.get('tab'),
-        refParam = urlParams.get('ref');
+    const tabParam  = urlParams.get('tab');
+    const refParam  = urlParams.get('ref');
 
+    // ── Shared DOM refs (used by script.js) ──
+    const submitSignupBtn    = document.getElementById('submit-signup');
+    const usernameInput      = document.getElementById('username');
+    const signupForm         = document.getElementById('signupForm');
+    const emailInput         = document.getElementById('email');
+    const passwordInput      = document.getElementById('password');
+    const referralCodeInput  = document.getElementById('referralCode');
+    const usernameError      = document.getElementById('usernameError');
+    const resetForm          = document.getElementById('resetForm');
+    const emailError         = document.getElementById('emailError');
+    const passwordError      = document.getElementById('passwordError');
+    const loginEmailInput    = document.getElementById('loginEmail');
+    const loginPasswordInput = document.getElementById('loginPassword');
+    const loginForm          = document.getElementById('loginForm');
+    const loginEmailError    = document.getElementById('loginEmailError');
+    const loginPasswordError = document.getElementById('loginPasswordError');
+    const loginFormMessage   = document.getElementById('loginFormMessage');
+    const formMessage        = document.getElementById('formMessage');
+    const loaderContainer    = document.getElementById('loader-container');
+
+    // ── Prefill referral code from URL ──
     if (refParam && referralCodeInput) {
-        referralCodeInput.value = refParam;
-        referralCodeInput.setAttribute('disabled', true);
-        referralCodeInput.style.opacity = '.5';
+      referralCodeInput.value = refParam;
+      referralCodeInput.setAttribute('disabled', true);
+      referralCodeInput.style.opacity = '0.5';
     }
 
-    function showAlert(message, isSuccess) {
-        alertMessage.innerHTML = message;
-        customAlertModal.style.display = 'flex'; // Use flex to center
-        // FIX: Use classList.add instead of overwriting the whole className
-        customAlertModal.querySelector(".modal-content").classList.remove('text-green-600', 'text-red-600');
-        customAlertModal.querySelector(".modal-content").classList.add('text-lg', 'font-medium', 'mb-4',
-            isSuccess ? 'text-green-600' : 'text-red-600');
+    // ── Theme ──
+    const savedTheme = localStorage.getItem('fluxmall-theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('theme-toggle-btn').addEventListener('click', () => {
+      const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('fluxmall-theme', next);
+    });
 
-        if (customAlertModal.querySelector(".modal-content").classList.contains('text-red-600')) {
-            customAlertModal.querySelector(".modal-content").style.borderColor = '#FF00003B';
-        } else { customAlertModal.querySelector(".modal-content").style.borderColor = '#333'; }
+    // ── Password toggle ──
+    function togglePassword(input) {
+      if (!input) return;
+      const hide = input.type === 'password';
+      input.type = hide ? 'text' : 'password';
+      const icon = input.parentNode.querySelector('.fa-eye, .fa-eye-slash');
+      if (icon) { icon.classList.toggle('fa-eye', !hide); icon.classList.toggle('fa-eye-slash', hide); }
     }
 
-    function showConfirm(message, onConfirm, onCancel, btnText = "Yes") {
-        confirmMessage.innerHTML = message;
-        customConfirmModal.style.display = 'flex';
-
-        const handleConfirm = () => {
-            customConfirmModal.style.display = 'none';
-            confirmYesButton.removeEventListener('click', handleConfirm);
-            confirmNoButton.removeEventListener('click', handleCancel);
-            onConfirm();
-        };
-
-        const handleCancel = () => {
-            customConfirmModal.style.display = 'none';
-            confirmYesButton.removeEventListener('click', handleConfirm);
-            confirmNoButton.removeEventListener('click', handleCancel);
-            onCancel();
-        };
-
-        confirmYesButton.textContent = btnText;
-        confirmYesButton.addEventListener('click', handleConfirm);
-        confirmNoButton.addEventListener('click', handleCancel);
-    }
-
-    // Close alert when OK button is clicked
-    alertOkButton.addEventListener('click', () => {
-        customAlertModal.style.display = 'none';
-    });
-
-    // Close alert when close button is clicked
-    closeAlertButton.addEventListener('click', () => {
-        customAlertModal.style.display = 'none';
-    });
-
-
-
-    // Close modals if user clicks outside the modal content
-    window.addEventListener('click', (event) => {
-        if (event.target === customAlertModal) {
-            customAlertModal.style.display = 'none';
-        }
-        /*
-        //for security standards 
-        if (event.target === customConfirmModal) {
-            customConfirmModal.style.display = 'none';
-        }
-        */
-
-    });
-
+    // ── Loading ──
     function showLoading(show) {
-        if (show) {
-            loaderContainer.style.display = 'none'; // Change to 'flex' if you want to show the loader
-        } else {
-            loaderContainer.style.display = 'none';
-        }
+      loaderContainer.style.display = show ? 'flex' : 'none';
     }
 
+    // ══════════════════════════════════════
+    // MODAL ENGINE — callback refs, no cloneNode
+    // This is what fixed the replaceChild null error.
+    // Single persistent listeners read _cb refs each time.
+    // ══════════════════════════════════════
+    let _confirmCb = null;
+    let _cancelCb  = null;
+
+    function _openModal(modal) {
+      modal.style.display = 'flex';
+      // double rAF so display:flex is painted before class triggers transition
+      requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('show')));
+    }
+
+    function _closeModal(modal) {
+      modal.classList.remove('show');
+      const content = modal.querySelector('.modal-content');
+      content.addEventListener('transitionend', () => {
+        if (!modal.classList.contains('show')) modal.style.display = 'none';
+      }, { once: true });
+    }
+
+    // Overlay clicks close the modal
+    document.getElementById('custom-alert-modal').addEventListener('click', function(e) {
+      if (e.target === this) _closeModal(this);
+    });
+    document.getElementById('custom-confirm-modal').addEventListener('click', function(e) {
+      if (e.target === this) _closeModal(this);
+    });
+
+    // Alert buttons
+    document.getElementById('alert-ok-button').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
+    document.getElementById('closeAlertBtn').addEventListener('click',   () => _closeModal(document.getElementById('custom-alert-modal')));
+
+    // Confirm buttons — ONE listener each, reads callback ref
+    document.getElementById('confirm-yes-button').addEventListener('click', () => {
+      _closeModal(document.getElementById('custom-confirm-modal'));
+      if (_confirmCb) { const fn = _confirmCb; _confirmCb = null; fn(); }
+    });
+    document.getElementById('confirm-no-button').addEventListener('click', () => {
+      _closeModal(document.getElementById('custom-confirm-modal'));
+      if (_cancelCb) { const fn = _cancelCb; _cancelCb = null; fn(); }
+    });
+
+    // ── showAlert (called from script.js) ──
+    function showAlert(message, isSuccess) {
+      const el = document.getElementById('alert-message');
+      el.innerHTML = message;
+      el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
+      _openModal(document.getElementById('custom-alert-modal'));
+    }
+
+    // ── showConfirm (called from script.js) ──
+    // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
+    function showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel }) {
+      document.getElementById('confirm-title').textContent      = title   || 'Confirm Details';
+      document.getElementById('confirm-message').innerHTML      = message || 'Are you sure?';
+      document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
+      document.getElementById('confirm-no-button').textContent  = noText  || 'Recheck Details';
+      const detailEl = document.getElementById('confirm-detail');
+      if (detail) { detailEl.innerHTML = detail; detailEl.style.display = 'block'; }
+      else { detailEl.style.display = 'none'; }
+      _confirmCb = onConfirm || null;
+      _cancelCb  = onCancel  || null;
+      _openModal(document.getElementById('custom-confirm-modal'));
+    }
+
+    // ── Page routing ──
     const allPages = document.querySelectorAll('.page');
-  /**
-     * Main function to handle page switching based on the URL hash
-     */
+
     function switchPageByHash() {
-        // Get the hash from the URL (e.g., "#hometab")
-        const hash = window.location.hash || '#signup-page';
-        showLoading(false); // Ensure loader is hidden on page switch
-        // Remove the '#' symbol to get the ID (e.g., "hometab")
-        const targetId = hash.substring(1);
-        const targetElement = document.getElementById(targetId);
-
-        // Only proceed if the element with that ID exists in the HTML
-        if (targetElement) {
-            // A. Reset State: Hide all pages and deactivate all nav links
-            allPages.forEach(page => {
-                page.classList.add('hidden');
-            });
-
-
-            // B. Activate Content: Show the targeted page
-            targetElement.classList.remove('hidden');
-        } else {
-            console.warn(`Zaddy, the ID "${targetId}" was not found in the document.`)
-            window.location.hash = '#404Page'; // Redirect to 404 page if hash doesn't match any element
-        }
+      const hash = window.location.hash || '#signup-page';
+      showLoading(false);
+      const targetId = hash.substring(1);
+      const target   = document.getElementById(targetId);
+      if (target) {
+        allPages.forEach(p => p.classList.add('hidden'));
+        target.classList.remove('hidden');
+      } else {
+        console.warn(`Zaddy, ID "${targetId}" not found.`);
+        window.location.hash = '#404Page';
+      }
     }
 
-    // 3. Event Listeners
-    // Run when the page is first loaded or refreshed
-    window.addEventListener('DOMContentLoaded', () => {
-        switchPageByHash();
-    });
-    // Run every time the URL hash changes (when a user clicks a nav link)
+    window.addEventListener('DOMContentLoaded', switchPageByHash);
     window.addEventListener('hashchange', switchPageByHash);
+    document.querySelectorAll('.go-back').forEach(btn => btn.addEventListener('click', () => history.back()));
+  </script>
 
-    // Go Back Buttons
-    document.querySelectorAll('.go-back').forEach((backBtn) => {
-        backBtn.addEventListener('click', () => history.back());
-    });
+  <!-- External script — all API logic lives here, uses vars declared above -->
+  <script src="script.js"></script>
 
-</script>
+</body>
 </html>
