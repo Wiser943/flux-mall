@@ -29,8 +29,41 @@
     
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #fdfaf3;
+      background: var(--gold-pale);
       color: #1a1200;
+    }
+    
+    .mobile-menu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.35s ease;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      padding: 0 1.5rem;
+    }
+    
+    .mobile-menu.open {
+      max-height: 400px;
+      padding: 1rem 1.5rem;
+    }
+    
+    .mobile-menu a {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #334155;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid #f1f5f9;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .mobile-menu a:last-child {
+      border-bottom: none;
+    }
+    
+    .mobile-menu a:hover {
+      color: var(--gold);
     }
     
     /* Golden theme classes */
@@ -171,7 +204,7 @@
   <!-- Navigation -->
   <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-yellow-100 px-6 py-4 shadow-sm">
     <div class="max-w-7xl mx-auto flex justify-between items-center">
-      <button id="nav-btn"><i class="fas fa-bars"></i></button>
+      <button id="nav-btn" class="md:hidden text-xl" style="color:var(--dark)"><i class="fas fa-bars"></i></button>
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 bg-gold rounded-lg flex items-center justify-center text-white" style="background:var(--gold)">
           <i class="fas fa-coins"></i>
@@ -188,6 +221,17 @@
         <a href="#contact" class="hover:text-yellow-600 transition">Contact</a>
       </div>
       <!--   <a href="account/account.html" class="text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:scale-105 transition" style="background:var(--gold)">Get Started</a>-->
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu md:hidden">
+      <a href="#features">Features</a>
+      <a href="#stats">Stats</a>
+      <a href="#plans">Plans</a>
+      <a href="#security">Security</a>
+      <a href="#testimonials">Reviews</a>
+      <a href="#deposit">Deposit</a>
+      <a href="#contact">Contact</a>
     </div>
   </nav>
   
@@ -265,36 +309,36 @@
   </section>
   
   <!-- Statistics Section -->
-<section id="stats" class="py-24 px-6" style="background:linear-gradient(135deg,#1a1200 0%,#2e1f00 100%)">
-  <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-14">
-      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 border" style="background:rgba(212,160,23,0.1);border-color:rgba(212,160,23,0.3)">
-        <span class="w-2 h-2 rounded-full animate-pulse" style="background:var(--gold-light)"></span>
-        <span class="text-xs font-bold uppercase tracking-widest" style="color:var(--gold-light)">Our Numbers</span>
+  <section id="stats" class="py-24 px-6" style="background:linear-gradient(135deg,#1a1200 0%,#2e1f00 100%)">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-14">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 border" style="background:rgba(212,160,23,0.1);border-color:rgba(212,160,23,0.3)">
+          <span class="w-2 h-2 rounded-full animate-pulse" style="background:var(--gold-light)"></span>
+          <span class="text-xs font-bold uppercase tracking-widest" style="color:var(--gold-light)">Our Numbers</span>
+        </div>
+        <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-3">Trusted by <span style="color:var(--gold-light)">Thousands</span></h2>
+        <p class="text-slate-400 text-base max-w-xl mx-auto">Real numbers. Real growth. Real investors trusting Fluxmall Exchange every day.</p>
       </div>
-      <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-3">Trusted by <span style="color:var(--gold-light)">Thousands</span></h2>
-      <p class="text-slate-400 text-base max-w-xl mx-auto">Real numbers. Real growth. Real investors trusting Fluxmall Exchange every day.</p>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
+          <p class="font-black stat-number text-3xl md:text-5xl" style="color:var(--gold-light)" data-target="50000" data-suffix="+">0</p>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Active Investors</p>
+        </div>
+        <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
+          <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="10" data-suffix="M+">0</p>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Total Paid Out</p>
+        </div>
+        <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
+          <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="99" data-suffix="%">0</p>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Satisfaction Rate</p>
+        </div>
+        <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
+          <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="24" data-suffix="/7">0</p>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Support Hours</p>
+        </div>
+      </div>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-      <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-        <p class="font-black stat-number text-3xl md:text-5xl" style="color:var(--gold-light)" data-target="50000" data-suffix="+">0</p>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Active Investors</p>
-      </div>
-      <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-        <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="10" data-suffix="M+">0</p>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Total Paid Out</p>
-      </div>
-      <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-        <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="99" data-suffix="%">0</p>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Satisfaction Rate</p>
-      </div>
-      <div class="text-center p-8 rounded-3xl border" style="background:rgba(212,160,23,0.07);border-color:rgba(212,160,23,0.2)">
-        <p class="text-3xl md:text-5xl font-black stat-number" style="color:var(--gold-light)" data-target="24" data-suffix="/7">0</p>
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-2">Support Hours</p>
-      </div>
-    </div>
-  </div>
-</section>
+  </section>
   
   <!-- Investment Plans Section -->
   <section id="plans" class="py-24 px-6" style="background:#fdf6e0">
@@ -534,7 +578,7 @@
           <div class="flex items-center gap-4 mb-4">
             <div class="w-12 h-12 rounded-full flex items-center justify-center text-white font-extrabold text-lg" style="background:var(--gold)">C</div>
             <div>
-              <p class="font-extrabold text-slate-900">Osikoya Daniel O.</p>
+              <p class="font-extrabold text-slate-900">Cosikoya D.</p>
               <p class="text-xs text-slate-400">Lagos, Nigeria 🇳🇬</p>
             </div>
             <div class="ml-auto text-yellow-400 text-sm">★★★★★</div>
@@ -798,16 +842,16 @@
           <span class="text-xl font-extrabold tracking-tight">Fluxmall <span style="color:var(--gold-light)">Exchange</span></span>
         </div>
         <p class="text-slate-400 text-sm max-w-xs leading-relaxed">
-          Helping listeners and singers grow their love in the production and listening of music.
+          Helping investors invest, flip their assest for a digital workld tomorrow.
         </p>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-12 items-start">
         <div class="space-y-4">
           <h4 class="font-bold uppercase text-[10px] tracking-widest text-slate-500">Links</h4>
           <ul class="text-sm space-y-2 text-slate-400">
-            <li><a href="login.html" class="hover:text-white transition">Login</a></li>
-            <li><a href="account/account.html" class="hover:text-white transition">Sign Up</a></li>
-            <li><a href="dashboard.html" class="hover:text-white transition">App Portal</a></li>
+            <li><a href="account/account.html#login-page" class="hover:text-white transition">Login</a></li>
+            <li><a href="account/account.html#signup-page" class="hover:text-white transition">Sign Up</a></li>
+            <li><a href="m1/index.html" class="hover:text-white transition">App Portal</a></li>
           </ul>
         </div>
         <div class="space-y-4">
@@ -839,6 +883,27 @@
   <script src="script.js"></script>
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
   <script>
+    // Mobile nav toggle
+    const navBtn = document.getElementById('nav-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    navBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('open');
+      const icon = navBtn.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+    
+    // Close menu when a link is clicked
+    mobileMenu.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.remove('open');
+        const icon = navBtn.querySelector('i');
+        icon.classList.add('fa-bars');
+        icon.classList.remove('fa-times');
+      });
+    });
+    
     // Copy account number
     function copyAcctNum() {
       const num = document.getElementById('acctNum').innerText;
@@ -853,33 +918,33 @@
       });
     }
     
-// Animated counter
-function animateCounter(el) {
-  const target = parseInt(el.getAttribute('data-target'));
-  const suffix = el.getAttribute('data-suffix') || '+';
-  let count = 0;
-  const step = Math.ceil(target / 80);
-  const timer = setInterval(() => {
-    count += step;
-    if (count >= target) {
-      count = target;
-      clearInterval(timer);
+    // Animated counter
+    function animateCounter(el) {
+      const target = parseInt(el.getAttribute('data-target'));
+      const suffix = el.getAttribute('data-suffix') || '+';
+      let count = 0;
+      const step = Math.ceil(target / 80);
+      const timer = setInterval(() => {
+        count += step;
+        if (count >= target) {
+          count = target;
+          clearInterval(timer);
+        }
+        el.innerText = count.toLocaleString() + suffix;
+      }, 20);
     }
-    el.innerText = count.toLocaleString() + suffix;
-  }, 20);
-}
-
-// Trigger counter when stats section is visible
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.querySelectorAll('.stat-number').forEach(animateCounter);
-      observer.unobserve(entry.target);
-    }
-  });
-}, { threshold: 0.3 });
-const statsSection = document.getElementById('stats');
-if (statsSection) observer.observe(statsSection);
+    
+    // Trigger counter when stats section is visible
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.querySelectorAll('.stat-number').forEach(animateCounter);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.3 });
+    const statsSection = document.getElementById('stats');
+    if (statsSection) observer.observe(statsSection);
     
     // Smooth scroll
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
