@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy & Terms | Fluxmall Exchange</title>
+  <link rel="shortcut icon" href="/img/logo.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    :root {
+      --gold: #2E7D52;
+      --gold-light: #4CAF7D;
+      --gold-dark: #1B4D32;
+      --gold-pale: #EAF5EE;
+      --dark: #0A1F14;
+      --font-display: 'Sora', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: #f8faf9;
+      color: #1a1a1a;
+      line-height: 1.7;
+    }
+
+    /* ── HEADER ── */
+    .page-header {
+      background: linear-gradient(135deg, var(--dark) 0%, #0f2d1a 60%, var(--gold-dark) 100%);
+      padding: 0 0 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 80% at 90% 50%, rgba(76,175,125,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 10% 100%, rgba(46,125,82,0.15) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* Grid texture */
+    .page-header::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(76,175,125,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(76,175,125,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    .nav-bar {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 48px;
+      border-bottom: 1px solid rgba(76,175,125,0.12);
+    }
+
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo-icon {
+      width: 36px; height: 36px; background: var(--gold); border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; color: white; font-size: 15px;
+    }
+    .nav-logo-name { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: white; }
+    .nav-logo-name span { color: var(--gold-light); }
+
+    .nav-back {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 0.83rem; font-weight: 600; color: rgba(255,255,255,0.6);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--gold-light); }
+
+    .header-body {
+      position: relative; z-index: 10;
+      max-width: 760px; margin: 0 auto;
+      padding: 56px 48px 0;
+      text-align: center;
+    }
+
+    .header-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(76,175,125,0.12); border: 1px solid rgba(76,175,125,0.25);
+      color: var(--gold-light); font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.1em; padding: 5px 14px; border-radius: 20px;
+      margin-bottom: 22px;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .header-body h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800; color: white; line-height: 1.15;
+      margin-bottom: 16px;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+    .header-body h1 span { color: var(--gold-light); }
+
+    .header-body p {
+      font-size: 0.95rem; color: rgba(255,255,255,0.5);
+      max-width: 520px; margin: 0 auto 28px;
+      animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    .header-meta {
+      display: flex; align-items: center; justify-content: center; gap: 20px;
+      font-size: 0.78rem; color: rgba(255,255,255,0.35);
+      animation: fadeUp 0.5s 0.3s ease both;
+    }
+    .header-meta span { display: flex; align-items: center; gap: 5px; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ── LAYOUT ── */
+    .layout {
+      max-width: 1100px; margin: 0 auto;
+      padding: 60px 24px;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* ── SIDEBAR NAV ── */
+    .sidebar {
+      position: sticky; top: 24px;
+    }
+
+    .sidebar-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.12em;
+      color: #9ca3af; text-transform: uppercase; margin-bottom: 12px;
+      padding-left: 12px;
+    }
+
+    .sidebar-nav { list-style: none; }
+    .sidebar-nav li { margin-bottom: 2px; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 12px; border-radius: 9px;
+      font-size: 0.82rem; font-weight: 500; color: #4b5563;
+      text-decoration: none; transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .sidebar-nav a:hover { background: var(--gold-pale); color: var(--gold); border-color: rgba(46,125,82,0.15); }
+    .sidebar-nav a.active { background: var(--gold-pale); color: var(--gold); font-weight: 600; border-color: rgba(46,125,82,0.2); }
+    .sidebar-nav a i { font-size: 0.75rem; width: 14px; text-align: center; opacity: 0.7; }
+
+    .sidebar-divider { height: 1px; background: #e5e7eb; margin: 10px 12px; }
+
+    .sidebar-updated {
+      margin-top: 20px; padding: 14px;
+      background: var(--gold-pale); border: 1px solid rgba(46,125,82,0.15);
+      border-radius: 12px; font-size: 0.75rem; color: var(--gold-dark); line-height: 1.6;
+    }
+    .sidebar-updated strong { display: block; font-weight: 700; margin-bottom: 3px; }
+
+    /* ── CONTENT ── */
+    .content { min-width: 0; }
+
+    .tab-switcher {
+      display: flex; gap: 4px;
+      background: #f1f5f0; border-radius: 12px; padding: 4px;
+      margin-bottom: 40px; width: fit-content;
+    }
+    .tab-btn {
+      padding: 9px 20px; border-radius: 9px; border: none;
+      font-family: var(--font-body); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all 0.25s; color: #6b7280; background: transparent;
+    }
+    .tab-btn.active { background: white; color: var(--gold); box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+
+    .tab-panel { display: none; animation: fadeIn 0.3s ease; }
+    .tab-panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Sections */
+    .doc-section {
+      margin-bottom: 48px;
+      scroll-margin-top: 24px;
+    }
+
+    .section-header {
+      display: flex; align-items: flex-start; gap: 14px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .section-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: var(--gold-pale); border: 1px solid rgba(46,125,82,0.2);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      color: var(--gold); font-size: 0.9rem; margin-top: 2px;
+    }
+
+    .section-header-text h2 {
+      font-family: var(--font-display);
+      font-size: 1.15rem; font-weight: 700; color: var(--dark); margin-bottom: 3px;
+    }
+    .section-header-text p { font-size: 0.78rem; color: #9ca3af; }
+
+    .doc-section p {
+      font-size: 0.9rem; color: #374151; margin-bottom: 14px; line-height: 1.75;
+    }
+
+    .doc-section ul, .doc-section ol {
+      padding-left: 0; list-style: none; margin-bottom: 14px;
+    }
+
+    .doc-section ul li, .doc-section ol li {
+      font-size: 0.9rem; color: #374151; padding: 6px 0 6px 22px;
+      position: relative; line-height: 1.65;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .doc-section ul li:last-child, .doc-section ol li:last-child { border-bottom: none; }
+
+    .doc-section ul li::before {
+      content: '';
+      position: absolute; left: 0; top: 14px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold-light);
+    }
+
+    .doc-section ol { counter-reset: list-counter; }
+    .doc-section ol li { counter-increment: list-counter; }
+    .doc-section ol li::before {
+      content: counter(list-counter);
+      position: absolute; left: 0; top: 6px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--gold); color: white;
+      font-size: 0.65rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Highlight box */
+    .highlight-box {
+      background: var(--gold-pale); border-left: 3px solid var(--gold);
+      border-radius: 0 10px 10px 0; padding: 14px 18px;
+      margin-bottom: 16px; font-size: 0.87rem; color: var(--gold-dark); line-height: 1.6;
+    }
+    .highlight-box strong { font-weight: 700; }
+
+    /* Warning box */
+    .warning-box {
+      background: #fff7ed; border-left: 3px solid #f59e0b;
+      border-radius: 0 10px 10px 0; padding: 14px 18px;
+      margin-bottom: 16px; font-size: 0.87rem; color: #92400e; line-height: 1.6;
+    }
+
+    /* Info table */
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 0.85rem; }
+    .info-table th {
+      background: var(--dark); color: white;
+      padding: 10px 14px; text-align: left;
+      font-family: var(--font-display); font-weight: 600; font-size: 0.78rem;
+    }
+    .info-table th:first-child { border-radius: 8px 0 0 0; }
+    .info-table th:last-child { border-radius: 0 8px 0 0; }
+    .info-table td { padding: 10px 14px; color: #374151; border-bottom: 1px solid #e5e7eb; }
+    .info-table tr:hover td { background: #f9fafb; }
+    .info-table tr:last-child td { border-bottom: none; }
+
+    /* Contact card */
+    .contact-card {
+      background: linear-gradient(135deg, var(--dark) 0%, #0f2d1a 100%);
+      border-radius: 16px; padding: 28px 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 20px;
+      flex-wrap: wrap;
+    }
+    .contact-card h3 { font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: white; margin-bottom: 5px; }
+    .contact-card p { font-size: 0.83rem; color: rgba(255,255,255,0.5); }
+    .contact-btn {
+      padding: 10px 22px; background: var(--gold); color: white;
+      border: none; border-radius: 9px; font-family: var(--font-display);
+      font-size: 0.85rem; font-weight: 700; cursor: pointer; text-decoration: none;
+      transition: background 0.2s, transform 0.15s; white-space: nowrap;
+    }
+    .contact-btn:hover { background: var(--gold-dark); transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      background: var(--dark); padding: 32px 48px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      border-top: 1px solid rgba(76,175,125,0.1);
+    }
+    .page-footer p { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 0.8rem; color: rgba(255,255,255,0.3); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--gold-light); }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .nav-bar { padding: 16px 20px; }
+      .header-body { padding: 40px 20px 0; }
+      .layout { grid-template-columns: 1fr; padding: 32px 16px; }
+      .sidebar { position: static; display: none; }
+      .tab-switcher { width: 100%; }
+      .tab-btn { flex: 1; text-align: center; }
+      .page-footer { padding: 24px 20px; flex-direction: column; text-align: center; }
+      .contact-card { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="page-header">
+    <nav class="nav-bar">
+      <a class="nav-logo" href="/">
+        <div class="nav-logo-icon"><i class="fas fa-coins"></i></div>
+        <span class="nav-logo-name">Fluxmall <span>Exchange</span></span>
+      </a>
+      <a class="nav-back" href="javascript:history.back()">
+        <i class="fas fa-arrow-left"></i> Go Back
+      </a>
+    </nav>
+    <div class="header-body">
+      <div class="header-badge">
+        <i class="fas fa-shield-halved"></i>
+        LEGAL DOCUMENTS
+      </div>
+      <h1>Privacy & <span>Terms</span> of Service</h1>
+      <p>How we collect, use, and protect your information — and the rules that govern your use of Fluxmall Exchange.</p>
+      <div class="header-meta">
+        <span><i class="fas fa-calendar-alt"></i> Last updated: March 2026</span>
+        <span><i class="fas fa-globe"></i> Jurisdiction: Nigeria</span>
+        <span><i class="fas fa-language"></i> English</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <p class="sidebar-label">On this page</p>
+      <ul class="sidebar-nav" id="sidebar-nav">
+        <li><a href="#" onclick="switchTab('privacy'); scrollToSection('what-we-collect'); return false;"><i class="fas fa-database"></i> What We Collect</a></li>
+        <li><a href="#" onclick="switchTab('privacy'); scrollToSection('how-we-use'); return false;"><i class="fas fa-cog"></i> How We Use It</a></li>
+        <li><a href="#" onclick="switchTab('privacy'); scrollToSection('data-sharing'); return false;"><i class="fas fa-share-nodes"></i> Data Sharing</a></li>
+        <li><a href="#" onclick="switchTab('privacy'); scrollToSection('your-rights'); return false;"><i class="fas fa-user-shield"></i> Your Rights</a></li>
+        <li><a href="#" onclick="switchTab('privacy'); scrollToSection('security'); return false;"><i class="fas fa-lock"></i> Security</a></li>
+        <div class="sidebar-divider"></div>
+        <li><a href="#" onclick="switchTab('terms'); scrollToSection('eligibility'); return false;"><i class="fas fa-id-card"></i> Eligibility</a></li>
+        <li><a href="#" onclick="switchTab('terms'); scrollToSection('platform-use'); return false;"><i class="fas fa-laptop"></i> Platform Use</a></li>
+        <li><a href="#" onclick="switchTab('terms'); scrollToSection('investments'); return false;"><i class="fas fa-chart-line"></i> Investments & Plans</a></li>
+        <li><a href="#" onclick="switchTab('terms'); scrollToSection('payments'); return false;"><i class="fas fa-money-bill-wave"></i> Payments</a></li>
+        <li><a href="#" onclick="switchTab('terms'); scrollToSection('prohibited'); return false;"><i class="fas fa-ban"></i> Prohibited Acts</a></li>
+        <li><a href="#" onclick="switchTab('terms'); scrollToSection('liability'); return false;"><i class="fas fa-gavel"></i> Liability</a></li>
+        <li><a href="#" onclick="switchTab('terms'); scrollToSection('termination'); return false;"><i class="fas fa-user-slash"></i> Termination</a></li>
+      </ul>
+      <div class="sidebar-updated">
+        <strong>Effective Date</strong>
+        These policies are effective as of 1st March 2026 and apply to all registered users of Fluxmall Exchange.
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- TAB SWITCHER -->
+      <div class="tab-switcher">
+        <button class="tab-btn active" onclick="switchTab('privacy')">
+          <i class="fas fa-user-shield" style="margin-right:6px;"></i>Privacy Policy
+        </button>
+        <button class="tab-btn" onclick="switchTab('terms')">
+          <i class="fas fa-file-contract" style="margin-right:6px;"></i>Terms of Service
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════
+           PRIVACY POLICY
+      ══════════════════════════════════ -->
+      <div class="tab-panel active" id="panel-privacy">
+
+        <div class="highlight-box">
+          <strong>Plain English Summary:</strong> We collect only what we need to run the platform, keep it secure, and pay you. We do not sell your data. You can request deletion at any time.
+        </div>
+
+        <!-- 1 -->
+        <div class="doc-section" id="what-we-collect">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-database"></i></div>
+            <div class="section-header-text">
+              <h2>1. Information We Collect</h2>
+              <p>Data gathered when you register and use the platform</p>
+            </div>
+          </div>
+          <p>When you create an account or use Fluxmall Exchange, we collect the following categories of information:</p>
+          <table class="info-table">
+            <thead>
+              <tr><th>Category</th><th>Examples</th><th>Purpose</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Identity Data</td><td>Full name, username</td><td>Account identification</td></tr>
+              <tr><td>Contact Data</td><td>Email address, phone number</td><td>Communication & OTP</td></tr>
+              <tr><td>Financial Data</td><td>Deposit/withdrawal records, plan subscriptions</td><td>Transaction processing</td></tr>
+              <tr><td>Technical Data</td><td>IP address, browser, device type</td><td>Security & fraud prevention</td></tr>
+              <tr><td>Usage Data</td><td>Pages visited, actions taken, session length</td><td>Platform improvement</td></tr>
+              <tr><td>Referral Data</td><td>Referral codes used or generated</td><td>Reward tracking</td></tr>
+            </tbody>
+          </table>
+          <p>We do <strong>not</strong> collect government ID numbers, BVN, or sensitive biometric data unless explicitly required for identity verification under Nigerian financial regulations.</p>
+        </div>
+
+        <!-- 2 -->
+        <div class="doc-section" id="how-we-use">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-cog"></i></div>
+            <div class="section-header-text">
+              <h2>2. How We Use Your Information</h2>
+              <p>The purposes for which we process your data</p>
+            </div>
+          </div>
+          <p>Your data is used exclusively to operate, secure, and improve the Fluxmall Exchange platform. Specific uses include:</p>
+          <ul>
+            <li>Creating and managing your account and investment plans</li>
+            <li>Processing deposits, withdrawals, and earnings payouts via Paystack</li>
+            <li>Sending transaction confirmations, OTP codes, and security alerts</li>
+            <li>Calculating and crediting referral rewards and commissions</li>
+            <li>Detecting and preventing fraudulent, suspicious, or abusive activity</li>
+            <li>Complying with applicable Nigerian laws and regulations</li>
+            <li>Providing customer support and responding to disputes</li>
+            <li>Sending platform updates and promotional communications (with opt-out)</li>
+          </ul>
+          <p>We process your data on the legal bases of <strong>contractual necessity</strong> (to provide our services), <strong>legitimate interest</strong> (security and fraud prevention), and <strong>consent</strong> (marketing communications).</p>
+        </div>
+
+        <!-- 3 -->
+        <div class="doc-section" id="data-sharing">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-share-nodes"></i></div>
+            <div class="section-header-text">
+              <h2>3. Data Sharing & Third Parties</h2>
+              <p>Who we share your data with and why</p>
+            </div>
+          </div>
+          <div class="warning-box">
+            <strong>We do not sell, rent, or trade your personal data</strong> to any third party for marketing or commercial purposes. Period.
+          </div>
+          <p>We share limited data with trusted service providers who help us operate the platform:</p>
+          <ul>
+            <li><strong>Paystack</strong> — Payment processing, deposit and withdrawal settlement. Paystack has its own Privacy Policy and is bound by CBN regulations.</li>
+            <li><strong>Email Service Providers</strong> — For transactional emails (OTP, confirmations, receipts). Only your email address is shared.</li>
+            <li><strong>Cloud Hosting Providers</strong> — Your data is stored on servers within or compliant with Nigerian data protection standards.</li>
+            <li><strong>Law Enforcement / Regulators</strong> — Where legally required under Nigerian law, or to protect the rights and safety of users.</li>
+          </ul>
+          <p>All third-party partners are contractually bound to handle your data securely and only for the specific purpose disclosed.</p>
+        </div>
+
+        <!-- 4 -->
+        <div class="doc-section" id="cookies">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-cookie-bite"></i></div>
+            <div class="section-header-text">
+              <h2>4. Cookies & Tracking</h2>
+              <p>How we use cookies and local storage</p>
+            </div>
+          </div>
+          <p>Fluxmall Exchange uses cookies and browser local storage for the following purposes:</p>
+          <ul>
+            <li><strong>Session cookies</strong> — To keep you logged in securely during your visit</li>
+            <li><strong>Preference storage</strong> — To remember your theme choice (dark/light mode)</li>
+            <li><strong>Analytics</strong> — Anonymised usage data to improve platform performance</li>
+          </ul>
+          <p>We do not use third-party advertising cookies or cross-site tracking. You can clear cookies at any time via your browser settings; this will log you out of your session.</p>
+        </div>
+
+        <!-- 5 -->
+        <div class="doc-section" id="your-rights">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-user-shield"></i></div>
+            <div class="section-header-text">
+              <h2>5. Your Data Rights</h2>
+              <p>Rights granted to you under NDPR and applicable law</p>
+            </div>
+          </div>
+          <p>In accordance with Nigeria's Data Protection Regulation (NDPR) and applicable law, you have the right to:</p>
+          <ul>
+            <li><strong>Access</strong> — Request a copy of the personal data we hold about you</li>
+            <li><strong>Correction</strong> — Request that inaccurate data be corrected</li>
+            <li><strong>Deletion</strong> — Request deletion of your account and associated data, subject to legal retention requirements</li>
+            <li><strong>Portability</strong> — Receive your data in a structured, commonly used format</li>
+            <li><strong>Objection</strong> — Object to processing based on legitimate interests</li>
+            <li><strong>Withdraw Consent</strong> — Opt out of marketing communications at any time</li>
+          </ul>
+          <p>To exercise any of these rights, contact us at <strong>privacy@fluxmall.online</strong>. We will respond within 30 days. Note that deletion requests may be subject to a minimum data retention period required by Nigerian financial regulations.</p>
+        </div>
+
+        <!-- 6 -->
+        <div class="doc-section" id="security">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-lock"></i></div>
+            <div class="section-header-text">
+              <h2>6. Security</h2>
+              <p>How we protect your data</p>
+            </div>
+          </div>
+          <p>We take the security of your data seriously. Our measures include:</p>
+          <ul>
+            <li>HTTPS encryption across all platform pages and API endpoints</li>
+            <li>Bcrypt password hashing — your password is never stored in plain text</li>
+            <li>OTP-based verification for password resets and sensitive account actions</li>
+            <li>Session tokens with expiry and secure HTTP-only cookies</li>
+            <li>Regular security audits and bot detection on all forms</li>
+            <li>Admin access controls with audit logs</li>
+          </ul>
+          <p>Despite our best efforts, no system is 100% secure. If you suspect your account has been compromised, contact support immediately and change your password.</p>
+        </div>
+
+        <!-- 7 -->
+        <div class="doc-section" id="retention">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-clock"></i></div>
+            <div class="section-header-text">
+              <h2>7. Data Retention</h2>
+              <p>How long we keep your information</p>
+            </div>
+          </div>
+          <p>We retain your data for as long as your account is active and for a period thereafter as required by law:</p>
+          <ul>
+            <li>Account data: retained for the lifetime of the account plus 2 years after closure</li>
+            <li>Transaction records: retained for 5 years as required by Nigerian financial regulations</li>
+            <li>Communications: retained for 12 months from the date of the communication</li>
+            <li>Log data: retained for 90 days then automatically deleted</li>
+          </ul>
+        </div>
+
+      </div><!-- end privacy panel -->
+
+
+      <!-- ══════════════════════════════════
+           TERMS OF SERVICE
+      ══════════════════════════════════ -->
+      <div class="tab-panel" id="panel-terms">
+
+        <div class="highlight-box">
+          <strong>Important:</strong> By creating an account on Fluxmall Exchange, you agree to be legally bound by these Terms of Service. Please read them carefully before proceeding.
+        </div>
+
+        <!-- 1 -->
+        <div class="doc-section" id="eligibility">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-id-card"></i></div>
+            <div class="section-header-text">
+              <h2>1. Eligibility</h2>
+              <p>Who can register and use the platform</p>
+            </div>
+          </div>
+          <p>To use Fluxmall Exchange, you must meet all of the following requirements:</p>
+          <ul>
+            <li>Be at least <strong>18 years of age</strong></li>
+            <li>Be a resident of Nigeria or a country where the platform is not legally restricted</li>
+            <li>Provide accurate and truthful registration information</li>
+            <li>Not have been previously banned or suspended from Fluxmall Exchange</li>
+            <li>Have the legal capacity to enter into a binding agreement</li>
+          </ul>
+          <p>We reserve the right to verify your eligibility at any time and to suspend accounts that do not meet these requirements without prior notice.</p>
+        </div>
+
+        <!-- 2 -->
+        <div class="doc-section" id="platform-use">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-laptop"></i></div>
+            <div class="section-header-text">
+              <h2>2. Platform Use & Accounts</h2>
+              <p>Rules governing account registration and usage</p>
+            </div>
+          </div>
+          <ul>
+            <li>Each user is permitted to register <strong>one account only</strong>. Duplicate accounts will be suspended.</li>
+            <li>You are solely responsible for maintaining the confidentiality of your login credentials.</li>
+            <li>Any activity that occurs under your account is your responsibility, whether or not you authorised it.</li>
+            <li>You must notify us immediately at <strong>support@fluxmall.online</strong> if you suspect unauthorised access.</li>
+            <li>Account credentials must not be shared with or sold to any third party.</li>
+            <li>You agree to keep your email address and contact details current and accurate.</li>
+            <li>Profile information must represent yourself accurately — impersonation of any person or entity is strictly prohibited.</li>
+          </ul>
+        </div>
+
+        <!-- 3 -->
+        <div class="doc-section" id="investments">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="section-header-text">
+              <h2>3. Investment Plans & Earnings</h2>
+              <p>How plans, returns, and rewards work</p>
+            </div>
+          </div>
+          <div class="warning-box">
+            <strong>Risk Disclosure:</strong> All investment activities carry inherent risk. Returns displayed on the platform are projections and are not guaranteed. Past performance does not indicate future results. Only invest what you can afford to lose.
+          </div>
+          <ul>
+            <li>Investment plans are subject to the specific terms, durations, and return rates displayed at the time of subscription.</li>
+            <li>Plan terms (return rates, duration, minimum amounts) may be updated by the platform at any time with 7 days notice to active subscribers.</li>
+            <li>Earnings accrue as stated per plan. Fluxmall Exchange does not guarantee any specific return beyond what is explicitly stated in an active plan.</li>
+            <li>Referral bonuses are credited upon successful registration and first deposit by the referred user.</li>
+            <li>The platform reserves the right to withhold or reverse earnings if fraudulent activity is detected on an account.</li>
+            <li>Daily check-in rewards, spin bonuses, and promotional rewards are subject to change or discontinuation without prior notice.</li>
+            <li>Fluxmall Exchange is not a licensed bank or regulated securities dealer. Investment activities on this platform are conducted under our own internal framework.</li>
+          </ul>
+        </div>
+
+        <!-- 4 -->
+        <div class="doc-section" id="payments">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div class="section-header-text">
+              <h2>4. Deposits, Withdrawals & Payments</h2>
+              <p>Rules governing all financial transactions</p>
+            </div>
+          </div>
+          <ul>
+            <li>All deposits and withdrawals are processed via <strong>Paystack</strong>, subject to Paystack's own terms and processing times.</li>
+            <li>Minimum and maximum deposit/withdrawal amounts are as displayed on the platform and subject to change.</li>
+            <li>Withdrawal requests are processed within <strong>1–3 business days</strong>. Delays may occur due to bank processing, public holidays, or security reviews.</li>
+            <li>Fluxmall Exchange does not charge withdrawal fees; however, your bank or Paystack may apply their own charges.</li>
+            <li>All transactions are conducted in <strong>Nigerian Naira (NGN)</strong>.</li>
+            <li>You are responsible for providing correct bank account details. Fluxmall Exchange is not liable for funds sent to an incorrect account due to user error.</li>
+            <li>Deposits made via fraudulent means (stolen cards, fraudulent bank transfers) will result in immediate account suspension and may be reported to the EFCC or relevant authorities.</li>
+            <li>Chargebacks or payment reversals initiated fraudulently will result in permanent account ban and potential legal action.</li>
+          </ul>
+        </div>
+
+        <!-- 5 -->
+        <div class="doc-section" id="marketplace">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-store"></i></div>
+            <div class="section-header-text">
+              <h2>5. E-Commerce & Marketplace</h2>
+              <p>Rules for buying and selling on the platform</p>
+            </div>
+          </div>
+          <ul>
+            <li>Vendors must register and have their listings approved before products are listed publicly.</li>
+            <li>All products listed must be legal, accurately described, and available for delivery in Nigeria.</li>
+            <li>Fluxmall Exchange acts as an intermediary platform and is not responsible for the quality, legality, or delivery of third-party vendor products.</li>
+            <li>Disputes between buyers and vendors must be raised with our support team within <strong>48 hours</strong> of delivery or expected delivery date.</li>
+            <li>Refunds for marketplace purchases are subject to the individual vendor's return policy and Fluxmall Exchange's dispute resolution process.</li>
+            <li>Counterfeit goods, prohibited items, or items that infringe intellectual property rights must not be listed and will result in immediate vendor suspension.</li>
+          </ul>
+        </div>
+
+        <!-- 6 -->
+        <div class="doc-section" id="prohibited">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-ban"></i></div>
+            <div class="section-header-text">
+              <h2>6. Prohibited Activities</h2>
+              <p>Actions that will result in suspension or legal action</p>
+            </div>
+          </div>
+          <p>The following activities are strictly prohibited on Fluxmall Exchange:</p>
+          <ul>
+            <li>Creating multiple accounts to abuse referral systems, bonuses, or promotions</li>
+            <li>Using bots, scripts, or automated tools to interact with the platform</li>
+            <li>Attempting to hack, reverse-engineer, or disrupt the platform or its infrastructure</li>
+            <li>Using the platform to launder money or facilitate any criminal activity</li>
+            <li>Providing false identity information during registration or verification</li>
+            <li>Harassing, threatening, or abusing other users or Fluxmall Exchange staff</li>
+            <li>Exploiting bugs or loopholes to gain unauthorised financial advantages</li>
+            <li>Engaging in pump-and-dump schemes or coordinated manipulation of platform features</li>
+            <li>Selling or transferring your account to another person</li>
+            <li>Using the platform if you are a minor or are acting on behalf of a minor</li>
+          </ul>
+          <p>Violation of any of the above may result in immediate account suspension, forfeiture of balance, and referral to law enforcement authorities.</p>
+        </div>
+
+        <!-- 7 -->
+        <div class="doc-section" id="liability">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-gavel"></i></div>
+            <div class="section-header-text">
+              <h2>7. Limitation of Liability</h2>
+              <p>The extent of Fluxmall Exchange's legal responsibility</p>
+            </div>
+          </div>
+          <div class="warning-box">
+            <strong>Important:</strong> Fluxmall Exchange is provided on an "as is" and "as available" basis. To the fullest extent permitted by Nigerian law, we disclaim all warranties, express or implied.
+          </div>
+          <p>Fluxmall Exchange shall not be liable for:</p>
+          <ul>
+            <li>Loss of profits, earnings, or investment returns beyond what is explicitly guaranteed in an active plan</li>
+            <li>Platform downtime, maintenance windows, or technical failures beyond our reasonable control</li>
+            <li>Losses resulting from your failure to secure your account credentials</li>
+            <li>Third-party payment processing delays or failures (Paystack, bank systems)</li>
+            <li>Force majeure events including government actions, civil unrest, cyberattacks, or natural disasters</li>
+            <li>Decisions made based on information displayed on the platform that turns out to be inaccurate</li>
+          </ul>
+          <p>Our total aggregate liability to any user shall not exceed the total amount deposited by that user in the 3 months preceding the claim.</p>
+        </div>
+
+        <!-- 8 -->
+        <div class="doc-section" id="termination">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-user-slash"></i></div>
+            <div class="section-header-text">
+              <h2>8. Account Termination & Suspension</h2>
+              <p>When and how accounts may be closed</p>
+            </div>
+          </div>
+          <ul>
+            <li>You may close your account at any time by contacting support. Pending withdrawals will be processed before closure.</li>
+            <li>Fluxmall Exchange may suspend or terminate any account at its sole discretion for violation of these Terms.</li>
+            <li>Suspended accounts will receive a notice via email explaining the reason and any available appeal process.</li>
+            <li>Accounts with a confirmed zero balance and no activity for 12 consecutive months may be archived.</li>
+            <li>Upon termination, your right to use the platform ceases immediately. Data is retained as per our Privacy Policy.</li>
+          </ul>
+        </div>
+
+        <!-- 9 -->
+        <div class="doc-section" id="governing-law">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-scale-balanced"></i></div>
+            <div class="section-header-text">
+              <h2>9. Governing Law & Disputes</h2>
+              <p>Legal jurisdiction and dispute resolution</p>
+            </div>
+          </div>
+          <p>These Terms of Service are governed by and construed in accordance with the laws of the <strong>Federal Republic of Nigeria</strong>.</p>
+          <ul>
+            <li>Any dispute arising from your use of Fluxmall Exchange shall first be addressed through our internal dispute resolution process.</li>
+            <li>If a dispute cannot be resolved internally within 30 days, it shall be referred to arbitration in Lagos, Nigeria.</li>
+            <li>Both parties agree to attempt good-faith negotiation before initiating formal legal proceedings.</li>
+            <li>Nothing in these Terms prevents either party from seeking urgent injunctive relief from a Nigerian court.</li>
+          </ul>
+        </div>
+
+        <!-- 10 -->
+        <div class="doc-section" id="changes">
+          <div class="section-header">
+            <div class="section-icon"><i class="fas fa-rotate"></i></div>
+            <div class="section-header-text">
+              <h2>10. Changes to These Terms</h2>
+              <p>How we notify you of updates</p>
+            </div>
+          </div>
+          <p>We may update these Terms of Service at any time. When we make material changes, we will:</p>
+          <ul>
+            <li>Post the updated Terms on this page with a revised "Last Updated" date</li>
+            <li>Send an email notification to your registered email address</li>
+            <li>Display a prominent notice on the platform dashboard for 7 days</li>
+          </ul>
+          <p>Continued use of the platform after the effective date of any changes constitutes your acceptance of the new Terms.</p>
+        </div>
+
+        <!-- Contact -->
+        <div class="contact-card">
+          <div>
+            <h3>Questions about these Terms?</h3>
+            <p>Our support team is available 24/7 to help clarify anything.</p>
+          </div>
+          <a href="mailto:legal@fluxmall.online" class="contact-btn">
+            <i class="fas fa-envelope" style="margin-right:7px;"></i>Contact Legal Team
+          </a>
+        </div>
+
+      </div><!-- end terms panel -->
+
+    </div><!-- end content -->
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="page-footer">
+    <p>&copy; 2026 Fluxmall Exchange. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="mailto:support@fluxmall.online">Support</a>
+      <a href="mailto:legal@fluxmall.online">Legal</a>
+    </div>
+  </footer>
+
+  <script>
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', (i === 0 && tab === 'privacy') || (i === 1 && tab === 'terms'));
+      });
+      document.getElementById('panel-privacy').classList.toggle('active', tab === 'privacy');
+      document.getElementById('panel-terms').classList.toggle('active', tab === 'terms');
+    }
+
+    // Scroll to section
+    function scrollToSection(id) {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+
+    // Tab buttons click
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.addEventListener('click', () => switchTab(i === 0 ? 'privacy' : 'terms'));
+    });
+
+    // Highlight active sidebar link on scroll
+    const sections = document.querySelectorAll('.doc-section');
+    const sideLinks = document.querySelectorAll('.sidebar-nav a');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        if (window.scrollY >= section.offsetTop - 80) current = section.id;
+      });
+      sideLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(current)) {
+          link.classList.add('active');
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
