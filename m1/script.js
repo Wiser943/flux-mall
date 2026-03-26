@@ -39,7 +39,7 @@ window.showToast = function (text, type = 'success', icon = '', title = '') {
 window.logoutUser = async function () {
   await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
   localStorage.removeItem('loggedInUser');
-  window.location.href = '/m2/account.html#login-page';
+  window.location.href = '/m2/index.html#login-page';
 };
 
 // ─── APPLY THEME ──────────────────────────────────────────
