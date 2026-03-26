@@ -1,223 +1,431 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Exhibit Admin cpanel</title>
-    <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#4318ff">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Flux Mall">
-    <link rel="stylesheet" href="style.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style-01.css">
+    <link rel="stylesheet" href="css/style-02.css">
+    <link rel="stylesheet" href="css/style-04.css">
+    <title>Responsive Dashboard | Fluxmall</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel='stylesheet'>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@500..700&display=swap"
-        rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-
-   
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
 </head>
 
 <body>
-    <div class="admin-wrapper">
-        <aside class="sidebar">
-            <div class="logo">CPANEL</div>
-            <nav>
-                <a class="nav-item active" href="#analytics">
-                    <i class="ri-bubble-chart-line"></i> <span>Analytics</span>
-                </a>
-                <a class="nav-item" href="#deposits">
-                    <i class="ri-coins-fill"></i> <span>Transactions</span>
-                </a>
-                <a class="nav-item" href="#users">
-                    <i class="ri-p2p-line"></i> <span>Management</span>
-                </a>
-  <a class="nav-item" href="#chats">
-                    <i class="ri-message-3-line"></i>
-                    <span id="adminChatBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;align-items:center;justify-content:center;font-weight:700;margin-left:-2px;">0</span>
-                     <span>Live chats</span>
-  </a>
-                <a class="nav-item" href="#settings">
-                    <i class="ri-settings-line"></i> <span>Settings</span>
-                </a>
-            </nav>
-        </aside>
-
-        <div class="login-container tab-content" id="login"><br /><br />
-            <div style="margin: 0 auto; max-width: 400px;">
-                <div class="bio-icon">
-                    <i class="ri-fingerprint-line"></i>
-                </div>
-                <h2>Admin Portal</h2>
-                <p>Secure Biometric Access Required</p>
-                <form onsubmit="handleAdminLogin(event)">
-                    <div class="input-group">
-                        <label>Master Email</label>
-                        <input type="email" id="adminEmail" required placeholder="admin@yoursite.com">
-                    </div>
-                    <div class="input-group">
-                        <label>Master Password</label>
-                        <input type="password" id="adminPass" required placeholder="••••••••">
-                    </div>
-
-                    <button type="submit" id="loginBtn">Verify Identity</button>
-                </form>
-            </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar close">
+        <a href="#" class="logo">
+            <i class='bx bx-coin'></i>
+            <div class="logo-name"><span>Flux</span>Mall</div>
+        </a>
+        <div class="side-menu">
+            <li><a class="nav-item active" href="#dashboard"><i class='bx bxs-dashboard'></i>Dashboard</a></li>
+            <li><a class="nav-item" href="#"><i class='bx bx-store-alt'></i>Shop</a></li>
+            <li><a class="nav-item" href="#analytics"><i class='bx bx-analyse'></i>Analytics</a></li>
+            <li><a class="nav-item" href="#chats"><i class='bx bx-message-square-dots'></i>Live chat</a></li>
+            <li><a class="nav-item" href="#users"><i class='bx bx-group'></i>Users</a></li>
+            <li><a class="nav-item" href="#settings"><i class='bx bx-cog'></i>Settings</a></li>
         </div>
-
-
-        <main class="main-content">
-            <div class="theme-control">
-                <span class="theme-dot" onclick="setTheme('light', this)"><i class="ri-sun-line"></i></span>
-                <span class="theme-dot" onclick="setTheme('dark', this)"><i class="ri-moon-line"></i></span>
-                <span class="theme-dot" onclick="setTheme('blue', this)"><i class="ri-moon-clear-line"></i></span>
+        <ul class="side-menu">
+            <li>
+                <a href="#" class="logout">
+                    <i class='bx bx-log-out-circle'></i>
+                    Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    <!-- End of Sidebar -->
+    <div class="login-container page" id="login"><br /><br />
+        <div style="margin: 0 auto; max-width: 400px;">
+            <div class="bio-icon">
+                <i class="ri-fingerprint-line"></i>
             </div>
-
-            <section id="analytics" class="tab-content active">
-                <div class="header-row">
-                    <button class="btn-export" onclick="exportCSV()">Export CSV <i
-                            class="ri-arrow-right-up-fill"></i></button>
-                    <h2>System Analytics</h2>
+            <h2>Admin Portal</h2>
+            <p>Secure Biometric Access Required</p>
+            <form onsubmit="handleAdminLogin(event)">
+                <div class="input-group">
+                    <label>Master Email</label>
+                    <input type="email" id="adminEmail" required placeholder="admin@yoursite.com">
                 </div>
-                <div class="stats-grid">
-                    <div class="stat-card"> <i class="ri-exchange-funds-line"></i>
-                        <h3>Total Success</h3>
-                        <p>
-                            <span id="statTotal" style="color:var(--success)">₦0.00</span>
-                        </p>
-                    </div>
-                    <div class="stat-card"> <i class="ri-exchange-line"></i>
-                        <h3>Pending Volume</h3>
-                        <p>
-                            <span id="statPending" style="color:#E65C08;">₦0.00</span>
-                        </p>
-                    </div>
-                    <div class="stat-card"> <i class="ri-group-line"></i>
-                        <h3>Active Users</h3>
-                        <p>
-                            <span id="statUsers">0</span>
-                        </p>
-                    </div>
+                <div class="input-group">
+                    <label>Master Password</label>
+                    <input type="password" id="adminPass" required placeholder="••••••••">
                 </div>
-
-                <div class="charts-grid">
-                    <div class="chart-card">
-                        <h3 style="margin-bottom: 20px;">Transaction Health</h3>
-                        <canvas id="pieChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Money Flow (In vs Out)</h3>
-                        <canvas id="barChart"></canvas>
-                    </div>
+                
+                <button type="submit" id="loginBtn">Verify Identity</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="content">
+        <!-- Navbar -->
+        <nav>
+            <form action="#" style="display:flex;align-items: center;gap:10px">
+                <i class='bx bx-menu'></i>
+                
+                <div class="form-input">
+                    <input type="search" placeholder="Search...">
+                    <button class="search-btn" type="submit"><i class='bx bx-search'></i></button>
                 </div>
-
-                <div class="table-container">
-                    <h3 style="padding: 20px 10px 5px;">Summary by Status</h3>
+            </form>
+            
+            <input type="checkbox" id="theme-toggle" hidden>
+            
+            <div class="last">
+                <label for="theme-toggle" class="theme-toggle"></label>
+                <a href="#" class="notif">
+                    <i class='bx bx-bell'></i>
+                    <span class="count">12</span>
+                </a>
+                <a href="#" class="profile">
+                    <img src="images/logo.png">
+                </a>
+            </div>
+        </nav>
+        
+        <!-- End of Navbar -->
+        
+        <main class="page active" id="dashboard">
+            <div class="header">
+                <div class="left">
+                    <h1>Dashboard</h1>
+                    <ul class="breadcrumb">
+                        <li><a href="#">
+                                Analytics
+                            </a></li>
+                        /
+                        <li><a href="#" class="active">Shop</a></li>
+                    </ul>
+                </div>
+                <a href="#" class="report">
+                    <i class='bx bx-cloud-download'></i>
+                    <span>Download CSV</span>
+                </a>
+            </div>
+            
+            <!-- Insights -->
+            <ul class="insights">
+                <li>
+                    <i class='bx bx-calendar-check'></i>
+                    <span class="info">
+                        <h3>
+                            1,074
+                        </h3>
+                        <p>Paid Order</p>
+                    </span>
+                </li>
+                <li><i class='bx bx-show-alt'></i>
+                    <span class="info">
+                        <h3>
+                            3,944
+                        </h3>
+                        <p>Site Visit</p>
+                    </span>
+                </li>
+                <li><i class='bx bx-line-chart'></i>
+                    <span class="info">
+                        <h3>
+                            14,721
+                        </h3>
+                        <p>Searches</p>
+                    </span>
+                </li>
+                <li><i class='bx bx-dollar-circle'></i>
+                    <span class="info">
+                        <h3>
+                            $6,742
+                        </h3>
+                        <p>Total Sales</p>
+                    </span>
+                </li>
+            </ul>
+            <!-- End of Insights -->
+            
+            <div class="bottom-data">
+                <div class="orders">
+                    <div class="header">
+                        <i class='bx bx-receipt'></i>
+                        <h3>Recent Orders</h3>
+                        <i class='bx bx-filter'></i>
+                        <i class='bx bx-search'></i>
+                    </div>
                     <table>
                         <thead>
                             <tr>
-                                <th>Status</th>
-                                <th></th>
-                                <th>Count</th>
-                                <th>Volume</th>
-                            </tr>
-                        </thead>
-                        <tbody id="analyticsTableBody">
-                            <tr>
-                                <td colspan='6'>Syncing Database...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section id="deposits" class="tab-content">
-                <div class="header-row">
-                    <h2>Deposit Requests</h2>
-                    <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
-                        <div class="search-box">
-                            <i class="ri-search-line" style="font-size: 20px;margin:0 8px 0 10px;"></i>
-                            <input type="text" id="adminSearch" placeholder="User ID or Ref..."
-                                onkeyup="filterDeposits()">
-                        </div>
-                        <button class="btn-export" onclick="showTab('withdrawals-tab', this)">Withdrawals<i
-                                class="ri-arrow-right-up-fill"></i></button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date</th>
                                 <th>User</th>
-                                <th>Amount</th>
-                                <th>Ref</th>
+                                <th>Order Date</th>
                                 <th>Status</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="depositTableBody">
+                        <tbody>
                             <tr>
-                                <td colspan='6'>Syncing Database...</td>
+                                <td>
+                                    <img src="images/profile-1.jpg">
+                                    <p>John Doe</p>
+                                </td>
+                                <td>14-08-2023</td>
+                                <td><span class="status completed">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="images/profile-1.jpg">
+                                    <p>John Doe</p>
+                                </td>
+                                <td>14-08-2023</td>
+                                <td><span class="status pending">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <img src="images/profile-1.jpg">
+                                    <p>John Doe</p>
+                                </td>
+                                <td>14-08-2023</td>
+                                <td><span class="status process">Processing</span></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
-            </section>
-
-            <section id="withdrawals-tab" class="tab-content">
-                <div class="header-row">
-                    <h3>Withdrawal Requests</h3>
+                
+                <!-- Reminders -->
+                <div class="reminders">
+                    <div class="header">
+                        <i class='bx bx-note'></i>
+                        <h3>Remiders</h3>
+                        <i class='bx bx-filter'></i>
+                        <i class='bx bx-plus'></i>
+                    </div>
+                    <ul class="task-list">
+                        <li class="completed">
+                            <div class="task-title">
+                                <i class='bx bx-check-circle'></i>
+                                <p>Start Our Meeting</p>
+                            </div>
+                            <i class='bx bx-dots-vertical-rounded'></i>
+                        </li>
+                        <li class="completed">
+                            <div class="task-title">
+                                <i class='bx bx-check-circle'></i>
+                                <p>Analyse Our Site</p>
+                            </div>
+                            <i class='bx bx-dots-vertical-rounded'></i>
+                        </li>
+                        <li class="not-completed">
+                            <div class="task-title">
+                                <i class='bx bx-x-circle'></i>
+                                <p>Play Footbal</p>
+                            </div>
+                            <i class='bx bx-dots-vertical-rounded'></i>
+                        </li>
+                    </ul>
                 </div>
-
-                <div style="display: flex; justify-content: space-between;align-items: center;">
-                    <button class="btn-export" onclick="showTab('deposits-tab', this)">Deposits<i
-                            class="ri-arrow-right-down-fill"></i></button>
-                    <div class="btn-export"
-                        style="display:flex;align-items: center;gap:10px;font-size: 18px; padding: 0 10px 0 0;background:var(--card);color: var(--text-main)">
-                        <select id="wdSortOrder" onchange="changeWdSort()"
-                            style="background: var(--bg); color: var(--text-main); border:2px solid var(--border); padding: 8px 10px; border-radius: 8px; cursor: pointer;">
-                            <option value="createdAt-desc">Newest First</option>
-                            <option value="createdAt-asc">Oldest First</option>
-                            <option value="amount-desc">Highest Amount</option>
-                            <option value="amount-asc">Lowest Amount</option>
-                            <option value="status-asc">By Status (A-Z)</option>
-                        </select>
-                        <i class="ri-arrow-right-up-line" onclick="openWithdrawSettings()"></i>
+                
+                <!-- End of Reminders-->
+                
+            </div>
+            
+        </main>
+        <main class="page" id="analytics">
+            <div class="header">
+                <div class="left">
+                    <h1>Analytics</h1>
+                    <ul class="breadcrumb">
+                        <li><a href="#">
+                                Analytics
+                            </a></li>
+                        /
+                        <li><a href="#" class="active">Shop</a></li>
+                    </ul>
+                </div>
+                <a href="#" class="report">
+                    <i class='bx bx-cloud-download'></i>
+                    <span>Download CSV</span>
+                </a>
+            </div>
+            
+            <div class="status">
+                <div class="header">
+                    <h4 id="big">Your courses</h4>
+                    <h4 id="small">Weekly Activity</h4>
+                </div>
+                
+                <div class="items-list">
+                    <div class="item">
+                        <div class="info">
+                            <div>
+                                <h5>Data Analysis</h5>
+                                <p>- 3 lessons left</p>
+                                <p>- 1 project left</p>
+                            </div>
+                            <i class='bx bx-data'></i>
+                        </div>
+                        <div class="progress">
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="info">
+                            <div>
+                                <h5>Machine Learn</h5>
+                                <p>- 2 assignments left</p>
+                                <p>- 5 tutorials left</p>
+                            </div>
+                            <i class='bx bx-terminal'></i>
+                        </div>
+                        <div class="progress">
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="info">
+                            <div>
+                                <h5>Python</h5>
+                                <p>- 4 chapters left</p>
+                                <p>- 8 quizzes left</p>
+                            </div>
+                            <i class='bx bxl-python'></i>
+                        </div>
+                        <div class="progress">
+                            <div class="bar"></div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <canvas class="activity-chart"></canvas>
                     </div>
                 </div>
-
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>User ID</th>
-                                <th>Name</th>
-                                <th>Amount</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="withdrawTable">
-                            <tr>
-                                <td colspan='6'>Nothing here to see.</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                
+            </div>
+            <div class="bottom-container">
+                <div class="prog-status">
+                    <div class="header">
+                        <h4>learning Progress</h4>
+                        <div class="tabs">
+                            <a href="#" class="active">1Y</a>
+                            <a href="#">6M</a>
+                            <a href="#">3M</a>
+                        </div>
+                    </div>
+                    
+                    <div class="details">
+                        <div class="item">
+                            <h2>3.45</h2>
+                            <p>Current GPA</p>
+                        </div>
+                        <div class="separator"></div>
+                        <div class="item">
+                            <h2>4.78</h2>
+                            <p>Class Average GPA</p>
+                        </div>
+                    </div>
+                    
+                    <canvas class="prog-chart"></canvas>
+                    
                 </div>
-            </section>
-
-
-            <section id="users" class="tab-content">
-                <div class="header-row">
-                    <button class="btn-export" onclick="openCreateUserModal()">Create user<i
-                            class="ri-add-line"></i></button>
-                    <h2>User Management</h2>
+            </div>
+            
+        </main>
+        <main class="page" id="chats">
+            <div class="header">
+                <div class="left">
+                    <h1>Chats</h1>
+                    <ul class="breadcrumb">
+                        <li><a href="#">
+                                Analytics
+                            </a></li>
+                        /
+                        <li><a href="#" class="active">Shop</a></li>
+                    </ul>
                 </div>
-                <div class="table-container">
+                <a href="#" class="report">
+                    <i class='bx bx-cloud-download'></i>
+                    <span>Download CSV</span>
+                </a>
+            </div>
+            
+            <div class="reminders">
+                <div class="header">
+                    <h2>Reminders</h2>
+                    <span class="material-icons-sharp">
+                        notifications_none
+                    </span>
+                </div>
+                
+                <div class="notification">
+                    <div class="icon">
+                        <span class="material-icons-sharp">
+                            volume_up
+                        </span>
+                    </div>
+                    <div class="content">
+                        <div class="info">
+                            <h3>Workshop</h3>
+                            <small class="text_muted">
+                                08:00 AM - 12:00 PM
+                            </small>
+                        </div>
+                        <span class="material-icons-sharp">
+                            more_vert
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="notification deactive">
+                    <div class="icon">
+                        <span class="material-icons-sharp">
+                            edit
+                        </span>
+                    </div>
+                    <div class="content">
+                        <div class="info">
+                            <h3>Workshop</h3>
+                            <small class="text_muted">
+                                08:00 AM - 12:00 PM
+                            </small>
+                        </div>
+                        <span class="material-icons-sharp">
+                            more_vert
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="notification add-reminder">
+                    <div>
+                        <span class="material-icons-sharp">
+                            add
+                        </span>
+                        <h3>Add Reminder</h3>
+                    </div>
+                </div>
+                
+                
+            </div>
+            
+            
+        </main>
+        <main class="page" id="users">
+            <div class="header">
+                <div class="left">
+                    <h1>Users</h1>
+                    <ul class="breadcrumb">
+                        <li><a href="#">
+                                Analytics
+                            </a></li>
+                        /
+                        <li><a href="#" class="active">Shop</a></li>
+                    </ul>
+                </div>
+                <a href="#" class="report">
+                    <i class='bx bx-plus'></i>
+                    <span>User(s)</span>
+                </a>
+            </div>
+            
+                            <div class="table-container">
                     <table>
                         <thead>
                             <tr>
@@ -231,603 +439,636 @@
                         <tbody id="userTableBody"></tbody>
                     </table>
                 </div>
-            </section>
-
-            <section id="settings" class="tab-content">
-                <div class="header-row">
-                    <h2>Settings</h2>
-                    <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
-                        <div class="search-box">
-                            <button class="btn-export" onclick="resetBrandingSecure()" id="resetBrandingBtn">Reset
-                                default<i class="ri-arrow-right-up-fill"></i></button>
-                        </div>
-
-                        <div style="display: flex; font-size: 18pt;gap: 15px;cursor: pointer;">
-                            <i style="color:green;background: none;" onclick="openBindBankModal()"
-                                class="ri-visa-fill"></i>
-                            <i style="color:red;background: none;" onclick="adminLogout()"
-                                class="ri-logout-box-line"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings">
-                    <div>
-                        <div class="form-container">
-                            <form id="rulesForm" onsubmit="event.preventDefault(); saveConfig();">
-
-                                <section
-                                    style="overflow: hidden;margin:6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
-                                    <h3
-                                        style="display: flex; justify-content: space-between; font-size: 14pt;margin:8px 0 10px 0;">
-                                        <span style="font-weight: bold;">Branding</span>
-                                        <i class="ri-add-fill"
-                                            onclick="document.getElementById('logoFileInput').click()"></i>
-                                    </h3>
-
-                                    <input type="file" id="logoFileInput" accept="image/*" onchange="previewLogo(this)"
-                                        hidden>
-                                    <div id="logoPreviewContainer"
-                                        style="margin: 10px 0 18px 0;display: flex;  width: 100%;">
-                                        <img id="logoPreview" src=""
-                                            style="border-radius: 45%;height: 80px; width: 80px;margin: 0 auto;">
-                                    </div>
-
-                                    <div class="input-group">
-                                        <label>Site Name</label>
-                                        <input type="text" id="siteNameInput" placeholder="e.g. Flash Sales Pro"
-                                            required>
-                                    </div>
-                                    <div class="input-group"><label>Site description</label><textarea rows="5"
-                                            id="descText" required></textarea>
-                                    </div>
-                                </section>
-                                <details
-                                    style="margin:6px 0;display:none;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
-
-                                    <summary
-                                        style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
-                                        <span style="font-weight: bold;">User Appearance</span>
-                                    </summary>
-
-                                    <div style="margin-top: 15px;">
-                                        <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 10px;">
-                                            Quick
-                                            Presets (Click to Apply)</p>
-
-                                        <div class="preset-grid">
-
-                                            <div onclick="applyPreset('light', '#4318FF', '#6AD2FF')"
-                                                class="preset-card"
-                                                style="background: #f4f7fe; border: 1px solid #ddd;">
-                                                <div style="height: 20px; background: #4318FF; width: 100%;"></div>
-                                                <span>Classic Blue</span>
-                                            </div>
-
-                                            <div onclick="applyPreset('dark', '#705df2', '#ff4757')" class="preset-card"
-                                                style="background: #0b1437; color: white;">
-                                                <div style="height: 20px; background: #705df2; width: 100%;"></div>
-                                                <span>Midnight Pro</span>
-                                            </div>
-
-                                            <div onclick="applyPreset('dark', '#FFD700', '#DAA520')" class="preset-card"
-                                                style="background: #000000; color: #FFD700; border: 1px solid #333;">
-                                                <div style="height: 20px; background: #FFD700; width: 100%;"></div>
-                                                <span>Royal Gold</span>
-                                            </div>
-
-                                            <div onclick="applyPreset('light', '#00b894', '#55efc4')"
-                                                class="preset-card" style="background: #fff; border: 1px solid #ddd;">
-                                                <div style="height: 20px; background: #00b894; width: 100%;"></div>
-                                                <span>Forest Wealth</span>
-                                            </div>
-
-                                            <div onclick="applyPreset('dark', '#ff6b6b', '#ff9f43')" class="preset-card"
-                                                style="background: #2d3436; color: white;">
-                                                <div style="height: 20px; background: #ff6b6b; width: 100%;"></div>
-                                                <span>Sunset Fire</span>
-                                            </div>
-
-                                            <div onclick="applyPreset('light', '#2d3436', '#636e72')"
-                                                class="preset-card"
-                                                style="background: #dfe6e9; border: 1px solid #ddd;">
-                                                <div style="height: 20px; background: #2d3436; width: 100%;"></div>
-                                                <span>Corporate</span>
-                                            </div>
-                                        </div>
-
-                                        <hr style="opacity: 0.2; margin: 15px 0;">
-
-                                        <div style="display: flex; gap: 15px; margin-top: 10px;">
-                                            <div style="width: 80%;">
-                                                <label>Theme Mode</label>
-                                                <select id="themeMode" onchange="saveThemeConfig()">
-                                                    <option value="light">☀️ Light Mode</option>
-                                                    <option value="dark">🌙 Dark Mode</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label style="font-size:12px;">Primary</label><br>
-                                                <input type="color" id="primaryColor" onchange="saveThemeConfig()"
-                                                    style="width: 40px; height:40px; border: none; cursor: pointer;border-radius: 50%;">
-                                            </div>
-                                            <div>
-                                                <label style="font-size:12px;">Secondary</label><br>
-                                                <input type="color" id="secondaryColor" onchange="saveThemeConfig()"
-                                                    style="width: 40px; height: 40px;border-radius: 50%; border: none; cursor: pointer;">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </details>
-
-                                <details
-                                    style="margin:6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
-
-                                    <summary
-                                        style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
-                                        <span style="font-weight: bold;">Social Links</span>
-                                    </summary>
-
-                                    <div class="input-group"><label>WhatsApp Link</label><input type="url" id="waLink"
-                                            required>
-                                    </div>
-                                    <div class="input-group"><label>Telegram Link</label><input type="url" id="tgLink"
-                                            required>
-                                    </div>
-                                </details>
-
-                                <details
-                                    style="margin: 6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
-
-                                    <summary
-                                        style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
-                                        <span style="font-weight: bold;">Points Allocation</span>
-                                    </summary>
-                                    <div style="display:flex; gap:10px;flex-wrap: nowrap;">
-                                        <span class="input-group"><label>Inital User Balance</label><input type="number"
-                                                id="initBal" required></span>
-                                        <span class="input-group"><label>Sign in commission</label>
-                                            <input type="number" id="signinAmt">
-                                        </span>
-                                    </div>
-
-                                    <div class="input-group" style="display:block;gap: 4px;"><br><label>Wheel
-                                            values</label>
-                                        <div id="prizeInputsContainer"
-                                            style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                                            <div class="prize-slot">
-                                                <label>Slot 1 (₦)</label>
-                                                <input type="number" class="prize-input" data-label="₦50"
-                                                    data-color="#6200ea" value="50"
-                                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                            </div>
-                                            <div class="prize-slot">
-                                                <label>Slot 2 (₦)</label>
-                                                <input type="number" class="prize-input" data-label="Try Again"
-                                                    data-color="#333" value="0"
-                                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                            </div>
-                                            <div class="prize-slot">
-                                                <label>Slot 3 (₦)</label>
-                                                <input type="number" class="prize-input" data-label="₦200"
-                                                    data-color="#00c851" value="200"
-                                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                            </div>
-                                            <div class="prize-slot">
-                                                <label>Slot 4 (₦)</label>
-                                                <input type="number" class="prize-input" data-label="Empty"
-                                                    data-color="#555" value="0"
-                                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                            </div>
-                                            <div class="prize-slot">
-                                                <label>Slot 5 (₦)</label>
-                                                <input type="number" class="prize-input" data-label="₦500"
-                                                    data-color="#ff9800" value="500"
-                                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                            </div>
-                                            <div class="prize-slot">
-                                                <label>Slot 6 (₦)</label>
-                                                <input type="number" class="prize-input" data-label="Better Luck"
-                                                    data-color="#333" value="0"
-                                                    style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="input-group" style="display:block;gap: 4px;"><br>
-                                        <label>Referral Bonus</label>
-                                        <div id="prizeInputsContainer"
-                                            style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                                            <div class="prize-slot"><label>Level 1 (₦)</label><input type="number"
-                                                    id="ref1" placeholder="1st %">
-                                            </div>
-                                            <div class="prize-slot"> <label>Level 2 (₦)</label><input type="number"
-                                                    id="ref2" placeholder="2nd%">
-                                            </div>
-                                            <div class="prize-slot"> <label>Level 3 (₦)</label><input type="number"
-                                                    id="ref3" placeholder="3rd %">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </details>
-                                <br />
-
-
-                                <details style="margin:6px 0;background-color:var(--bg);padding:8px 15px;border-radius:12px;">
-                                    <summary style="display:flex;justify-content:space-between;font-size:12pt;margin:8px 0 10px 0;">
-                                        <span style="font-weight:bold;">🖼️ Site Logo</span>
-                                    </summary>
-                                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
-                                        <img id="logoPreview" src="" alt="Logo Preview"
-                                            style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);background:#eee;"
-                                            onerror="this.style.display='none'">
-                                        <div>
-                                            <label style="display:block;margin-bottom:6px;font-size:12px;">Upload via ImgBB</label>
-                                            <input type="file" accept="image/*" onchange="previewLogo(this)"
-                                                style="font-size:12px;padding:4px;border-radius:6px;border:1px solid #ddd;width:100%">
-                                            <span id="logoUploadStatus" style="font-size:11px;color:var(--primary);margin-top:4px;display:block;"></span>
-                                        </div>
-                                    </div>
-                                </details>
-
-                                <details style="margin:6px 0;background-color:var(--bg);padding:8px 15px;border-radius:12px;">
-                                    <summary style="display:flex;justify-content:space-between;font-size:12pt;margin:8px 0 10px 0;">
-                                        <span style="font-weight:bold;">🔑 API Keys</span>
-                                    </summary>
-                                    <p style="font-size:11px;opacity:0.6;margin-bottom:12px;">Stored securely in DB. Synced across all devices.</p>
-                                    <div class="input-group">
-                                        <label>ImgBB API Key <a href="https://api.imgbb.com" target="_blank" style="font-size:10px;color:var(--primary)">(get free key)</a></label>
-                                        <input type="text" id="imgbbKeyInput" placeholder="Your ImgBB API key">
-                                    </div>
-                                    <div class="input-group">
-                                        <label>Korapay Public Key</label>
-                                        <input type="text" id="koraPublicKeyInput" placeholder="pk_live_...">
-                                    </div>
-                                    <div class="input-group">
-                                        <label>Korapay Secret Key</label>
-                                        <input type="password" id="koraSecretKeyInput" placeholder="sk_live_...">
-                                    </div>
-                                    <button type="button" onclick="saveApiKeys()" class="btn-submit" style="width:100%;margin-top:8px;">Save API Keys</button>
-                                </details>
-
-                                <button type="submit" class="btn-submit">Configure</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div>
-                            <div class="form-container">
-                                <h3>Utilities</h3>
-                                <br />
-                                <details id="activePresetsContainer"
-                                    style="margin: 6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
-                                    <summary
-                                        style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
-                                        <span style="font-weight: bold;">Active Deposits</span><i
-                                            onclick="openAddDepositAmtModal()" class="ri-add-fill"></i>
-                                    </summary>
-
-                                    <div id="presetsList"
-                                        style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
-                                    </div>
-                                </details>
-
-                                <details
-                                    style="margin: 6px 0;background-color: var(--bg);padding: 8px 0;border-radius: 12px;">
-
-                                    <summary
-                                        style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 10px;">
-                                        <span style="font-weight: bold;">Active Shares</span>
-                                        <i onclick="openSharesModal()" class="ri-add-fill"></i>
-                                    </summary>
-
-                                    <div class="table-container">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th></th>
-                                                    <th>Price</th>
-                                                    <th>Daily</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="shareListTable">
-                                                <tr>
-                                                    <td colspan='6'>Syncing Database...</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </details>
-
-                            </div>
-                        </div>
-
-                        <br>
-                        <div>
-                            <div class="form-container">
-                                <h3> Maintenance</h3>
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <p style="font-size:0.75rem; opacity:0.7; margin-top:10px;">Lock users due to
-                                        changes or
-                                        upgrades in site.</p>
-
-                                    <label class="switch">
-                                        <input type="checkbox" id="maintenanceToggle">
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <br>
-                            <div class="form-container" style="border:1px solid var(--danger);">
-                                <h3> Future kit upgrade</h3>
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <p style="font-size:0.75rem; opacity:0.7; margin-top:10px;">Get support kits
-                                        from
-                                        developer for future upgrades.</p>
-
-                                    <label class="switch">
-                                        <input type="checkbox" checked>
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-            <!-- ══ CHAT TAB ═══════════════════════════════════════ -->
-            <section id="chats" class="tab-content">
-                <div class="header-row">
-                    <h2>Live Chats</h2>
-                    <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
-                        <div class="search-box"></div>
-                        <div style="display:flex;font-size:18pt;gap:15px;cursor:pointer;">
-                            <i style="color:green;background:none;" onclick="openCreateNewsModal()" class="ri-megaphone-line"></i>
-                            <i style="color:green;background:none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
-<i style="color:green;background:none;" onclick="openChatModal()" class="ri-draggable"></i>
-                        </div>
-                    </div>
-                </div>
-
-                <style>
-                /* ── Chat responsive layout ───────────────────── */
-                #chatLayout {
-                    display: flex;
-                    height: calc(100vh - 150px);
-                    border: 1px solid var(--primary);
-                    border-radius: 12px;
-                    overflow: hidden;
-                    position: relative;
-                }
-                #chatSessionList {
-                    width: 300px;
-                    min-width: 260px;
-                    border-right: 1px solid var(--border, #e0e5f2);
-                    overflow-y: auto;
-                    flex-shrink: 0;
-                    transition: transform 0.25s ease;
-                }
-                #chatWindow {
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    min-width: 0;
-                }
-                /* Mobile: stack panels, session list slides out */
-                @media (max-width: 700px) {
-                    #chatLayout {
-                        height: calc(100vh - 180px);
-                        border-radius: 8px;
-                    }
-                    #chatSessionList {
-                        position: absolute;
-                        top: 0; left: 0; bottom: 0;
-                        width: 100%;
-                        min-width: unset;
-                        z-index: 10;
-                        border-right: none;
-                        transform: translateX(0);
-                    }
-                    #chatSessionList.slide-out {
-                        transform: translateX(-100%);
-                        pointer-events: none;
-                    }
-                    #chatWindow {
-                        width: 100%;
-                    }
-                    /* Back button — only visible on mobile */
-                    #chatBackBtn {
-                        display: flex !important;
-                    }
-                    /* Hide block label text on mobile, show only icon */
-                    #adminBlockLabel { display: none; }
-                    #adminBlockBtn { padding: 6px 8px; }
-                    /* Tighten header actions on mobile */
-                    #adminChatHeader { padding: 10px 7px; gap: 6px; }
-                    #adminChatHeader .action-btns { gap: 0; }
-                }
-                </style>
-
-                <div id="chatLayout" class="table-container">
-
-                    <!-- Session List -->
-                    <div id="chatSessionList">
-                        <div id="chatSessionItems">
-                            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
-                        </div>
-                    </div>
-
-                    <!-- Chat Window -->
-                    <div id="chatWindow">
-
-                        <!-- Empty state -->
-                        <div id="chatWindowEmpty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;">
-                            <div style="font-size:48px;margin-bottom:12px;">💬</div>
-                            <div style="font-size:15px;">Select a chat to open</div>
-                        </div>
-
-                        <!-- Active chat -->
-                        <div id="chatWindowActive" style="display:none;flex-direction:column;height:100%;">
-
-                            <!-- ── Chat Header ─────────────────────────────── -->
-                            <div id="adminChatHeader" style="padding:10px 8px;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
-
-                                <!-- Back button — mobile only -->
-                                <button id="chatBackBtn" onclick="closeChatOnMobile()" title="Back to chats"
-                                    style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;flex-shrink:0;">
-                                    <i class="ri-arrow-left-line" style="font-size:20px;"></i>
-                                </button>
-
-                                <!-- Avatar — clickable → user profile -->
-                                <img id="adminChatUserLogo" src="" title="View profile" onclick="openChatUserProfile()"
-                                    style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;cursor:pointer;border:2px solid var(--primary);flex-shrink:0;">
-
-                                <!-- Name + ticker -->
-                                <div style="flex:1;min-width:0;cursor:pointer;" onclick="openChatUserProfile()">
-                                    <div id="adminChatUsername" style="font-weight:700;font-size:14px;color:var(--text-main);line-height:1.3;"></div>
-                                    <div id="adminChatSessionStatus" style="font-size:10px;color:#aaa;transition:opacity 0.4s;line-height:1.3;"></div>
-                                </div>
-
-                                <!-- Action icon buttons -->
-                                <div style="display:flex;align-items:center;gap:2px;">
-
-                                    <!-- Block / Unblock -->
-                                    <button id="adminBlockBtn" onclick="toggleBlockFromChat()" title="Block user"
-                                        style="display:flex;align-items:center;gap:4px;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:600;background:#fdecea;color:#e74c3c;">
-                                        <i class="ri-forbid-line" style="font-size:15px;"></i>
-                                        <span id="adminBlockLabel">Block</span>
-                                    </button>
-
-                                    <!-- Search -->
-                                    <button onclick="toggleChatSearch()" title="Search messages"
-                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--text-muted,#aaa);cursor:pointer;">
-                                        <i class="ri-search-line" style="font-size:18px;"></i>
-                                    </button>
-
-                                    <!-- End session -->
-                                    <button onclick="endAdminChatSession()" style="display:none;" title="End session"
-                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
-                                        <i class="ri-stop-circle-line" style="font-size:18px;"></i>
-                                    </button>
-
-                                    <!-- Delete chat -->
-                                    <button onclick="deleteAdminChatSession()" title="Delete chat"
-                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
-                                        <i class="ri-delete-bin-line" style="font-size:18px;"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- ── Search Bar ───────────────────────────────── -->
-                            <div id="chatSearchBar" style="display:none;padding:8px 14px;background:var(--bg-color,#f4f7fe);border-bottom:1px solid var(--border,#e0e5f2);">
-                                <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg,#fff);border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:0 14px;">
-                                    <i class="ri-search-line" style="color:#aaa;font-size:16px;flex-shrink:0;"></i>
-                                    <input type="text" id="chatSearchInput" placeholder="Search messages..."
-                                        oninput="searchChatMessages(this.value)"
-                                        style="flex:1;border:none;outline:none;padding:8px 0;font-size:13px;background:transparent;">
-                                    <i class="ri-close-line" onclick="toggleChatSearch()" style="color:#aaa;font-size:18px;cursor:pointer;flex-shrink:0;"></i>
-                                </div>
-                                <div id="chatSearchResults" style="margin-top:5px;font-size:12px;padding-left:4px;"></div>
-                            </div>
-
-                            <!-- ── Messages ─────────────────────────────────── -->
-                            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:4px;"></div>
-
-                            <!-- ── Typing Indicator ─────────────────────────── -->
-                            <div id="adminTypingIndicator" style="display:none;padding:6px 16px;align-items:center;gap:8px;background:var(--bg-color,#f4f7fe);">
-                                <i class="ri-more-line" style="color:#aaa;font-size:16px;"></i>
-                                <span style="font-size:12px;color:#aaa;">User is typing</span>
-                                <span style="display:flex;gap:3px;align-items:center;">
-                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0s;display:inline-block;"></span>
-                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.2s;display:inline-block;"></span>
-                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.4s;display:inline-block;"></span>
-                                </span>
-                            </div>
-
-                            <!-- ── Reply / Edit Bar ─────────────────────────── -->
-                            <div id="adminReplyBar" style="display:none;padding:8px 14px;background:var(--card-bg,#fff);border-top:2px solid var(--primary);flex-direction:row;align-items:center;gap:10px;">
-                                <i class="ri-reply-line" style="color:var(--primary);font-size:18px;flex-shrink:0;"></i>
-                                <div style="flex:1;min-width:0;">
-                                    <div id="adminReplyBarSender" style="font-size:11px;font-weight:700;color:var(--primary);"></div>
-                                    <div id="adminReplyBarText" style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-                                </div>
-                                <button onclick="cancelAdminReply()"
-                                    style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,0.06);cursor:pointer;flex-shrink:0;">
-                                    <i class="ri-close-line" style="font-size:15px;color:#888;"></i>
-                                </button>
-                            </div>
-
-                            <!-- ── Polar Question Input ─────────────────────── -->
-                            <div id="polarInputArea" style="display:none;padding:10px 8px;background:#fffde7;border-top:2px solid #f1c40f;">
-                                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-                                    <i class="ri-questionnaire-line" style="color:#f39c12;font-size:16px;"></i>
-                                    <span style="font-size:12px;color:#888;font-weight:600;">Polar Question — user answers Yes or No</span>
-                                </div>
-                                <div style="display:flex;gap:8px;">
-                                    <input type="text" id="polarQuestionInput" placeholder="e.g. Did you complete the transfer?"
-                                        style="flex:1;padding:8px 12px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;outline:none;">
-                                    <button onclick="sendAdminPolar()"
-                                        style="display:flex;align-items:center;gap:5px;background:#f1c40f;color:#333;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;">
-                                        <i class="ri-send-plane-line" style="font-size:14px;"></i> Send
-                                    </button>
-                                    <button onclick="togglePolarInput()"
-                                        style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#eee;border:none;border-radius:8px;cursor:pointer;">
-                                        <i class="ri-close-line" style="font-size:17px;color:#666;"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- ── Input Bar ────────────────────────────────── -->
-                            <div id="adminChatInputBar" style="padding:10px 14px;border-top:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:8px;">
-                                <label for="adminImgInput" title="Send image"
-                                    style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;cursor:pointer;color:var(--text-muted,#aaa);flex-shrink:0;transition:color 0.2s;"
-                                    onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted,#aaa)'">
-                                    <i class="ri-image-2-line" style="font-size:20px;"></i>
-                                    <input type="file" id="adminImgInput" accept="image/*" style="display:none;" onchange="sendAdminImage(this)">
-                                </label>
-                                   <!-- Polar question -->
-                                    <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send polar question"
-                                        style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;">
-                                        <i class="ri-questionnaire-line" style="font-size:18px;"></i>
-                                    </button>
-                                
-                                <input type="text" id="adminChatInput" placeholder="Type a reply..." maxlength="500"
-                                    style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 15px;font-size:14px;outline:none;;color:var(--text-main);"
-                                    onkeydown="onAdminInputKeydown(event)">
-                                <button onclick="sendAdminMessage()" title="Send"
-                                    style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:none;border-radius:50%;background:var(--primary,#4318ff);cursor:pointer;flex-shrink:0;">
-                                    <i class="ri-send-plane-fill" style="color:#fff;font-size:17px;"></i>
-                                </button>
-                            </div>
-
-                            <style>
-                            @keyframes typingDot { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
-                            #adminChatHeader button:hover { opacity: 0.8; }
-                            </style>
-                        </div>
-
-                    </div>
-
-                </div>
-            </section>
-
+            
+        </main>
+        
+        <main class="page" id="settings">
+            
+              <div class="page-wrap">
+    
+    <!-- ── PAGE HEADER ── -->
+    <div class="page-header">
+      <div class="page-header-left">
+        <h1>Settings</h1>
+        <p>Configure your platform preferences</p>
+      </div>
+      <div class="page-header-actions">
+        <button class="btn-reset" onclick="resetDefaults()">
+          <i class="ri-refresh-line"></i> Reset defaults
+        </button>
+        <button class="btn-save" onclick="saveAllSettings()">
+          <i class="ri-save-3-line"></i> Save changes
+        </button>
+      </div>
+    </div>
+    
+    <!-- ── SEARCH BAR ── -->
+    <div class="search-bar-wrap">
+      <i class="ri-search-line search-bar-icon"></i>
+      <input type="text" class="search-bar" id="settingsSearch" placeholder="Search settings… e.g. withdrawal, API, maintenance" oninput="handleSearch(this.value)" autocomplete="off">
+      <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
+    </div>
+    <div class="no-results" id="noResults">
+      <i class="ri-search-2-line"></i>
+      No settings found for "<span id="noResultsQuery"></span>"
+    </div>
+    
+    <!-- ══ SECTION LABEL ══ -->
+    <div class="section-label" data-search-label>Branding & Identity</div>
+    
+    <div class="settings-grid">
+      
+      <!-- BRANDING -->
+      <div class="section-card open full" id="card-branding" data-search-keywords="branding site name logo tagline description identity">
+        <div class="section-header" onclick="toggleSection('card-branding')">
+          <div class="section-header-left">
+            <div class="section-icon green"><i class="ri-store-2-line"></i></div>
+            <div>
+              <div class="section-title-text">Branding</div>
+              <div class="section-sub">Site name, logo and description</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <!-- Logo upload -->
+          <div class="logo-upload-area">
+            <div class="logo-preview" id="logoPreview">
+              <i class="ri-image-add-line"></i>
+            </div>
+            <div class="logo-upload-info">
+              <p>Square image, min 128×128px<br>PNG or JPG recommended</p>
+              <label class="btn-upload" for="logoFileInput">
+                <i class="ri-upload-2-line"></i> Upload logo
+              </label>
+              <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Site Name</label>
+              <input type="text" class="form-input" id="siteName" placeholder="e.g. Fluxmall Exchange" value="Fluxmall Exchange">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tagline</label>
+              <input type="text" class="form-input" id="siteTagline" placeholder="Short tagline" value="Setting Standards">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Site Description</label>
+            <textarea class="form-input" id="siteDesc" placeholder="Brief description of your platform...">A premier fintech investment platform built for the Nigerian market.</textarea>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SOCIAL LINKS -->
+      <div class="section-card" id="card-social" data-search-keywords="social links whatsapp telegram community">
+        <div class="section-header" onclick="toggleSection('card-social')">
+          <div class="section-header-left">
+            <div class="section-icon blue"><i class="ri-links-line"></i></div>
+            <div>
+              <div class="section-title-text">Social Links</div>
+              <div class="section-sub">WhatsApp, Telegram links</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">WhatsApp Group</label>
+            <div class="input-adorn">
+              <span class="input-adorn-prefix"><i class="ri-whatsapp-line"></i></span>
+              <input type="url" id="whatsappLink" placeholder="https://chat.whatsapp.com/...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telegram Channel</label>
+            <div class="input-adorn">
+              <span class="input-adorn-prefix"><i class="ri-telegram-line"></i></span>
+              <input type="url" id="telegramLink" placeholder="https://t.me/...">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- POINTS ALLOCATION -->
+      <div class="section-card" id="card-points" data-search-keywords="points allocation referral commission checkin bonus rewards level">
+        <div class="section-header" onclick="toggleSection('card-points')">
+          <div class="section-header-left">
+            <div class="section-icon yellow"><i class="ri-coin-line"></i></div>
+            <div>
+              <div class="section-title-text">Points Allocation</div>
+              <div class="section-sub">Referral & check-in rewards</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Daily Check-in Bonus (₦)</label>
+            <div class="num-wrap">
+              <button class="num-btn" onclick="stepNum('checkinBonus', -50)"><i class="ri-subtract-line"></i></button>
+              <input type="number" id="checkinBonus" value="50" min="0">
+              <button class="num-btn" onclick="stepNum('checkinBonus', 50)"><i class="ri-add-line"></i></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Referral Commission Level 1 (%)</label>
+            <div class="num-wrap">
+              <button class="num-btn" onclick="stepNum('refL1', -0.5)"><i class="ri-subtract-line"></i></button>
+              <input type="number" id="refL1" value="5" min="0" max="100" step="0.5">
+              <button class="num-btn" onclick="stepNum('refL1', 0.5)"><i class="ri-add-line"></i></button>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Level 2 (%)</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('refL2', -0.5)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="refL2" value="3" min="0" max="100" step="0.5">
+                <button class="num-btn" onclick="stepNum('refL2', 0.5)"><i class="ri-add-line"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Level 3 (%)</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('refL3', -0.5)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="refL3" value="1" min="0" max="100" step="0.5">
+                <button class="num-btn" onclick="stepNum('refL3', 0.5)"><i class="ri-add-line"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div><!-- /settings-grid -->
+    
+    <!-- ══ SECTION LABEL ══ -->
+    <div class="section-label" data-search-label>Payments & Finance</div>
+    
+    <div class="settings-grid">
+      
+      <!-- DEPOSIT SETTINGS -->
+      <div class="section-card" id="card-deposit" data-search-keywords="deposit payment min max limit quick amounts fund wallet recharge">
+        <div class="section-header" onclick="toggleSection('card-deposit')">
+          <div class="section-header-left">
+            <div class="section-icon green"><i class="ri-bank-card-line"></i></div>
+            <div>
+              <div class="section-title-text">Deposit Settings</div>
+              <div class="section-sub">Limits and quick-select amounts</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Min Deposit (₦)</label>
+              <div class="input-adorn">
+                <span class="input-adorn-prefix">₦</span>
+                <input type="number" id="minDeposit" value="1000">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Max Deposit (₦)</label>
+              <div class="input-adorn">
+                <span class="input-adorn-prefix">₦</span>
+                <input type="number" id="maxDeposit" value="500000">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quick Select Amounts</label>
+            <div class="amount-tags" id="depositTags"></div>
+            <div class="add-tag-wrap">
+              <input type="number" class="add-tag-input" id="newDepositTag" placeholder="Add amount e.g. 5000">
+              <button class="btn-add-tag" onclick="addTag('depositTags', 'newDepositTag')">+ Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- WITHDRAWAL SETTINGS -->
+      <div class="section-card" id="card-withdraw" data-search-keywords="withdrawal cashout fee service charge min limit time window payout">
+        <div class="section-header" onclick="toggleSection('card-withdraw')">
+          <div class="section-header-left">
+            <div class="section-icon yellow"><i class="ri-arrow-up-circle-line"></i></div>
+            <div>
+              <div class="section-title-text">Withdrawal Settings</div>
+              <div class="section-sub">Limits, fees and timing</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Min Withdrawal (₦)</label>
+              <div class="input-adorn">
+                <span class="input-adorn-prefix">₦</span>
+                <input type="number" id="minWithdraw" value="500">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service Fee (%)</label>
+              <div class="input-adorn">
+                <input type="number" id="withdrawFee" value="2" max="100">
+                <span class="input-adorn-suffix">%</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Withdrawal Window</label>
+            <div class="form-row">
+              <div class="select-wrap">
+                <select class="form-input" id="withdrawStart">
+                  <option value="6">6:00 AM</option>
+                  <option value="7">7:00 AM</option>
+                  <option value="8">8:00 AM</option>
+                  <option value="9" selected>9:00 AM</option>
+                  <option value="10">10:00 AM</option>
+                </select>
+              </div>
+              <div class="select-wrap">
+                <select class="form-input" id="withdrawEnd">
+                  <option value="16">4:00 PM</option>
+                  <option value="17">5:00 PM</option>
+                  <option value="18" selected>6:00 PM</option>
+                  <option value="19">7:00 PM</option>
+                  <option value="20">8:00 PM</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- API KEYS -->
+      <div class="section-card full" id="card-api" data-search-keywords="api keys paystack flutterwave korapay gateway secret public credentials payment integration">
+        <div class="section-header" onclick="toggleSection('card-api')">
+          <div class="section-header-left">
+            <div class="section-icon yellow"><i class="ri-key-2-line"></i></div>
+            <div>
+              <div class="section-title-text">API Keys</div>
+              <div class="section-sub">Payment gateway credentials</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Payment Gateway</label>
+              <div class="select-wrap">
+                <select class="form-input" id="payGateway" onchange="onGatewayChange(this.value)">
+                  <option value="paystack">Paystack</option>
+                  <option value="flutterwave">Flutterwave</option>
+                  <option value="korapay">Korapay</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Environment</label>
+              <div class="select-wrap">
+                <select class="form-input" id="payEnv">
+                  <option value="test">Test / Sandbox</option>
+                  <option value="live">Live / Production</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Public Key</label>
+            <div class="api-key-wrap">
+              <input type="text" class="form-input" id="apiPubKey" placeholder="pk_live_xxxxxxxxxxxxxx">
+              <button class="btn-icon" onclick="copyField('apiPubKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Secret Key</label>
+            <div class="api-key-wrap">
+              <input type="password" class="form-input" id="apiSecKey" placeholder="sk_live_xxxxxxxxxxxxxx">
+              <button class="btn-icon" onclick="togglePasswordField('apiSecKey', this)" title="Show/Hide"><i class="ri-eye-off-line"></i></button>
+              <button class="btn-icon" onclick="copyField('apiSecKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+            </div>
+          </div>
+          <button class="btn-configure" onclick="testApiConnection()">
+            <i class="ri-plug-line"></i> Test Connection
+          </button>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- ══ SECTION LABEL ══ -->
+    <div class="section-label" data-search-label>Platform Controls</div>
+    
+    <div class="settings-grid">
+      
+      <!-- FEATURES TOGGLES -->
+      <div class="section-card" id="card-features" data-search-keywords="features flags toggle enable disable deposits withdrawals shares referral spin register signup">
+        <div class="section-header" onclick="toggleSection('card-features')">
+          <div class="section-header-left">
+            <div class="section-icon green"><i class="ri-toggle-line"></i></div>
+            <div>
+              <div class="section-title-text">Feature Flags</div>
+              <div class="section-sub">Enable or disable platform features</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Deposits</div>
+              <div class="tgl-sub">Allow users to fund their wallets</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-deposits" checked onchange="onToggle('deposits', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Withdrawals</div>
+              <div class="tgl-sub">Allow users to cash out</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-withdrawals" checked onchange="onToggle('withdrawals', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Share Purchases</div>
+              <div class="tgl-sub">Allow buying investment shares</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-shares" checked onchange="onToggle('shares', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Referral System</div>
+              <div class="tgl-sub">Enable referral commissions</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-referral" checked onchange="onToggle('referral', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Spin Wheel</div>
+              <div class="tgl-sub">Lucky spin reward feature</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-spin" onchange="onToggle('spin', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">New Registrations</div>
+              <div class="tgl-sub">Allow new users to sign up</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-register" checked onchange="onToggle('register', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- NOTIFICATIONS -->
+      <div class="section-card" id="card-notif" data-search-keywords="notifications email alerts admin deposit withdrawal new user">
+        <div class="section-header" onclick="toggleSection('card-notif')">
+          <div class="section-header-left">
+            <div class="section-icon blue"><i class="ri-notification-3-line"></i></div>
+            <div>
+              <div class="section-title-text">Notifications</div>
+              <div class="section-sub">Email and alert settings</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Admin Email</label>
+            <input type="email" class="form-input" id="adminEmail" placeholder="admin@fluxmall.com">
+          </div>
+          <div class="toggle-row" style="margin-top:10px;">
+            <div class="toggle-info">
+              <div class="tgl-title">Deposit Alerts</div>
+              <div class="tgl-sub">Email on every deposit</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-depalert" checked onchange="onToggle('depositAlert', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Withdrawal Alerts</div>
+              <div class="tgl-sub">Email on withdrawal requests</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-wdalert" checked onchange="onToggle('withdrawalAlert', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">New User Alerts</div>
+              <div class="tgl-sub">Email on new registrations</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-useralert" onchange="onToggle('newUserAlert', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SITE LOGO (dedicated) -->
+      <div class="section-card" id="card-logo" data-search-keywords="logo favicon brand assets image upload url">
+        <div class="section-header" onclick="toggleSection('card-logo')">
+          <div class="section-header-left">
+            <div class="section-icon blue"><i class="ri-image-line"></i></div>
+            <div>
+              <div class="section-title-text">Site Logo</div>
+              <div class="section-sub">Manage brand assets</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Logo URL (or upload above)</label>
+            <div class="input-adorn">
+              <span class="input-adorn-prefix"><i class="ri-link"></i></span>
+              <input type="url" id="logoUrl" placeholder="https://...">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Favicon URL</label>
+            <div class="input-adorn">
+              <span class="input-adorn-prefix"><i class="ri-link"></i></span>
+              <input type="url" id="faviconUrl" placeholder="https://...">
+            </div>
+          </div>
+          <button class="btn-configure" onclick="saveBrandAssets()">
+            <i class="ri-save-3-line"></i> Save Assets
+          </button>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- ══ SECTION LABEL ══ -->
+    <div class="section-label" data-search-label>Utilities & Maintenance</div>
+    
+    <div class="settings-grid">
+      
+      <!-- UTILITIES -->
+      <div class="section-card open" id="card-utils" data-search-keywords="utilities tools manage deposits shares users export csv report data">
+        <div class="section-header" onclick="toggleSection('card-utils')">
+          <div class="section-header-left">
+            <div class="section-icon yellow"><i class="ri-tools-line"></i></div>
+            <div>
+              <div class="section-title-text">Utilities</div>
+              <div class="section-sub">Data management tools</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          
+          <div class="util-row">
+            <div class="util-info">
+              <div class="util-title">Active Deposits</div>
+              <div class="util-sub">View and manage pending deposits</div>
+            </div>
+            <button class="btn-util" onclick="openUtil('deposits')">
+              <i class="ri-external-link-line"></i> Manage
+            </button>
+          </div>
+          
+          <div class="util-row">
+            <div class="util-info">
+              <div class="util-title">Active Shares</div>
+              <div class="util-sub">View all active investment shares</div>
+            </div>
+            <button class="btn-util" onclick="openUtil('shares')">
+              <i class="ri-external-link-line"></i> Manage
+            </button>
+          </div>
+          
+          <div class="util-row">
+            <div class="util-info">
+              <div class="util-title">User Accounts</div>
+              <div class="util-sub">Manage users and KYC verification</div>
+            </div>
+            <button class="btn-util" onclick="openUtil('users')">
+              <i class="ri-external-link-line"></i> Manage
+            </button>
+          </div>
+          
+          <div class="util-row">
+            <div class="util-info">
+              <div class="util-title">Export Reports</div>
+              <div class="util-sub">Download CSV of transactions</div>
+            </div>
+            <button class="btn-util" onclick="exportData()">
+              <i class="ri-download-2-line"></i> Export
+            </button>
+          </div>
+          
+        </div>
+      </div>
+      
+      <!-- MAINTENANCE -->
+      <div class="section-card" id="card-maintenance" data-search-keywords="maintenance mode lock users upgrade downtime message">
+        <div class="section-header" onclick="toggleSection('card-maintenance')">
+          <div class="section-header-left">
+            <div class="section-icon red"><i class="ri-tools-fill"></i></div>
+            <div>
+              <div class="section-title-text">Maintenance</div>
+              <div class="section-sub">Lock platform for upgrades</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Maintenance Mode</div>
+              <div class="tgl-sub">Locks all users out of the platform. Only admins can log in.</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-maintenance" onchange="onToggle('maintenance', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Maintenance Message</label>
+            <textarea class="form-input" id="maintMsg" placeholder="We're currently upgrading the platform. We'll be back shortly." style="min-height:70px;"></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <!-- FUTURE KIT -->
+      <div class="section-card danger-card" id="card-future" data-search-keywords="future kit upgrade license key update auto developer version">
+        <div class="section-header" onclick="toggleSection('card-future')">
+          <div class="section-header-left">
+            <div class="section-icon red"><i class="ri-rocket-2-line"></i></div>
+            <div>
+              <div class="section-title-text">Future Kit Upgrade</div>
+              <div class="section-sub">Get support kits from developer</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <div class="tgl-title">Auto-update Checks</div>
+              <div class="tgl-sub">Check for new platform updates automatically</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="tgl-autoupdate" checked onchange="onToggle('autoUpdate', this.checked)">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">License Key</label>
+            <div class="api-key-wrap">
+              <input type="password" class="form-input" id="licenseKey" placeholder="FLXM-XXXX-XXXX-XXXX">
+              <button class="btn-icon" onclick="togglePasswordField('licenseKey', this)"><i class="ri-eye-off-line"></i></button>
+            </div>
+          </div>
+          <button class="btn-configure" style="background:var(--danger);box-shadow:0 3px 14px rgba(239,68,68,0.2);" onclick="checkUpdates()">
+            <i class="ri-download-cloud-line"></i> Check for Updates
+          </button>
+        </div>
+      </div>
+      
+    </div>
+    
+  </div><!-- /page-wrap -->
+  
         </main>
     </div>
-
-    <script src="script.js"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js').catch(() => {});
-    });
-  }
-</script>
+    
+    <script src="index.js"></script>
 </body>
-
 
 </html>
