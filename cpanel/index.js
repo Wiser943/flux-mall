@@ -1,3 +1,90 @@
+let allData = [];
+let allUsers = [];
+let flashInterval = null;
+let originalTitle = document.title;
+
+// ─── API HELPER ────────────────────────────────────────────
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+    ...options
+  });
+  if (res.status === 401) { window.location.href = '#login'; return null; }
+  return res.json();
+}
+// ─── IMGBB UPLOAD UTILITY ─────────────────────────────────
+// Fetches API key from DB config, uploads image, returns URL
+async function uploadToImgBB(file, statusEl) {
+  if (statusEl) statusEl.innerHTML = '<i class="ri-loader-line"></i> Uploading...';
+  try {
+    // Fetch imgbb key from settings/apikeys
+    const settingsData = await api('/api/admin/settings/apikeys');
+    const imgbbKey = settingsData?.apikeys?.imgbb;
+    if (!imgbbKey) {
+      if (statusEl) statusEl.innerHTML = '';
+      alert('⚠️ ImgBB API key not set. Go to Settings → API Keys and save your ImgBB key first.');
+      return null;
+    }
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+    if (result.success) {
+      if (statusEl) statusEl.innerHTML = '✅ Uploaded';
+      return result.data.url;
+    } else {
+      if (statusEl) statusEl.innerHTML = '';
+      alert('❌ ImgBB upload failed. Check your API key in Settings → API Keys.');
+      return null;
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = '';
+    alert('❌ Upload error: ' + err.message);
+    return null;
+  }
+}
+// ─── FLASH TITLE ─────────────────────────────────────────
+window.startFlash = (msg) => {
+  if (flashInterval) return;
+  flashInterval = setInterval(() => {
+    document.title = document.title === originalTitle ? `🔔 ${msg}` : originalTitle;
+  }, 800);
+};
+window.stopFlash = () => {
+  clearInterval(flashInterval);
+  flashInterval = null;
+  document.title = originalTitle;
+};
+
+// ─── AUTH CHECK ───────────────────────────────────────────
+async function checkAdminSession() {
+  const data = await fetch('/api/admin/me', { credentials: 'include' });
+  if (data.ok) {
+    //window.location.href = '#analytics';
+    initDashboard();
+  } else {
+    window.location.href = '#login';
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const sideLinks = document.querySelectorAll('.sidebar .side-menu li a:not(.logout)');
 
 sideLinks.forEach(item => {
@@ -1424,4 +1511,4 @@ document.addEventListener('DOMContentLoaded', initChangeTracking);
     /* ══════════════════════════════════════
        START
     ══════════════════════════════════════ */
-    init();
+   // init();
