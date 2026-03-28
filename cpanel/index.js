@@ -71,6 +71,37 @@ async function checkAdminSession() {
   }
 }
 
+// ─── ADMIN LOGIN ─────────────────────────────────────────
+window.handleAdminLogin = async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('adminEmail').value.trim();
+  const pass = document.getElementById('adminPass').value;
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerText = 'Verifying...';
+  
+  const data = await api('/api/admin/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password: pass })
+  });
+  
+  if (data?.success) {
+    window.location.href = '#analytics';
+    initDashboard();
+  } else {
+    alert(data?.error || 'Login failed.');
+    btn.disabled = false;
+    btn.innerText = 'Verify Identity';
+  }
+};
+
+// ─── ADMIN LOGOUT ─────────────────────────────────────────
+window.adminLogout = async () => {
+  await api('/api/admin/logout', { method: 'POST' });
+  window.location.href = '#login';
+};
+
+
 
 
 
