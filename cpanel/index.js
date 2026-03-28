@@ -69,8 +69,8 @@ async function checkAdminSession() {
   } else {
     window.location.href = '#login';
   }
-}checkAdminSession();
-
+}
+//checkAdminSession();
 
 // ─── ADMIN LOGIN ─────────────────────────────────────────
 window.handleAdminLogin = async (e) => {
@@ -101,6 +101,132 @@ window.adminLogout = async () => {
   await api('/api/admin/logout', { method: 'POST' });
   window.location.href = '#login';
 };
+window.exportCSV = () => {
+  let csv = 'Date,User,Amount,Ref,Status\n';
+  allData.forEach(i => {
+    csv += `${new Date(i.createdAt).toLocaleDateString()},${i.userId?._id || i.userId},${i.amount},${i.refCode},${i.status}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Report.csv';
+  a.click();
+};
+
+async function initDashboard() {
+//  setupCharts();
+  //  loadThemeSettings();
+//  await loadAnalytics();
+//  await renderUsers();
+//  await loadWithdrawals();
+  await loadSettings();
+  //loadAdminChatSessions();
+  // Poll for updates every 30 seconds
+  setInterval(async () => {
+//    await loadAnalytics();
+//    await renderUsers();
+    //await loadWithdrawals();
+  }, 30000);
+}
+// ─── SETTINGS ─────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    // 1. Load keys and fetch data
+    await loadApiKeys();
+    const data = await api('/api/admin/settings');
+    
+    if (!data?.success) {
+      console.error("Failed to fetch settings:", data?.message);
+      return;
+    }
+    
+    const s = data.settings;
+    
+    // 2. Handle Maintenance Toggle (Isolated logic)
+    const mToggle = document.getElementById('maintenanceToggle');
+    if (mToggle && s.maintenance) {
+      mToggle.checked = s.maintenance.enabled || false;
+      
+      // Use an arrow function to preserve 'this' or use 'e.target'
+      mToggle.onchange = async (e) => {
+        await api('/api/admin/settings/maintenance', {
+          method: 'PUT',
+          body: JSON.stringify({ enabled: e.target.checked })
+        });
+      };
+    }
+    // 3. Populate all other form fields
+    if (s.config) {
+      fillSettings(s.config);
+    }
+    
+  } catch (err) {
+    console.error("Error in loadSettings:", err);
+  }
+}
+
+function fillSettings(data) {
+  // Helper to safely set values only if the element exists
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = val ?? ""; // Use nullish coalescing
+  };
+  
+  // Main Config Fields
+  setVal('initBal', data.initBal);
+  setVal('descText', data.siteAbout);
+  setVal('waLink', data.whatsappLink);
+  setVal('tgLink', data.telegramLink);
+  setVal('siteNameInput', data.siteName);
+  setVal('signinAmt', data.dailyCheckInAmount);
+  
+  // Withdrawal Fields (Added these here for consistency)
+  setVal('minWithdraw', data.minWithdraw);
+  setVal('withdrawFee', data.withdrawFee);
+  
+  // Logo Preview
+  const preview = document.getElementById('logoPreview');
+  if (preview) {
+    preview.src = data.siteLogo || "assets/img/placeholder-logo.png";
+  }
+  
+  // Referral Logic (Mapping array to individual inputs)
+  if (Array.isArray(data.referralPercents)) {
+    setVal('ref1', data.referralPercents[0]);
+    setVal('ref2', data.referralPercents[1]);
+    setVal('ref3', data.referralPercents[2]);
+  }
+}
+
+// ─── LOAD API KEYS ────────────────────────────────────────
+async function loadApiKeys() {
+  const data = await api('/api/admin/settings/apikeys');
+  if (!data?.apikeys) return;
+  const k = data.apikeys;
+  const imgbbInput = document.getElementById('imgbbKeyInput');
+  const koraPublic = document.getElementById('koraPublicKeyInput');
+  const koraSec = document.getElementById('koraSecretKeyInput');
+  if (imgbbInput) imgbbInput.value = k.imgbb || '';
+  if (koraPublic) koraPublic.value = k.korapay_public || '';
+  if (koraSec) koraSec.value = k.korapay_secret || '';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -350,6 +476,7 @@ function updateThemeBtns(mode) {
    Usage: showConfirm({ title, msg, type, yesLabel, onYes })
    type: 'danger' | 'warning' | 'info'
 ══════════════════════════════════════ */
+
 const confirmIcons = { danger: 'ri-error-warning-line', warning: 'ri-alert-line', info: 'ri-question-line' };
 
 function showConfirm({ title, msg, type = 'danger', yesLabel = 'Confirm', onYes }) {
@@ -381,6 +508,7 @@ function handleOverlayClick(e) {
   if (e.target === document.getElementById('confirmOverlay')) closeConfirm();
 }
 
+
 /* ══════════════════════════════════════
    TOGGLE HANDLER
    All toggles call this.
@@ -396,7 +524,7 @@ function onToggle(feature, checked) {
       type: 'danger',
       yesLabel: 'Enable Maintenance',
       onYes: () => {
-        document.getElementById('tgl-maintenance').checked = true;
+       document.getElementById('tgl-maintenance').checked = true;
         settings['maintenance'] = true;
         saveFeatureState('maintenance', true);
         showToast('⚠️ Maintenance mode ON — users are locked out', 'error');
@@ -452,10 +580,16 @@ function onToggle(feature, checked) {
   }
 }
 
-async function saveFeatureState(feature, value) {
+async function saveFeatureState(feature, value,/*method,dir*/) {
   // await fetch('/api/admin/settings/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ feature, value }) });
   console.log(`[API stub] Saved ${feature}=${value}`);
 }
+/*mToggle.onchange = async (e) => {
+  await api('/api/admin/settings/maintenance', {
+    method: 'PUT',
+    body: JSON.stringify({ enabled: e.target.checked })
+  });
+};*/
 
 /* ══════════════════════════════════════
    UNSAVED CHANGES TRACKING
