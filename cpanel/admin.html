@@ -20,7 +20,39 @@
 </head>
 
 <body>
-  
+  <!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ── CONFIRMATION MODAL ── -->
+<div class="confirm-overlay" id="confirmOverlay" onclick="handleOverlayClick(event)">
+  <div class="confirm-sheet" id="confirmSheet">
+    <div class="confirm-handle"></div>
+    <div class="confirm-icon-wrap danger" id="confirmIcon">
+      <i class="ri-error-warning-line" id="confirmIconEl"></i>
+    </div>
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+    <div class="confirm-btns">
+      <button class="confirm-btn-yes danger" id="confirmYesBtn" onclick="confirmYes()">Confirm</button>
+      <button class="confirm-btn-no" onclick="closeConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── UNSAVED CHANGES BAR ── -->
+<div class="unsaved-bar" id="unsavedBar">
+  <div class="unsaved-bar-left">
+    <div class="unsaved-dot"></div>
+    <span class="unsaved-text">Unsaved changes <span class="unsaved-count" id="unsavedCount">0</span></span>
+  </div>
+  <div class="unsaved-bar-actions">
+    <button class="btn-discard" onclick="confirmDiscard()">Discard</button>
+    <button class="btn-save-now" onclick="saveAllSettings()">
+      <i class="ri-save-3-line"></i> Save now
+    </button>
+  </div>
+</div>
+
   <!-- Sidebar -->
   <div class="sidebar close">
     <a href="#" class="logo">
