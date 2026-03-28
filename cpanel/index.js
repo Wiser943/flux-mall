@@ -69,7 +69,8 @@ async function checkAdminSession() {
   } else {
     window.location.href = '#login';
   }
-}
+}checkAdminSession();
+
 
 // ─── ADMIN LOGIN ─────────────────────────────────────────
 window.handleAdminLogin = async (e) => {
