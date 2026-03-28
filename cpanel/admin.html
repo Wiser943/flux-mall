@@ -13,7 +13,7 @@
   <title>Responsive Dashboard | Fluxmall</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
   <script>
     eruda.init();
   </script>
@@ -108,7 +108,7 @@
             <li><a href="#" class="active">Shop</a></li>
           </ul>
         </div>
-        <a href="#" class="report">
+        <a href="#" class="report" onclick="exportCSV()">
           <i class='bx bx-cloud-download'></i>
           <span>Download CSV</span>
         </a>
@@ -247,7 +247,7 @@
             <li><a href="#" class="active">Shop</a></li>
           </ul>
         </div>
-        <a href="#" class="report">
+        <a href="#" class="report" onclick="exportCSV()">
           <i class='bx bx-cloud-download'></i>
           <span>Download CSV</span>
         </a>
@@ -1214,7 +1214,7 @@
                   <div class="util-title">Export Reports</div>
                   <div class="util-sub">Download CSV of transactions</div>
                 </div>
-                <button class="btn-util" onclick="exportData()">
+                <button class="btn-util" onclick="exportCSV()">
                   <i class="ri-download-2-line"></i> Export
                 </button>
               </div>
