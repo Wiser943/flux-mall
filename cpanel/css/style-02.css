@@ -135,7 +135,7 @@ a {
 .user-content{
   flex: 1;
   display: flex;
-  overflow: hidden;
+  overflow: hidden;z-index: 6000000;
 }
 
 /* ── USER TABLE PANE ── */
