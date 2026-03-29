@@ -590,7 +590,7 @@ body {
 .login-container {
     width: 100%;
     padding: 40px;
-    background: #0b1437;
+    background: var(--card);
     box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.4);
     text-align: center;
     position: absolute;
@@ -604,6 +604,9 @@ body {
     font-size: 24px;
     margin-bottom: 8px;
     color: #fff;
+}.login-container i {
+    font-size: 50px;
+    color: #fff;margin-top: 80px;
 }
 
 .login-container p {
@@ -628,10 +631,9 @@ body {
 .login-container .input-group input {
     width: 100%;
     padding: 12px 15px;
-    background: #1b254b;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    color: white;
+    color:    #1b254b;
     font-size: 14px;
     outline: none;
     box-sizing: border-box;
