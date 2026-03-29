@@ -1198,33 +1198,100 @@ select.form-input {
 }
 
 /* ══════════════════════════════════════
-   CONFIRMATION MODAL
+   MODAL FUNCTIONS
 ══════════════════════════════════════ */
+.modal-overlay ,
 .confirm-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 10000;
+  z-index: 0000;
   display: none;
   align-items: flex-end;
   /* mobile: bottom sheet */
   justify-content: center;
 }
 
+.modal-overlay.vis,
 .confirm-overlay.visible {
   display: flex;
-  animation: overlayFadeIn 0.2s ease;
+  animation: fadeIn 0.2s ease;
 }
 
-@keyframes overlayFadeIn {
+@keyframes fadeIn {
   from {
-    opacity: 0;
+    opacity: 0
   }
   
   to {
+    opacity: 1
+  }
+}
+
+.modal {
+  background: var(--card);
+  width: 100%;
+  max-width: 100%;
+  border-radius: 22px 22px 0 0;
+  padding: 8px 22px 40px;
+  transform: translateY(100%);
+  transition: transform .38s cubic-bezier(.25, .46, .45, .94);
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, .3);
+}
+
+.modal-overlay.vis .modal {
+  transform: translateY(0);
+}
+
+@media(min-width:540px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .modal {
+    max-width: 480px;
+    border-radius: 18px;
+    padding: 28px;
+    transform: scale(.88);
+    opacity: 0;
+    transition: transform .3s cubic-bezier(.34, 1.4, .64, 1), opacity .25s ease;
+  }
+  
+  .modal-overlay.vis .modal {
+    transform: scale(1);
     opacity: 1;
   }
+  
+  .modal-handle {
+    display: none;
+  }
+}
+
+.modal-handle {
+  width: 38px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 4px;
+  margin: 10px auto 18px;
+}
+
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.modal-sub {
+  font-size: .82rem;
+  color: var(--muted);
+  margin-bottom: 18px;
+  line-height: 1.6;
 }
 
 .confirm-sheet {
@@ -1431,7 +1498,7 @@ select.form-input {
 }
 
 @keyframes unsavedPulse {
-
+  
   0%,
   100% {
     opacity: 1;
@@ -1972,7 +2039,7 @@ select.form-input {
 }
 
 @keyframes unsavedPulse {
-
+  
   0%,
   100% {
     opacity: 1;
