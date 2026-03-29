@@ -21,38 +21,38 @@
 
 <body>
   <!-- Toast container -->
-<div id="toast-container"></div>
-
-<!-- ── CONFIRMATION MODAL ── -->
-<div class="confirm-overlay" id="confirmOverlay" onclick="handleOverlayClick(event)">
-  <div class="confirm-sheet" id="confirmSheet">
-    <div class="confirm-handle"></div>
-    <div class="confirm-icon-wrap danger" id="confirmIcon">
-      <i class="ri-error-warning-line" id="confirmIconEl"></i>
+  <div id="toast-container"></div>
+  
+  <!-- ── CONFIRMATION MODAL ── -->
+  <div class="confirm-overlay" id="confirmOverlay" onclick="handleOverlayClick(event)">
+    <div class="confirm-sheet" id="confirmSheet">
+      <div class="confirm-handle"></div>
+      <div class="confirm-icon-wrap danger" id="confirmIcon">
+        <i class="ri-error-warning-line" id="confirmIconEl"></i>
+      </div>
+      <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+      <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
+      <div class="confirm-btns">
+        <button class="confirm-btn-yes danger" id="confirmYesBtn" onclick="confirmYes()">Confirm</button>
+        <button class="confirm-btn-no" onclick="closeConfirm()">Cancel</button>
+      </div>
     </div>
-    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
-    <div class="confirm-msg" id="confirmMsg">This action cannot be undone.</div>
-    <div class="confirm-btns">
-      <button class="confirm-btn-yes danger" id="confirmYesBtn" onclick="confirmYes()">Confirm</button>
-      <button class="confirm-btn-no" onclick="closeConfirm()">Cancel</button>
+  </div>
+  
+  <!-- ── UNSAVED CHANGES BAR ── -->
+  <div class="unsaved-bar" id="unsavedBar">
+    <div class="unsaved-bar-left">
+      <div class="unsaved-dot"></div>
+      <span class="unsaved-text">Unsaved changes <span class="unsaved-count" id="unsavedCount">0</span></span>
+    </div>
+    <div class="unsaved-bar-actions">
+      <button class="btn-discard" onclick="confirmDiscard()">Discard</button>
+      <button class="btn-save-now" onclick="saveAllSettings()">
+        <i class="ri-save-3-line"></i> Save now
+      </button>
     </div>
   </div>
-</div>
-
-<!-- ── UNSAVED CHANGES BAR ── -->
-<div class="unsaved-bar" id="unsavedBar">
-  <div class="unsaved-bar-left">
-    <div class="unsaved-dot"></div>
-    <span class="unsaved-text">Unsaved changes <span class="unsaved-count" id="unsavedCount">0</span></span>
-  </div>
-  <div class="unsaved-bar-actions">
-    <button class="btn-discard" onclick="confirmDiscard()">Discard</button>
-    <button class="btn-save-now" onclick="saveAllSettings()">
-      <i class="ri-save-3-line"></i> Save now
-    </button>
-  </div>
-</div>
-
+  
   <!-- Sidebar -->
   <div class="sidebar close">
     <a href="#" class="logo">
@@ -662,42 +662,129 @@
         
       </div><!-- /chat-main -->
       
-      
-      
-      
     </main>
     <main class="page" id="users">
-      <div class="header">
-        <div class="left">
-          <h1>Users</h1>
-          <ul class="breadcrumb">
-            <li><a href="#">
-                Analytics
-              </a></li>
-            /
-            <li><a href="#" class="active">Shop</a></li>
-          </ul>
-        </div>
-        <a href="#" class="report">
-          <i class='bx bx-plus'></i>
-          <span>User(s)</span>
-        </a>
-      </div>
       
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>User ID</th>
-              <th>Total Deposits</th>
-              <th>Total Paid(₦)</th>
-              <th>Disabled</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="userTableBody"></tbody>
-        </table>
-      </div>
+      
+      
+      <!-- ── MAIN ── -->
+      <div class="main">
+        
+        <!-- Topbar -->
+        <div class="topbar">
+          <div class="topbar-title">
+            User Management
+            <span id="totalCount">0 users</span>
+          </div>
+          <button class="icon-btn" onclick="exportCSV()" title="Export CSV"><i class="ri-download-2-line"></i></button>
+          <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
+            <i class="ri-moon-line i-moon"></i>
+            <i class="ri-sun-line i-sun" style="display:none"></i>
+          </button>
+          <button class="btn btn-primary" onclick="openAddUser()">
+            <i class="ri-user-add-line"></i> <span>Add User</span>
+          </button>
+        </div>
+        
+        <div class="user-content">
+          <div class="table-pane">
+            
+            <!-- Stats bar -->
+            <div class="stats-bar" id="statsBar">
+              <div class="stat-chip"><span class="stat-val" id="s-total">0</span><span class="stat-label">Total</span></div>
+              <div class="stat-chip"><span class="stat-val" id="s-verified">0</span><span class="stat-label">Verified</span></div>
+              <div class="stat-chip"><span class="stat-val" id="s-active">0</span><span class="stat-label">Active</span></div>
+              <div class="stat-chip"><span class="stat-val" id="s-banned">0</span><span class="stat-label">Banned</span></div>
+              <div class="stat-chip"><span class="stat-val" id="s-balance">₦0</span><span class="stat-label">Total Balance</span></div>
+            </div>
+            
+            <!-- Toolbar -->
+            <div class="toolbar">
+              <div class="search-box">
+                <i class="ri-search-line"></i>
+                <input type="text" class="search-input" id="searchInput" placeholder="Search by name, email, ID..." oninput="handleSearch(this.value)">
+                <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+              </div>
+              <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+                <option value="">All Status</option>
+                <option value="verified">Verified</option>
+                <option value="unverified">Unverified</option>
+                <option value="banned">Banned</option>
+              </select>
+              <select class="filter-select" id="sortFilter" onchange="applyFilters()">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="balance-desc">Balance ↓</option>
+                <option value="balance-asc">Balance ↑</option>
+                <option value="name-asc">Name A–Z</option>
+              </select>
+              <button class="btn btn-outline" onclick="applyFilters()"><i class="ri-filter-line"></i> <span>Filter</span></button>
+            </div>
+            
+            <!-- Bulk bar -->
+            <div class="bulk-bar" id="bulkBar">
+              <span class="bulk-count" id="bulkCount">0 selected</span>
+              <button class="btn btn-outline" onclick="bulkVerify()"><i class="ri-shield-check-line"></i> Verify All</button>
+              <button class="btn btn-outline" onclick="bulkMessage()"><i class="ri-message-3-line"></i> Message</button>
+              <button class="btn btn-danger" onclick="bulkBan()"><i class="ri-forbid-line"></i> Ban All</button>
+              <button class="btn btn-danger" onclick="bulkDelete()"><i class="ri-delete-bin-line"></i> Delete</button>
+              <button class="btn btn-outline" onclick="clearSelection()"><i class="ri-close-line"></i> Clear</button>
+            </div>
+            
+            <!-- Mobile filter tabs -->
+            <div class="mobile-filter-row" id="mobileFilterRow">
+              <button class="mf-tab active" onclick="setMobileFilter('all',this)">All</button>
+              <button class="mf-tab" onclick="setMobileFilter('verified',this)">Verified</button>
+              <button class="mf-tab" onclick="setMobileFilter('unverified',this)">Unverified</button>
+              <button class="mf-tab" onclick="setMobileFilter('banned',this)">Banned</button>
+              <button class="mf-tab" onclick="setMobileFilter('active',this)">Active</button>
+            </div>
+            
+            <!-- Mobile card list -->
+            <div class="card-list" id="cardList"></div>
+            
+            <!-- Table -->
+            <div class="table-scroll">
+              <table id="userTable">
+                <thead>
+                  <tr>
+                    <th class="check-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                    <th onclick="sortBy('name')">User</th>
+                    <th onclick="sortBy('balance')">Balance</th>
+                    <th onclick="sortBy('shares')">Shares</th>
+                    <th onclick="sortBy('referrals')">Referrals</th>
+                    <th onclick="sortBy('status')">Status</th>
+                    <th onclick="sortBy('joined')">Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+              <div class="empty-state" id="emptyState" style="display:none;">
+                <i class="ri-user-search-line"></i>
+                <p>No users found matching your search</p>
+              </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination" id="pagination">
+              <span class="page-info" id="pageInfo">Showing 0–0 of 0</span>
+              <div class="page-btns" id="pageBtns"></div>
+            </div>
+            
+          </div><!-- /table-pane -->
+          
+          <!-- Detail Pane -->
+          <div class="detail-pane hidden" id="detailPane">
+            <div class="dp-header">
+              <span class="dp-title">User Profile</span>
+              <button class="icon-btn" onclick="closeDetail()"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="dp-body" id="dpBody"></div>
+          </div>
+          
+        </div><!-- /content -->
+      </div><!-- /main -->
       
     </main>
     
