@@ -1206,7 +1206,7 @@ select.form-input {
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 0000;
+  z-index: 600000;
   display: none;
   align-items: flex-end;
   /* mobile: bottom sheet */
