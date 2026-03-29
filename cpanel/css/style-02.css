@@ -71,11 +71,11 @@ a {
 
 
 /* ── MAIN AREA ── */
-.main {
+.users-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden;border-radius: var(--radius);
 }
 
 /* ── TOP BAR ── */
@@ -880,121 +880,7 @@ select.form-input {
   gap: 10px;
 }
 
-.modal-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 6px;
-}
 
-.modal-btn-primary {
-  width: 100%;
-  padding: 12px;
-  background: var(--green);
-  color: #fff;
-  border-radius: var(--rsm);
-  font-weight: 700;
-  font-size: .88rem;
-  box-shadow: 0 3px 14px rgba(46, 125, 82, .25);
-  transition: background var(--ease), transform .15s;
-}
-
-.modal-btn-primary:hover {
-  background: var(--gd);
-  transform: translateY(-1px);
-}
-
-.modal-btn-secondary {
-  width: 100%;
-  padding: 11px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--sub);
-  border-radius: var(--rsm);
-  font-weight: 600;
-  font-size: .88rem;
-  transition: all var(--ease);
-}
-
-.modal-btn-secondary:hover {
-  border-color: var(--muted);
-  color: var(--text);
-}
-
-.modal-btn-danger {
-  width: 100%;
-  padding: 12px;
-  background: var(--danger);
-  color: #fff;
-  border-radius: var(--rsm);
-  font-weight: 700;
-  font-size: .88rem;
-  box-shadow: 0 3px 14px rgba(239, 68, 68, .2);
-  transition: background var(--ease), transform .15s;
-}
-
-.modal-btn-danger:hover {
-  background: #dc2626;
-  transform: translateY(-1px);
-}
-
-/* ══════════════════════════════════════
-   TOAST
-══════════════════════════════════════ */
-#toast {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  pointer-events: none;
-  min-width: min(90vw, 300px);
-}
-
-.toast-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: var(--rsm);
-  font-size: .82rem;
-  font-weight: 500;
-  color: #fff;
-  animation: toastIn .25s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
-}
-
-@keyframes toastIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scale(.95)
-  }
-  
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1)
-  }
-}
-
-.toast-item.success {
-  background: var(--green);
-}
-
-.toast-item.error {
-  background: var(--danger);
-}
-
-.toast-item.info {
-  background: var(--blue);
-}
-
-.toast-item.warning {
-  background: var(--yellow);
-  color: #000;
-}
 
 /* ══════════════════════════════════════
    THEME FAB
@@ -1314,7 +1200,7 @@ select.form-input {
   }
   
   .topbar-title span {
-    display: none;
+   display: none;
   }
   
   .btn span {
