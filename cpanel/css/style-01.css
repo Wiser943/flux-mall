@@ -603,14 +603,14 @@ body {
 .login-container h2 {
     font-size: 24px;
     margin-bottom: 8px;
-    color: #fff;
+    color: var(--text);
 }.login-container i {
     font-size: 50px;
     color: #fff;margin-top: 80px;
 }
 
 .login-container p {
-    color: #a3adc2;
+    color: var(--text);
     font-size: 14px;
     margin-bottom: 30px;
 }
@@ -624,7 +624,7 @@ body {
     display: block;
     font-size: 12px;
     margin-bottom: 8px;
-    color: #a3adc2;
+    color: #1b254b;
     padding-left: 5px;
 }
 
