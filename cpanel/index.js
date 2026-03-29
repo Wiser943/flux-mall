@@ -262,6 +262,9 @@ window.showModal = (cfg) => {
 };
 
 // ── Slide-up modal (settings/users confirm) ────────────────
+
+
+
 function openSlideModal(html) {
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modalOverlay').classList.add('vis');
@@ -1090,7 +1093,6 @@ function closeDetail() {
 // ── User Modals ────────────────────────────────────────────
 function openAddUser() {
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Add New User</div>
     <div class="modal-sub">Create a new user account manually.</div>
     <div class="form-row">
@@ -1140,7 +1142,6 @@ function openEditModal(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Edit User</div>
     <div class="modal-sub">Update details for <strong>${u.name}</strong></div>
     <div class="form-row">
@@ -1186,7 +1187,6 @@ function openCreditModal(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Adjust Balance</div>
     <div class="modal-sub">Current balance: <strong style="color:var(--gl)">₦${u.balance.toLocaleString()}</strong></div>
     <div class="form-group"><label class="form-label">Action</label>
@@ -1222,7 +1222,6 @@ function sendMessageModal(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Send Message</div>
     <div class="modal-sub">Send a notification to <strong>${u.name}</strong></div>
     <div class="form-group"><label class="form-label">Message Type</label>
@@ -1254,7 +1253,6 @@ function confirmBan(id) {
   if (!u) return;
   const isBanned = u.status === 'banned';
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">${isBanned?'Unban':'Ban'} User</div>
     <div class="modal-sub">${isBanned?`Remove ban from <strong>${u.name}</strong>?`:`Ban <strong>${u.name}</strong>? They will lose all access immediately.`}</div>
     ${!isBanned?`<div class="form-group"><label class="form-label">Reason for Ban</label><input class="form-input" id="ban-reason" placeholder="e.g. Fraudulent activity..."></div>`:''}
@@ -1277,7 +1275,6 @@ function confirmDelete(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Delete Account</div>
     <div class="modal-sub">This will permanently delete <strong>${u.name}</strong>'s account. <strong>Cannot be undone.</strong></div>
     <div class="form-group"><label class="form-label">Type "DELETE" to confirm</label><input class="form-input" id="del-confirm" placeholder="DELETE"></div>
@@ -1310,7 +1307,6 @@ function resetPassword(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Reset Password</div>
     <div class="modal-sub">Set a new password for <strong>${u.name}</strong></div>
     <div class="form-group"><label class="form-label">New Password</label><input class="form-input" id="rp-pass" type="password" placeholder="Min 8 characters"></div>
@@ -1339,7 +1335,6 @@ function bulkVerify() {
 
 function bulkBan() {
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Ban ${selected.size} Users?</div>
     <div class="modal-sub">All selected users will be banned immediately.</div>
     <div class="modal-btns">
@@ -1355,7 +1350,6 @@ function submitBulkBan() {
 
 function bulkDelete() {
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Delete ${selected.size} Users?</div>
     <div class="modal-sub">Cannot be undone.</div>
     <div class="form-group"><label class="form-label">Type "DELETE" to confirm</label><input class="form-input" id="bd-confirm" placeholder="DELETE"></div>
@@ -1374,7 +1368,6 @@ function submitBulkDelete() {
 
 function bulkMessage() {
   openModal(`
-    <div class="modal-handle"></div>
     <div class="modal-title">Message ${selected.size} Users</div>
     <div class="form-group"><label class="form-label">Message</label>
       <textarea class="form-input" id="bm-body" rows="4" placeholder="Your message..."></textarea>
