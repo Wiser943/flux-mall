@@ -70,7 +70,7 @@ async function checkAdminSession() {
     window.location.href = '#login';
   }
 }
-//checkAdminSession();
+checkAdminSession();
 
 // ─── ADMIN LOGIN ─────────────────────────────────────────
 window.handleAdminLogin = async (e) => {
@@ -211,6 +211,584 @@ async function loadApiKeys() {
   if (koraPublic) koraPublic.value = k.korapay_public || '';
   if (koraSec) koraSec.value = k.korapay_secret || '';
 }
+
+
+
+
+function updateStats(){
+  document.getElementById('s-total').textContent = USERS.length;
+  document.getElementById('s-verified').textContent = USERS.filter(u=>u.status==='verified').length;
+  document.getElementById('s-active').textContent = USERS.filter(u=>u.active).length;
+  document.getElementById('s-banned').textContent = USERS.filter(u=>u.status==='banned').length;
+  const total = USERS.reduce((a,u)=>a+u.balance,0);
+  document.getElementById('s-balance').textContent = '₦'+total.toLocaleString();
+  document.getElementById('totalCount').textContent = USERS.length+' users';
+}//updateStats();
+/* ══════════════════════════════════════
+   RENDER TABLE
+══════════════════════════════════════ */
+function renderTable(){
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+  const start = (page-1)*PER_PAGE;
+  const slice = filtered.slice(start, start+PER_PAGE);
+
+  if(filtered.length===0){ tbody.innerHTML=''; empty.style.display='flex'; renderPagination(); return; }
+  empty.style.display='none';
+
+  tbody.innerHTML = slice.map(u => {
+    const isSel = selected.has(u.id);
+    const isActive = activeUserId===u.id;
+    return `
+    <tr class="${isSel?'selected':''} ${isActive?'active-row':''}"
+      onclick="openDetail('${u.id}')"
+      oncontextmenu="showCtx(event,'${u.id}')">
+      <td class="check-cell" onclick="event.stopPropagation()">
+        <input type="checkbox" ${isSel?'checked':''} onchange="toggleSelect('${u.id}',this.checked)">
+      </td>
+      <td>
+        <div class="user-cell">
+          <div class="u-avatar" style="background:${u.color}">${u.initials}</div>
+          <div>
+            <div class="u-name">${u.name}</div>
+            <div class="u-email">${u.email}</div>
+            <div class="u-id">${u.id}</div>
+          </div>
+        </div>
+      </td>
+      <td><span class="amount ${u.balance>0?'positive':'zero'}">₦${u.balance.toLocaleString()}</span></td>
+      <td>${u.shares}</td>
+      <td>${u.referrals}</td>
+      <td>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <span class="badge ${u.status}">${u.status.charAt(0).toUpperCase()+u.status.slice(1)}</span>
+          <span class="badge ${u.active?'active':'inactive'}">${u.active?'Active':'Inactive'}</span>
+        </div>
+      </td>
+      <td style="font-size:.78rem;color:var(--muted);">${u.joined}</td>
+      <td onclick="event.stopPropagation()">
+        <div class="row-actions">
+          <button class="row-btn" onclick="openDetail('${u.id}')" title="View"><i class="ri-eye-line"></i></button>
+          <button class="row-btn" onclick="openEditModal('${u.id}')" title="Edit"><i class="ri-edit-line"></i></button>
+          <button class="row-btn" onclick="openCreditModal('${u.id}')" title="Credit/Debit"><i class="ri-wallet-3-line"></i></button>
+          <button class="row-btn danger" onclick="confirmBan('${u.id}')" title="Ban"><i class="ri-forbid-line"></i></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination();
+  renderCards();
+}
+
+/* ══════════════════════════════════════
+   PAGINATION
+══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   MOBILE CARDS
+══════════════════════════════════════ */
+let mobileFilter = 'all';
+
+function setMobileFilter(f, btn){
+  mobileFilter = f;
+  document.querySelectorAll('.mf-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function renderCards(){
+  const cardList = document.getElementById('cardList');
+  if(!cardList) return;
+  let data = [...filtered];
+  if(mobileFilter !== 'all'){
+    if(mobileFilter === 'active') data = data.filter(u=>u.active);
+    else data = data.filter(u=>u.status === mobileFilter);
+  }
+  const start = (page-1)*PER_PAGE;
+  const slice = data.slice(start, start+PER_PAGE);
+  if(slice.length === 0){
+    cardList.innerHTML = '<div style="text-align:center;padding:50px 20px;color:var(--muted);"><i class=\"ri-user-search-line\" style=\"font-size:2rem;display:block;opacity:.3;margin-bottom:10px;\"></i>No users found</div>';
+    return;
+  }
+  cardList.innerHTML = slice.map((u,i) => {
+    const isSel = selected.has(u.id);
+    const bal = u.balance >= 1000 ? '\u20a6'+(u.balance/1000).toFixed(0)+'k' : '\u20a6'+u.balance;
+    return `<div class="user-card ${isSel?'selected':''}" style="animation-delay:${i*0.04}s"
+      onclick="openDetail('${u.id}')"
+      oncontextmenu="showCtx(event,'${u.id}')">
+      <input type="checkbox" class="uc-check" ${isSel?'checked':''}
+        onclick="event.stopPropagation()"
+        onchange="toggleSelect('${u.id}',this.checked)">
+      <div class="uc-top">
+        <div class="uc-avatar" style="background:${u.color}">${u.initials}</div>
+        <div class="uc-info">
+          <div class="uc-name">${u.name}</div>
+          <div class="uc-email">${u.email}</div>
+          <div class="uc-id">${u.id}</div>
+        </div>
+        <div class="uc-badges">
+          <span class="badge ${u.status}">${u.status.charAt(0).toUpperCase()+u.status.slice(1)}</span>
+          <span class="badge ${u.active?'active':'inactive'}" style="font-size:.6rem">${u.active?'\u25cf':'\u25cb'}</span>
+        </div>
+      </div>
+      <div class="uc-stats">
+        <div class="uc-stat"><span class="uc-stat-val green">${bal}</span><span class="uc-stat-label">Balance</span></div>
+        <div class="uc-stat"><span class="uc-stat-val">${u.shares}</span><span class="uc-stat-label">Shares</span></div>
+        <div class="uc-stat"><span class="uc-stat-val">${u.deposits}</span><span class="uc-stat-label">Deposits</span></div>
+        <div class="uc-stat"><span class="uc-stat-val">${u.referrals}</span><span class="uc-stat-label">Refs</span></div>
+      </div>
+      <div class="uc-actions" onclick="event.stopPropagation()">
+        <button class="uc-btn" onclick="openDetail('${u.id}')"><i class="ri-eye-line"></i> View</button>
+        <button class="uc-btn" onclick="openEditModal('${u.id}')"><i class="ri-edit-line"></i> Edit</button>
+        <button class="uc-btn" onclick="openCreditModal('${u.id}')"><i class="ri-wallet-3-line"></i> Wallet</button>
+        <button class="uc-btn danger" onclick="confirmBan('${u.id}')"><i class="ri-forbid-line"></i> Ban</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderPagination(){
+  const total = filtered.length;
+  const pages = Math.ceil(total/PER_PAGE);
+  const start = (page-1)*PER_PAGE+1;
+  const end = Math.min(page*PER_PAGE, total);
+  document.getElementById('pageInfo').textContent = total===0 ? 'No results' : `Showing ${start}–${end} of ${total}`;
+
+  const btns = document.getElementById('pageBtns');
+  let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}><i class="ri-arrow-left-s-line"></i></button>`;
+  for(let i=1;i<=pages;i++){
+    if(i===1||i===pages||Math.abs(i-page)<=1){
+      html+=`<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
+    } else if(Math.abs(i-page)===2){
+      html+=`<button class="page-btn" disabled>…</button>`;
+    }
+  }
+  html+=`<button class="page-btn" onclick="goPage(${page+1})" ${page===pages?'disabled':''}><i class="ri-arrow-right-s-line"></i></button>`;
+  btns.innerHTML = html;
+}
+
+function goPage(p){
+  const pages = Math.ceil(filtered.length/PER_PAGE);
+  if(p<1||p>pages) return;
+  page=p; renderTable();
+}
+
+/* ══════════════════════════════════════
+   SELECTION
+══════════════════════════════════════ */
+function toggleSelect(id, checked){
+  if(checked) selected.add(id); else selected.delete(id);
+  updateBulkBar();
+  renderTable();
+}
+
+function toggleSelectAll(el){
+  const start=(page-1)*PER_PAGE;
+  const slice=filtered.slice(start,start+PER_PAGE);
+  slice.forEach(u=>{ el.checked?selected.add(u.id):selected.delete(u.id); });
+  updateBulkBar(); renderTable();
+}
+
+function updateBulkBar(){
+  const bar=document.getElementById('bulkBar');
+  bar.classList.toggle('vis',selected.size>0);
+  document.getElementById('bulkCount').textContent=`${selected.size} selected`;
+}
+
+function clearSelection(){ selected.clear(); updateBulkBar(); renderTable(); }
+
+/* ══════════════════════════════════════
+   DETAIL PANE
+══════════════════════════════════════ */
+function openDetail(id){
+  const u = USERS.find(x=>x.id===id);
+  if(!u) return;
+  activeUserId = id;
+
+  const dp = document.getElementById('detailPane');
+  dp.classList.remove('hidden');
+  dp.classList.add('mobile-open');
+
+  document.getElementById('dpBody').innerHTML = `
+    <div class="dp-avatar-wrap">
+      <div class="dp-big-avatar" style="background:${u.color}">${u.initials}</div>
+      <div class="dp-name">${u.name}</div>
+      <div class="dp-email">${u.email}</div>
+      <div class="dp-badges">
+        <span class="badge ${u.status}">${u.status}</span>
+        <span class="badge ${u.active?'active':'inactive'}">${u.active?'Active':'Inactive'}</span>
+      </div>
+    </div>
+
+    <div class="dp-stat-grid">
+      <div class="dp-stat"><div class="dp-stat-val" style="color:var(--gl)">₦${u.balance.toLocaleString()}</div><div class="dp-stat-label">Balance</div></div>
+      <div class="dp-stat"><div class="dp-stat-val">${u.shares}</div><div class="dp-stat-label">Shares</div></div>
+      <div class="dp-stat"><div class="dp-stat-val">${u.deposits}</div><div class="dp-stat-label">Deposits</div></div>
+      <div class="dp-stat"><div class="dp-stat-val">${u.withdrawals}</div><div class="dp-stat-label">Cashouts</div></div>
+    </div>
+
+    <div class="dp-section">Account Info</div>
+    <div class="dp-info-row"><span class="dp-info-key">User ID</span><span class="dp-info-val" style="font-family:monospace">${u.id}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Phone</span><span class="dp-info-val">${u.phone}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Referrals</span><span class="dp-info-val">${u.referrals}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Referred By</span><span class="dp-info-val">${u.referredBy||'—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Joined</span><span class="dp-info-val">${u.joined}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Last Seen</span><span class="dp-info-val">${u.lastSeen}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Device</span><span class="dp-info-val">${u.device}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">IP Address</span><span class="dp-info-val" style="font-family:monospace">${u.ip}</span></div>
+
+    <div class="dp-section">Actions</div>
+    <button class="dp-action" onclick="openEditModal('${u.id}')"><i class="ri-edit-line"></i> Edit User Details</button>
+    <button class="dp-action" onclick="openCreditModal('${u.id}')"><i class="ri-wallet-3-line"></i> Credit / Debit Balance</button>
+    <button class="dp-action" onclick="sendMessageModal('${u.id}')"><i class="ri-message-3-line"></i> Send Message</button>
+    <button class="dp-action" onclick="toggleVerify('${u.id}')"><i class="ri-shield-check-line"></i> ${u.status==='verified'?'Revoke Verification':'Verify Account'}</button>
+    <button class="dp-action" onclick="resetPassword('${u.id}')"><i class="ri-lock-password-line"></i> Reset Password</button>
+    <button class="dp-action danger" onclick="confirmBan('${u.id}')"><i class="ri-forbid-line"></i> ${u.status==='banned'?'Unban User':'Ban User'}</button>
+    <button class="dp-action danger" onclick="confirmDelete('${u.id}')"><i class="ri-delete-bin-line"></i> Delete Account</button>
+  `;
+
+  renderTable(); // update active-row highlight
+}
+
+function closeDetail(){
+  activeUserId=null;
+  const dp=document.getElementById('detailPane');
+  dp.classList.add('hidden');
+  dp.classList.remove('mobile-open');
+  renderTable();
+}
+//main modal
+
+function submitAddUser(){
+  const fn=document.getElementById('m-fname')?.value.trim();
+  const ln=document.getElementById('m-lname')?.value.trim();
+  const email=document.getElementById('m-email')?.value.trim();
+  if(!fn||!ln||!email){ toast('Please fill required fields','error'); return; }
+  const name=`${fn} ${ln}`;
+  const initials=`${fn[0]}${ln[0]}`.toUpperCase();
+  const newUser={
+    id:`FLX${String(1001+USERS.length).padStart(5,'0')}`,
+    name,initials,email,
+    phone:document.getElementById('m-phone')?.value||'',
+    balance:parseInt(document.getElementById('m-balance')?.value)||0,
+    shares:0,deposits:0,withdrawals:0,referrals:0,
+    status:document.getElementById('m-status')?.value||'unverified',
+    active:true,
+    color:COLORS[USERS.length%COLORS.length],
+    joined:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),
+    lastSeen:'Just now',referredBy:null,
+    device:'Unknown',ip:'0.0.0.0',
+  };
+  USERS.unshift(newUser);
+  closeModal(); updateStats(); applyFilters();
+  toast(`${name} added successfully`,'success');
+}
+
+/* EDIT USER */
+function openEditModal(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  openModal(`
+    <div class="modal-title">Edit User</div>
+    <div class="modal-sub">Update details for <strong>${u.name}</strong></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="e-name" value="${u.name}"></div>
+      <div class="form-group"><label class="form-label">Phone</label><input class="form-input" id="e-phone" value="${u.phone}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="e-email" value="${u.email}" type="email"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Status</label>
+        <select class="form-input" id="e-status">
+          <option value="verified" ${u.status==='verified'?'selected':''}>Verified</option>
+          <option value="unverified" ${u.status==='unverified'?'selected':''}>Unverified</option>
+          <option value="banned" ${u.status==='banned'?'selected':''}>Banned</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Account State</label>
+        <select class="form-input" id="e-active">
+          <option value="1" ${u.active?'selected':''}>Active</option>
+          <option value="0" ${!u.active?'selected':''}>Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-primary" onclick="submitEdit('${u.id}')">Save Changes</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function submitEdit(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  u.name=document.getElementById('e-name').value.trim()||u.name;
+  u.email=document.getElementById('e-email').value.trim()||u.email;
+  u.phone=document.getElementById('e-phone').value.trim()||u.phone;
+  u.status=document.getElementById('e-status').value;
+  u.active=document.getElementById('e-active').value==='1';
+  closeModal(); updateStats(); applyFilters();
+  if(activeUserId===id) openDetail(id);
+  toast('User updated','success');
+}
+
+/* CREDIT/DEBIT */
+function openCreditModal(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  openModal(`
+    <div class="modal-title">Adjust Balance</div>
+    <div class="modal-sub">Current balance: <strong style="color:var(--gl)">₦${u.balance.toLocaleString()}</strong></div>
+    <div class="form-group"><label class="form-label">Action</label>
+      <select class="form-input" id="c-type">
+        <option value="credit">Credit (Add)</option>
+        <option value="debit">Debit (Subtract)</option>
+        <option value="set">Set Balance</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Amount (₦)</label><input class="form-input" id="c-amount" type="number" min="0" placeholder="0"></div>
+    <div class="form-group"><label class="form-label">Reason / Note</label><input class="form-input" id="c-note" placeholder="e.g. Referral bonus, manual adjustment..."></div>
+    <div class="modal-btns">
+      <button class="modal-btn-primary" onclick="submitBalance('${id}')">Apply</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function submitBalance(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  const type=document.getElementById('c-type').value;
+  const amt=parseInt(document.getElementById('c-amount').value)||0;
+  if(amt<=0&&type!=='set'){ toast('Enter a valid amount','error'); return; }
+  if(type==='credit') u.balance+=amt;
+  else if(type==='debit') u.balance=Math.max(0,u.balance-amt);
+  else u.balance=amt;
+  closeModal(); updateStats(); applyFilters();
+  if(activeUserId===id) openDetail(id);
+  toast(`Balance ${type==='credit'?'credited':type==='debit'?'debited':'set'} — ₦${u.balance.toLocaleString()}`,'success');
+}
+
+/* SEND MESSAGE */
+function sendMessageModal(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  openModal(`
+    <div class="modal-title">Send Message</div>
+    <div class="modal-sub">Send a notification to <strong>${u.name}</strong></div>
+    <div class="form-group"><label class="form-label">Message Type</label>
+      <select class="form-input" id="msg-type">
+        <option value="info">Info</option>
+        <option value="success">Success</option>
+        <option value="warning">Warning</option>
+        <option value="alert">Alert</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="msg-title" placeholder="e.g. Important Notice"></div>
+    <div class="form-group"><label class="form-label">Message</label>
+      <textarea class="form-input" id="msg-body" rows="4" placeholder="Enter your message..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-primary" onclick="submitMessage('${id}')">Send Notification</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function submitMessage(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  const body=document.getElementById('msg-body')?.value.trim();
+  if(!body){ toast('Message cannot be empty','error'); return; }
+  closeModal();
+  toast(`Message sent to ${u.name}`,'success');
+}
+
+/* BAN */
+function confirmBan(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  const isBanned=u.status==='banned';
+  openModal(`
+    <div class="modal-title">${isBanned?'Unban':'Ban'} User</div>
+    <div class="modal-sub">${isBanned?`Remove ban from <strong>${u.name}</strong>? They will regain full access.`:`You are about to ban <strong>${u.name}</strong>. They will lose all access immediately.`}</div>
+    ${!isBanned?`<div class="form-group"><label class="form-label">Reason for Ban</label><input class="form-input" id="ban-reason" placeholder="e.g. Fraudulent activity..."></div>`:''}
+    <div class="modal-btns">
+      <button class="${isBanned?'modal-btn-primary':'modal-btn-danger'}" onclick="submitBan('${id}')">${isBanned?'Unban User':'Confirm Ban'}</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function submitBan(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  u.status=u.status==='banned'?'unverified':'banned';
+  closeModal(); updateStats(); applyFilters();
+  if(activeUserId===id) openDetail(id);
+  toast(`${u.name} ${u.status==='banned'?'banned':'unbanned'}`,'info');
+}
+
+/* DELETE */
+function confirmDelete(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  openModal(`
+    <div class="modal-title">Delete Account</div>
+    <div class="modal-sub">This will permanently delete <strong>${u.name}</strong>'s account and all associated data. This action <strong>cannot be undone</strong>.</div>
+    <div class="form-group"><label class="form-label">Type "DELETE" to confirm</label><input class="form-input" id="del-confirm" placeholder="DELETE"></div>
+    <div class="modal-btns">
+      <button class="modal-btn-danger" onclick="submitDelete('${id}')">Delete Permanently</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+
+function submitDelete(id){
+  const val=document.getElementById('del-confirm')?.value;
+  if(val!=='DELETE'){ toast('Type DELETE to confirm','error'); return; }
+  const u=USERS.find(x=>x.id===id);
+  USERS=USERS.filter(x=>x.id!==id);
+  if(activeUserId===id) closeDetail();
+  selected.delete(id);
+  closeModal(); updateStats(); applyFilters();
+  toast(`${u?.name} deleted`,'info');
+}
+
+/* VERIFY */
+function toggleVerify(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  u.status=u.status==='verified'?'unverified':'verified';
+  updateStats(); applyFilters();
+  if(activeUserId===id) openDetail(id);
+  toast(`${u.name} ${u.status==='verified'?'verified':'unverified'}`,'success');
+}
+
+/* RESET PASSWORD */
+function resetPassword(id){
+  const u=USERS.find(x=>x.id===id);
+  if(!u) return;
+  openModal(`
+    <div class="modal-title">Reset Password</div>
+    <div class="modal-sub">Set a new password for <strong>${u.name}</strong> or send a reset link to their email.</div>
+    <div class="form-group"><label class="form-label">New Password</label><input class="form-input" id="rp-pass" type="password" placeholder="Min 8 characters"></div>
+    <div class="form-group"><label class="form-label">Confirm Password</label><input class="form-input" id="rp-pass2" type="password" placeholder="Repeat password"></div>
+    <div class="modal-btns">
+      <button class="modal-btn-primary" onclick="submitResetPass('${id}')">Set New Password</button>
+      <button class="modal-btn-secondary" onclick="closeModal(); toast('Reset link sent to ${u.email}','info');">Send Reset Link</button>
+    </div>
+  `);
+}
+
+function submitResetPass(id){
+  const p1=document.getElementById('rp-pass')?.value;
+  const p2=document.getElementById('rp-pass2')?.value;
+  if(!p1||p1.length<8){ toast('Password must be at least 8 characters','error'); return; }
+  if(p1!==p2){ toast('Passwords do not match','error'); return; }
+  closeModal();
+  toast('Password reset successfully','success');
+}
+
+/* ══════════════════════════════════════
+   BULK ACTIONS
+══════════════════════════════════════ */
+function bulkVerify(){
+  selected.forEach(id=>{ const u=USERS.find(x=>x.id===id); if(u) u.status='verified'; });
+  clearSelection(); updateStats(); applyFilters();
+  toast(`Users verified`,'success');
+}
+
+function bulkBan(){
+  openModal(`
+    <div class="modal-title">Ban ${selected.size} Users?</div>
+    <div class="modal-sub">All selected users will be banned and lose access immediately.</div>
+    <div class="modal-btns">
+      <button class="modal-btn-danger" onclick="submitBulkBan()">Ban All Selected</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function submitBulkBan(){
+  selected.forEach(id=>{ const u=USERS.find(x=>x.id===id); if(u) u.status='banned'; });
+  clearSelection(); closeModal(); updateStats(); applyFilters();
+  toast('Selected users banned','info');
+}
+
+function bulkDelete(){
+  openModal(`
+    <div class="modal-title">Delete ${selected.size} Users?</div>
+    <div class="modal-sub">This will permanently delete all selected accounts. Cannot be undone.</div>
+    <div class="form-group"><label class="form-label">Type "DELETE" to confirm</label><input class="form-input" id="bd-confirm" placeholder="DELETE"></div>
+    <div class="modal-btns">
+      <button class="modal-btn-danger" onclick="submitBulkDelete()">Delete All</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function submitBulkDelete(){
+  if(document.getElementById('bd-confirm')?.value!=='DELETE'){ toast('Type DELETE to confirm','error'); return; }
+  const count=selected.size;
+  USERS=USERS.filter(u=>!selected.has(u.id));
+  clearSelection(); closeModal(); updateStats(); applyFilters();
+  toast(`${count} users deleted`,'info');
+}
+
+function bulkMessage(){
+  openModal(`
+    <div class="modal-title">Message ${selected.size} Users</div>
+    <div class="modal-sub">Send a notification to all selected users.</div>
+    <div class="form-group"><label class="form-label">Message</label>
+      <textarea class="form-input" id="bm-body" rows="4" placeholder="Your message..."></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-primary" onclick="submitBulkMsg()">Send to All</button>
+      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  `);
+}
+function submitBulkMsg(){
+  if(!document.getElementById('bm-body')?.value.trim()){ toast('Message cannot be empty','error'); return; }
+  clearSelection(); closeModal();
+  toast('Message sent to all selected users','success');
+}
+
+/* ══════════════════════════════════════
+   CONTEXT MENU
+══════════════════════════════════════ */
+function showCtx(e, id){
+  e.preventDefault();
+  ctxUserId=id;
+  const menu=document.getElementById('ctxMenu');
+  menu.classList.add('vis');
+  menu.style.left=Math.min(e.clientX,window.innerWidth-200)+'px';
+  menu.style.top=Math.min(e.clientY,window.innerHeight-320)+'px';
+}
+function hideCtx(){ document.getElementById('ctxMenu').classList.remove('vis'); }
+function ctxAct(action){
+  hideCtx();
+  if(!ctxUserId) return;
+  switch(action){
+    case 'view':    openDetail(ctxUserId); break;
+    case 'edit':    openEditModal(ctxUserId); break;
+    case 'credit':  openCreditModal(ctxUserId); break;
+    case 'debit':   openCreditModal(ctxUserId); break;
+    case 'verify':  toggleVerify(ctxUserId); break;
+    case 'message': sendMessageModal(ctxUserId); break;
+    case 'reset':   resetPassword(ctxUserId); break;
+    case 'ban':     confirmBan(ctxUserId); break;
+    case 'delete':  confirmDelete(ctxUserId); break;
+  }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
