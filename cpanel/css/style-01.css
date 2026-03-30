@@ -50,8 +50,8 @@ body {
 }
 
 .sidebar {
-    position: fixed;
     top: 0;
+    position: fixed;
     left: 0;
     background: var(--card);
     width: 200px;
@@ -138,7 +138,7 @@ body {
 .sidebar .side-menu li a {
     width: 100%;
     height: 100%;
-    background:var(--card);
+    background: var(--card);
     display: flex;
     align-items: center;
     border-radius: 48px;
@@ -149,6 +149,7 @@ body {
     transition: all 0.3s ease;
 }
 
+.bottombar .side-menu li.active a,
 .sidebar .side-menu li.active a {
     color: var(--success);
 }
@@ -604,9 +605,12 @@ body {
     font-size: 24px;
     margin-bottom: 8px;
     color: var(--text);
-}.login-container i {
+}
+
+.login-container i {
     font-size: 50px;
-    color: #fff;margin-top: 80px;
+    color: #fff;
+    margin-top: 80px;
 }
 
 .login-container p {
@@ -633,7 +637,7 @@ body {
     padding: 12px 15px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
-    color:    #1b254b;
+    color: #1b254b;
     font-size: 14px;
     outline: none;
     box-sizing: border-box;
@@ -646,26 +650,57 @@ body {
 }
 
 
-
-
-
-
 @media screen and (max-width: 768px) {
     .sidebar {
-        width: 170px;
+        width: 100%;
+        background: var(--card);
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        top: unset;
+        z-index: 600000;
+        padding: 0;
+        height: 60px;
+        border-top: 2px solid var(--bg);
     }
+    
+    .sidebar .logo {
+        display: none;
+    }
+    
+    .sidebar .side-menu {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 4px 16px;
+        margin: 0;
+    }
+    
+    .sidebar .side-menu li a span {
+        display: none;
+    }
+    
     .sidebar.close {
         width: 50px;
+        height: 48px;
+        border-radius: 50%;
+        overflow: hidden;
+        justify-content: flex-start;
+        margin: 0 0 20px 20px;
+        border: 2px solid #aaa;padding: 0;
     }
     
-    .sidebar.close~.content {
-        width: calc(100% - 50px);
-        left: 50px;
+    .sidebar.close .logo:not(.logo-name) {
+        display: flex;
+        margin: 0;
+        justify-content: flex-start;left: 0;
     }
     
+    .sidebar.close~.content,
     .content {
-        width: calc(100% - 50px);
-        left: 170px;
+        width: 100%;
+        left: 0;
     }
     
     .content main {
@@ -676,11 +711,15 @@ body {
 @media screen and (max-width: 576px) {
     .sidebar.close {
         width: 50px;
+        overflow: hidden;
+        border-radius: 50%;
+        margin: 0 0 20px 20px;
     }
     
-    .sidebar.close~.content {
-        width: calc(100% - 50px);
-        left: 50px;
+    .sidebar.close~.content,
+    .content {
+        width: 100%;
+        left: 0;
     }
     
     .content nav form .form-input input {
@@ -728,130 +767,132 @@ body {
         min-width: 340px;
     }
 }
-#analytics .status {padding:5px;
+
+#analytics .status {
+    padding: 5px;
 }
 
 #analytics .status .header {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
 }
 
 #analytics .status .header h4 {
-  color: #f1f3f2;
-  font-weight: 500;
+    color: #f1f3f2;
+    font-weight: 500;
 }
 
 #analytics .status .header h4#big {
-  flex: 3;
+    flex: 3;
 }
 
 #analytics .status .header h4#small {
-  flex: 1;
-  padding-left: 90px;
+    flex: 1;
+    padding-left: 90px;
 }
 
 #analytics .status .items-list {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
 
 #analytics .status .items-list .item {
-  background: #e0f2fe;
-  width: 25%;
-  padding: 20px;
-  border-radius: 18px;
+    background: #e0f2fe;
+    width: 25%;
+    padding: 20px;
+    border-radius: 18px;
 }
 
 #analytics .status .items-list .item:nth-child(2) {
-  background: #fffbeb;
+    background: #fffbeb;
 }
 
 #analytics .status .items-list .item:nth-child(3) {
-  background: #bfdbfe;
+    background: #bfdbfe;
 }
 
 #analytics .status .items-list .item:nth-child(4) {
-  background: #031224;
-  padding: 10px;
+    background: #031224;
+    padding: 10px;
 }
 
 #analytics .status .items-list .item .info {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 40px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 40px;
 }
 
 #analytics .status .items-list .item .info h5 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
 }
 
 #analytics .status .items-list .item .info p {
-  font-size: 12px;
-  font-weight: 500;
+    font-size: 12px;
+    font-weight: 500;
 }
 
 #analytics .status .items-list .item .info>i {
-  font-size: 20px;
-  padding: 10px;
-  background: #031224;
-  color: #f1f3f2;
-  border-radius: 50%;
+    font-size: 20px;
+    padding: 10px;
+    background: #031224;
+    color: #f1f3f2;
+    border-radius: 50%;
 }
 
 #analytics .status .items-list .item .progress {
-  position: relative;
-  height: 10px;
-  background: #b7c0cd;
-  border-radius: 10px;
+    position: relative;
+    height: 10px;
+    background: #b7c0cd;
+    border-radius: 10px;
 }
 
 #analytics .status .items-list .item .progress .bar {
-  width: 92%;
-  height: 10px;
-  background: #031224;
-  border-radius: 10px;
+    width: 92%;
+    height: 10px;
+    background: #031224;
+    border-radius: 10px;
 }
 
 #analytics .status .items-list .item .progress::before {
-  content: "92%";
-  position: absolute;
-  top: -40px;
-  right: 0;
-  font-size: 22px;
-  font-weight: 600;
+    content: "92%";
+    position: absolute;
+    top: -40px;
+    right: 0;
+    font-size: 22px;
+    font-weight: 600;
 }
 
 #analytics .status .items-list .item:nth-child(2) .progress {
-  background: #d6d3d1;
+    background: #d6d3d1;
 }
 
 #analytics .status .items-list .item:nth-child(2) .progress .bar {
-  width: 65%;
+    width: 65%;
 }
 
 #analytics .status .items-list .item:nth-child(2) .progress::before {
-  content: "65%";
+    content: "65%";
 }
 
 
 #analytics .status .items-list .item:nth-child(3) .progress {
-  background: #94a3b8;
+    background: #94a3b8;
 }
 
 #analytics .status .items-list .item:nth-child(3) .progress .bar {
-  width: 80%;
+    width: 80%;
 }
 
 #analytics .status .items-list .item:nth-child(3) .progress::before {
-  content: "80%";
+    content: "80%";
 }
-    #analytics .status .items-list .item .info h5 {
-      font-size: 15px;
-    }
-    
+
+#analytics .status .items-list .item .info h5 {
+    font-size: 15px;
+}
