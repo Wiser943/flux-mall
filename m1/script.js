@@ -613,7 +613,7 @@ function generateReferralLink() {
             <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
               <button class="btn btn-primary" onclick="showAlert('Referral link copied to clipboard!','success')"><i class="ri-share-line"></i> Share</button>
               <button class="btn btn-outline" onclick="showAlert('Opening WhatsApp to share your referral link...','info')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
-              </div>
+              </div></div>
             </div>`;
             
   
