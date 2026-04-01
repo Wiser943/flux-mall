@@ -6,9 +6,11 @@
     margin: 0;
     padding: 0;
   }
-  a{
+  
+  a {
     text-decoration: none;
   }
+  
   :root {
     --bg: #0a0c10;
     --bg2: #10131a;
@@ -411,8 +413,8 @@
   }
   
   .hidden {
-  display: none !important;
-}
+    display: none !important;
+  }
   
   @keyframes fadeIn {
     from {
@@ -1418,14 +1420,16 @@
     background: var(--card);
     border-top: 1px solid var(--border);
     z-index: 200;
-    padding: 0 4px env(safe-area-inset-bottom, 8px);width: 100%;
+    padding: 0 4px env(safe-area-inset-bottom, 8px);
+    width: 100%;
   }
   
   .mobile-nav-inner {
     display: flex;
     align-items: stretch;
     justify-content: center;
-width: 80%;    margin: 0 auto;
+    width: 80%;
+    margin: 0 auto;
   }
   
   .mnav-item {
@@ -1447,7 +1451,7 @@ width: 80%;    margin: 0 auto;
   }
   
   .mnav-item .mnav-icon {
-    font-size: 22px;
+    font-size: 32px;
     line-height: 1;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: flex;
@@ -1546,7 +1550,7 @@ width: 80%;    margin: 0 auto;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: all var(--transition);
-    text-align: center;
+    text-align: center;color:var(--text);
     border: 1px solid var(--border);
   }
   
@@ -1632,7 +1636,7 @@ width: 80%;    margin: 0 auto;
   }
   
   @media (max-width: 600px) {
-
+    
     .grid-4,
     .grid-3,
     .grid-2 {
