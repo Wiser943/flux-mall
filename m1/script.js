@@ -42,28 +42,6 @@ window.logoutUser = async function () {
   window.location.href = '/m2/index.html#login-page';
 };
 
-// ─── APPLY THEME ──────────────────────────────────────────
-function applyTheme(theme) {
-  if (!theme) return;
-  const root = document.documentElement;
-  root.style.setProperty('--primary', theme.primary || '#4318ff');
-  root.style.setProperty('--teal', theme.secondary || '#05cd99');
-  if (theme.mode === 'dark') {
-    root.style.setProperty('--card-bg', '#111c44');
-    root.style.setProperty('--text-main', '#ffffff');
-    root.style.setProperty('--text-muted', '#a3adc2');
-    root.style.setProperty('--input-bg', '#1b254b');
-    root.style.setProperty('--border', 'rgba(255,255,255,0.1)');
-  } else {
-    root.style.setProperty('--bg-color', '#f4f7fe');
-    root.style.setProperty('--card-bg', '#ffffff');
-    root.style.setProperty('--text-main', '#2b3674');
-    root.style.setProperty('--text-muted', '#a3adc2');
-    root.style.setProperty('--input-bg', '#f4f7fe');
-    root.style.setProperty('--border', '#e0e5f2');
-  }
-}
-
 // ─── RENDER LOCK SCREEN ───────────────────────────────────
 function renderLockScreen(title, msg) {
   document.body.innerHTML = `
@@ -84,8 +62,6 @@ async function init() {
     const { config, payment, maintenance, wheel } = configRes;
 
     if (maintenance?.enabled) { renderLockScreen('System Maintenance', 'Our site is currently undergoing scheduled upgrades.'); return; }
-
-    if (config.theme) applyTheme(config.theme);
 
     if (config.siteName) {
       document.querySelectorAll('.site-name').forEach(el => el.innerText = config.siteName);
@@ -619,11 +595,32 @@ function generateReferralLink() {
   if (!currentUserData) return;
   const refId = currentUserData.uid || currentUserData._id;
   const link = `${window.location.origin}/account/account.html?ref=${refId}#signup-page`;
+  document.getElementById("refLink").innerHTML=`          <!-- Your Code -->
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referral Code</div>
+            <div class="ref-code-box">
+              <div class="ref-code">${refId}</div>
+              <button class="copy-btn" onclick="copyCode(${refId})"><i class="ri-file-copy-line"></i> Copy</button>
+            </div>
+            <div style="margin-top:16px;">
+              <label>Referral Link</label>
+              <div class="ref-code-box">
+                <div style="font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${link}
+                <button class="copy-btn" onclick="copyCode(
+                  ${link})"><i class="ri-file-copy-line"></i> Copy</button>
+              </div>
+            </div>
+            <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
+              <button class="btn btn-primary" onclick="showAlert('Referral link copied to clipboard!','success')"><i class="ri-share-line"></i> Share</button>
+              <button class="btn btn-outline" onclick="showAlert('Opening WhatsApp to share your referral link...','info')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
+            </div>`;
+            
+  
   document.querySelectorAll('.refLink').forEach(el => el.innerText = link);
-  window.copyRefLink = () => {
+/*  window.copyRefLink = () => {
     navigator.clipboard.writeText(link)
       .then(() => showToast('Referral link copied!', 'success', 'ri-clipboard-line', 'Copied!'));
-  };
+  };*/
 }
 
 // ─── SPIN WHEEL ───────────────────────────────────────────
