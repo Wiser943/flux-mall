@@ -173,7 +173,7 @@
   
   .sidebar-nav {
     padding: 16px 12px;
-    flex: 1;
+    flex: 1;overflow-y: scroll;
   }
   
   .nav-section {
@@ -1623,7 +1623,7 @@
     }
     
     .menu-btn {
-      display: flex;
+     /* display: flex;*/
     }
     
     .topbar {
