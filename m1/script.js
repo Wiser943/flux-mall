@@ -594,20 +594,20 @@ async function loadTeamData() {
 function generateReferralLink() {
   if (!currentUserData) return;
   const refId = currentUserData.uid || currentUserData._id;
-  const link = `${window.location.origin}/account/account.html?ref=${refId}#signup-page`;
+  const link = `${window.location.origin}/m2/index.html?ref=${refId}#signup-page`;
   document.getElementById("refLink").innerHTML=`      
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referral Code</div>
             <div class="ref-code-box">
               <div class="ref-code">${refId}</div>
-              <button class="copy-btn" onclick="copyCode(${refId})"><i class="ri-file-copy-line"></i> Copy</button>
+              <button class="copy-btn" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy</button>
             </div>
             <div style="margin-top:16px;">
               <label>Referral Link</label>
               <div class="ref-code-box">
                 <div style="font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${link}
                 <button class="copy-btn" onclick="copyCode(
-                  ${link})"><i class="ri-file-copy-line"></i> Copy</button>
+              '${link}')"><i class="ri-file-copy-line"></i> Copy</button>
               </div>
             </div>
             <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
