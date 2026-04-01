@@ -150,18 +150,18 @@ async function init() {
 
 // ─── RENDER USER UI ───────────────────────────────────────
 function renderUserUI() {
-  const u = currentUserData;
+  const u = currentUserData;/*
   document.querySelectorAll('.userId').forEach(el => {
     el.innerHTML = u.uid || u._id.substring(0, 8);
     el.onclick = () => navigator.clipboard.writeText(u.uid || u._id)
       .then(() => showToast('ID Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
   });
-  document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);
-  document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
+  document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);*/
+  document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));/*
   document.querySelectorAll('.balance').forEach(el => {
     el.innerHTML = u.ib ? Number(u.ib).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
   });
-  document.getElementById('spinsLeft').innerText = u.freeSpins || 0;
+  document.getElementById('spinsLeft').innerText = u.freeSpins || 0;*/
 }
 
 // ─── DEPOSITS ────────────────────────────────────────────
