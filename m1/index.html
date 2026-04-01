@@ -108,11 +108,11 @@
       </div>
       <div class="topbar-right">
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme"><i class="ri-moon-line"></i></button>
-        <button class="notif-btn" onclick="navigate('notifications', null)"><i class="ri-notification-3-line"></i></button>
-        <div class="topbar-user" onclick="navigate('profile', null)">
+        <a class="notif-btn" href="#notifications"><i class="ri-notification-3-line"></i></a>
+        <a class="topbar-user" href="#profile">
           <div class="t-avatar">AJ</div>
           <span class="t-name">Adebayo J.</span>
-        </div>
+        </a>
       </div>
     </header>
     
@@ -1347,6 +1347,7 @@
   <!-- ===== MOBILE BOTTOM NAV ===== -->
   <nav class="mobile-nav" id="mobileNav">
     <div class="mobile-nav-inner">
+      <!---
       <a class="mnav-item nav-item active" href="#home">
         <span class="mnav-icon">⊞</span>
         <span class="mnav-label">Home</span>
@@ -1362,11 +1363,12 @@
       <a class="mnav-item nav-item" href="#referral">
         <span class="mnav-icon">◉</span>
         <span class="mnav-label">Referral</span>
-       <!--- <span class="nav-badge"></span>--->
-      </a>
+       <!--- <span class="nav-badge"></span>---
+      </a>--->
       <button class="mnav-item nav-item" id="nav-more" onclick="openNavSheet()">
-        <span class="mnav-icon">⋯</span>
-        <span class="mnav-label">More</span>
+        
+        <i class="mnav-icon ri-arrow-up-wide-line"></i>
+        <span class="mnav-label">Fluxmall</span>
       </button>
     </div>
   </nav>
@@ -1377,19 +1379,19 @@
       <div class="nav-sheet-handle"></div>
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;color:var(--text2);">All Pages</div>
       <div class="nav-sheet-grid">
-        <div class="nav-sheet-item" onclick="navigate('home',null);setMnav('home');closeNavSheet()"><span class="ns-icon">⊞</span><span class="ns-label">Overview</span></div>
-        <div class="nav-sheet-item" onclick="navigate('wallet',null);setMnav('wallet');closeNavSheet()"><span class="ns-icon">◈</span><span class="ns-label">Wallet</span></div>
-        <div class="nav-sheet-item" onclick="navigate('transactions',null);setMnav('transactions');closeNavSheet()"><span class="ns-icon">↕</span><span class="ns-label">Transactions</span></div>
-        <div class="nav-sheet-item" onclick="navigate('invest',null);setMnav('invest');closeNavSheet()"><span class="ns-icon">◎</span><span class="ns-label">Investments</span></div>
-        <div class="nav-sheet-item" onclick="navigate('deposit',null);setMnav('deposit');closeNavSheet()"><span class="ns-icon">↓</span><span class="ns-label">Deposit</span></div>
-        <div class="nav-sheet-item" onclick="navigate('withdraw',null);setMnav('withdraw');closeNavSheet()"><span class="ns-icon">↑</span><span class="ns-label">Withdraw</span></div>
-        <div class="nav-sheet-item" onclick="navigate('transfer',null);setMnav('transfer');closeNavSheet()"><span class="ns-icon">⇄</span><span class="ns-label">Transfer</span></div>
-        <div class="nav-sheet-item" onclick="navigate('referral',null);setMnav('referral');closeNavSheet()"><span class="ns-icon">◉</span><span class="ns-label">Referral</span></div>
-        <div class="nav-sheet-item" onclick="navigate('plans',null);setMnav('plans');closeNavSheet()"><span class="ns-icon">◆</span><span class="ns-label">Plans</span></div>
-        <div class="nav-sheet-item" onclick="navigate('notifications',null);setMnav('notifications');closeNavSheet()"><span class="ns-icon">◐</span><span class="ns-label">Alerts</span></div>
-        <div class="nav-sheet-item" onclick="navigate('settings',null);setMnav('settings');closeNavSheet()"><span class="ns-icon">⊙</span><span class="ns-label">Settings</span></div>
-        <div class="nav-sheet-item" onclick="navigate('profile',null);setMnav('profile');closeNavSheet()"><span class="ns-icon">○</span><span class="ns-label">Profile</span></div>
-        <div class="nav-sheet-item" onclick="navigate('support',null);setMnav('support');closeNavSheet()"><span class="ns-icon">◎</span><span class="ns-label">Support</span></div>
+        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#home"><span class="ns-icon">⊞</span><span class="ns-label">Overview</span></a>
+        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#wallet"><span class="ns-icon">◈</span><span class="ns-label">Wallet</span></a>
+        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#transactions"><span class="ns-icon">↕</span><span class="ns-label">Transactions</span></a>
+        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#invest"><span class="ns-icon">◎</span><span class="ns-label">Investments</span></a>
+        <a class="nav-sheet-item"href="#deposit" onclick="closeNavSheet()"><span class="ns-icon">↓</span><span class="ns-label">Deposit</span></a>
+        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon">↑</span><span class="ns-label">Withdraw</span></a>
+        <a class="nav-sheet-item" href="#transfer" onclick="closeNavSheet()"><span class="ns-icon">⇄</span><span class="ns-label">Transfer</span></a>
+        <a class="nav-sheet-item" href="#refferal" onclick="closeNavSheet()"><span class="ns-icon">◉</span><span class="ns-label">Referral</span></a>
+        <a class="nav-sheet-item" href="#plan" onclick="closeNavSheet()"><span class="ns-icon">◆</span><span class="ns-label">Plans</span></a>
+        <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon">◐</span><span class="ns-label">Alerts</span></a>
+        <a class="nav-sheet-item" href="#settings" onclick="closeNavSheet()"><span class="ns-icon">⊙</span><span class="ns-label">Settings</span></a>
+        <a class="nav-sheet-item" href ="#profile" onclick="closeNavSheet()"><span class="ns-icon">○</span><span class="ns-label">Profile</span></a>
+        <a class="nav-sheet-item" href="#support" onclick="closeNavSheet()"><span class="ns-icon">◎</span><span class="ns-label">Support</span></a>
         <div class="nav-sheet-item" onclick="showAlert('Logged out successfully!','👋','success');closeNavSheet()"><span class="ns-icon">⏻</span><span class="ns-label">Logout</span></div>
       </div>
     </div>
@@ -1624,6 +1626,28 @@
         .catch(err => console.log('[SW] Registration failed:', err));
     });
   }
+  function openNavSheet() {
+      const bd = document.getElementById('navSheetBackdrop');
+      const sheet = bd.querySelector('.nav-sheet');
+      sheet.style.transform = '';
+      sheet.style.transition = '';
+      bd.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeNavSheet() {
+      const bd = document.getElementById('navSheetBackdrop');
+      const sheet = bd.querySelector('.nav-sheet');
+      sheet.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(() => {
+        bd.classList.remove('open');
+        sheet.style.transform = '';
+        sheet.style.transition = '';
+        document.body.style.overflow = '';
+      }, 360);
+    }
+    
   
   const userName = document.querySelectorAll(".userName");
   const userId = document.querySelectorAll(".userId");
