@@ -103,7 +103,7 @@
     </nav>
     
     <div class="sidebar-footer">
-      <div class="nav-item" style="color:var(--red)" onclick="showConfirm('Are you sure you want to log out of your account?','Log Out', ()=>showAlert('You have been logged out.','warning'), 'warning')">
+      <div class="nav-item" style="color:var(--red)" onclick="logoutUser();showConfirm('Are you sure you want to log out of your account?','Log Out', ()=>showAlert('You have been logged out.','warning'), 'warning')">
         <span class="nav-icon"><i class="ri-logout-box-r-line"></i></span> Logout
       </div>
     </div>
@@ -494,8 +494,11 @@
           </div>
           <button class="btn btn-primary" onclick="navigate('plans',null)"><i class="ri-bar-chart-box-line"></i> Browse Plans</button>
         </div>
-        
+<div class="grid-3 mb-6" id="shares-container">
+  
+</div>
         <div class="grid-3 mb-6">
+          
           <div class="stat-card blue">
             <div class="stat-icon blue"><i class="ri-bar-chart-box-line"></i></div>
             <div class="stat-value">₦32,000</div>
@@ -1408,7 +1411,7 @@
         <a class="nav-sheet-item" href="#settings" onclick="closeNavSheet()"><span class="ns-icon">⊙</span><span class="ns-label">Settings</span></a>
         <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon">○</span><span class="ns-label">Profile</span></a>
         <a class="nav-sheet-item" href="#support" onclick="closeNavSheet()"><span class="ns-icon">◎</span><span class="ns-label">Support</span></a>
-        <div class="nav-sheet-item" onclick="showAlert('Logged out successfully!','👋','success');closeNavSheet()"><span class="ns-icon">⏻</span><span class="ns-label">Logout</span></div>
+        <div class="nav-sheet-item" onclick="logoutUser();closeNavSheet()"><span class="ns-icon">⏻</span><span class="ns-label">Logout</span></div>
       </div>
     </div>
   </div>
