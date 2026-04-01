@@ -604,12 +604,16 @@ function generateReferralLink() {
             </div>
             <div style="margin-top:16px;">
               <label>Referral Link</label>
-              <div class="ref-code-box">
-                <div style="font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${link}
-                <button class="copy-btn" onclick="copyCode(
-              '${link}')"><i class="ri-file-copy-line"></i> Copy</button>
-              </div>
-            </div>
+<div class="ref-code-box" style="display: flex; align-items: center; gap: 10px; background: var(--bg-alt); padding: 8px; border-radius: 6px;">
+  <span style="font-size: 13px; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0;">
+    ${link}
+  </span>
+
+  <button class="copy-btn" onclick="copyCode('${link}')" style="flex-shrink: 0; white-space: nowrap;">
+    <i class="ri-file-copy-line"></i> Copy
+  </button>
+</div>
+
             <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
               <button class="btn btn-primary" onclick="showAlert('Referral link copied to clipboard!','success')"><i class="ri-share-line"></i> Share</button>
               <button class="btn btn-outline" onclick="showAlert('Opening WhatsApp to share your referral link...','info')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
