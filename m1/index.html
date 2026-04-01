@@ -126,7 +126,7 @@
             <div class="section-title">Good morning, Adebayo <i class="ri-hand-heart-line" style="color:var(--yellow);font-size:20px;vertical-align:middle"></i></div>
             <div class="section-sub">Here's what's happening with your account today.</div>
           </div>
-          <button class="btn btn-primary" onclick="navigate('deposit', null)"><i class="ri-add-line"></i> Add Funds</button>
+          <a class="btn btn-primary" href="#deposit"><i class="ri-add-line"></i> Add Funds</a>
         </div>
         
         <!-- STAT CARDS -->
@@ -1386,8 +1386,8 @@
         <a class="nav-sheet-item"href="#deposit" onclick="closeNavSheet()"><span class="ns-icon">↓</span><span class="ns-label">Deposit</span></a>
         <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon">↑</span><span class="ns-label">Withdraw</span></a>
         <a class="nav-sheet-item" href="#transfer" onclick="closeNavSheet()"><span class="ns-icon">⇄</span><span class="ns-label">Transfer</span></a>
-        <a class="nav-sheet-item" href="#refferal" onclick="closeNavSheet()"><span class="ns-icon">◉</span><span class="ns-label">Referral</span></a>
-        <a class="nav-sheet-item" href="#plan" onclick="closeNavSheet()"><span class="ns-icon">◆</span><span class="ns-label">Plans</span></a>
+        <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon">◉</span><span class="ns-label">Referral</span></a>
+        <a class="nav-sheet-item" href="#plans" onclick="closeNavSheet()"><span class="ns-icon">◆</span><span class="ns-label">Plans</span></a>
         <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon">◐</span><span class="ns-label">Alerts</span></a>
         <a class="nav-sheet-item" href="#settings" onclick="closeNavSheet()"><span class="ns-icon">⊙</span><span class="ns-label">Settings</span></a>
         <a class="nav-sheet-item" href ="#profile" onclick="closeNavSheet()"><span class="ns-icon">○</span><span class="ns-label">Profile</span></a>
@@ -1397,8 +1397,18 @@
     </div>
   </div>
   
-<!---  <script>
-    // ===== NAVIGATION =====
+
+  <script src="script.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('[SW] Registered:', reg.scope))
+        .catch(err => console.log('[SW] Registration failed:', err));
+    });
+  }
+  
+      // ===== NAVIGATION =====
     const pageTitles = {
       home: 'Overview',
       wallet: 'My Wallet',
@@ -1456,118 +1466,6 @@
       if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
     }
     
-    // ===== TOAST (brief feedback) =====
-    let toastTimer;
-    
-    function showToast(msg, icon = '✅') {
-      const toast = document.getElementById('toast');
-      document.getElementById('toastMsg').textContent = msg;
-      document.getElementById('toastIcon').textContent = icon;
-      toast.classList.add('show');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-    
-    // ===== MODAL SYSTEM =====
-    const iconMap = {
-      success: { emoji: '✅', cls: 'success' },
-      warning: { emoji: '⚠️', cls: 'warning' },
-      danger: { emoji: '🗑️', cls: 'danger' },
-      error: { emoji: '❌', cls: 'danger' },
-      info: { emoji: 'ℹ️', cls: 'info' },
-    };
-    
-    function openModal({ title, msg, type = 'info', buttons }) {
-      const bd = document.getElementById('modalBackdrop');
-      const ic = iconMap[type] || iconMap.info;
-      document.getElementById('modalTitle').textContent = title;
-      document.getElementById('modalMsg').textContent = msg;
-      document.getElementById('modalIconEmoji').textContent = ic.emoji;
-      const wrap = document.getElementById('modalIconWrap');
-      wrap.className = 'modal-icon-wrap ' + ic.cls;
-      
-      const actionsEl = document.getElementById('modalActions');
-      actionsEl.innerHTML = '';
-      buttons.forEach(b => {
-        const btn = document.createElement('button');
-        btn.className = 'btn ' + (b.cls || 'btn-ghost');
-        btn.textContent = b.label;
-        btn.onclick = () => { closeModal(); if (b.action) b.action(); };
-        actionsEl.appendChild(btn);
-      });
-      
-      // Reset inline transform before opening
-      document.getElementById('modalBox').style.transform = '';
-      bd.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function closeModal() {
-      const bd = document.getElementById('modalBackdrop');
-      const box = document.getElementById('modalBox');
-      const isMobile = window.innerWidth <= 640;
-      if (isMobile) {
-        box.style.transition = 'transform 0.32s cubic-bezier(0.32,0.72,0,1)';
-        box.style.transform = 'translateY(110%)';
-        setTimeout(() => {
-          bd.classList.remove('open');
-          box.style.transform = '';
-          box.style.transition = '';
-          document.body.style.overflow = '';
-        }, 340);
-      } else {
-        bd.classList.remove('open');
-        document.body.style.overflow = '';
-      }
-    }
-    
-    function handleBackdropClick(e) {
-      if (e.target === document.getElementById('modalBackdrop')) closeModal();
-    }
-    
-    function showAlert(msg, icon, type = 'info') {
-      const emojiTypeMap = {
-        '✅': 'success',
-        '⚠️': 'warning',
-        '❌': 'error',
-        '🗑️': 'danger',
-        '💬': 'info',
-        '📋': 'success',
-        '🔐': 'info',
-        '📄': 'info',
-        '📷': 'info',
-        '🔜': 'info',
-        '🏦': 'info',
-        '🚀': 'success',
-        '💎': 'info',
-        '👋': 'warning',
-        '⚡': 'success',
-        '📧': 'info',
-        '📞': 'info',
-        '📤': 'success'
-      };
-      const t = (type && type !== 'info') ? type : (emojiTypeMap[icon] || 'info');
-      const titles = { success: 'Success', warning: 'Notice', danger: 'Warning', error: 'Error', info: 'Info' };
-      document.getElementById('modalIconEmoji').textContent = icon || iconMap[t].emoji;
-      openModal({
-        title: titles[t] || 'Notice',
-        msg,
-        type: t,
-        buttons: [{ label: 'Got it', cls: 'btn-primary' }]
-      });
-    }
-    
-    function showConfirm(msg, title, onConfirm, type = 'warning') {
-      openModal({
-        title: title || 'Are you sure?',
-        msg,
-        type,
-        buttons: [
-          { label: 'Cancel', cls: 'btn-ghost' },
-          { label: 'Confirm', cls: type === 'danger' ? 'btn-danger' : 'btn-primary', action: onConfirm }
-        ]
-      });
-    }
     
     // ===== COPY CODE =====
     function copyCode(text) {
@@ -1578,54 +1476,12 @@
     // ===== QUICK AMOUNTS =====
     function setAmount(id, val) {
       const el = document.getElementById(id);
-      if (el) { el.value = val;
-        el.focus(); }
+      if (el) {
+        el.value = val;
+        el.focus();
+      }
     }
-    
-
-    // ===== MOBILE BOTTOM NAV =====
-    function setMnav(page) {
-      const mnavPages = ['home', 'wallet', 'deposit', 'referral'];
-      document.querySelectorAll('.mnav-item').forEach(b => b.classList.remove('active'));
-      const el = document.getElementById('mnav-' + page);
-      if (el) el.classList.add('active');
-      else document.getElementById('mnav-more').classList.add('active');
-    }
-    
-    function openNavSheet() {
-      const bd = document.getElementById('navSheetBackdrop');
-      const sheet = bd.querySelector('.nav-sheet');
-      sheet.style.transform = '';
-      sheet.style.transition = '';
-      bd.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function closeNavSheet() {
-      const bd = document.getElementById('navSheetBackdrop');
-      const sheet = bd.querySelector('.nav-sheet');
-      sheet.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
-      sheet.style.transform = 'translateY(100%)';
-      setTimeout(() => {
-        bd.classList.remove('open');
-        sheet.style.transform = '';
-        sheet.style.transition = '';
-        document.body.style.overflow = '';
-      }, 360);
-    }
-    
-    // Redirect showToast calls on action buttons to showAlert
-    // (keeping showToast for truly minor feedback, showAlert for action results)
-  </script>--->
-  <script src="script.j"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('[SW] Registered:', reg.scope))
-        .catch(err => console.log('[SW] Registration failed:', err));
-    });
-  }
+  
   function openNavSheet() {
       const bd = document.getElementById('navSheetBackdrop');
       const sheet = bd.querySelector('.nav-sheet');
