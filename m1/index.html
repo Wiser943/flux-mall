@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="dark">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Flux Mall | Setting Standards</title>
-      <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#4318ff">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Flux Mall">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel='stylesheet'>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>
-      eruda.init();
-    </script>
+  <title>Flux Mall | Setting Standards</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4318ff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Flux Mall">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel='stylesheet'>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://korablobstorage.blob.core.windows.net/modal-bucket/korapay-collections.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>
+    eruda.init();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -1376,7 +1377,7 @@
        <!--- <span class="nav-badge"></span>---
       </a>--->
       <button class="mnav-item nav-item" id="nav-more" onclick="openNavSheet()">
-        
+      
         <i class="mnav-icon ri-arrow-up-wide-line"></i>
         <span class="mnav-label">Fluxmall</span>
       </button>
@@ -1393,32 +1394,32 @@
         <a class="nav-sheet-item" onclick="closeNavSheet()" href="#wallet"><span class="ns-icon">◈</span><span class="ns-label">Wallet</span></a>
         <a class="nav-sheet-item" onclick="closeNavSheet()" href="#transactions"><span class="ns-icon">↕</span><span class="ns-label">Transactions</span></a>
         <a class="nav-sheet-item" onclick="closeNavSheet()" href="#invest"><span class="ns-icon">◎</span><span class="ns-label">Investments</span></a>
-        <a class="nav-sheet-item"href="#deposit" onclick="closeNavSheet()"><span class="ns-icon">↓</span><span class="ns-label">Deposit</span></a>
+        <a class="nav-sheet-item" href="#deposit" onclick="closeNavSheet()"><span class="ns-icon">↓</span><span class="ns-label">Deposit</span></a>
         <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon">↑</span><span class="ns-label">Withdraw</span></a>
         <a class="nav-sheet-item" href="#transfer" onclick="closeNavSheet()"><span class="ns-icon">⇄</span><span class="ns-label">Transfer</span></a>
         <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon">◉</span><span class="ns-label">Referral</span></a>
         <a class="nav-sheet-item" href="#plans" onclick="closeNavSheet()"><span class="ns-icon">◆</span><span class="ns-label">Plans</span></a>
         <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon">◐</span><span class="ns-label">Alerts</span></a>
         <a class="nav-sheet-item" href="#settings" onclick="closeNavSheet()"><span class="ns-icon">⊙</span><span class="ns-label">Settings</span></a>
-        <a class="nav-sheet-item" href ="#profile" onclick="closeNavSheet()"><span class="ns-icon">○</span><span class="ns-label">Profile</span></a>
+        <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon">○</span><span class="ns-label">Profile</span></a>
         <a class="nav-sheet-item" href="#support" onclick="closeNavSheet()"><span class="ns-icon">◎</span><span class="ns-label">Support</span></a>
         <div class="nav-sheet-item" onclick="showAlert('Logged out successfully!','👋','success');closeNavSheet()"><span class="ns-icon">⏻</span><span class="ns-label">Logout</span></div>
       </div>
     </div>
   </div>
   
-
-  <script src="script.j"></script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then(reg => console.log('[SW] Registered:', reg.scope))
-        .catch(err => console.log('[SW] Registration failed:', err));
-    });
-  }
   
-      // ===== NAVIGATION =====
+  <script src="script.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log('[SW] Registered:', reg.scope))
+          .catch(err => console.log('[SW] Registration failed:', err));
+      });
+    }
+    
+    // ===== NAVIGATION =====
     const pageTitles = {
       home: 'Overview',
       wallet: 'My Wallet',
@@ -1435,24 +1436,6 @@
       profile: 'My Profile'
     };
     
-    function navigate(page, navEl) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const target = document.getElementById('page-' + page);
-      if (target) target.classList.add('active');
-      document.getElementById('pageTitle').textContent = pageTitles[page] || page;
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      if (navEl) {
-        navEl.classList.add('active');
-      } else {
-        document.querySelectorAll('.nav-item').forEach(n => {
-          if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + page + "'")) {
-            n.classList.add('active');
-          }
-        });
-      }
-      closeSidebar();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
     
     // ===== SIDEBAR =====
     function toggleSidebar() {
@@ -1491,8 +1474,8 @@
         el.focus();
       }
     }
-  
-  function openNavSheet() {
+    
+    function openNavSheet() {
       const bd = document.getElementById('navSheetBackdrop');
       const sheet = bd.querySelector('.nav-sheet');
       sheet.style.transform = '';
@@ -1514,30 +1497,31 @@
       }, 360);
     }
     
-  
-  const userName = document.querySelectorAll(".userName");
-  const userId = document.querySelectorAll(".userId");
-  const userEmail = document.querySelectorAll(".email");
-  const tBalance = document.querySelectorAll(".balance");
-  
-//  lucide.createIcons();
-  const navItems = document.querySelectorAll('.nav-item');
-  const allPages = document.querySelectorAll('.page');
-  
-  function switchPageByHash() {
-    const hash = window.location.hash || '#home';
-    const targetId = hash.substring(1);
-    const targetElement = document.getElementById(targetId);
-    if (targetElement) {
-      allPages.forEach(page => page.classList.add('hidden'));
-      navItems.forEach(item => item.classList.remove('active'));
-      targetElement.classList.remove('hidden');
-      navItems.forEach(item => {
-        if (item.getAttribute('href') === hash) item.classList.add('active');
-      });
+    
+    const userName = document.querySelectorAll(".userName");
+    const userId = document.querySelectorAll(".userId");
+    const userEmail = document.querySelectorAll(".email");
+    const tBalance = document.querySelectorAll(".balance");
+    
+    //  lucide.createIcons();
+    const navItems = document.querySelectorAll('.nav-item');
+    const allPages = document.querySelectorAll('.page');
+    
+    function switchPageByHash() {
+      const hash = window.location.hash || '#home';
+      const targetId = hash.substring(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        allPages.forEach(page => page.classList.add('hidden'));
+        navItems.forEach(item => item.classList.remove('active'));
+        targetElement.classList.remove('hidden');
+        navItems.forEach(item => {
+          if (item.getAttribute('href') === hash) item.classList.add('active');
+        });
+        document.getElementById('pageTitle').textContent = pageTitles[targetId] || targetId;
+      }
     }
-  }
-  
-  window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
-  window.addEventListener('hashchange', switchPageByHash);
-</script>
+    
+    window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
+    window.addEventListener('hashchange', switchPageByHash);
+  </script>
