@@ -198,6 +198,404 @@ async function loadWithdrawals() {
   });
 }
 
+
+
+
+
+
+
+
+// ======================================================
+// TRANSACTIONS ENGINE
+// Base: https://api.fluxmall.io
+// Endpoints: /api/deposit  /api/withdrawal  /api/activity
+// ======================================================
+
+const TXN_API = 'https://api.fluxmall.io';
+
+const TXN_ENDPOINTS = {
+  deposit: '/api/deposit',
+  withdrawal: '/api/withdrawal',
+  activity: '/api/activity',
+};
+
+// Raw data cache per type
+const txnCache = { deposit: null, withdrawal: null, activity: null };
+
+// Currently filtered + sorted rows shown in table
+let txnFiltered = [];
+let txnPage = 1;
+const TXN_PER_PAGE = 10;
+
+function initTransactions() {
+  const type = document.getElementById('txnTypeFilter').value || 'all';
+  loadTransactions(type);
+}
+
+// ---- TYPE FILTER CHANGE ----
+function onTypeFilterChange() {
+  const type = document.getElementById('txnTypeFilter').value;
+  // Reset status filter
+  document.getElementById('txnStatusFilter').value = 'all';
+  document.getElementById('txnSearch').value = '';
+  txnPage = 1;
+  loadTransactions(type);
+}
+
+// ---- FETCH ONE ENDPOINT ----
+async function fetchEndpoint(type) {
+  if (txnCache[type] !== null) return txnCache[type];
+  
+  const res = await fetch(TXN_API + TXN_ENDPOINTS[type], {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    // credentials: 'include', // uncomment if cookies/auth needed
+  });
+  
+  if (!res.ok) throw new Error(`${type}: HTTP ${res.status}`);
+  const json = await res.json();
+  
+  // Normalise — support { data: [] }, { transactions: [] }, or plain []
+  const rows = Array.isArray(json) ? json :
+    json.data ? json.data :
+    json.transactions ? json.transactions :
+    json.deposits ? json.deposits :
+    json.withdrawals ? json.withdrawals :
+    json.activities ? json.activities : [];
+  
+  // Tag each row with its type so "All" view works
+  const tagged = rows.map(r => ({ ...r, _type: type }));
+  txnCache[type] = tagged;
+  return tagged;
+}
+
+// ---- MAIN LOADER ----
+async function loadTransactions(type) {
+  showTxnState('loading');
+  setRefreshSpin(true);
+  
+  try {
+    let rows = [];
+    
+    if (type === 'all') {
+      // Parallel fetch all three
+      const [deps, wds, acts] = await Promise.all([
+        fetchEndpoint('deposit'),
+        fetchEndpoint('withdrawal'),
+        fetchEndpoint('activity'),
+      ]);
+      rows = [...deps, ...wds, ...acts];
+    } else {
+      rows = await fetchEndpoint(type);
+    }
+    
+    // Sort newest first (tries common date field names)
+    rows.sort((a, b) => {
+      const da = new Date(a.createdAt || a.date || a.created_at || a.timestamp || 0);
+      const db = new Date(b.createdAt || b.date || b.created_at || b.timestamp || 0);
+      return db - da;
+    });
+    
+    txnFiltered = rows;
+    txnPage = 1;
+    
+    // Console log totals for all loaded types
+    logTxnTotals();
+    
+    applyTxnFilters();
+    
+  } catch (err) {
+    console.error('[Transactions] Fetch error:', err);
+    showTxnState('error');
+    document.getElementById('txnErrorMsg').textContent = err.message || 'Failed to load transactions';
+  } finally {
+    setRefreshSpin(false);
+  }
+}
+
+// ---- APPLY SEARCH + STATUS FILTER ----
+function applyTxnFilters() {
+  const status = document.getElementById('txnStatusFilter').value;
+  const search = document.getElementById('txnSearch').value.trim().toLowerCase();
+  const type = document.getElementById('txnTypeFilter').value;
+  
+  // Re-build from cache
+  let rows = [];
+  if (type === 'all') {
+    rows = [
+      ...(txnCache.deposit || []),
+      ...(txnCache.withdrawal || []),
+      ...(txnCache.activity || []),
+    ];
+  } else {
+    rows = txnCache[type] || [];
+  }
+  
+  // Status filter
+  if (status !== 'all') {
+    rows = rows.filter(r => {
+      const s = (r.status || r.Status || '').toLowerCase();
+      return s === status;
+    });
+  }
+  
+  // Search filter
+  if (search) {
+    rows = rows.filter(r => {
+      const hay = JSON.stringify(r).toLowerCase();
+      return hay.includes(search);
+    });
+  }
+  
+  txnFiltered = rows;
+  txnPage = 1;
+  renderTxnTable();
+}
+
+// ---- RENDER TABLE ----
+function renderTxnTable() {
+  if (!txnFiltered.length) { showTxnState('empty'); return; }
+  
+  showTxnState('table');
+  
+  const start = (txnPage - 1) * TXN_PER_PAGE;
+  const slice = txnFiltered.slice(start, start + TXN_PER_PAGE);
+  
+  const tbody = document.getElementById('txnTableBody');
+  tbody.innerHTML = slice.map(r => buildTxnRow(r)).join('');
+  
+  renderPagination();
+  renderSummaryPills();
+}
+
+// ---- BUILD ONE ROW ----
+function buildTxnRow(r) {
+  const type = r._type || 'activity';
+  const status = (r.status || r.Status || 'pending').toLowerCase();
+  const amount = r.amount || r.Amount || 0;
+  const desc = r.description || r.narration || r.note || r.purpose ||
+    r.bank_name || r.bankName || type.charAt(0).toUpperCase() + type.slice(1);
+  const ref = r.reference || r.ref || r.txn_id || r._id || r.id || '—';
+  const dateRaw = r.createdAt || r.date || r.created_at || r.timestamp;
+  const date = dateRaw ? new Date(dateRaw).toLocaleDateString('en-NG', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  }) : '—';
+  
+  const typeBadge = buildTypeBadge(type);
+  const statBadge = buildStatusBadge(status);
+  const amtStr = buildAmountStr(type, amount);
+  
+  return `<tr>
+      <td style="max-width:180px;word-break:break-word;">${escHtml(String(desc))}</td>
+      <td>${typeBadge}</td>
+      <td>${amtStr}</td>
+      <td style="white-space:nowrap;font-size:12px;">${date}</td>
+      <td>${statBadge}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--text3);">${escHtml(String(ref)).substring(0,18)}</td>
+    </tr>`;
+}
+
+function buildTypeBadge(type) {
+  const map = {
+    deposit: 'background:var(--blue-bg);color:var(--blue)',
+    withdrawal: 'background:var(--red-bg);color:var(--red)',
+    activity: 'background:var(--accent-glow);color:var(--accent2)',
+  };
+  const label = type.charAt(0).toUpperCase() + type.slice(1);
+  return `<span class="badge" style="${map[type] || ''}">${label}</span>`;
+}
+
+function buildStatusBadge(status) {
+  const map = { success: 'success', pending: 'pending', failed: 'failed', warning: 'pending' };
+  const cls = map[status] || 'pending';
+  return `<span class="badge ${cls}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+}
+
+function buildAmountStr(type, amount) {
+  const num = parseFloat(amount) || 0;
+  const fmtd = '₦' + num.toLocaleString('en-NG', { minimumFractionDigits: 2 });
+  if (type === 'deposit' || type === 'activity') {
+    return `<span style="color:var(--green);font-weight:600;">+${fmtd}</span>`;
+  }
+  return `<span style="color:var(--red);font-weight:600;">-${fmtd}</span>`;
+}
+
+function escHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ---- PAGINATION ----
+function renderPagination() {
+  const total = txnFiltered.length;
+  const totalPages = Math.ceil(total / TXN_PER_PAGE);
+  const start = (txnPage - 1) * TXN_PER_PAGE + 1;
+  const end = Math.min(txnPage * TXN_PER_PAGE, total);
+  
+  document.getElementById('txnPageInfo').textContent =
+    `Showing ${start}–${end} of ${total} transactions`;
+  
+  document.getElementById('txnPrevBtn').disabled = txnPage <= 1;
+  document.getElementById('txnNextBtn').disabled = txnPage >= totalPages;
+  
+  // Page number buttons (max 5 shown)
+  const btnsEl = document.getElementById('txnPageBtns');
+  btnsEl.innerHTML = '';
+  const range = getPageRange(txnPage, totalPages, 5);
+  range.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'btn btn-ghost btn-sm' + (p === txnPage ? ' active' : '');
+    b.style.cssText = p === txnPage ?
+      'background:var(--accent);color:#fff;min-width:32px;' :
+      'min-width:32px;';
+    b.textContent = p;
+    b.onclick = () => {
+      txnPage = p;
+      renderTxnTable();
+    };
+    btnsEl.appendChild(b);
+  });
+  
+  document.getElementById('txnPagination').style.display =
+    totalPages > 1 ? 'flex' : 'none';
+}
+
+function getPageRange(current, total, size) {
+  let start = Math.max(1, current - Math.floor(size / 2));
+  let end = Math.min(total, start + size - 1);
+  if (end - start + 1 < size) start = Math.max(1, end - size + 1);
+  const range = [];
+  for (let i = start; i <= end; i++) range.push(i);
+  return range;
+}
+
+function changeTxnPage(dir) {
+  const total = Math.ceil(txnFiltered.length / TXN_PER_PAGE);
+  txnPage = Math.max(1, Math.min(txnPage + dir, total));
+  renderTxnTable();
+}
+
+// ---- SUMMARY PILLS ----
+function renderSummaryPills() {
+  const type = document.getElementById('txnTypeFilter').value;
+  const source = type === 'all' ? [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
+    (txnCache[type] || []);
+  
+  const total = source.length;
+  const success = source.filter(r => (r.status || '').toLowerCase() === 'success').length;
+  const pending = source.filter(r => (r.status || '').toLowerCase() === 'pending').length;
+  const failed = source.filter(r => (r.status || '').toLowerCase() === 'failed').length;
+  
+  document.getElementById('pill-total').innerHTML = `<i class="ri-list-check"></i> ${total} Total`;
+  document.getElementById('pill-success').innerHTML = `<i class="ri-checkbox-circle-line"></i> ${success} Success`;
+  document.getElementById('pill-pending').innerHTML = `<i class="ri-time-line"></i> ${pending} Pending`;
+  document.getElementById('pill-failed').innerHTML = `<i class="ri-close-circle-line"></i> ${failed} Failed`;
+  
+  document.getElementById('txnSummaryBar').style.display = 'flex';
+}
+
+// ---- CONSOLE LOG TOTALS ----
+function logTxnTotals() {
+  const types = ['deposit', 'withdrawal', 'activity'];
+  
+  console.group('%c[NexVault] Transaction Totals', 'color:#8b85ff;font-weight:700;font-size:13px;');
+  
+  types.forEach(type => {
+    const rows = txnCache[type];
+    if (!rows) return;
+    
+    const total = rows.length;
+    const success = rows.filter(r => (r.status || '').toLowerCase() === 'success');
+    const pending = rows.filter(r => (r.status || '').toLowerCase() === 'pending');
+    const failed = rows.filter(r => (r.status || '').toLowerCase() === 'failed');
+    const warning = rows.filter(r => (r.status || '').toLowerCase() === 'warning');
+    
+    const sumAmt = arr => arr.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
+    
+    console.group(`%c${type.toUpperCase()}`, 'color:#f0f2f8;font-weight:600;');
+    console.log(`  Total records   : ${total}`);
+    console.log(`  ✅ Success       : ${success.length}  (₦${sumAmt(success).toLocaleString()})`);
+    console.log(`  ⏳ Pending       : ${pending.length}  (₦${sumAmt(pending).toLocaleString()})`);
+    console.log(`  ❌ Failed        : ${failed.length}   (₦${sumAmt(failed).toLocaleString()})`);
+    if (warning.length) {
+      console.log(`  ⚠️  Warning       : ${warning.length}  (₦${sumAmt(warning).toLocaleString()})`);
+    }
+    console.groupEnd();
+  });
+  
+  console.groupEnd();
+}
+
+// ---- STATE MANAGER ----
+function showTxnState(state) {
+  document.getElementById('txnLoading').style.display = state === 'loading' ? 'block' : 'none';
+  document.getElementById('txnError').style.display = state === 'error' ? 'block' : 'none';
+  document.getElementById('txnEmpty').style.display = state === 'empty' ? 'block' : 'none';
+  document.getElementById('txnTableWrap').style.display = state === 'table' ? 'block' : 'none';
+  if (state !== 'table') {
+    document.getElementById('txnSummaryBar').style.display = 'none';
+  }
+}
+
+function setRefreshSpin(on) {
+  document.getElementById('txnRefreshBtn').classList.toggle('spinning', on);
+}
+
+function refreshTransactions() {
+  // Bust cache for active type
+  const type = document.getElementById('txnTypeFilter').value;
+  if (type === 'all') {
+    txnCache.deposit = txnCache.withdrawal = txnCache.activity = null;
+  } else {
+    txnCache[type] = null;
+  }
+  loadTransactions(type);
+}
+
+// ---- CSV EXPORT ----
+function exportTxnCSV() {
+  if (!txnFiltered.length) { showAlert('No transactions to export.', 'info'); return; }
+  const headers = ['Description', 'Type', 'Amount', 'Date', 'Status', 'Reference'];
+  const rows = txnFiltered.map(r => [
+    r.description || r.narration || r._type || '',
+    r._type || '',
+    r.amount || 0,
+    r.createdAt || r.date || '',
+    r.status || '',
+    r.reference || r.ref || r._id || '',
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
+  
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `transactions_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded', '📄');
+}
+
+// Auto-load when page first becomes visible
+document.addEventListener('DOMContentLoaded', () => {
+  // Pre-load quietly in background after 1s
+  setTimeout(() => {
+    if (!txnCache.deposit && !txnCache.withdrawal && !txnCache.activity) {
+      Promise.all([
+        fetchEndpoint('deposit').catch(() => null),
+        fetchEndpoint('withdrawal').catch(() => null),
+        fetchEndpoint('activity').catch(() => null),
+      ]).then(() => logTxnTotals());
+    }
+  }, 1200);
+});
+
+
+//ended here
+
 // ─── DEPOSIT INITIATION ───────────────────────────────────
 window.initiateDeposit = async function(amount) {
   if (!document.getElementById('attest')?.checked)
