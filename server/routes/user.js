@@ -130,7 +130,7 @@ router.post('/verify-account', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Account number and bank code required.' });
 
     const apikeys = await Settings.findOne({ key: 'apikeys' });
-    const secretKey = apikeys?.value?.korapay_secret;
+    const secretKey = process.env.KORAPAY_SECRET_KEY;
     if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
 
     const response = await fetch('https://api.korapay.com/merchant/api/v1/misc/banks/resolve', {
@@ -162,7 +162,7 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Valid 10-digit account number required.' });
 
     const apikeys = await Settings.findOne({ key: 'apikeys' });
-    const secretKey = apikeys?.value?.korapay_secret;
+    const secretKey = process.env.KORAPAY_SECRET_KEY;
     if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
 
     // Loop through major banks to find the account
