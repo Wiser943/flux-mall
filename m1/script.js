@@ -106,7 +106,6 @@ async function init() {
     return;
   }
   
-  loadDeposits();
   loadWithdrawals();
   loadTeamData();
   generateReferralLink();
@@ -149,30 +148,7 @@ function renderUserUI() {
     document.getElementById('spinsLeft').innerText = u.freeSpins || 0;*/
 }
 
-// ─── DEPOSITS ────────────────────────────────────────────
-async function loadDeposits() {
-  const list = document.getElementById('depositList');
-  const data = await api('/api/user/deposits');
-  if (!data?.success) return;
-  list.innerHTML = '';
-  if (!data.deposits.length) {
-    list.innerHTML = `<div class="empty-state"><div class="fox-logo-placeholder">🔮</div><p>Nothing here to see</p></div>`;
-    return;
-  }
-  data.deposits.forEach(d => {
-    let badgeClass = d.status === 'pending' ? 'badge-pending' : d.status === 'success' ? 'badge-success' : 'badge-declined';
-    const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'Just now';
-    list.innerHTML += `
-      <div class="history-item">
-        <div class="tx-details">
-          <span class="tx-amount">₦${Number(d.amount).toLocaleString()}</span>
-          <span class="tx-ref">Ref: ${d.refCode}</span>
-          <span class="tx-date">${dateStr}</span>
-        </div>
-        <span class="badge ${badgeClass}">${d.status}</span>
-      </div>`;
-  });
-}
+
 
 // ─── WITHDRAWALS ──────────────────────────────────────────
 async function loadWithdrawals() {
@@ -639,7 +615,6 @@ window.submitManualDeposit = async (amount, refCode) => {
   });
   if (data?.success) {
     showToast('Deposit submitted! Awaiting admin approval.', 'info', 'ri-check-line', 'Submitted');
-    loadDeposits();
   } else {
     showToast(data?.error || 'Error submitting deposit.', 'error', 'ri-close-line', 'Error');
   }
