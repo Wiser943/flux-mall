@@ -275,7 +275,7 @@
     justify-content: space-between;
     padding: 0 32px;
     position: sticky;
-    top: 0;
+    top: 0;width: 100%;
     z-index: 50;
     transition: background var(--transition);
   }
@@ -308,9 +308,9 @@
   
   .page-title {
     font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: -0.3px;
+    font-weight: 650;
+    font-size: 18px;
+    letter-spacing: -0.2px;
   }
   
   .topbar-right {
@@ -634,8 +634,8 @@
   
   .balance-amount {
     font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 36px;
+    font-weight: 750;
+    font-size: 30px;
     letter-spacing: -1px;
     margin:0 0 10px 15px;
   }
@@ -644,7 +644,7 @@
     display: flex;
     gap: 10px;
     position: relative;
-    z-index: 1;width:100%;margin:0 0 20px 20px;
+    z-index: 1;width:100%;margin:0 0 20px 15px;
   }
   
   .bal-btn {
@@ -1377,6 +1377,12 @@
   
   /* MOBILE: slide up sheet */
   @media (max-width: 640px) {
+     .topbar-right {
+   display: flex;
+   align-items: center;
+   gap: 5px;
+ } .topbar-right a,.topbar-right button{
+padding: 5px; }
     .modal-backdrop {
       align-items: flex-end;
     }
