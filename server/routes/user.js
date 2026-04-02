@@ -10,6 +10,21 @@ const {
 } = require('../models/Models');
 const { requireAuth } = require('../middleware/auth');
 
+// ─── TOP BANKS FOR AUTO-RESOLUTION ───────────────────────
+const TOP_BANKS = [
+  { code: '058', name: 'GTBank' },
+  { code: '057', name: 'Zenith Bank' },
+  { code: '044', name: 'Access Bank' },
+  { code: '999992', name: 'OPay' },
+  { code: '50515', name: 'Moniepoint' },
+  { code: '50211', name: 'Kuda Bank' },
+  { code: '011', name: 'First Bank' },
+  { code: '033', name: 'UBA' },
+  { code: '070', name: 'Fidelity Bank' },
+  { code: '032', name: 'Union Bank' }
+];
+
+
 // ─── RESEND CLIENT ─────────────────────────────────────────
 const resend = new Resend(process.env.RESEND_API_KEY);
 
