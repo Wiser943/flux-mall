@@ -214,9 +214,9 @@ async function loadWithdrawals() {
 const TXN_API = 'https://api.fluxmall.io';
 
 const TXN_ENDPOINTS = {
-  deposit: '/api/deposit',
-  withdrawal: '/api/withdrawal',
-  activity: '/api/activity',
+  deposit: '/api/user/deposits',
+  withdrawal: '/api/user/withdrawals',
+  activity: '/api/user/activity',
 };
 
 // Raw data cache per type
@@ -245,13 +245,18 @@ function onTypeFilterChange() {
 // ---- FETCH ONE ENDPOINT ----
 async function fetchEndpoint(type) {
   if (txnCache[type] !== null) return txnCache[type];
+  const res = await api(TXN_ENDPOINTS[type])
   
+  /*
   const res = await fetch(TXN_API + TXN_ENDPOINTS[type], {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
     // credentials: 'include', // uncomment if cookies/auth needed
   });
   
+  const data = await api('/api/user/deposits');
+if (!data?.success) return;
+*/
   if (!res.ok) throw new Error(`${type}: HTTP ${res.status}`);
   const json = await res.json();
   
