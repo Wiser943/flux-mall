@@ -137,7 +137,7 @@
             <div class="section-title">Hi, <span class="userName">Adebayo</span><i class="ri-hand-heart-line" style="color:var(--yellow);font-size:20px;vertical-align:middle"></i></div>
             <div class="section-sub">Here's what's happening with your account today.</div>
           </div>
-          <a class="btn btn-primary" href="#deposit"><i class="ri-add-line"></i> Add Funds</a>
+          <a class="btn btn-primary" href="#deposit" style="display: none;"><i class="ri-add-line"></i> Add Funds</a>
         </div>
         
         <!-- STAT CARDS -->
@@ -175,24 +175,19 @@
             <div class="balance-label">Available Balance</div>
             <div class="balance-amount">₦<span class="balance">0.00</span></div>
             <div class="balance-actions">
-              <button class="bal-btn white" onclick="navigate('deposit', null)"><i class="ri-arrow-down-line"></i> Deposit</button>
-              <button class="bal-btn outline" onclick="navigate('withdraw', null)"><i class="ri-arrow-up-line"></i> Withdraw</button>
-              <button class="bal-btn outline" onclick="navigate('transfer', null)"><i class="ri-swap-line"></i> Transfer</button>
+              <a class="bal-btn white" href="#deposit"><i class="ri-arrow-down-line"></i> Deposit</a>
+              <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Withdraw</a>
+              <a class="bal-btn outline" href="#transfer"><i class="ri-swap-line"></i> Transfer</a>
             </div>
             
             <!-- Recent Transactions -->
             <div class="card">
               <div class="flex-between mb-4">
                 <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Recent Transactions</div>
-                <button class="btn btn-ghost btn-sm" onclick="navigate('transactions', null)">View All <i class="ri-arrow-right-line"></i></button>
+                <a class="btn btn-ghost btn-sm" href="#transactions">View All <i class="ri-arrow-right-line"></i></a>
               </div>
-              <div class="txn-item">
-                <div class="txn-icon credit"><i class="ri-arrow-down-line"></i></div>
-                <div class="txn-info">
-                  <div class="txn-name">Bank Deposit</div>
-                  <div class="txn-date">Today, 09:41 AM</div>
-                </div>
-                <div class="txn-amount credit">+₦20,000</div>
+              <div id="historyList">
+                
               </div>
               <div class="txn-item">
                 <div class="txn-icon debit"><i class="ri-arrow-up-line"></i></div>
@@ -244,16 +239,16 @@
             <!-- Quick Actions -->
             <div class="card">
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px;">Quick Actions</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <button class="btn btn-ghost btn-sm w-full" onclick="navigate('deposit',null)" style="justify-content:center;"><i class="ri-arrow-down-circle-line"></i> Deposit</button>
-                <button class="btn btn-ghost btn-sm w-full" onclick="navigate('withdraw',null)" style="justify-content:center;"><i class="ri-arrow-up-circle-line"></i> Withdraw</button>
-                <button class="btn btn-ghost btn-sm w-full" onclick="navigate('referral',null)" style="justify-content:center;"><i class="ri-gift-line"></i> Refer</button>
-                <button class="btn btn-ghost btn-sm w-full" onclick="navigate('plans',null)" style="justify-content:center;"><i class="ri-bar-chart-box-line"></i> Plans</button>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
+                <a class="btn btn-ghost btn-sm w-full" href="#wallet" style="justify-content:center;"><i class="ri-arrow-up-circle-line"></i> Wallet</a>
+                <a class="btn btn-ghost btn-sm w-full" href="#referral" style="justify-content:center;"><i class="ri-gift-line"></i> Refer</a>
+                <a class="btn btn-ghost btn-sm w-full" href="#plans" style="justify-content:center;"><i class="ri-bar-chart-box-line"></i> Plans</a>
+                <a class="btn btn-ghost btn-sm w-full" href="#support" style="justify-content:center;"><i class="ri-bar-chart-box-line"></i>Help</a>
               </div>
             </div>
             
             <!-- Referral mini -->
-              <div class="card" style="background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(167,139,250,0.08));border-color:rgba(108,99,255,0.2)" id="hRefCode">
+            <div class="card" style="background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(167,139,250,0.08));border-color:rgba(108,99,255,0.2)" id="hRefCode">
             </div>
           </div>
         </div>
