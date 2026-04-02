@@ -152,6 +152,57 @@ router.post('/verify-account', requireAuth, async (req, res) => {
   }
 });
 
+
+// ─── POST /api/user/resolve-account ──────────────────────
+// Automatically detects bank and name from account number
+router.post('/resolve-account', requireAuth, async (req, res) => {
+  try {
+    const { accountNumber } = req.body;
+    if (!accountNumber || accountNumber.length !== 10)
+      return res.status(400).json({ error: 'Valid 10-digit account number required.' });
+
+    const apikeys = await Settings.findOne({ key: 'apikeys' });
+    const secretKey = apikeys?.value?.korapay_secret;
+    if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
+
+    // Loop through major banks to find the account
+    for (const bank of TOP_BANKS) {
+      try {
+        const response = await fetch('https://api.korapay.com/merchant/api/v1/misc/banks/resolve', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${secretKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ account_number: accountNumber, bank_code: bank.code })
+        });
+        
+        const result = await response.json();
+
+        // If Korapay finds a match in this bank, stop and return it
+        if (result.status && result.data?.account_name) {
+          return res.json({ 
+            success: true, 
+            accountName: result.data.account_name,
+            bankCode: bank.code,
+            bankName: bank.name
+          });
+        }
+      } catch (e) {
+        continue; // Try next bank if this request fails
+      }
+    }
+
+    // If loop finishes with no match
+    res.status(404).json({ error: 'Bank not detected. Please select your bank manually.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
+
 // ─── POST /api/user/deposit ───────────────────────────────
 router.post('/deposit', requireAuth, async (req, res) => {
   try {
