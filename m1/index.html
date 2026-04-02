@@ -170,16 +170,14 @@
         
         <!-- BALANCE + TRANSACTIONS -->
         <div class="grid-2-1 mb-6">
-          <div>
-            <!-- Balance Card -->
-            <div class="balance-card mb-4">
-              <div class="balance-label">Available Balance</div>
-              <div class="balance-amount balance">₦48,250.00</div>
-              <div class="balance-actions">
-                <button class="bal-btn white" onclick="navigate('deposit', null)"><i class="ri-arrow-down-line"></i> Deposit</button>
-                <button class="bal-btn outline" onclick="navigate('withdraw', null)"><i class="ri-arrow-up-line"></i> Withdraw</button>
-                <button class="bal-btn outline" onclick="navigate('transfer', null)"><i class="ri-swap-line"></i> Transfer</button>
-              </div>
+          <!-- Balance Card -->
+          <div class="balance-card mb-4">
+            <div class="balance-label">Available Balance</div>
+            <div class="balance-amount">₦<span class="balance">0.00</span></div>
+            <div class="balance-actions">
+              <button class="bal-btn white" onclick="navigate('deposit', null)"><i class="ri-arrow-down-line"></i> Deposit</button>
+              <button class="bal-btn outline" onclick="navigate('withdraw', null)"><i class="ri-arrow-up-line"></i> Withdraw</button>
+              <button class="bal-btn outline" onclick="navigate('transfer', null)"><i class="ri-swap-line"></i> Transfer</button>
             </div>
             
             <!-- Recent Transactions -->
