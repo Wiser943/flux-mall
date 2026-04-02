@@ -115,7 +115,7 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="menu-btn" onclick="toggleSidebar()"><i class="ri-menu-line"></i></button>
-        <div class="page-title" id="pageTitle">Overview</div>
+        <div class="page-title">Fluxmall Exchange</div>
       </div>
       <div class="topbar-right">
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme"><i class="ri-moon-line"></i></button>
@@ -253,11 +253,7 @@
             </div>
             
             <!-- Referral mini -->
-            <div class="card" style="background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(167,139,250,0.08));border-color:rgba(108,99,255,0.2)">
-              <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
-              <div class="ref-code">NV-2891</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:6px;">7 referrals • ₦8,400 earned</div>
-              <button class="copy-btn mt-4 w-full" style="margin-top:12px;" onclick="copyCode('NV-2891')"><i class="ri-file-copy-line"></i> Copy Code</button>
+              <div class="card" style="background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(167,139,250,0.08));border-color:rgba(108,99,255,0.2)" id="hRefCode">
             </div>
           </div>
         </div>
@@ -1361,7 +1357,7 @@
       <button class="mnav-item nav-item" id="nav-more" onclick="openNavSheet()">
       
         <i class="mnav-icon ri-arrow-up-wide-line"></i>
-        <span class="mnav-label">Fluxmall</span>
+        <span class="mnav-label" id="pageTitle">Fluxmall</span>
       </button>
     </div>
   </nav>
