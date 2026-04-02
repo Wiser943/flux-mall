@@ -1687,7 +1687,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-let verifyTimer = null;
+//let verifyTimer = null;
 
 
 window.handleAccNumberInput = (value) => {
