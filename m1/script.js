@@ -242,38 +242,24 @@ function onTypeFilterChange() {
   loadTransactions(type);
 }
 
-// ---- FETCH ONE ENDPOINT ----
 async function fetchEndpoint(type) {
   if (txnCache[type] !== null) return txnCache[type];
-  const res = await api(TXN_ENDPOINTS[type])
   
-  /*
-  const res = await fetch(TXN_API + TXN_ENDPOINTS[type], {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-    // credentials: 'include', // uncomment if cookies/auth needed
-  });
+  const json = await api(TXN_ENDPOINTS[type]);
+  if (!json) throw new Error(`${type}: unauthorized or failed`);
   
-  const data = await api('/api/user/deposits');
-if (!data?.success) return;
-*/
-  if (!res.ok) throw new Error(`${type}: HTTP ${res.status}`);
-  const json = await res.json();
-  
-  // Normalise — support { data: [] }, { transactions: [] }, or plain []
   const rows = Array.isArray(json) ? json :
     json.data ? json.data :
     json.transactions ? json.transactions :
     json.deposits ? json.deposits :
     json.withdrawals ? json.withdrawals :
-    json.activities ? json.activities : [];
+    json.activities ? json.activities :
+    [];
   
-  // Tag each row with its type so "All" view works
   const tagged = rows.map(r => ({ ...r, _type: type }));
   txnCache[type] = tagged;
   return tagged;
 }
-
 // ---- MAIN LOADER ----
 async function loadTransactions(type) {
   showTxnState('loading');
