@@ -113,7 +113,7 @@ async function init() {
   loadMyInvestments();
   collectDailyEarnings();
   fetchAmounts();
-  initBankSync();
+ // initBankSync();
   updateVerificationUI();
   fetchUserHistory();
   pollNotifications();
@@ -1684,3 +1684,57 @@ async function pollChatUnread() {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(pollChatUnread, 3000);
 });
+
+
+
+let verifyTimer = null;
+
+
+window.handleAccNumberInput = (value) => {
+  const statusEl = document.getElementById('verifyStatus');
+  const accName = document.getElementById('accName');
+  const bankSelect = document.getElementById('bankName');
+
+  // Reset fields while user is typing
+  if (accName) accName.value = '';
+  if (statusEl) statusEl.innerHTML = '';
+  
+  // Only trigger when exactly 10 digits are entered
+  if (value.length !== 10) return;
+
+  if (statusEl) {
+    statusEl.innerHTML = '<span style="color: #4318ff;">🔍 Detecting Bank...</span>';
+  }
+
+  clearTimeout(verifyTimer);
+  verifyTimer = setTimeout(async () => {
+    try {
+      const data = await api('/api/user/resolve-account', {
+        method: 'POST',
+        body: JSON.stringify({ accountNumber: value })
+      });
+
+      if (data?.success) {
+        // Auto-fill account name
+        if (accName) accName.value = data.accountName;
+        
+        // Auto-select the bank in the dropdown
+        if (bankSelect) {
+          bankSelect.value = data.bankCode;
+        }
+        
+        statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName} (${data.bankName})</span>`;
+      } else {
+        statusEl.innerHTML = `<span style="color:orange">⚠️ ${data.error || 'Could not detect bank automatically.'}</span>`;
+      }
+    } catch (err) {
+      statusEl.innerHTML = `<span style="color:red">❌ Connection Error</span>`;
+    }
+  }, 700);
+};
+
+// Handle the Save Button
+window.handleSave = async () => {
+  // Add your logic to collect values and PUT to /api/user/bank-details
+  console.log("Saving...");
+};
