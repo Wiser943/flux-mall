@@ -616,7 +616,10 @@ function generateReferralLink() {
               </div></div>
             </div>`;
             
-  
+  document.getElementById("hRefCode").innerHTML=`              <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
+              <div class="ref-code">${refId}</div>
+              <div style="font-size:12px;color:var(--text2);margin-top:6px;">7 referrals • ₦8,400 earned</div>
+              <button class="copy-btn mt-4 w-full" style="margin-top:12px;" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy Code</button>`;
  // document.querySelectorAll('.refLink').forEach(el => el.innerText = link);
 /*  window.copyRefLink = () => {
     navigator.clipboard.writeText(link)
