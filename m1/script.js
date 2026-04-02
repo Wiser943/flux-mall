@@ -19,7 +19,7 @@ async function api(path, options = {}) {
 
 // ─── TOAST ────────────────────────────────────────────────
 const notifications = document.querySelector('.notifications');
-window.showToast = function (text, type = 'success', icon = '', title = '') {
+window.showToast = function(text, type = 'success', icon = '', title = '') {
   if (window.navigator?.vibrate) window.navigator.vibrate(100);
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
@@ -36,7 +36,7 @@ window.showToast = function (text, type = 'success', icon = '', title = '') {
 };
 
 // ─── LOGOUT ───────────────────────────────────────────────
-window.logoutUser = async function () {
+window.logoutUser = async function() {
   await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
   localStorage.removeItem('loggedInUser');
   window.location.href = '/m2/index.html#login-page';
@@ -56,13 +56,13 @@ async function init() {
   const meRes = await api('/api/auth/me');
   if (!meRes?.success) { logoutUser(); return; }
   currentUserData = meRes.user;
-
+  
   const configRes = await api('/api/user/config');
   if (configRes?.success) {
     const { config, payment, maintenance, wheel } = configRes;
-
+    
     if (maintenance?.enabled) { renderLockScreen('System Maintenance', 'Our site is currently undergoing scheduled upgrades.'); return; }
-
+    
     if (config.siteName) {
       document.querySelectorAll('.site-name').forEach(el => el.innerText = config.siteName);
       document.title = config.siteName;
@@ -74,34 +74,38 @@ async function init() {
         img.onerror = () => img.style.display = 'none';
       });
       let fav = document.querySelector("link[rel='icon']");
-      if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
+      if (!fav) {
+        fav = document.createElement('link');
+        fav.rel = 'icon';
+        document.head.appendChild(fav);
+      }
       fav.href = config.siteLogo;
     }
-
+    
     const ticker = document.getElementById('ticker-wrapper');
     if (ticker && config.announcement?.active) {
       ticker.style.display = 'flex';
       document.querySelectorAll('.ticker-text').forEach(el => el.textContent = config.announcement.text || '');
     } else if (ticker) ticker.style.display = 'none';
-
+    
     if (config.minWithdraw) globalConfig.minWithdraw = config.minWithdraw;
     if (config.withdrawFee !== undefined) globalConfig.withdrawFee = config.withdrawFee;
-
+    
     window.paymentConfig = payment;
-
+    
     if (wheel?.prizes?.length) {
       prizes = wheel.prizes;
       drawWheel();
     }
   }
-
+  
   renderUserUI();
-
+  
   if (currentUserData.status === 'Banned') {
     renderLockScreen('🚫 Account Banned', 'Your account has been suspended for violating our terms of service.');
     return;
   }
-
+  
   loadDeposits();
   loadWithdrawals();
   loadTeamData();
@@ -114,30 +118,35 @@ async function init() {
   updateVerificationUI();
   fetchUserHistory();
   pollNotifications();
-
+  
   const today = new Date().toDateString();
   if (currentUserData.lastCheckIn === today) {
     const btn = document.getElementById('checkinBtn');
     const msg = document.getElementById('checkinMsg');
     if (msg) msg.innerText = 'Already claimed! Check back tomorrow.';
-    if (btn) { btn.style.opacity = '0.5'; btn.className = 'check-box active'; }
+    if (btn) {
+      btn.style.opacity = '0.5';
+      btn.className = 'check-box active';
+    }
   }
 }
 
 // ─── RENDER USER UI ───────────────────────────────────────
 function renderUserUI() {
-  const u = currentUserData;/*
-  document.querySelectorAll('.userId').forEach(el => {
-    el.innerHTML = u.uid || u._id.substring(0, 8);
-    el.onclick = () => navigator.clipboard.writeText(u.uid || u._id)
-      .then(() => showToast('ID Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
-  });
-  document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);*/
+  const u = currentUserData;
+  /*
+    document.querySelectorAll('.userId').forEach(el => {
+      el.innerHTML = u.uid || u._id.substring(0, 8);
+      el.onclick = () => navigator.clipboard.writeText(u.uid || u._id)
+        .then(() => showToast('ID Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
+    });
+    document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);*/
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
   document.querySelectorAll('.balance').forEach(el => {
     el.innerHTML = u.ib ? Number(u.ib).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
-  });/*
-  document.getElementById('spinsLeft').innerText = u.freeSpins || 0;*/
+  });
+  /*
+    document.getElementById('spinsLeft').innerText = u.freeSpins || 0;*/
 }
 
 // ─── DEPOSITS ────────────────────────────────────────────
@@ -190,25 +199,25 @@ async function loadWithdrawals() {
 }
 
 // ─── DEPOSIT INITIATION ───────────────────────────────────
-window.initiateDeposit = async function (amount) {
+window.initiateDeposit = async function(amount) {
   if (!document.getElementById('attest')?.checked)
     return showToast('Please read and accept before proceeding.', 'warning', 'ri-close-line', 'Attestation');
-
+  
   amount = Number(amount);
   if (!amount) return showToast('Enter valid amount (Minimum 3000)', 'error', 'ri-close-line', 'Invalid Amount');
-
+  
   const refCode = Math.floor(10000000 + Math.random() * 90000000).toString();
   const config = window.paymentConfig || {};
-
+  
   if (config.mode === 'korapay' && config.korapay?.publicKey) {
     payWithKorapay(amount, config.korapay.publicKey);
     return;
   }
-
+  
   const bankName = config.manual?.bankName || 'Contact Admin';
-  const accNum   = config.manual?.accountNumber || '0000000000';
-  const accName  = config.manual?.accountName || 'Admin';
-
+  const accNum = config.manual?.accountNumber || '0000000000';
+  const accName = config.manual?.accountName || 'Admin';
+  
   const modal = document.createElement('div');
   modal.id = 'paymentModal';
   modal.className = 'modal-overlay';
@@ -253,10 +262,15 @@ window.payWithKorapay = (amount, key) => {
   isProcessingDeposit = false;
   const u = currentUserData;
   window.Korapay.initialize({
-    key, amount, currency: 'NGN',
+    key,
+    amount,
+    currency: 'NGN',
     reference: 'DEP_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
     customer: { name: u.username || 'User', email: u.email },
-    onClose: () => { isProcessingDeposit = false; showToast('Transaction cancelled.', 'warning', 'ri-close-line', 'Cancelled'); },
+    onClose: () => {
+      isProcessingDeposit = false;
+      showToast('Transaction cancelled.', 'warning', 'ri-close-line', 'Cancelled');
+    },
     onSuccess: async (data) => {
       if (isProcessingDeposit) return;
       isProcessingDeposit = true;
@@ -278,7 +292,7 @@ window.handleWithdrawalSubmit = async () => {
   const amount = Number(document.getElementById('withdrawAmount').value);
   const btn = document.getElementById('withdrawBtn');
   const u = currentUserData;
-
+  
   if (!u.bankDetails?.accountNumber)
     return showToast('Please bind your Bank Account in the Profile section first.', 'warning', 'ri-close-line', 'Bank Required');
   if (!u.emailVerified)
@@ -287,11 +301,11 @@ window.handleWithdrawalSubmit = async () => {
     return showToast(`Minimum withdrawal is ₦${globalConfig.minWithdraw.toLocaleString()}`, 'warning', 'ri-close-line', 'Invalid Amount');
   if (amount > u.ib)
     return showToast('Insufficient balance.', 'warning', 'ri-close-line', 'Insufficient');
-
+  
   const fee = (amount * globalConfig.withdrawFee) / 100;
   const net = Math.floor(amount - fee);
   if (!confirm(`Withdrawal: ₦${amount.toLocaleString()}\nFee (${globalConfig.withdrawFee}%): ₦${fee.toLocaleString()}\nYou receive: ₦${net.toLocaleString()}\n\nConfirm?`)) return;
-
+  
   btn.disabled = true;
   btn.innerText = 'Processing...';
   try {
@@ -323,13 +337,13 @@ window.updateWithdrawPreview = () => {
 // ─── BANK SYNC ───────────────────────────────────────────
 async function initBankSync() {
   const u = currentUserData;
-
+  
   // Load banks dropdown from Korapay
   await loadBanksDropdown();
-
+  
   // Pre-fill existing bank details
   if (u.bankDetails?.accountNumber) {
-    const b  = u.bankDetails;
+    const b = u.bankDetails;
     const an = document.getElementById('accNumber');
     const ac = document.getElementById('accName');
     if (an) an.value = b.accountNumber || '';
@@ -341,13 +355,17 @@ async function initBankSync() {
       if (match) bn.value = match.value;
     }
   }
-
+  
   // Apply global lock
   const isMasterLocked = window.paymentConfig?.globalBankLock || false;
   const saveBtn = document.getElementById('saveBtn');
   if (isMasterLocked && u.bankDetails?.accountNumber) {
-    ['bankName','accNumber','accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = 'Contact support'; saveBtn.style.display = 'none'; }
+    ['bankName', 'accNumber', 'accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Contact support';
+      saveBtn.style.display = 'none';
+    }
     const msg = document.getElementById('status-msg');
     if (msg) msg.innerText = 'This feature is currently unavailable';
   }
@@ -368,7 +386,7 @@ async function loadBanksDropdown() {
     data.banks.forEach(bank => {
       const opt = document.createElement('option');
       opt.value = bank.code;
-      opt.text  = bank.name;
+      opt.text = bank.name;
       opt.dataset.name = bank.name;
       select.appendChild(opt);
     });
@@ -384,7 +402,7 @@ async function loadBanksDropdown() {
 let verifyTimer = null;
 window.handleAccNumberInput = (value) => {
   const statusEl = document.getElementById('verifyStatus');
-  const accName  = document.getElementById('accName');
+  const accName = document.getElementById('accName');
   if (accName) accName.value = '';
   if (statusEl) statusEl.innerHTML = '';
   if (value.length !== 10) return;
@@ -395,21 +413,21 @@ window.handleAccNumberInput = (value) => {
 
 async function verifyAccount(accountNumber) {
   const bankSelect = document.getElementById('bankName');
-  const statusEl   = document.getElementById('verifyStatus');
-  const accName    = document.getElementById('accName');
-  const bankCode   = bankSelect?.value;
-
+  const statusEl = document.getElementById('verifyStatus');
+  const accName = document.getElementById('accName');
+  const bankCode = bankSelect?.value;
+  
   if (!bankCode) {
     if (statusEl) statusEl.innerHTML = '<span style="color:orange">⚠️ Please select a bank first</span>';
     return;
   }
   if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">🔍 Verifying account...</span>';
-
+  
   const data = await api('/api/user/verify-account', {
     method: 'POST',
     body: JSON.stringify({ accountNumber, bankCode })
   });
-
+  
   if (data?.success) {
     if (accName) accName.value = data.accountName;
     if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName}</span>`;
@@ -421,18 +439,18 @@ async function verifyAccount(accountNumber) {
 
 window.handleSave = async () => {
   const bankSelect = document.getElementById('bankName');
-  const bankCode   = bankSelect?.value;
-  const bankLabel  = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
-  const aNum       = document.getElementById('accNumber').value.trim();
-  const aName      = document.getElementById('accName').value.trim();
-
+  const bankCode = bankSelect?.value;
+  const bankLabel = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
+  const aNum = document.getElementById('accNumber').value.trim();
+  const aName = document.getElementById('accName').value.trim();
+  
   if (!bankCode)
     return showToast('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
   if (aNum.length !== 10)
     return showToast('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
   if (!aName)
     return showToast('Account not verified yet. Wait for auto-verification.', 'warning', 'ri-close-line', 'Not Verified');
-
+  
   const data = await api('/api/user/bank-details', {
     method: 'PUT',
     body: JSON.stringify({ bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName })
@@ -447,8 +465,8 @@ window.handleSave = async () => {
 
 // ─── DEPOSIT AMOUNTS ─────────────────────────────────────
 const amountListDiv = document.getElementById('amountGrid');
-const confirmInput  = document.getElementById('customAmount');
-const confirmBtn    = document.getElementById('rechargeBtn');
+const confirmInput = document.getElementById('customAmount');
+const confirmBtn = document.getElementById('rechargeBtn');
 
 async function fetchAmounts() {
   const data = await api('/api/user/deposit-amounts');
@@ -536,11 +554,11 @@ async function loadMyInvestments() {
     return;
   }
   data.investments.forEach(d => {
-    const purchaseDate  = new Date(d.purchaseDate);
-    const now           = new Date();
-    const daysPassed    = Math.floor(Math.abs(now - purchaseDate) / (1000 * 60 * 60 * 24));
-    const remaining     = d.duration - daysPassed;
-    const progressPct   = Math.min(100, (daysPassed / d.duration) * 100);
+    const purchaseDate = new Date(d.purchaseDate);
+    const now = new Date();
+    const daysPassed = Math.floor(Math.abs(now - purchaseDate) / (1000 * 60 * 60 * 24));
+    const remaining = d.duration - daysPassed;
+    const progressPct = Math.min(100, (daysPassed / d.duration) * 100);
     container.innerHTML += `
       <div class="order-card block">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
@@ -595,7 +613,7 @@ function generateReferralLink() {
   if (!currentUserData) return;
   const refId = currentUserData.uid || currentUserData._id;
   const link = `${window.location.origin}/m2/index.html?ref=${refId}#signup-page`;
-  document.getElementById("refLink").innerHTML=`      
+  document.getElementById("refLink").innerHTML = `      
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referral Code</div>
             <div class="ref-code-box">
@@ -615,16 +633,16 @@ function generateReferralLink() {
               <button class="btn btn-outline" onclick="showAlert('Opening WhatsApp to share your referral link...','info')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
               </div></div>
             </div>`;
-            
-  document.getElementById("hRefCode").innerHTML=`              <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
+  
+  document.getElementById("hRefCode").innerHTML = `              <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
               <div class="ref-code">${refId}</div>
               <div style="font-size:12px;color:var(--text2);margin-top:6px;">7 referrals • ₦8,400 earned</div>
               <button class="copy-btn mt-4 w-full" style="margin-top:12px;" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy Code</button>`;
- // document.querySelectorAll('.refLink').forEach(el => el.innerText = link);
-/*  window.copyRefLink = () => {
-    navigator.clipboard.writeText(link)
-      .then(() => showToast('Referral link copied!', 'success', 'ri-clipboard-line', 'Copied!'));
-  };*/
+  // document.querySelectorAll('.refLink').forEach(el => el.innerText = link);
+  /*  window.copyRefLink = () => {
+      navigator.clipboard.writeText(link)
+        .then(() => showToast('Referral link copied!', 'success', 'ri-clipboard-line', 'Copied!'));
+    };*/
 }
 
 // ─── SPIN WHEEL ───────────────────────────────────────────
@@ -707,22 +725,24 @@ window.fetchUserHistory = async () => {
   data.activity.forEach(item => {
     const date = new Date(item.createdAt).toLocaleDateString();
     const div = document.createElement('div');
-    div.className = 'history-item';
+    div.className = 'txn-item';
     div.innerHTML = `
-      <div class="tx-details">
-        <h5>${item.type}: ${item.desc}</h5>
-        <span class="tx-date">${date}</span>
-      </div>
-      <div class="badge">| ${item.amount}</div>`;
+                    <div class="txn-icon credit"><i class="ri-arrow-down-line"></i>${item.type}</div>
+                <div class="txn-info">
+                  <div class="txn-name">${item.desc}</div>
+                  <div class="txn-date">${date}</div>
+                </div>
+                <div class="txn-amount credit">₦${item.amount}</div>`;
     list.appendChild(div);
   });
 };
 
+
 // ─── EMAIL VERIFICATION ───────────────────────────────────
 async function updateVerificationUI() {
   const container = document.getElementById('verifiedStatus');
-  const text      = document.getElementById('verificationText');
-  const icon      = document.getElementById('verificationIcon');
+  const text = document.getElementById('verificationText');
+  const icon = document.getElementById('verificationIcon');
   if (!container) return;
   const u = currentUserData;
   if (u.emailVerified) {
@@ -764,7 +784,11 @@ window.handleCheckIn = async () => {
     const btn = document.getElementById('checkinBtn');
     const msg = document.getElementById('checkinMsg');
     if (msg) msg.innerText = 'Already claimed! Check back tomorrow.';
-    if (btn) { btn.style.opacity = '0.5'; btn.className = 'check-box active'; btn.innerHTML=`ri-check-line`;}
+    if (btn) {
+      btn.style.opacity = '0.5';
+      btn.className = 'check-box active';
+      btn.innerHTML = `ri-check-line`;
+    }
     refreshBalance();
   } else {
     showToast(data?.error || 'Check-in failed.', 'warning', 'ri-close-line', 'Error');
@@ -803,45 +827,47 @@ init();
 // CHAT SYSTEM — Professional FB-style
 // ═══════════════════════════════════════════════════════════
 
-let chatSessionId     = null;
+let chatSessionId = null;
 let chatSessionStatus = 'active';
-let chatPollTimer     = null;
-let chatTypingTimer   = null;
+let chatPollTimer = null;
+let chatTypingTimer = null;
 let chatTypingPollTimer = null;
-let lastMsgCount      = 0;
-let chatSoundEnabled  = true;
-let chatSiteLogo      = '';
-let replyingTo        = null;   // { msgId, sender, preview }
-let editingMsgId      = null;
-let chatAllMessages   = [];     // full message cache for reply lookup
-const EMOJIS          = ['👍','❤️','😂','😮','😢','🔥'];
+let lastMsgCount = 0;
+let chatSoundEnabled = true;
+let chatSiteLogo = '';
+let replyingTo = null; // { msgId, sender, preview }
+let editingMsgId = null;
+let chatAllMessages = []; // full message cache for reply lookup
+const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
 // ─── AUDIO BEEP ───────────────────────────────────────────
 function playChatSound() {
   try {
-    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
-    const osc  = ctx.createOscillator();
+    const ctx = new(window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
     osc.frequency.value = 880;
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
-  } catch(e) {}
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } catch (e) {}
 }
 
 // ─── OPEN CHAT ────────────────────────────────────────────
 window.openChat = async function() {
   window.location.hash = '#chat';
   lucide.createIcons();
-
+  
   const logo = document.getElementById('chatAdminLogo');
   if (logo && chatSiteLogo) logo.src = chatSiteLogo;
-
+  
   const messagesEl = document.getElementById('chatMessages');
-  const loadingEl  = document.getElementById('chatLoading');
+  const loadingEl = document.getElementById('chatLoading');
   if (loadingEl) loadingEl.style.display = 'block';
-
+  
   // Load settings to enforce image toggle + sound
   const settingsRes = await api('/api/user/chat/settings');
   if (settingsRes?.success) {
@@ -849,9 +875,9 @@ window.openChat = async function() {
     const imgLabel = document.querySelector('label[for="chatImgInput"]');
     if (imgLabel) imgLabel.style.display = settingsRes.settings?.allowImages === false ? 'none' : 'flex';
   }
-
+  
   const sessionRes = await api('/api/user/chat/session');
-
+  
   if (sessionRes?.offline) {
     if (messagesEl) messagesEl.innerHTML = `
       <div style="text-align:center;padding:40px 20px;">
@@ -863,12 +889,12 @@ window.openChat = async function() {
     if (inputBar) inputBar.style.display = 'none';
     return;
   }
-
+  
   if (!sessionRes?.success) return;
-
-  chatSessionId     = sessionRes.session._id;
+  
+  chatSessionId = sessionRes.session._id;
   chatSessionStatus = sessionRes.session.status;
-
+  
   await loadChatMessages();
   startChatPolling();
   startTypingPoll();
@@ -878,17 +904,17 @@ window.openChat = async function() {
 async function loadChatMessages() {
   const data = await api('/api/user/chat/messages');
   if (!data?.success) return;
-
-  chatSessionId     = data.sessionId     || chatSessionId;
+  
+  chatSessionId = data.sessionId || chatSessionId;
   chatSessionStatus = data.sessionStatus || chatSessionStatus;
-  chatAllMessages   = data.messages;
-
+  chatAllMessages = data.messages;
+  
   renderChatMessages(data.messages);
   updateChatSessionUI();
-
+  
   const badge = document.getElementById('chatUnreadBadge');
   if (badge) badge.style.display = 'none';
-
+  
   lastMsgCount = data.messages.length;
 }
 
@@ -898,17 +924,17 @@ function renderChatMessages(messages) {
   if (!container) return;
   const loading = document.getElementById('chatLoading');
   if (loading) loading.style.display = 'none';
-
+  
   container.innerHTML = '';
   if (!messages.length) {
     container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">No messages yet. Say hello 👋</div>`;
     return;
   }
-
+  
   // Group messages by date
   let lastDate = '';
   messages.forEach(msg => {
-    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
     if (dateStr !== lastDate) {
       const divider = document.createElement('div');
       divider.style.cssText = 'text-align:center;margin:12px 0;';
@@ -918,18 +944,18 @@ function renderChatMessages(messages) {
     }
     container.appendChild(buildMsgBubble(msg, 'user'));
   });
-
+  
   container.scrollTop = container.scrollHeight;
 }
 
 // ─── BUILD MESSAGE BUBBLE ─────────────────────────────────
 function buildMsgBubble(msg, perspective) {
-  const isMe    = (perspective === 'user') ? msg.sender === 'user' : msg.sender === 'admin';
-  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  const isMe = (perspective === 'user') ? msg.sender === 'user' : msg.sender === 'admin';
+  const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const wrapper = document.createElement('div');
   wrapper.dataset.msgId = msg._id;
   wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
-
+  
   // ── Reply thread quote ──
   let replyHtml = '';
   if (msg.replyTo?.msgId) {
@@ -938,7 +964,7 @@ function buildMsgBubble(msg, perspective) {
         <span style="font-weight:700;color:var(--primary);margin-right:6px;">${msg.replyTo.sender === 'user' ? 'You' : 'Support'}</span>${msg.replyTo.preview}
       </div>`;
   }
-
+  
   // ── Main content ──
   let bubbleContent = '';
   if (msg.deleted) {
@@ -961,7 +987,7 @@ function buildMsgBubble(msg, perspective) {
   } else {
     bubbleContent = `<span style="font-size:14px;line-height:1.5;word-break:break-word;">${msg.content}</span>`;
   }
-
+  
   // ── Ticks (only for user's own messages) ──
   let ticksHtml = '';
   if (isMe && !msg.deleted) {
@@ -969,12 +995,12 @@ function buildMsgBubble(msg, perspective) {
     const tickLabel = msg.read ? '✓✓' : msg.delivered ? '✓✓' : '✓';
     ticksHtml = `<span style="font-size:11px;color:${isMe ? tickColor : 'var(--text-muted)'};margin-left:4px;">${tickLabel}</span>`;
   }
-
+  
   // ── Edit/deleted label ──
   const editedHtml = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.6;margin-left:4px;">edited</span>` : '';
-
+  
   // ── Reactions ──
-  const reactEntries = Object.entries(msg.reactions || {}).filter(([,v]) => v.length > 0);
+  const reactEntries = Object.entries(msg.reactions || {}).filter(([, v]) => v.length > 0);
   const reactionsHtml = reactEntries.length ? `
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
       ${reactEntries.map(([emoji, users]) => `
@@ -982,7 +1008,7 @@ function buildMsgBubble(msg, perspective) {
           ${emoji} ${users.length}
         </span>`).join('')}
     </div>` : '';
-
+  
   // ── Emoji reaction bar (shown on hover/long-press) ──
   const emojiBarId = `ebar-${msg._id}`;
   const emojiBarHtml = msg.deleted ? '' : `
@@ -993,7 +1019,7 @@ function buildMsgBubble(msg, perspective) {
       <span onclick="deleteMsg('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Delete">🗑️</span>` :
       !isMe && !msg.deleted ? `<span onclick="startReply('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Reply">↩️</span>` : ''}
     </div>`;
-
+  
   wrapper.innerHTML = `
     ${emojiBarHtml}
     <div class="chat-bubble" data-msg-id="${msg._id}"
@@ -1008,7 +1034,7 @@ function buildMsgBubble(msg, perspective) {
       <span style="font-size:10px;color:var(--text-muted);">${time}</span>${editedHtml}${ticksHtml}
     </div>
     ${reactionsHtml}`;
-
+  
   return wrapper;
 }
 
@@ -1091,7 +1117,10 @@ window.startEdit = function(msgId) {
   replyingTo = null;
   editingMsgId = msgId;
   const input = document.getElementById('chatInput');
-  if (input) { input.value = msg.content; input.focus(); }
+  if (input) {
+    input.value = msg.content;
+    input.focus();
+  }
   const bar = document.getElementById('chatReplyBar');
   const barSender = document.getElementById('chatReplyBarSender');
   const barText = document.getElementById('chatReplyBarText');
@@ -1112,26 +1141,29 @@ window.deleteMsg = async function(msgId) {
 window.sendChatMessage = async function() {
   if (chatSessionStatus === 'ended') return showToast('This chat session has ended.', 'warning', 'ri-close-line', 'Ended');
   const input = document.getElementById('chatInput');
-  const text  = input?.value.trim();
+  const text = input?.value.trim();
   if (!text) return;
-
+  
   // Handle edit
   if (editingMsgId) {
     const data = await api(`/api/user/chat/message/${editingMsgId}`, {
       method: 'PUT',
       body: JSON.stringify({ content: text })
     });
-    if (data?.success) { cancelReply(); await loadChatMessages(); }
+    if (data?.success) {
+      cancelReply();
+      await loadChatMessages();
+    }
     else showToast(data?.error || 'Failed', 'error', 'ri-close-line', 'Error');
     return;
   }
-
+  
   input.value = '';
-
+  
   const body = { content: text, type: 'text' };
   if (replyingTo) body.replyTo = replyingTo;
   cancelReply();
-
+  
   const data = await api('/api/user/chat/send', {
     method: 'POST',
     body: JSON.stringify(body)
@@ -1154,9 +1186,13 @@ window.answerPolar = async function(msgId, answer, btnEl) {
   // Disable both buttons immediately
   if (btnEl) {
     const parent = btnEl.closest('div');
-    if (parent) parent.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'not-allowed'; });
+    if (parent) parent.querySelectorAll('button').forEach(b => {
+      b.disabled = true;
+      b.style.opacity = '0.5';
+      b.style.cursor = 'not-allowed';
+    });
   }
-
+  
   const data = await api('/api/user/chat/send', {
     method: 'POST',
     body: JSON.stringify({ content: answer, type: 'polar_answer', polarMsgId: msgId })
@@ -1167,7 +1203,11 @@ window.answerPolar = async function(msgId, answer, btnEl) {
     showToast(data?.error || 'Failed to answer.', 'error', 'ri-close-line', 'Error');
     if (btnEl) {
       const parent = btnEl.closest('div');
-      if (parent) parent.querySelectorAll('button').forEach(b => { b.disabled = false; b.style.opacity = '1'; b.style.cursor = 'pointer'; });
+      if (parent) parent.querySelectorAll('button').forEach(b => {
+        b.disabled = false;
+        b.style.opacity = '1';
+        b.style.cursor = 'pointer';
+      });
     }
   }
 };
@@ -1177,24 +1217,24 @@ window.handleChatImageUpload = async function(input) {
   const file = input.files[0];
   if (!file) return;
   if (chatSessionStatus === 'ended') return showToast('Session ended.', 'warning', 'ri-close-line', 'Ended');
-
+  
   showToast('Uploading image...', 'info', 'ri-loader-line', 'Uploading');
-
-  const keysRes  = await api('/api/user/apikeys');
+  
+  const keysRes = await api('/api/user/apikeys');
   const imgbbKey = keysRes?.imgbb;
   if (!imgbbKey) return showToast('Image upload not configured.', 'error', 'ri-close-line', 'Error');
-
+  
   const formData = new FormData();
   formData.append('image', file);
-  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
   const result = await res.json();
   if (!result.success) return showToast('Upload failed.', 'error', 'ri-close-line', 'Error');
-
+  
   const body = { type: 'image', imageUrl: result.data.url, content: '📷 Image' };
   if (replyingTo) body.replyTo = replyingTo;
   cancelReply();
-
-  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify(body) });
+  
+  const data = await api('/api/user/chat/send', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
     chatAllMessages.push(data.message);
     const container = document.getElementById('chatMessages');
@@ -1210,7 +1250,7 @@ window.onChatInputKeydown = function(e) {
   if (e.key === 'Enter') { sendChatMessage(); return; }
   clearTimeout(chatTypingTimer);
   chatTypingTimer = setTimeout(() => {
-    api('/api/user/chat/typing', { method:'POST', body:'{}' });
+    api('/api/user/chat/typing', { method: 'POST', body: '{}' });
   }, 300);
 };
 
@@ -1230,8 +1270,8 @@ function stopTypingPoll() {
 
 // ─── UPDATE SESSION UI ────────────────────────────────────
 function updateChatSessionUI() {
-  const ended    = chatSessionStatus === 'ended';
-  const badge    = document.getElementById('chatEndedBadge');
+  const ended = chatSessionStatus === 'ended';
+  const badge = document.getElementById('chatEndedBadge');
   const inputBar = document.getElementById('chatInputBar');
   const statusDot = document.getElementById('chatStatusDot');
   if (badge) badge.style.display = ended ? 'block' : 'none';
@@ -1246,10 +1286,10 @@ function startChatPolling() {
     if (window.location.hash !== '#chat') return;
     const data = await api('/api/user/chat/messages');
     if (!data?.success) return;
-    if (data.messages.length !== lastMsgCount || JSON.stringify(data.messages.map(m=>m.reactions)) !== JSON.stringify(chatAllMessages.map(m=>m.reactions))) {
-      const newMsgs    = data.messages.slice(lastMsgCount);
+    if (data.messages.length !== lastMsgCount || JSON.stringify(data.messages.map(m => m.reactions)) !== JSON.stringify(chatAllMessages.map(m => m.reactions))) {
+      const newMsgs = data.messages.slice(lastMsgCount);
       const hasAdminMsg = newMsgs.some(m => m.sender === 'admin');
-      chatAllMessages  = data.messages;
+      chatAllMessages = data.messages;
       renderChatMessages(data.messages);
       if (chatSoundEnabled && hasAdminMsg) playChatSound();
       lastMsgCount = data.messages.length;
@@ -1266,7 +1306,7 @@ function stopChatPolling() {
 // ─── POLL UNREAD BADGE ────────────────────────────────────
 async function pollChatUnread() {
   if (window.location.hash === '#chat') { setTimeout(pollChatUnread, 10000); return; }
-  const data  = await api('/api/user/chat/unread');
+  const data = await api('/api/user/chat/unread');
   const badge = document.getElementById('chatUnreadBadge');
   if (badge && data?.unread > 0) {
     badge.textContent = data.unread;
