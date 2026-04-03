@@ -1686,86 +1686,123 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-//let verifyTimer = null;
+  // ── FIX 1: declare the timer variable (was commented out before) ──
+ // let verifyTimer = null;
 
-window.handleBankSelect = async () => {
-  const bankCode = document.getElementById('bankName').value;
-  const accNumber = document.getElementById('accNumber').value;
-  const statusEl = document.getElementById('verifyStatus');
-  const accName = document.getElementById('accName');
-  
-  // Only run if we have both a bank selected and a 10-digit number
-  if (!bankCode || accNumber.length !== 10) return;
-  
-  statusEl.innerHTML = '<span style="color:blue">🔍 Verifying account...</span>';
-  
-  try {
-    const data = await api('/api/user/verify-account', {
-      method: 'POST',
-      body: JSON.stringify({ accountNumber: accNumber, bankCode: bankCode })
-    });
-    
-    if (data?.success) {
-      accName.value = data.accountName;
-      statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName}</span>`;
-    } else {
-      accName.value = '';
-      statusEl.innerHTML = `<span style="color:red">❌ ${data.error || 'Verification failed'}</span>`;
-    }
-  } catch (err) {
-    statusEl.innerHTML = '<span style="color:red">❌ Server Error</span>';
+  // ── Helpers ──────────────────────────────────────────────
+  function setStatus(msg, color) {
+    document.getElementById('verifyStatus').innerHTML =
+      `<span style="color:${color}">${msg}</span>`;
   }
-};
 
-window.handleAccNumberInput = (value) => {
-  const statusEl = document.getElementById('verifyStatus');
-  const accName = document.getElementById('accName');
-  const bankSelect = document.getElementById('bankName');
-  
-  // Reset fields while user is typing
-  if (accName) accName.value = '';
-  if (statusEl) statusEl.innerHTML = '';
-  
-  // Only trigger when exactly 10 digits are entered
-  if (value.length !== 10) return;
-  // Inside handleAccNumberInput, right after the 10-digit check:
-  if (value.length === 10 && bankSelect.value !== "") {
-    handleBankSelect(); // If they picked a bank first, verify it immediately
-    return;
+  function clearFields() {
+    document.getElementById('accName').value = '';
+    document.getElementById('verifyStatus').innerHTML = '';
   }
-  if (statusEl) {
-    statusEl.innerHTML = '<span style="color: #4318ff;">🔍 Detecting Bank...</span>';
-  }
-  
-  clearTimeout(verifyTimer);
-  verifyTimer = setTimeout(async () => {
+
+  // ── Called when user changes the bank dropdown ───────────
+  // Only runs if a full 10-digit account number is already present
+  window.handleBankSelect = async () => {
+    const bankCode  = document.getElementById('bankSelect').value;
+    const accNumber = document.getElementById('accNumber').value.trim();
+
+    // Not ready yet — silently wait
+    if (!bankCode || accNumber.length !== 10) return;
+
+    setStatus('🔍 Verifying account...', 'blue');
+    document.getElementById('accName').value = '';
+
     try {
-      const data = await api('/api/user/resolve-account', {
+      const data = await api('/api/user/verify-account', {
         method: 'POST',
-        body: JSON.stringify({ accountNumber: value })
+        body: JSON.stringify({ accountNumber: accNumber, bankCode })
       });
-      
+
       if (data?.success) {
-        // Auto-fill account name
-        if (accName) accName.value = data.accountName;
-        
-        // Auto-select the bank in the dropdown
-        if (bankSelect) {
-          bankSelect.value = data.bankCode;
-        }
-        
-        statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName} (${data.bankName})</span>`;
+        document.getElementById('accName').value = data.accountName;
+        setStatus(`✅ ${data.accountName}`, '#10ac84');
       } else {
-        statusEl.innerHTML = `<span style="color:orange">⚠️ ${data.error || 'Could not detect bank automatically.'}</span>`;
+        document.getElementById('accName').value = '';
+        setStatus(`❌ ${data?.error || 'Verification failed'}`, 'red');
       }
     } catch (err) {
-      statusEl.innerHTML = `<span style="color:red">❌ Connection Error</span>`;
+      setStatus('❌ Server error', 'red');
     }
-  }, 700);
-};
+  };
 
-// Handle the Save Button
-window.handleSave = async () => {
-  // Add your logic to collect values and PUT to /api/user/bank-details
-  console.log("Saving...");
-};
+  // ── Called on every keystroke in the account number field ─
+  window.handleAccNumberInput = (value) => {
+    // ── FIX 2: always clear the previous timer first ──────
+    clearTimeout(verifyTimer);
+
+    // Reset UI while user is still typing
+    clearFields();
+
+    // Not 10 digits yet — nothing to do
+    if (value.length !== 10) return;
+
+    const bankCode = document.getElementById('bankSelect').value;
+
+    // ── FIX 3: if bank already selected, verify immediately ──
+    // (no "Detecting..." flash — status is set inside handleBankSelect)
+    if (bankCode) {
+      handleBankSelect();
+      return;
+    }
+
+    // No bank selected — try auto-resolve after short debounce
+    setStatus('🔍 Detecting bank...', '#4318ff');
+
+    verifyTimer = setTimeout(async () => {
+      try {
+        const data = await api('/api/user/resolve-account', {
+          method: 'POST',
+          body: JSON.stringify({ accountNumber: value })
+        });
+
+        if (data?.success) {
+          document.getElementById('accName').value = data.accountName;
+
+          // Auto-select the resolved bank in the dropdown
+          document.getElementById('bankSelect').value = data.bankCode;
+
+          setStatus(`✅ ${data.accountName} · ${data.bankName}`, '#10ac84');
+        } else {
+          // Korapay couldn't find it in the top-banks list
+          setStatus(`⚠️ ${data?.error || 'Could not detect bank. Please select manually.'}`, 'orange');
+        }
+      } catch (err) {
+        setStatus('❌ Connection error', 'red');
+      }
+    }, 700); // 700ms debounce — fires once user stops typing
+  };
+
+  // ── Save button ───────────────────────────────────────────
+  window.handleSave = async () => {
+    const accountNumber = document.getElementById('accNumber').value.trim();
+    const bankCode      = document.getElementById('bankSelect').value;
+    const bankName      = document.getElementById('bankSelect').selectedOptions[0]?.text || '';
+    const accountName   = document.getElementById('accName').value.trim();
+
+    if (!accountNumber || accountNumber.length !== 10)
+      return setStatus('❌ Enter a valid 10-digit account number.', 'red');
+    if (!bankCode)
+      return setStatus('❌ Please select your bank.', 'red');
+    if (!accountName)
+      return setStatus('❌ Account name not verified yet.', 'red');
+
+    try {
+      const data = await api('/api/user/bank-details', {
+        method: 'PUT',
+        body: JSON.stringify({ bankName, bankCode, accountNumber, accountName })
+      });
+
+      if (data?.success) {
+        setStatus('✅ Bank details saved!', '#10ac84');
+      } else {
+        setStatus(`❌ ${data?.error || 'Failed to save.'}`, 'red');
+      }
+    } catch (err) {
+      setStatus('❌ Server error', 'red');
+    }
+  };
