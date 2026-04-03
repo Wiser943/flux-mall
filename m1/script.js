@@ -126,6 +126,7 @@ async function init() {
     if (btn) {
       btn.style.opacity = '0.5';
       btn.className = 'check-box active';
+      btn.innerHTML = `<i class="ri-check-line"></i>`;
     }
   }
 }
@@ -186,9 +187,6 @@ async function loadWithdrawals() {
 // Base: https://api.fluxmall.io
 // Endpoints: /api/deposit  /api/withdrawal  /api/activity
 // ======================================================
-
-const TXN_API = 'https://api.fluxmall.io';
-
 const TXN_ENDPOINTS = {
   deposit: '/api/user/deposits',
   withdrawal: '/api/user/withdrawals',
@@ -229,7 +227,7 @@ async function fetchEndpoint(type) {
     json.transactions ? json.transactions :
     json.deposits ? json.deposits :
     json.withdrawals ? json.withdrawals :
-    json.activities ? json.activities : [];
+    json.activity ? json.activity : [];
   
   const tagged = rows.map(r => ({ ...r, _type: type }));
   txnCache[type] = tagged;
@@ -1143,14 +1141,15 @@ async function updateVerificationUI() {
 window.handleCheckIn = async () => {
   const data = await api('/api/user/checkin', { method: 'POST' });
   if (data?.success) {
-    showToast(`✅ Check-in bonus ₦${data.bonus} added!`, 'success', 'ri-check-line', 'Checked In!');
+        showAlert(`Success, Check-in bonus ₦${data.bonus} added!`,true)
+
     const btn = document.getElementById('checkinBtn');
     const msg = document.getElementById('checkinMsg');
     if (msg) msg.innerText = 'Already claimed! Check back tomorrow.';
     if (btn) {
       btn.style.opacity = '0.5';
       btn.className = 'check-box active';
-      btn.innerHTML = `ri-check-line`;
+      btn.innerHTML = `<i class="ri-check-line"></i>`;
     }
     refreshBalance();
   } else {
