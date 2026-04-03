@@ -113,7 +113,7 @@ async function init() {
   loadMyInvestments();
   collectDailyEarnings();
   fetchAmounts();
- // initBankSync();
+  // initBankSync();
   updateVerificationUI();
   fetchUserHistory();
   pollNotifications();
@@ -229,8 +229,7 @@ async function fetchEndpoint(type) {
     json.transactions ? json.transactions :
     json.deposits ? json.deposits :
     json.withdrawals ? json.withdrawals :
-    json.activities ? json.activities :
-    [];
+    json.activities ? json.activities : [];
   
   const tagged = rows.map(r => ({ ...r, _type: type }));
   txnCache[type] = tagged;
@@ -1689,23 +1688,55 @@ window.addEventListener('DOMContentLoaded', () => {
 
 //let verifyTimer = null;
 
+window.handleBankSelect = async () => {
+  const bankCode = document.getElementById('bankName').value;
+  const accNumber = document.getElementById('accNumber').value;
+  const statusEl = document.getElementById('verifyStatus');
+  const accName = document.getElementById('accName');
+  
+  // Only run if we have both a bank selected and a 10-digit number
+  if (!bankCode || accNumber.length !== 10) return;
+  
+  statusEl.innerHTML = '<span style="color:blue">🔍 Verifying account...</span>';
+  
+  try {
+    const data = await api('/api/user/verify-account', {
+      method: 'POST',
+      body: JSON.stringify({ accountNumber: accNumber, bankCode: bankCode })
+    });
+    
+    if (data?.success) {
+      accName.value = data.accountName;
+      statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName}</span>`;
+    } else {
+      accName.value = '';
+      statusEl.innerHTML = `<span style="color:red">❌ ${data.error || 'Verification failed'}</span>`;
+    }
+  } catch (err) {
+    statusEl.innerHTML = '<span style="color:red">❌ Server Error</span>';
+  }
+};
 
 window.handleAccNumberInput = (value) => {
   const statusEl = document.getElementById('verifyStatus');
   const accName = document.getElementById('accName');
   const bankSelect = document.getElementById('bankName');
-
+  
   // Reset fields while user is typing
   if (accName) accName.value = '';
   if (statusEl) statusEl.innerHTML = '';
   
   // Only trigger when exactly 10 digits are entered
   if (value.length !== 10) return;
-
+  // Inside handleAccNumberInput, right after the 10-digit check:
+  if (value.length === 10 && bankSelect.value !== "") {
+    handleBankSelect(); // If they picked a bank first, verify it immediately
+    return;
+  }
   if (statusEl) {
     statusEl.innerHTML = '<span style="color: #4318ff;">🔍 Detecting Bank...</span>';
   }
-
+  
   clearTimeout(verifyTimer);
   verifyTimer = setTimeout(async () => {
     try {
@@ -1713,7 +1744,7 @@ window.handleAccNumberInput = (value) => {
         method: 'POST',
         body: JSON.stringify({ accountNumber: value })
       });
-
+      
       if (data?.success) {
         // Auto-fill account name
         if (accName) accName.value = data.accountName;
