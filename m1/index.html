@@ -23,10 +23,33 @@
 </head>
 
 <body>
+  <!-- Alert Modal -->
+  <div id="custom-alert-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-handle"></div>
+      <h2>Notice <span class="close-button" id="closeAlertBtn">&times;</span></h2>
+      <p id="alert-message" class="modal-message"></p>
+      <button id="alert-ok-button">Got It</button>
+    </div>
+  </div>
+  
+  <!-- Confirm Modal -->
+  <div id="custom-confirm-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-handle"></div>
+      <h2 id="confirm-title">Confirm Details</h2>
+      <p id="confirm-message" class="modal-message"></p>
+      <div id="confirm-detail" class="modal-detail" style="display:none;"></div>
+      <div class="confirm-buttons">
+        <button id="confirm-yes-button">Proceed</button>
+        <button id="confirm-no-button">Recheck Details</button>
+      </div>
+    </div>
+  </div>
+  
   
   <!-- OVERLAY (mobile) -->
   <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-  
   <!-- ===== SIDEBAR ===== -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
@@ -253,115 +276,115 @@
           <div class="card mb-6" style="background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(167,139,250,0.08));border-color:rgba(108,99,255,0.2)" id="hRefCode">
           </div>
         </div>
-              <div class="card">
-        <div class="flex-between mb-4">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Spending Activity</div>
-          <div class="tabs" style="margin-bottom:0;">
-            <div class="tab active">7D</div>
-            <div class="tab" onclick="switchTab(this)">30D</div>
-            <div class="tab" onclick="switchTab(this)">90D</div>
+        <div class="card">
+          <div class="flex-between mb-4">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Spending Activity</div>
+            <div class="tabs" style="margin-bottom:0;">
+              <div class="tab active">7D</div>
+              <div class="tab" onclick="switchTab(this)">30D</div>
+              <div class="tab" onclick="switchTab(this)">90D</div>
+            </div>
+          </div>
+          
+          <div class="mini-chart">
+            <div class="bar" style="height:40%"></div>
+            <div class="bar" style="height:65%"></div>
+            <div class="bar" style="height:30%"></div>
+            <div class="bar active" style="height:85%"></div>
+            <div class="bar" style="height:55%"></div>
+            <div class="bar" style="height:70%"></div>
+            <div class="bar" style="height:45%"></div>
+            <div class="bar active" style="height:90%"></div>
+            <div class="bar" style="height:60%"></div>
+            <div class="bar" style="height:75%"></div>
+            <div class="bar" style="height:35%"></div>
+            <div class="bar" style="height:80%"></div>
+            <div class="bar active" style="height:95%"></div>
+            <div class="bar" style="height:50%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text3);">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
           </div>
         </div>
         
-        <div class="mini-chart">
-          <div class="bar" style="height:40%"></div>
-          <div class="bar" style="height:65%"></div>
-          <div class="bar" style="height:30%"></div>
-          <div class="bar active" style="height:85%"></div>
-          <div class="bar" style="height:55%"></div>
-          <div class="bar" style="height:70%"></div>
-          <div class="bar" style="height:45%"></div>
-          <div class="bar active" style="height:90%"></div>
-          <div class="bar" style="height:60%"></div>
-          <div class="bar" style="height:75%"></div>
-          <div class="bar" style="height:35%"></div>
-          <div class="bar" style="height:80%"></div>
-          <div class="bar active" style="height:95%"></div>
-          <div class="bar" style="height:50%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text3);">
-          <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-        </div>
-      </div>
-
       </div>
       
-    
-    <!-- WALLET PAGE -->
-    <div class="page" id="wallet">
-      <div class="section-header mb-6">
-        <div class="section-title">My Wallet</div>
-        <div class="section-sub">Manage your funds and virtual accounts</div>
-      </div>
       
-      <div class="grid-3 mb-6">
-        <div class="balance-card">
-          <div class="balance-label">Main Balance</div>
-          <div class="balance-amount">₦48,250.00</div>
-          <div class="balance-actions">
-            <a class="bal-btn white" href="#deposit"><i class="ri-arrow-down-line"></i> Fund</a>
-            <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Send</a>
-          </div>
-        </div>
-        <div class="card" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(74,222,128,0.05));border-color:rgba(34,197,94,0.2)">
-          <div class="stat-icon green" style="margin-bottom:12px"><i class="ri-safe-2-line"></i></div>
-          <div class="stat-label">Savings Wallet</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;margin:6px 0;">₦15,000</div>
-          <div class="stat-change up">↑ +5.2% APY</div>
-        </div>
-        <div class="card" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(251,191,36,0.05));border-color:rgba(245,158,11,0.2)">
-          <div class="stat-icon yellow" style="margin-bottom:12px"><i class="ri-bar-chart-box-line"></i></div>
-          <div class="stat-label">Investment Wallet</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;margin:6px 0;">₦32,000</div>
-          <div class="stat-change up">↑ Active Plans x2</div>
-        </div>
-      </div>
-      
-      <div class="grid-2">
-        <div class="card">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Virtual Account</div>
-          <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:20px;margin-bottom:16px;">
-            <div class="text-xs mb-4">ACCOUNT NUMBER</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:24px;letter-spacing:3px;color:var(--accent2);">0123 4567 89</div>
-            <div style="font-size:13px;color:var(--text2);margin-top:6px;">Wema Bank • Adebayo James</div>
-          </div>
-          <button class="btn btn-outline w-full" onclick="showAlert('Virtual account details copied to clipboard!','success')"><i class="ri-file-copy-line"></i> Copy Details</button>
+      <!-- WALLET PAGE -->
+      <div class="page" id="wallet">
+        <div class="section-header mb-6">
+          <div class="section-title">My Wallet</div>
+          <div class="section-sub">Manage your funds and virtual accounts</div>
         </div>
         
-        <div class="card">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Wallet Breakdown</div>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div>
-              <div class="flex-between text-sm mb-4">
-                <span>Main Wallet</span><span class="font-bold" style="color:var(--text)">₦48,250</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill purple" style="width:51%"></div>
-              </div>
+        <div class="grid-3 mb-6">
+          <div class="balance-card">
+            <div class="balance-label">Main Balance</div>
+            <div class="balance-amount">₦48,250.00</div>
+            <div class="balance-actions">
+              <a class="bal-btn white" href="#deposit"><i class="ri-arrow-down-line"></i> Fund</a>
+              <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Send</a>
             </div>
-            <div>
-              <div class="flex-between text-sm mb-4">
-                <span>Savings Wallet</span><span class="font-bold" style="color:var(--text)">₦15,000</span>
-              </div>
-              <div class="progress-bar">
-                <div class="progress-fill green" style="width:16%"></div>
-              </div>
+          </div>
+          <div class="card" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(74,222,128,0.05));border-color:rgba(34,197,94,0.2)">
+            <div class="stat-icon green" style="margin-bottom:12px"><i class="ri-safe-2-line"></i></div>
+            <div class="stat-label">Savings Wallet</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;margin:6px 0;">₦15,000</div>
+            <div class="stat-change up">↑ +5.2% APY</div>
+          </div>
+          <div class="card" style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(251,191,36,0.05));border-color:rgba(245,158,11,0.2)">
+            <div class="stat-icon yellow" style="margin-bottom:12px"><i class="ri-bar-chart-box-line"></i></div>
+            <div class="stat-label">Investment Wallet</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;margin:6px 0;">₦32,000</div>
+            <div class="stat-change up">↑ Active Plans x2</div>
+          </div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Virtual Account</div>
+            <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:20px;margin-bottom:16px;">
+              <div class="text-xs mb-4">ACCOUNT NUMBER</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:24px;letter-spacing:3px;color:var(--accent2);">0123 4567 89</div>
+              <div style="font-size:13px;color:var(--text2);margin-top:6px;">Wema Bank • Adebayo James</div>
             </div>
-            <div>
-              <div class="flex-between text-sm mb-4">
-                <span>Investment Wallet</span><span class="font-bold" style="color:var(--text)">₦32,000</span>
+            <button class="btn btn-outline w-full" onclick="showAlert('Virtual account details copied to clipboard!','success')"><i class="ri-file-copy-line"></i> Copy Details</button>
+          </div>
+          
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Wallet Breakdown</div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <div class="flex-between text-sm mb-4">
+                  <span>Main Wallet</span><span class="font-bold" style="color:var(--text)">₦48,250</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill purple" style="width:51%"></div>
+                </div>
               </div>
-              <div class="progress-bar">
-                <div class="progress-fill yellow" style="width:33%"></div>
+              <div>
+                <div class="flex-between text-sm mb-4">
+                  <span>Savings Wallet</span><span class="font-bold" style="color:var(--text)">₦15,000</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill green" style="width:16%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex-between text-sm mb-4">
+                  <span>Investment Wallet</span><span class="font-bold" style="color:var(--text)">₦32,000</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill yellow" style="width:33%"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- TRANSACTIONS PAGE -->
-          <div class="page" id="transactions">
+      
+      <!-- TRANSACTIONS PAGE -->
+      <div class="page" id="transactions">
         <div class="flex-between mb-6">
           <div>
             <div class="section-title">Transactions</div>
@@ -457,9 +480,9 @@
           </div>
         </div>
       </div>
-    
-    
-   <!--- <div class="page" id="transactions">
+      
+      
+      <!--- <div class="page" id="transactions">
       <div class="flex-between mb-6">
         <div>
           <div class="section-title">Transactions</div>
@@ -573,909 +596,879 @@
         </div>
       </div>
     </div>-->
-    
-    <!-- INVESTMENTS PAGE -->
-    <div class="page" id="invest">
-      <div class="flex-between mb-6">
-        <div>
-          <div class="section-title">Investments</div>
-          <div class="section-sub">Grow your money with smart investment plans</div>
-        </div>
-        <a class="btn btn-primary" href="#plans"><i class="ri-bar-chart-box-line"></i> Browse Plans</a>
-      </div>
-      <div class="grid-3 mb-6" id="shares-container">
-        
-      </div>
-      <div class="grid-3 mb-6">
-        
-        <div class="stat-card blue">
-          <div class="stat-icon blue"><i class="ri-bar-chart-box-line"></i></div>
-          <div class="stat-value">₦32,000</div>
-          <div class="stat-label">Active Investments</div>
-          <div class="stat-change up">↑ 2 active plans</div>
-        </div>
-        <div class="stat-card green">
-          <div class="stat-icon green"><i class="ri-arrow-up-circle-line"></i></div>
-          <div class="stat-value">₦4,200</div>
-          <div class="stat-label">Total Returns</div>
-          <div class="stat-change up">↑ +13.1% ROI</div>
-        </div>
-        <div class="stat-card yellow">
-          <div class="stat-icon yellow"><i class="ri-time-line"></i></div>
-          <div class="stat-value">₦3,500</div>
-          <div class="stat-label">Pending Payout</div>
-          <div class="stat-change up">Est. Jun 18</div>
-        </div>
-      </div>
       
-      <div class="section-title mb-4" style="font-size:16px;">Active Plans</div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div class="card" style="border-left:3px solid var(--green);">
-          <div class="flex-between mb-4">
-            <div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Growth Plan — 3 Months</div>
-              <div class="text-xs mt-4">Started: May 14, 2025 · Matures: Aug 14, 2025</div>
-            </div>
-            <span class="badge success">Active</span>
-          </div>
-          <div class="form-row" style="margin-bottom:12px;">
-            <div>
-              <div class="text-xs mb-4">Principal</div>
-              <div style="font-weight:700;">₦20,000</div>
-            </div>
-            <div>
-              <div class="text-xs mb-4">Return Rate</div>
-              <div style="font-weight:700;color:var(--green);">15% ROI</div>
-            </div>
-          </div>
-          <div class="flex-between mb-4 text-sm">
-            <span>Progress</span><span>32 of 90 days</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill green" style="width:36%"></div>
-          </div>
-        </div>
-        
-        <div class="card" style="border-left:3px solid var(--blue);">
-          <div class="flex-between mb-4">
-            <div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Stable Plan — 1 Month</div>
-              <div class="text-xs mt-4">Started: Jun 1, 2025 · Matures: Jul 1, 2025</div>
-            </div>
-            <span class="badge info">Active</span>
-          </div>
-          <div class="form-row" style="margin-bottom:12px;">
-            <div>
-              <div class="text-xs mb-4">Principal</div>
-              <div style="font-weight:700;">₦12,000</div>
-            </div>
-            <div>
-              <div class="text-xs mb-4">Return Rate</div>
-              <div style="font-weight:700;color:var(--blue);">8% ROI</div>
-            </div>
-          </div>
-          <div class="flex-between mb-4 text-sm">
-            <span>Progress</span><span>14 of 30 days</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill purple" style="width:47%"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- DEPOSIT PAGE -->
-    <div class="page" id="deposit">
-      <div class="section-header mb-6">
-        <div class="section-title">Deposit Funds</div>
-        <div class="section-sub">Add money to your Fluxmall Exchange wallet</div>
-      </div>
-      
-      <div class="grid-2">
-        <div class="card">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Bank Transfer</div>
-          <div class="form-group">
-            <label>Amount</label>
-            <div class="amount-input">
-              <span class="currency">₦</span>
-              <input type="number" placeholder="0.00" id="depositAmount">
-            </div>
-            <div class="quick-amounts">
-              <span class="qa-btn" onclick="setAmount('depositAmount','1000')">₦1,000</span>
-              <span class="qa-btn" onclick="setAmount('depositAmount','5000')">₦5,000</span>
-              <span class="qa-btn" onclick="setAmount('depositAmount','10000')">₦10,000</span>
-              <span class="qa-btn" onclick="setAmount('depositAmount','20000')">₦20,000</span>
-              <span class="qa-btn" onclick="setAmount('depositAmount','50000')">₦50,000</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Payment Method</label>
-            <select>
-              <option>Bank Transfer (Wema Virtual Account)</option>
-              <option>Paystack — Card/Bank</option>
-              <option>Flutterwave</option>
-              <option>USSD *737#</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Wallet</label>
-            <select>
-              <option>Main Wallet</option>
-              <option>Savings Wallet</option>
-              <option>Investment Wallet</option>
-            </select>
-          </div>
-          <button class="btn btn-primary w-full" onclick="showAlert('Payment initiated! Complete in your bank app.','info')"><i class="ri-bank-card-line"></i> Proceed to Payment</button>
-        </div>
-        
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Virtual Account Details</div>
-            <div style="background:var(--bg2);padding:18px;border-radius:var(--radius-sm);margin-bottom:12px;">
-              <div class="text-xs mb-4">ACCOUNT NAME</div>
-              <div style="font-weight:600;font-size:15px;">Adebayo James / Fluxmall Exchange</div>
-              <div class="divider"></div>
-              <div class="text-xs mb-4">ACCOUNT NUMBER</div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:22px;letter-spacing:2px;color:var(--accent2);">0123 4567 89</div>
-              <div class="divider"></div>
-              <div class="text-xs mb-4">BANK</div>
-              <div style="font-weight:600;">Wema Bank</div>
-            </div>
-            <button class="btn btn-outline w-full" onclick="showAlert('Account details copied!','success')"><i class="ri-file-copy-line"></i> Copy Details</button>
-          </div>
-          
-          <div class="card" style="background:var(--yellow-bg);border-color:rgba(245,158,11,0.2)">
-            <div style="display:flex;gap:10px;align-items:flex-start;">
-              <span style="font-size:20px;">⚠️</span>
-              <div>
-                <div style="font-size:13px;font-weight:600;color:var(--yellow);margin-bottom:4px;">Important Notice</div>
-                <div style="font-size:12px;color:var(--text2);line-height:1.6;">Deposits reflect within 5–10 minutes. Minimum deposit is ₦500. Always use your unique virtual account number. Contact support if funds don't reflect after 30 mins.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- WITHDRAW PAGE -->
-    <div class="page" id="withdraw">
-      <div class="section-header mb-6">
-        <div class="section-title">Withdraw Funds</div>
-        <div class="section-sub">Send money to your bank account</div>
-      </div>
-      
-      <div class="grid-2">
-          
-<div style="max-width:400px;margin:20px auto;padding:20px;border-radius:12px;background:#fff;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:sans-serif;">
-  <h3 style="margin-top:0;color:#2b3674;">🏦 Add Bank Account</h3>
-
-  <div style="margin-bottom:15px;">
-    <label style="display:block;font-size:14px;margin-bottom:5px;color:#707eae;">Account Number</label>
-    <input
-      type="number"
-      id="accNumber"
-      placeholder="0123456789"
-      oninput="handleAccNumberInput(this.value)"
-      style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;box-sizing:border-box;font-size:16px;"
-    >
-    <div id="verifyStatus" style="font-size:12px;margin-top:5px;min-height:18px;"></div>
-  </div>
-
-  <div style="margin-bottom:15px;">
-    <label style="display:block;font-size:14px;margin-bottom:5px;color:#707eae;">Bank Name</label>
-    <select id="bankSelect" onchange="handleBankSelect()" style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;background:white;font-size:15px;">
-      <option value="">-- Select Bank --</option>
-      <option value="058">GTBank</option>
-      <option value="057">Zenith Bank</option>
-      <option value="044">Access Bank</option>
-      <option value="999992">OPay</option>
-      <option value="50515">Moniepoint</option>
-      <option value="50211">Kuda Bank</option>
-      <option value="011">First Bank</option>
-      <option value="033">UBA</option>
-      <option value="070">Fidelity Bank</option>
-      <option value="032">Union Bank</option>
-    </select>
-  </div>
-
-  <div style="margin-bottom:20px;">
-    <label style="display:block;font-size:14px;margin-bottom:5px;color:#707eae;">Account Name</label>
-    <input
-      type="text"
-      id="accName"
-      readonly
-      placeholder="Auto-filled after verification"
-      style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;background:#f4f7fe;color:#2b3674;font-weight:bold;box-sizing:border-box;"
-    >
-  </div>
-
-  <button onclick="handleSave()" style="width:100%;padding:14px;background:#4318ff;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
-    Save Bank Details
-  </button>
-</div>
-  
-        <div class="card">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">New Withdrawal</div>
-          <div class="form-group">
-            <label>Amount</label>
-            <div class="amount-input">
-              <span class="currency">₦</span>
-              <input type="number" placeholder="0.00" id="withdrawAmount">
-            </div>
-            <div class="quick-amounts">
-              <span class="qa-btn" onclick="setAmount('withdrawAmount','2000')">₦2,000</span>
-              <span class="qa-btn" onclick="setAmount('withdrawAmount','5000')">₦5,000</span>
-              <span class="qa-btn" onclick="setAmount('withdrawAmount','10000')">₦10,000</span>
-              <span class="qa-btn" onclick="setAmount('withdrawAmount','20000')">₦20,000</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Bank</label>
-            <select>
-              <option>— Select Bank —</option>
-              <option>GTBank</option>
-              <option>Access Bank</option>
-              <option>First Bank</option>
-              <option>UBA</option>
-              <option>Zenith Bank</option>
-              <option>Wema Bank</option>
-              <option>OPay</option>
-              <option>Moniepoint</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Account Number</label>
-            <input type="text" placeholder="Enter 10-digit account number">
-          </div>
-          <div class="form-group">
-            <label>Account Name</label>
-            <input type="text" placeholder="Auto-filled after verification" readonly style="background:var(--bg3);color:var(--text3);">
-          </div>
-          <div class="form-group">
-            <label>Transaction PIN</label>
-            <input type="password" placeholder="Enter your 4-digit PIN" maxlength="4">
-          </div>
-          <button class="btn btn-primary w-full" onclick="showAlert('Withdrawal request submitted successfully!','success')"><i class="ri-arrow-up-circle-line"></i> Withdraw Now</button>
-        </div>
-        
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Saved Banks</div>
-            <div class="txn-item" style="cursor:pointer;" onclick="showAlert('GTBank ****4921 selected as withdrawal destination.','🏦','success')">
-              <div class="txn-icon credit">🏦</div>
-              <div class="txn-info">
-                <div class="txn-name">GTBank</div>
-                <div class="txn-date">**** **** 4921</div>
-              </div>
-              <span class="badge success">Default</span>
-            </div>
-            <div class="txn-item" style="cursor:pointer;" onclick="showAlert('Access Bank ****7731 selected as withdrawal destination.','🏦','success')">
-              <div class="txn-icon credit">🏦</div>
-              <div class="txn-info">
-                <div class="txn-name">Access Bank</div>
-                <div class="txn-date">**** **** 7731</div>
-              </div>
-            </div>
-            <button class="btn btn-ghost btn-sm mt-4" style="margin-top:12px;" onclick="showAlert('Add bank feature is coming soon!','info')"><i class="ri-add-line"></i> Add New Bank</button>
-          </div>
-          
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;">Withdrawal Limits</div>
-            <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
-              <div class="flex-between"><span style="color:var(--text2)">Daily Limit</span><span style="font-weight:600;">₦500,000</span></div>
-              <div class="flex-between"><span style="color:var(--text2)">Used Today</span><span style="font-weight:600;">₦5,000</span></div>
-              <div class="flex-between"><span style="color:var(--text2)">Remaining</span><span style="font-weight:600;color:var(--green);">₦495,000</span></div>
-              <div class="flex-between"><span style="color:var(--text2)">Minimum</span><span style="font-weight:600;">₦1,000</span></div>
-              <div class="flex-between"><span style="color:var(--text2)">Fee</span><span style="font-weight:600;">₦0 (Free)</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- TRANSFER PAGE -->
-    <div class="page" id="transfer">
-      <div class="section-header mb-6">
-        <div class="section-title">Internal Transfer</div>
-        <div class="section-sub">Send funds to another Fluxmall Exchange user or between your wallets</div>
-      </div>
-      
-      <div class="grid-2">
-        <div class="card">
-          <div class="tabs mb-6">
-            <div class="tab active" onclick="switchTab(this)">To User</div>
-            <div class="tab" onclick="switchTab(this)">Between Wallets</div>
-          </div>
-          <div class="form-group">
-            <label>Recipient Username or ID</label>
-            <div class="input-icon">
-              <span class="icon">@</span>
-              <input type="text" placeholder="e.g. tunde.Fluxmall Exchange">
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Amount</label>
-            <div class="amount-input">
-              <span class="currency">₦</span>
-              <input type="number" placeholder="0.00" id="transferAmount">
-            </div>
-            <div class="quick-amounts">
-              <span class="qa-btn" onclick="setAmount('transferAmount','500')">₦500</span>
-              <span class="qa-btn" onclick="setAmount('transferAmount','1000')">₦1,000</span>
-              <span class="qa-btn" onclick="setAmount('transferAmount','5000')">₦5,000</span>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Note (optional)</label>
-            <input type="text" placeholder="Add a description...">
-          </div>
-          <div class="form-group">
-            <label>PIN</label>
-            <input type="password" placeholder="4-digit PIN" maxlength="4">
-          </div>
-          <button class="btn btn-primary w-full" onclick="showAlert('Transfer sent successfully!','success')"><i class="ri-send-plane-line"></i> Send Transfer</button>
-        </div>
-        
-        <div class="card">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Recent Recipients</div>
-          <div class="txn-item" style="cursor:pointer">
-            <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">TO</div>
-            <div class="txn-info">
-              <div class="txn-name">Tunde Okonkwo</div>
-              <div class="txn-date">tunde.Fluxmall Exchange • Last sent Jun 10</div>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="showAlert('Tunde Okonkwo selected as transfer recipient.','✅','success')">Select</button>
-          </div>
-          <div class="txn-item" style="cursor:pointer">
-            <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">FA</div>
-            <div class="txn-info">
-              <div class="txn-name">Funmi Adesanya</div>
-              <div class="txn-date">funmi.Fluxmall Exchange • Last sent May 22</div>
-            </div>
-            <button class="btn btn-ghost btn-sm" onclick="showAlert('Funmi Adesanya selected as transfer recipient.','✅','success')">Select</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- REFERRAL PAGE -->
-    <div class="page" id="referral">
-      <div class="section-header mb-6">
-        <div class="section-title">Referral Program</div>
-        <div class="section-sub">Earn rewards by inviting friends to Fluxmall Exchange</div>
-      </div>
-      
-      <!-- Stats -->
-      <div class="grid-4 mb-6">
-        <div class="stat-card purple">
-          <div class="stat-icon purple"><i class="ri-user-add-line"></i></div>
-          <div class="stat-value">7</div>
-          <div class="stat-label">Total Referrals</div>
-        </div>
-        <div class="stat-card green">
-          <div class="stat-icon green"><i class="ri-money-naira-circle-line"></i></div>
-          <div class="stat-value">₦8,400</div>
-          <div class="stat-label">Total Earned</div>
-        </div>
-        <div class="stat-card yellow">
-          <div class="stat-icon yellow"><i class="ri-time-line"></i></div>
-          <div class="stat-value">₦1,200</div>
-          <div class="stat-label">Pending Bonus</div>
-        </div>
-        <div class="stat-card blue">
-          <div class="stat-icon blue"><i class="ri-bar-chart-box-line"></i></div>
-          <div class="stat-value">L3</div>
-          <div class="stat-label">Referral Tier</div>
-        </div>
-      </div>
-      
-      <div class="grid-2 mb-6">
-        <span id="refLink"></span>
-        <!-- How it works -->
-        <div class="card">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">How It Works</div>
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div class="flex-center flex-gap-2 gap-2">
-              <div style="width:28px;height:28px;background:var(--accent-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2);flex-shrink:0;">1</div>
-              <div class="text-sm">Share your referral code with friends</div>
-            </div>
-            <div class="flex-center flex-gap-2 gap-2">
-              <div style="width:28px;height:28px;background:var(--accent-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2);flex-shrink:0;">2</div>
-              <div class="text-sm">Friend signs up using your code</div>
-            </div>
-            <div class="flex-center flex-gap-2 gap-2">
-              <div style="width:28px;height:28px;background:var(--accent-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2);flex-shrink:0;">3</div>
-              <div class="text-sm">Friend makes first deposit of ₦1,000+</div>
-            </div>
-            <div class="flex-center flex-gap-2 gap-2">
-              <div style="width:28px;height:28px;background:var(--green-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green);flex-shrink:0;">✓</div>
-              <div class="text-sm"><span style="color:var(--green);font-weight:600;">You earn ₦1,200</span> credited instantly</div>
-            </div>
-          </div>
-        </div>
-        
-      </div>
-      <!-- Referral Levels -->
-      <div class="card mb-6">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Referral Tiers</div>
-        <div class="ref-level">
-          <div class="ref-level-num">L1</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;">Starter</div>
-            <div class="text-xs">0–4 referrals</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:700;color:var(--accent2);">₦800/ref</div>
-          </div>
-        </div>
-        <div class="ref-level" style="border-color:rgba(108,99,255,0.3);background:var(--accent-glow)">
-          <div class="ref-level-num">L2</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;">Grower <span style="font-size:11px;color:var(--green);">• Current</span></div>
-            <div class="text-xs">5–14 referrals</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:700;color:var(--accent2);">₦1,200/ref</div>
-          </div>
-        </div>
-        <div class="ref-level">
-          <div class="ref-level-num">L3</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;">Champion</div>
-            <div class="text-xs">15–49 referrals</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:700;color:var(--accent2);">₦1,800/ref</div>
-          </div>
-        </div>
-        <div class="ref-level">
-          <div class="ref-level-num">L4</div>
-          <div style="flex:1;">
-            <div style="font-size:14px;font-weight:600;">Ambassador</div>
-            <div class="text-xs">50+ referrals</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:700;color:var(--yellow);">₦2,500/ref + Bonus</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Referred Users -->
-      <div class="card">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referrals</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>User</th>
-                <th>Joined</th>
-                <th>Status</th>
-                <th>Earned</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Ngozi A.</td>
-                <td>Jun 10, 2025</td>
-                <td><span class="badge success">Active</span></td>
-                <td style="color:var(--green);font-weight:600;">₦1,200</td>
-              </tr>
-              <tr>
-                <td>Tunde K.</td>
-                <td>Jun 5, 2025</td>
-                <td><span class="badge success">Active</span></td>
-                <td style="color:var(--green);font-weight:600;">₦1,200</td>
-              </tr>
-              <tr>
-                <td>Emeka O.</td>
-                <td>May 28, 2025</td>
-                <td><span class="badge pending">Pending</span></td>
-                <td style="color:var(--yellow);font-weight:600;">₦0</td>
-              </tr>
-              <tr>
-                <td>Chisom F.</td>
-                <td>May 20, 2025</td>
-                <td><span class="badge success">Active</span></td>
-                <td style="color:var(--green);font-weight:600;">₦1,200</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    
-    <!-- PLANS PAGE -->
-    <div class="page" id="plans">
-      <div class="section-header mb-6">
-        <div class="section-title">Investment Plans</div>
-        <div class="section-sub">Choose a plan that matches your goals</div>
-      </div>
-      
-      <div class="grid-3">
-        <div class="card" style="border-color:rgba(34,197,94,0.3);position:relative;overflow:hidden;">
-          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),#4ade80)"></div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:4px;">Starter</div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">Low-risk, beginner friendly</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--green);margin-bottom:4px;">8%</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">ROI per month</div>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2);">
-            <div>✓ Min: ₦5,000</div>
-            <div>✓ Duration: 30 days</div>
-            <div>✓ Payout: On maturity</div>
-            <div>✓ Capital protected</div>
-          </div>
-          <button class="btn btn-outline w-full" onclick="showAlert('Starter Plan selected! Minimum investment: ₦5,000 for 30 days at 8% ROI.','✅','success')">Invest Now</button>
-        </div>
-        
-        <div class="card" style="border-color:rgba(108,99,255,0.4);position:relative;overflow:hidden;transform:scale(1.02);box-shadow:0 0 30px var(--accent-glow)">
-          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#a78bfa)"></div>
-          <div style="position:absolute;top:16px;right:16px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;">POPULAR</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:4px;">Growth</div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">Balanced risk &amp; reward</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--accent2);margin-bottom:4px;">15%</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">ROI per quarter</div>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2);">
-            <div>✓ Min: ₦10,000</div>
-            <div>✓ Duration: 90 days</div>
-            <div>✓ Payout: Monthly</div>
-            <div>✓ Capital protected</div>
-            <div>✓ Early exit: 5% fee</div>
-          </div>
-          <button class="btn btn-primary w-full" onclick="showAlert('Growth Plan selected! Minimum investment: ₦10,000 for 90 days at 15% ROI.','🚀','success')">Invest Now</button>
-        </div>
-        
-        <div class="card" style="border-color:rgba(245,158,11,0.3);position:relative;overflow:hidden;">
-          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--yellow),#fbbf24)"></div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:4px;">Premium</div>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">High-yield, long-term</div>
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--yellow);margin-bottom:4px;">30%</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">ROI per 6 months</div>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2);">
-            <div>✓ Min: ₦50,000</div>
-            <div>✓ Duration: 180 days</div>
-            <div>✓ Payout: Bi-monthly</div>
-            <div>✓ Capital protected</div>
-            <div>✓ Priority support</div>
-          </div>
-          <button class="btn btn-outline w-full" onclick="showAlert('Premium Plan selected! Minimum investment: ₦50,000 for 180 days at 30% ROI.','💎','success')">Invest Now</button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- NOTIFICATIONS PAGE -->
-    <div class="page" id="notifications">
-      <div class="flex-between mb-6">
-        <div>
-          <div class="section-title">Notifications</div>
-          <div class="section-sub">Stay up to date with your account activity</div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="showAlert('All notifications marked as read.','success')"><i class="ri-check-double-line"></i> Mark all read</button>
-      </div>
-      
-      <div class="card">
-        <div class="notif-item unread">
-          <div class="notif-dot"></div>
+      <!-- INVESTMENTS PAGE -->
+      <div class="page" id="invest">
+        <div class="flex-between mb-6">
           <div>
-            <div style="font-size:14px;font-weight:500;">💰 Deposit Confirmed</div>
-            <div class="text-sm mt-4">Your deposit of ₦20,000 has been successfully credited to your main wallet.</div>
-            <div class="text-xs" style="margin-top:6px;">Today, 9:41 AM</div>
+            <div class="section-title">Investments</div>
+            <div class="section-sub">Grow your money with smart investment plans</div>
           </div>
+          <a class="btn btn-primary" href="#plans"><i class="ri-bar-chart-box-line"></i> Browse Plans</a>
         </div>
-        <div class="notif-item unread">
-          <div class="notif-dot"></div>
-          <div>
-            <div style="font-size:14px;font-weight:500;">◉ Referral Bonus Earned</div>
-            <div class="text-sm mt-4">Ngozi A. made her first deposit! You've earned ₦1,200 referral bonus.</div>
-            <div class="text-xs" style="margin-top:6px;">Jun 12, 2025, 2:15 PM</div>
-          </div>
-        </div>
-        <div class="notif-item unread">
-          <div class="notif-dot"></div>
-          <div>
-            <div style="font-size:14px;font-weight:500;">⚠️ Withdrawal Attempt Failed</div>
-            <div class="text-sm mt-4">Your withdrawal of ₦8,000 to Access Bank ****7731 failed. Please check your bank details.</div>
-            <div class="text-xs" style="margin-top:6px;">Jun 7, 2025, 6:48 PM</div>
-          </div>
-        </div>
-        <div class="notif-item">
-          <div class="notif-dot"></div>
-          <div>
-            <div style="font-size:14px;font-weight:500;">◆ Investment Plan Update</div>
-            <div class="text-sm mt-4">Your Growth Plan is 32 days in. Estimated payout on Aug 14: ₦23,000.</div>
-            <div class="text-xs" style="margin-top:6px;">Jun 5, 2025</div>
-          </div>
-        </div>
-        <div class="notif-item">
-          <div class="notif-dot"></div>
-          <div>
-            <div style="font-size:14px;font-weight:500;">🎉 Account Upgraded to Gold Tier</div>
-            <div class="text-sm mt-4">Congratulations! Your account has been upgraded to Gold tier. Enjoy higher limits and priority support.</div>
-            <div class="text-xs" style="margin-top:6px;">May 30, 2025</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- SETTINGS PAGE -->
-    <div class="page" id="settings">
-      <div class="section-header mb-6">
-        <div class="section-title">Settings</div>
-        <div class="section-sub">Manage your account preferences and security</div>
-      </div>
-      
-      <div class="grid-2">
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <!-- Security -->
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔒 Security</div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Two-Factor Authentication</div>
-                <div class="s-desc">Adds an extra layer of security</div>
-              </div>
-              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Login Notifications</div>
-                <div class="s-desc">Alert on new device login</div>
-              </div>
-              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Transaction PIN</div>
-                <div class="s-desc">Required for withdrawals</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="showAlert('PIN change request initiated. Check your email.','info')">Change PIN</button>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Password</div>
-                <div class="s-desc">Last changed 30 days ago</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="showAlert('Password reset email sent to your inbox.','success')">Change</button>
-            </div>
-          </div>
+        <div class="grid-3 mb-6" id="shares-container">
           
-          <!-- Notifications Settings -->
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔔 Notifications</div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Email Notifications</div>
-                <div class="s-desc">Transaction alerts via email</div>
-              </div>
-              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">SMS Alerts</div>
-                <div class="s-desc">Text alerts for transactions</div>
-              </div>
-              <div class="toggle" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Push Notifications</div>
-                <div class="s-desc">Browser/app push alerts</div>
-              </div>
-              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Marketing Emails</div>
-                <div class="s-desc">Promotions and offers</div>
-              </div>
-              <div class="toggle" onclick="this.classList.toggle('on')"></div>
-            </div>
+        </div>
+        <div class="grid-3 mb-6">
+          
+          <div class="stat-card blue">
+            <div class="stat-icon blue"><i class="ri-bar-chart-box-line"></i></div>
+            <div class="stat-value">₦32,000</div>
+            <div class="stat-label">Active Investments</div>
+            <div class="stat-change up">↑ 2 active plans</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon green"><i class="ri-arrow-up-circle-line"></i></div>
+            <div class="stat-value">₦4,200</div>
+            <div class="stat-label">Total Returns</div>
+            <div class="stat-change up">↑ +13.1% ROI</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-icon yellow"><i class="ri-time-line"></i></div>
+            <div class="stat-value">₦3,500</div>
+            <div class="stat-label">Pending Payout</div>
+            <div class="stat-change up">Est. Jun 18</div>
           </div>
         </div>
         
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <!-- Appearance -->
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🎨 Appearance</div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Dark Mode</div>
-                <div class="s-desc">Switch between light and dark</div>
-              </div>
-              <div class="toggle on" id="settingsThemeToggle" onclick="toggleTheme(); this.classList.toggle('on')"></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Compact View</div>
-                <div class="s-desc">Reduce spacing in tables</div>
-              </div>
-              <div class="toggle" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          
-          <!-- Privacy -->
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🛡️ Privacy</div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Hide Balance</div>
-                <div class="s-desc">Mask amounts on dashboard</div>
-              </div>
-              <div class="toggle" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Profile Visibility</div>
-                <div class="s-desc">Show profile to referrals</div>
-              </div>
-              <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          
-          <!-- Danger Zone -->
-          <div class="card" style="border-color:rgba(239,68,68,0.2);">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;color:var(--red);">⚠️ Danger Zone</div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Freeze Account</div>
-                <div class="s-desc">Temporarily disable all activity</div>
-              </div>
-              <button class="btn btn-danger btn-sm" onclick="showConfirm('This will temporarily disable all account activity. Are you sure?','Freeze Account', ()=>showAlert('Account freeze request sent to support.','⚠️','warning'), 'warning')">Freeze</button>
-            </div>
-            <div class="settings-row">
-              <div class="settings-info">
-                <div class="s-title">Close Account</div>
-                <div class="s-desc">Permanently delete your account</div>
-              </div>
-              <button class="btn btn-danger btn-sm" onclick="showConfirm('This will permanently delete your account and all data. This cannot be undone.','Delete Account', ()=>showAlert('Please contact support@Fluxmall Exchange.io to complete account deletion.','❌','danger'), 'danger')">Delete</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- SUPPORT PAGE -->
-    <div class="page" id="support">
-      <div class="section-header mb-6">
-        <div class="section-title">Help & Support</div>
-        <div class="section-sub">We're here to help. Choose how you'd like to reach us.</div>
-      </div>
-      
-      <div class="grid-3 mb-6">
-        <div class="support-category" onclick="showAlert('Connecting you to live chat...','info')">
-          <div class="support-icon" style="background:var(--accent-glow);color:var(--accent2);"><i class="ri-customer-service-2-line"></i></div>
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">Live Chat</div>
-          <div class="text-sm">Available 24/7</div>
-        </div>
-        <div class="support-category" onclick="showAlert('Opening email form...','info')">
-          <div class="support-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="ri-mail-send-line"></i></div>
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">Email Us</div>
-          <div class="text-sm">Reply within 2 hours</div>
-        </div>
-        <div class="support-category" onclick="showAlert('Calling support line now...','info')">
-          <div class="support-icon" style="background:var(--green-bg);color:var(--green);"><i class="ri-phone-line"></i></div>
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">Call Support</div>
-          <div class="text-sm">Mon–Fri, 8am–8pm</div>
-        </div>
-      </div>
-      
-      <!-- Ticket -->
-      <div class="card mb-6">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Submit a Ticket</div>
-        <div class="form-row">
-          <div class="form-group"><label>Subject</label><input type="text" placeholder="Brief description of your issue"></div>
-          <div class="form-group"><label>Category</label><select>
-              <option>Account Issues</option>
-              <option>Deposit Problems</option>
-              <option>Withdrawal Help</option>
-              <option>Investment Queries</option>
-              <option>Referral Issues</option>
-              <option>Other</option>
-            </select></div>
-        </div>
-        <div class="form-group"><label>Message</label><textarea rows="5" placeholder="Describe your issue in detail..."></textarea></div>
-        <button class="btn btn-primary" onclick="showAlert('Ticket submitted! Our team will respond within 2 hours.','success')"><i class="ri-send-plane-line"></i> Submit Ticket</button>
-      </div>
-      
-      <!-- FAQ -->
-      <div class="card">
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Frequently Asked Questions</div>
+        <div class="section-title mb-4" style="font-size:16px;">Active Plans</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
-          <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;" onclick="this.classList.toggle('open')">
-            <div style="font-size:14px;font-weight:500;">How long do deposits take?</div>
-            <div style="font-size:13px;color:var(--text2);margin-top:6px;display:none;">Deposits typically reflect within 5–10 minutes. If your deposit doesn't appear after 30 minutes, please contact support.</div>
+          <div class="card" style="border-left:3px solid var(--green);">
+            <div class="flex-between mb-4">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Growth Plan — 3 Months</div>
+                <div class="text-xs mt-4">Started: May 14, 2025 · Matures: Aug 14, 2025</div>
+              </div>
+              <span class="badge success">Active</span>
+            </div>
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <div class="text-xs mb-4">Principal</div>
+                <div style="font-weight:700;">₦20,000</div>
+              </div>
+              <div>
+                <div class="text-xs mb-4">Return Rate</div>
+                <div style="font-weight:700;color:var(--green);">15% ROI</div>
+              </div>
+            </div>
+            <div class="flex-between mb-4 text-sm">
+              <span>Progress</span><span>32 of 90 days</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill green" style="width:36%"></div>
+            </div>
           </div>
-          <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;">
-            <div style="font-size:14px;font-weight:500;">What are the withdrawal limits?</div>
-          </div>
-          <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;">
-            <div style="font-size:14px;font-weight:500;">How does the referral program work?</div>
-          </div>
-          <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;">
-            <div style="font-size:14px;font-weight:500;">Is my money safe with Fluxmall Exchange?</div>
+          
+          <div class="card" style="border-left:3px solid var(--blue);">
+            <div class="flex-between mb-4">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Stable Plan — 1 Month</div>
+                <div class="text-xs mt-4">Started: Jun 1, 2025 · Matures: Jul 1, 2025</div>
+              </div>
+              <span class="badge info">Active</span>
+            </div>
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <div class="text-xs mb-4">Principal</div>
+                <div style="font-weight:700;">₦12,000</div>
+              </div>
+              <div>
+                <div class="text-xs mb-4">Return Rate</div>
+                <div style="font-weight:700;color:var(--blue);">8% ROI</div>
+              </div>
+            </div>
+            <div class="flex-between mb-4 text-sm">
+              <span>Progress</span><span>14 of 30 days</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill purple" style="width:47%"></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- PROFILE PAGE -->
-    <div class="page" id="profile">
-      <div class="section-header mb-6">
-        <div class="section-title">My Profile</div>
-        <div class="section-sub">Manage your personal and account information</div>
-      </div>
       
-      <div class="grid-2">
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <!-- Avatar -->
-          <div class="card" style="text-align:center;">
-            <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:#fff;margin:0 auto 16px;">AJ</div>
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;">Adebayo James</div>
-            <div class="text-sm mb-4" style="margin-top:4px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b8bdbcbbb8a0b6f7b3b8b4bcaa99beb4b8b0b5f7bab6b4">[email&#160;protected]</a></div>
-            <span class="badge success">✦ Premium · Gold Tier</span>
-            <div style="margin-top:16px;"><button class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button></div>
+      <!-- DEPOSIT PAGE -->
+      <div class="page" id="deposit">
+        <div class="section-header mb-6">
+          <div class="section-title">Deposit Funds</div>
+          <div class="section-sub">Add money to your Fluxmall Exchange wallet</div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Bank Transfer</div>
+            <div class="form-group">
+              <label>Amount</label>
+              <div class="amount-input">
+                <span class="currency">₦</span>
+                <input type="number" placeholder="0.00" id="depositAmount">
+              </div>
+              <div class="quick-amounts">
+                <span class="qa-btn" onclick="setAmount('depositAmount','1000')">₦1,000</span>
+                <span class="qa-btn" onclick="setAmount('depositAmount','5000')">₦5,000</span>
+                <span class="qa-btn" onclick="setAmount('depositAmount','10000')">₦10,000</span>
+                <span class="qa-btn" onclick="setAmount('depositAmount','20000')">₦20,000</span>
+                <span class="qa-btn" onclick="setAmount('depositAmount','50000')">₦50,000</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Payment Method</label>
+              <select>
+                <option>Bank Transfer (Wema Virtual Account)</option>
+                <option>Paystack — Card/Bank</option>
+                <option>Flutterwave</option>
+                <option>USSD *737#</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Wallet</label>
+              <select>
+                <option>Main Wallet</option>
+                <option>Savings Wallet</option>
+                <option>Investment Wallet</option>
+              </select>
+            </div>
+            <button class="btn btn-primary w-full" onclick="showAlert('Payment initiated! Complete in your bank app.','info')"><i class="ri-bank-card-line"></i> Proceed to Payment</button>
           </div>
           
-          <!-- KYC -->
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">KYC Verification</div>
-            <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
-              <div class="flex-between"><span style="color:var(--text2)">Identity</span><span class="badge success">✓ Verified</span></div>
-              <div class="flex-between"><span style="color:var(--text2)">Address</span><span class="badge success">✓ Verified</span></div>
-              <div class="flex-between"><span style="color:var(--text2)">BVN</span><span class="badge success">✓ Linked</span></div>
-              <div class="flex-between"><span style="color:var(--text2)">NIN</span><span class="badge pending">Pending</span></div>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Virtual Account Details</div>
+              <div style="background:var(--bg2);padding:18px;border-radius:var(--radius-sm);margin-bottom:12px;">
+                <div class="text-xs mb-4">ACCOUNT NAME</div>
+                <div style="font-weight:600;font-size:15px;">Adebayo James / Fluxmall Exchange</div>
+                <div class="divider"></div>
+                <div class="text-xs mb-4">ACCOUNT NUMBER</div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:22px;letter-spacing:2px;color:var(--accent2);">0123 4567 89</div>
+                <div class="divider"></div>
+                <div class="text-xs mb-4">BANK</div>
+                <div style="font-weight:600;">Wema Bank</div>
+              </div>
+              <button class="btn btn-outline w-full" onclick="showAlert('Account details copied!','success')"><i class="ri-file-copy-line"></i> Copy Details</button>
             </div>
-            <button class="btn btn-outline btn-sm mt-4" style="margin-top:14px;" onclick="showAlert('KYC verification form has been opened.','📋','info')">Complete NIN</button>
+            
+            <div class="card" style="background:var(--yellow-bg);border-color:rgba(245,158,11,0.2)">
+              <div style="display:flex;gap:10px;align-items:flex-start;">
+                <span style="font-size:20px;">⚠️</span>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--yellow);margin-bottom:4px;">Important Notice</div>
+                  <div style="font-size:12px;color:var(--text2);line-height:1.6;">Deposits reflect within 5–10 minutes. Minimum deposit is ₦500. Always use your unique virtual account number. Contact support if funds don't reflect after 30 mins.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- WITHDRAW PAGE -->
+      <div class="page" id="withdraw">
+        <div class="section-header mb-6">
+          <div class="section-title">Withdraw Funds</div>
+          <div class="section-sub">Send money to your bank account</div>
+        </div>
+        
+        <div class="grid-2">
+          
+          <div style="max-width:400px;margin:20px auto;padding:20px;border-radius:12px;background:#fff;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:sans-serif;">
+            <h3 style="margin-top:0;color:#2b3674;">🏦 Add Bank Account</h3>
+            
+            <div style="margin-bottom:15px;">
+              <label style="display:block;font-size:14px;margin-bottom:5px;color:#707eae;">Account Number</label>
+              <input type="number" id="accNumber" placeholder="0123456789" oninput="handleAccNumberInput(this.value)" style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;box-sizing:border-box;font-size:16px;">
+              <div id="verifyStatus" style="font-size:12px;margin-top:5px;min-height:18px;"></div>
+            </div>
+            
+            <div style="margin-bottom:15px;">
+              <label style="display:block;font-size:14px;margin-bottom:5px;color:#707eae;">Bank Name</label>
+              <select id="bankSelect" onchange="handleBankSelect()" style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;background:white;font-size:15px;">
+                <option value="">-- Select Bank --</option>
+                <option value="058">GTBank</option>
+                <option value="057">Zenith Bank</option>
+                <option value="044">Access Bank</option>
+                <option value="999992">OPay</option>
+                <option value="50515">Moniepoint</option>
+                <option value="50211">Kuda Bank</option>
+                <option value="011">First Bank</option>
+                <option value="033">UBA</option>
+                <option value="070">Fidelity Bank</option>
+                <option value="032">Union Bank</option>
+              </select>
+            </div>
+            
+            <div style="margin-bottom:20px;">
+              <label style="display:block;font-size:14px;margin-bottom:5px;color:#707eae;">Account Name</label>
+              <input type="text" id="accName" readonly placeholder="Auto-filled after verification" style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;background:#f4f7fe;color:#2b3674;font-weight:bold;box-sizing:border-box;">
+            </div>
+            
+            <button onclick="handleSave()" style="width:100%;padding:14px;background:#4318ff;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
+              Save Bank Details
+            </button>
+          </div>
+          
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">New Withdrawal</div>
+            <div class="form-group">
+              <label>Amount</label>
+              <div class="amount-input">
+                <span class="currency">₦</span>
+                <input type="number" placeholder="0.00" id="withdrawAmount">
+              </div>
+              <div class="quick-amounts">
+                <span class="qa-btn" onclick="setAmount('withdrawAmount','2000')">₦2,000</span>
+                <span class="qa-btn" onclick="setAmount('withdrawAmount','5000')">₦5,000</span>
+                <span class="qa-btn" onclick="setAmount('withdrawAmount','10000')">₦10,000</span>
+                <span class="qa-btn" onclick="setAmount('withdrawAmount','20000')">₦20,000</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Bank</label>
+              <select>
+                <option>— Select Bank —</option>
+                <option>GTBank</option>
+                <option>Access Bank</option>
+                <option>First Bank</option>
+                <option>UBA</option>
+                <option>Zenith Bank</option>
+                <option>Wema Bank</option>
+                <option>OPay</option>
+                <option>Moniepoint</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Account Number</label>
+              <input type="text" placeholder="Enter 10-digit account number">
+            </div>
+            <div class="form-group">
+              <label>Account Name</label>
+              <input type="text" placeholder="Auto-filled after verification" readonly style="background:var(--bg3);color:var(--text3);">
+            </div>
+            <div class="form-group">
+              <label>Transaction PIN</label>
+              <input type="password" placeholder="Enter your 4-digit PIN" maxlength="4">
+            </div>
+            <button class="btn btn-primary w-full" onclick="showAlert('Withdrawal request submitted successfully!','success')"><i class="ri-arrow-up-circle-line"></i> Withdraw Now</button>
+          </div>
+          
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Saved Banks</div>
+              <div class="txn-item" style="cursor:pointer;" onclick="showAlert('GTBank ****4921 selected as withdrawal destination.','🏦','success')">
+                <div class="txn-icon credit">🏦</div>
+                <div class="txn-info">
+                  <div class="txn-name">GTBank</div>
+                  <div class="txn-date">**** **** 4921</div>
+                </div>
+                <span class="badge success">Default</span>
+              </div>
+              <div class="txn-item" style="cursor:pointer;" onclick="showAlert('Access Bank ****7731 selected as withdrawal destination.','🏦','success')">
+                <div class="txn-icon credit">🏦</div>
+                <div class="txn-info">
+                  <div class="txn-name">Access Bank</div>
+                  <div class="txn-date">**** **** 7731</div>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm mt-4" style="margin-top:12px;" onclick="showAlert('Add bank feature is coming soon!','info')"><i class="ri-add-line"></i> Add New Bank</button>
+            </div>
+            
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;">Withdrawal Limits</div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+                <div class="flex-between"><span style="color:var(--text2)">Daily Limit</span><span style="font-weight:600;">₦500,000</span></div>
+                <div class="flex-between"><span style="color:var(--text2)">Used Today</span><span style="font-weight:600;">₦5,000</span></div>
+                <div class="flex-between"><span style="color:var(--text2)">Remaining</span><span style="font-weight:600;color:var(--green);">₦495,000</span></div>
+                <div class="flex-between"><span style="color:var(--text2)">Minimum</span><span style="font-weight:600;">₦1,000</span></div>
+                <div class="flex-between"><span style="color:var(--text2)">Fee</span><span style="font-weight:600;">₦0 (Free)</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- TRANSFER PAGE -->
+      <div class="page" id="transfer">
+        <div class="section-header mb-6">
+          <div class="section-title">Internal Transfer</div>
+          <div class="section-sub">Send funds to another Fluxmall Exchange user or between your wallets</div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="card">
+            <div class="tabs mb-6">
+              <div class="tab active" onclick="switchTab(this)">To User</div>
+              <div class="tab" onclick="switchTab(this)">Between Wallets</div>
+            </div>
+            <div class="form-group">
+              <label>Recipient Username or ID</label>
+              <div class="input-icon">
+                <span class="icon">@</span>
+                <input type="text" placeholder="e.g. tunde.Fluxmall Exchange">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Amount</label>
+              <div class="amount-input">
+                <span class="currency">₦</span>
+                <input type="number" placeholder="0.00" id="transferAmount">
+              </div>
+              <div class="quick-amounts">
+                <span class="qa-btn" onclick="setAmount('transferAmount','500')">₦500</span>
+                <span class="qa-btn" onclick="setAmount('transferAmount','1000')">₦1,000</span>
+                <span class="qa-btn" onclick="setAmount('transferAmount','5000')">₦5,000</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Note (optional)</label>
+              <input type="text" placeholder="Add a description...">
+            </div>
+            <div class="form-group">
+              <label>PIN</label>
+              <input type="password" placeholder="4-digit PIN" maxlength="4">
+            </div>
+            <button class="btn btn-primary w-full" onclick="showAlert('Transfer sent successfully!','success')"><i class="ri-send-plane-line"></i> Send Transfer</button>
+          </div>
+          
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Recent Recipients</div>
+            <div class="txn-item" style="cursor:pointer">
+              <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">TO</div>
+              <div class="txn-info">
+                <div class="txn-name">Tunde Okonkwo</div>
+                <div class="txn-date">tunde.Fluxmall Exchange • Last sent Jun 10</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="showAlert('Tunde Okonkwo selected as transfer recipient.','✅','success')">Select</button>
+            </div>
+            <div class="txn-item" style="cursor:pointer">
+              <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">FA</div>
+              <div class="txn-info">
+                <div class="txn-name">Funmi Adesanya</div>
+                <div class="txn-date">funmi.Fluxmall Exchange • Last sent May 22</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="showAlert('Funmi Adesanya selected as transfer recipient.','✅','success')">Select</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- REFERRAL PAGE -->
+      <div class="page" id="referral">
+        <div class="section-header mb-6">
+          <div class="section-title">Referral Program</div>
+          <div class="section-sub">Earn rewards by inviting friends to Fluxmall Exchange</div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="grid-4 mb-6">
+          <div class="stat-card purple">
+            <div class="stat-icon purple"><i class="ri-user-add-line"></i></div>
+            <div class="stat-value">7</div>
+            <div class="stat-label">Total Referrals</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon green"><i class="ri-money-naira-circle-line"></i></div>
+            <div class="stat-value">₦8,400</div>
+            <div class="stat-label">Total Earned</div>
+          </div>
+          <div class="stat-card yellow">
+            <div class="stat-icon yellow"><i class="ri-time-line"></i></div>
+            <div class="stat-value">₦1,200</div>
+            <div class="stat-label">Pending Bonus</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon blue"><i class="ri-bar-chart-box-line"></i></div>
+            <div class="stat-value">L3</div>
+            <div class="stat-label">Referral Tier</div>
           </div>
         </div>
         
+        <div class="grid-2 mb-6">
+          <span id="refLink"></span>
+          <!-- How it works -->
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">How It Works</div>
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div class="flex-center flex-gap-2 gap-2">
+                <div style="width:28px;height:28px;background:var(--accent-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2);flex-shrink:0;">1</div>
+                <div class="text-sm">Share your referral code with friends</div>
+              </div>
+              <div class="flex-center flex-gap-2 gap-2">
+                <div style="width:28px;height:28px;background:var(--accent-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2);flex-shrink:0;">2</div>
+                <div class="text-sm">Friend signs up using your code</div>
+              </div>
+              <div class="flex-center flex-gap-2 gap-2">
+                <div style="width:28px;height:28px;background:var(--accent-glow);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2);flex-shrink:0;">3</div>
+                <div class="text-sm">Friend makes first deposit of ₦1,000+</div>
+              </div>
+              <div class="flex-center flex-gap-2 gap-2">
+                <div style="width:28px;height:28px;background:var(--green-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green);flex-shrink:0;">✓</div>
+                <div class="text-sm"><span style="color:var(--green);font-weight:600;">You earn ₦1,200</span> credited instantly</div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        <!-- Referral Levels -->
+        <div class="card mb-6">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Referral Tiers</div>
+          <div class="ref-level">
+            <div class="ref-level-num">L1</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Starter</div>
+              <div class="text-xs">0–4 referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--accent2);">₦800/ref</div>
+            </div>
+          </div>
+          <div class="ref-level" style="border-color:rgba(108,99,255,0.3);background:var(--accent-glow)">
+            <div class="ref-level-num">L2</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Grower <span style="font-size:11px;color:var(--green);">• Current</span></div>
+              <div class="text-xs">5–14 referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--accent2);">₦1,200/ref</div>
+            </div>
+          </div>
+          <div class="ref-level">
+            <div class="ref-level-num">L3</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Champion</div>
+              <div class="text-xs">15–49 referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--accent2);">₦1,800/ref</div>
+            </div>
+          </div>
+          <div class="ref-level">
+            <div class="ref-level-num">L4</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Ambassador</div>
+              <div class="text-xs">50+ referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--yellow);">₦2,500/ref + Bonus</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Referred Users -->
         <div class="card">
-          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:20px;">Edit Profile</div>
-          <div class="form-row">
-            <div class="form-group"><label>First Name</label><input type="text" value="Adebayo"></div>
-            <div class="form-group"><label>Last Name</label><input type="text" value="James"></div>
-          </div>
-          <div class="form-group"><label>Email Address</label><input type="email" value="adebayo.james@gmail.com"></div>
-          <div class="form-group"><label>Phone Number</label><input type="tel" value="+234 812 345 6789"></div>
-          <div class="form-group"><label>Date of Birth</label><input type="date" value="1995-03-14"></div>
-          <div class="form-group"><label>State of Residence</label>
-            <select>
-              <option>Lagos</option>
-              <option>Abuja (FCT)</option>
-              <option>Rivers</option>
-              <option>Kano</option>
-              <option>Oyo</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Home Address</label><input type="text" value="12 Lekki Phase 1, Lagos"></div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn btn-primary" onclick="showAlert('Profile updated successfully!','✅','success')">Save Changes</button>
-            <button class="btn btn-ghost">Cancel</button>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referrals</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Joined</th>
+                  <th>Status</th>
+                  <th>Earned</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Ngozi A.</td>
+                  <td>Jun 10, 2025</td>
+                  <td><span class="badge success">Active</span></td>
+                  <td style="color:var(--green);font-weight:600;">₦1,200</td>
+                </tr>
+                <tr>
+                  <td>Tunde K.</td>
+                  <td>Jun 5, 2025</td>
+                  <td><span class="badge success">Active</span></td>
+                  <td style="color:var(--green);font-weight:600;">₦1,200</td>
+                </tr>
+                <tr>
+                  <td>Emeka O.</td>
+                  <td>May 28, 2025</td>
+                  <td><span class="badge pending">Pending</span></td>
+                  <td style="color:var(--yellow);font-weight:600;">₦0</td>
+                </tr>
+                <tr>
+                  <td>Chisom F.</td>
+                  <td>May 20, 2025</td>
+                  <td><span class="badge success">Active</span></td>
+                  <td style="color:var(--green);font-weight:600;">₦1,200</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
-    </div>
-    
-  </div><!-- /page-content -->
+      
+      <!-- PLANS PAGE -->
+      <div class="page" id="plans">
+        <div class="section-header mb-6">
+          <div class="section-title">Investment Plans</div>
+          <div class="section-sub">Choose a plan that matches your goals</div>
+        </div>
+        
+        <div class="grid-3">
+          <div class="card" style="border-color:rgba(34,197,94,0.3);position:relative;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),#4ade80)"></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:4px;">Starter</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">Low-risk, beginner friendly</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--green);margin-bottom:4px;">8%</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">ROI per month</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2);">
+              <div>✓ Min: ₦5,000</div>
+              <div>✓ Duration: 30 days</div>
+              <div>✓ Payout: On maturity</div>
+              <div>✓ Capital protected</div>
+            </div>
+            <button class="btn btn-outline w-full" onclick="showAlert('Starter Plan selected! Minimum investment: ₦5,000 for 30 days at 8% ROI.','✅','success')">Invest Now</button>
+          </div>
+          
+          <div class="card" style="border-color:rgba(108,99,255,0.4);position:relative;overflow:hidden;transform:scale(1.02);box-shadow:0 0 30px var(--accent-glow)">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#a78bfa)"></div>
+            <div style="position:absolute;top:16px;right:16px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;">POPULAR</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:4px;">Growth</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">Balanced risk &amp; reward</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--accent2);margin-bottom:4px;">15%</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">ROI per quarter</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2);">
+              <div>✓ Min: ₦10,000</div>
+              <div>✓ Duration: 90 days</div>
+              <div>✓ Payout: Monthly</div>
+              <div>✓ Capital protected</div>
+              <div>✓ Early exit: 5% fee</div>
+            </div>
+            <button class="btn btn-primary w-full" onclick="showAlert('Growth Plan selected! Minimum investment: ₦10,000 for 90 days at 15% ROI.','🚀','success')">Invest Now</button>
+          </div>
+          
+          <div class="card" style="border-color:rgba(245,158,11,0.3);position:relative;overflow:hidden;">
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--yellow),#fbbf24)"></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin-bottom:4px;">Premium</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">High-yield, long-term</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:var(--yellow);margin-bottom:4px;">30%</div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">ROI per 6 months</div>
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:13px;color:var(--text2);">
+              <div>✓ Min: ₦50,000</div>
+              <div>✓ Duration: 180 days</div>
+              <div>✓ Payout: Bi-monthly</div>
+              <div>✓ Capital protected</div>
+              <div>✓ Priority support</div>
+            </div>
+            <button class="btn btn-outline w-full" onclick="showAlert('Premium Plan selected! Minimum investment: ₦50,000 for 180 days at 30% ROI.','💎','success')">Invest Now</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- NOTIFICATIONS PAGE -->
+      <div class="page" id="notifications">
+        <div class="flex-between mb-6">
+          <div>
+            <div class="section-title">Notifications</div>
+            <div class="section-sub">Stay up to date with your account activity</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showAlert('All notifications marked as read.','success')"><i class="ri-check-double-line"></i> Mark all read</button>
+        </div>
+        
+        <div class="card">
+          <div class="notif-item unread">
+            <div class="notif-dot"></div>
+            <div>
+              <div style="font-size:14px;font-weight:500;">💰 Deposit Confirmed</div>
+              <div class="text-sm mt-4">Your deposit of ₦20,000 has been successfully credited to your main wallet.</div>
+              <div class="text-xs" style="margin-top:6px;">Today, 9:41 AM</div>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-dot"></div>
+            <div>
+              <div style="font-size:14px;font-weight:500;">◉ Referral Bonus Earned</div>
+              <div class="text-sm mt-4">Ngozi A. made her first deposit! You've earned ₦1,200 referral bonus.</div>
+              <div class="text-xs" style="margin-top:6px;">Jun 12, 2025, 2:15 PM</div>
+            </div>
+          </div>
+          <div class="notif-item unread">
+            <div class="notif-dot"></div>
+            <div>
+              <div style="font-size:14px;font-weight:500;">⚠️ Withdrawal Attempt Failed</div>
+              <div class="text-sm mt-4">Your withdrawal of ₦8,000 to Access Bank ****7731 failed. Please check your bank details.</div>
+              <div class="text-xs" style="margin-top:6px;">Jun 7, 2025, 6:48 PM</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot"></div>
+            <div>
+              <div style="font-size:14px;font-weight:500;">◆ Investment Plan Update</div>
+              <div class="text-sm mt-4">Your Growth Plan is 32 days in. Estimated payout on Aug 14: ₦23,000.</div>
+              <div class="text-xs" style="margin-top:6px;">Jun 5, 2025</div>
+            </div>
+          </div>
+          <div class="notif-item">
+            <div class="notif-dot"></div>
+            <div>
+              <div style="font-size:14px;font-weight:500;">🎉 Account Upgraded to Gold Tier</div>
+              <div class="text-sm mt-4">Congratulations! Your account has been upgraded to Gold tier. Enjoy higher limits and priority support.</div>
+              <div class="text-xs" style="margin-top:6px;">May 30, 2025</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SETTINGS PAGE -->
+      <div class="page" id="settings">
+        <div class="section-header mb-6">
+          <div class="section-title">Settings</div>
+          <div class="section-sub">Manage your account preferences and security</div>
+        </div>
+        
+        <div class="grid-2">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Security -->
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔒 Security</div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Two-Factor Authentication</div>
+                  <div class="s-desc">Adds an extra layer of security</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Login Notifications</div>
+                  <div class="s-desc">Alert on new device login</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Transaction PIN</div>
+                  <div class="s-desc">Required for withdrawals</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="showAlert('PIN change request initiated. Check your email.','info')">Change PIN</button>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Password</div>
+                  <div class="s-desc">Last changed 30 days ago</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="showAlert('Password reset email sent to your inbox.','success')">Change</button>
+              </div>
+            </div>
+            
+            <!-- Notifications Settings -->
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔔 Notifications</div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Email Notifications</div>
+                  <div class="s-desc">Transaction alerts via email</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">SMS Alerts</div>
+                  <div class="s-desc">Text alerts for transactions</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Push Notifications</div>
+                  <div class="s-desc">Browser/app push alerts</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Marketing Emails</div>
+                  <div class="s-desc">Promotions and offers</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Appearance -->
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🎨 Appearance</div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Dark Mode</div>
+                  <div class="s-desc">Switch between light and dark</div>
+                </div>
+                <div class="toggle on" id="settingsThemeToggle" onclick="toggleTheme(); this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Compact View</div>
+                  <div class="s-desc">Reduce spacing in tables</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+            
+            <!-- Privacy -->
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🛡️ Privacy</div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Hide Balance</div>
+                  <div class="s-desc">Mask amounts on dashboard</div>
+                </div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Profile Visibility</div>
+                  <div class="s-desc">Show profile to referrals</div>
+                </div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+            
+            <!-- Danger Zone -->
+            <div class="card" style="border-color:rgba(239,68,68,0.2);">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;color:var(--red);">⚠️ Danger Zone</div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Freeze Account</div>
+                  <div class="s-desc">Temporarily disable all activity</div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="showConfirm('This will temporarily disable all account activity. Are you sure?','Freeze Account', ()=>showAlert('Account freeze request sent to support.','⚠️','warning'), 'warning')">Freeze</button>
+              </div>
+              <div class="settings-row">
+                <div class="settings-info">
+                  <div class="s-title">Close Account</div>
+                  <div class="s-desc">Permanently delete your account</div>
+                </div>
+                <button class="btn btn-danger btn-sm" onclick="showConfirm('This will permanently delete your account and all data. This cannot be undone.','Delete Account', ()=>showAlert('Please contact support@Fluxmall Exchange.io to complete account deletion.','❌','danger'), 'danger')">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SUPPORT PAGE -->
+      <div class="page" id="support">
+        <div class="section-header mb-6">
+          <div class="section-title">Help & Support</div>
+          <div class="section-sub">We're here to help. Choose how you'd like to reach us.</div>
+        </div>
+        
+        <div class="grid-3 mb-6">
+          <div class="support-category" onclick="showAlert('Connecting you to live chat...','info')">
+            <div class="support-icon" style="background:var(--accent-glow);color:var(--accent2);"><i class="ri-customer-service-2-line"></i></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">Live Chat</div>
+            <div class="text-sm">Available 24/7</div>
+          </div>
+          <div class="support-category" onclick="showAlert('Opening email form...','info')">
+            <div class="support-icon" style="background:var(--blue-bg);color:var(--blue);"><i class="ri-mail-send-line"></i></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">Email Us</div>
+            <div class="text-sm">Reply within 2 hours</div>
+          </div>
+          <div class="support-category" onclick="showAlert('Calling support line now...','info')">
+            <div class="support-icon" style="background:var(--green-bg);color:var(--green);"><i class="ri-phone-line"></i></div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">Call Support</div>
+            <div class="text-sm">Mon–Fri, 8am–8pm</div>
+          </div>
+        </div>
+        
+        <!-- Ticket -->
+        <div class="card mb-6">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Submit a Ticket</div>
+          <div class="form-row">
+            <div class="form-group"><label>Subject</label><input type="text" placeholder="Brief description of your issue"></div>
+            <div class="form-group"><label>Category</label><select>
+                <option>Account Issues</option>
+                <option>Deposit Problems</option>
+                <option>Withdrawal Help</option>
+                <option>Investment Queries</option>
+                <option>Referral Issues</option>
+                <option>Other</option>
+              </select></div>
+          </div>
+          <div class="form-group"><label>Message</label><textarea rows="5" placeholder="Describe your issue in detail..."></textarea></div>
+          <button class="btn btn-primary" onclick="showAlert('Ticket submitted! Our team will respond within 2 hours.','success')"><i class="ri-send-plane-line"></i> Submit Ticket</button>
+        </div>
+        
+        <!-- FAQ -->
+        <div class="card">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Frequently Asked Questions</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;" onclick="this.classList.toggle('open')">
+              <div style="font-size:14px;font-weight:500;">How long do deposits take?</div>
+              <div style="font-size:13px;color:var(--text2);margin-top:6px;display:none;">Deposits typically reflect within 5–10 minutes. If your deposit doesn't appear after 30 minutes, please contact support.</div>
+            </div>
+            <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;">
+              <div style="font-size:14px;font-weight:500;">What are the withdrawal limits?</div>
+            </div>
+            <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;">
+              <div style="font-size:14px;font-weight:500;">How does the referral program work?</div>
+            </div>
+            <div style="padding:14px;background:var(--bg2);border-radius:var(--radius-sm);cursor:pointer;">
+              <div style="font-size:14px;font-weight:500;">Is my money safe with Fluxmall Exchange?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- PROFILE PAGE -->
+      <div class="page" id="profile">
+        <div class="section-header mb-6">
+          <div class="section-title">My Profile</div>
+          <div class="section-sub">Manage your personal and account information</div>
+        </div>
+        
+        <div class="grid-2">
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Avatar -->
+            <div class="card" style="text-align:center;">
+              <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:#fff;margin:0 auto 16px;">AJ</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;">Adebayo James</div>
+              <div class="text-sm mb-4" style="margin-top:4px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b8bdbcbbb8a0b6f7b3b8b4bcaa99beb4b8b0b5f7bab6b4">[email&#160;protected]</a></div>
+              <span class="badge success">✦ Premium · Gold Tier</span>
+              <div style="margin-top:16px;"><button class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button></div>
+            </div>
+            
+            <!-- KYC -->
+            <div class="card">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">KYC Verification</div>
+              <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+                <div class="flex-between"><span style="color:var(--text2)">Identity</span><span class="badge success">✓ Verified</span></div>
+                <div class="flex-between"><span style="color:var(--text2)">Address</span><span class="badge success">✓ Verified</span></div>
+                <div class="flex-between"><span style="color:var(--text2)">BVN</span><span class="badge success">✓ Linked</span></div>
+                <div class="flex-between"><span style="color:var(--text2)">NIN</span><span class="badge pending">Pending</span></div>
+              </div>
+              <button class="btn btn-outline btn-sm mt-4" style="margin-top:14px;" onclick="showAlert('KYC verification form has been opened.','📋','info')">Complete NIN</button>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:20px;">Edit Profile</div>
+            <div class="form-row">
+              <div class="form-group"><label>First Name</label><input type="text" value="Adebayo"></div>
+              <div class="form-group"><label>Last Name</label><input type="text" value="James"></div>
+            </div>
+            <div class="form-group"><label>Email Address</label><input type="email" value="adebayo.james@gmail.com"></div>
+            <div class="form-group"><label>Phone Number</label><input type="tel" value="+234 812 345 6789"></div>
+            <div class="form-group"><label>Date of Birth</label><input type="date" value="1995-03-14"></div>
+            <div class="form-group"><label>State of Residence</label>
+              <select>
+                <option>Lagos</option>
+                <option>Abuja (FCT)</option>
+                <option>Rivers</option>
+                <option>Kano</option>
+                <option>Oyo</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Home Address</label><input type="text" value="12 Lekki Phase 1, Lagos"></div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-primary" onclick="showAlert('Profile updated successfully!','✅','success')">Save Changes</button>
+              <button class="btn btn-ghost">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div><!-- /page-content -->
   </div><!-- /main -->
   
-  <!-- TOAST -->
-  <div class="toast" id="toast">
-    <span class="toast-icon" id="toastIcon">✅</span>
-    <span id="toastMsg">Success</span>
-  </div>
-  
-  <!-- ===== MODAL ===== -->
-  <div class="modal-backdrop" id="modalBackdrop" onclick="handleBackdropClick(event)">
-    <div class="modal-box" id="modalBox">
-      <div class="modal-handle"></div>
-      <div class="modal-icon-wrap info" id="modalIconWrap">
-        <span id="modalIconEmoji">ℹ️</span>
-      </div>
-      <div class="modal-title" id="modalTitle">Title</div>
-      <div class="modal-msg" id="modalMsg">Message</div>
-      <div class="modal-actions" id="modalActions"></div>
-    </div>
-  </div>
   
   <!-- ===== MOBILE BOTTOM NAV ===== -->
   <nav class="mobile-nav" id="mobileNav">
@@ -1533,6 +1526,82 @@
           .catch(err => console.log('[SW] Registration failed:', err));
       });
     }
+    
+    
+    let _confirmCb = null;
+    let _cancelCb = null;
+    
+    function _openModal(modal) {
+      modal.style.display = 'flex';
+      // double rAF so display:flex is painted before class triggers transition
+      requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('show')));
+    }
+    
+    function _closeModal(modal) {
+      modal.classList.remove('show');
+      const content = modal.querySelector('.modal-content');
+      content.addEventListener('transitionend', () => {
+        if (!modal.classList.contains('show')) modal.style.display = 'none';
+      }, { once: true });
+    }
+    
+    // Overlay clicks close the modal
+    document.getElementById('custom-alert-modal').addEventListener('click', function(e) {
+      if (e.target === this) _closeModal(this);
+    });
+    document.getElementById('custom-confirm-modal').addEventListener('click', function(e) {
+      if (e.target === this) _closeModal(this);
+    });
+    
+    // Alert buttons
+    document.getElementById('alert-ok-button').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
+    document.getElementById('closeAlertBtn').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
+    
+    // Confirm buttons — ONE listener each, reads callback ref
+    document.getElementById('confirm-yes-button').addEventListener('click', () => {
+      _closeModal(document.getElementById('custom-confirm-modal'));
+      if (_confirmCb) {
+        const fn = _confirmCb;
+        _confirmCb = null;
+        fn();
+      }
+    });
+    document.getElementById('confirm-no-button').addEventListener('click', () => {
+      _closeModal(document.getElementById('custom-confirm-modal'));
+      if (_cancelCb) {
+        const fn = _cancelCb;
+        _cancelCb = null;
+        fn();
+      }
+    });
+    
+    // ── showAlert (called from script.js) ──
+    function showAlert(message, isSuccess) {
+      const el = document.getElementById('alert-message');
+      el.innerHTML = message;
+      el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
+      _openModal(document.getElementById('custom-alert-modal'));
+    }
+    
+    // ── showConfirm (called from script.js) ──
+    // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
+    function showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel }) {
+      document.getElementById('confirm-title').textContent = title || 'Confirm Details';
+      document.getElementById('confirm-message').innerHTML = message || 'Are you sure?';
+      document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
+      document.getElementById('confirm-no-button').textContent = noText || 'Recheck Details';
+      const detailEl = document.getElementById('confirm-detail');
+      if (detail) {
+        detailEl.innerHTML = detail;
+        detailEl.style.display = 'block';
+      }
+      else { detailEl.style.display = 'none'; }
+      _confirmCb = onConfirm || null;
+      _cancelCb = onCancel || null;
+      _openModal(document.getElementById('custom-confirm-modal'));
+    }
+    
+    showConfirm("title", "message", "details", "yestext", "notext", "onconfirm", "oncancel")
     
     // ===== NAVIGATION =====
     const pageTitles = {
@@ -1640,3 +1709,7 @@
     window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
     window.addEventListener('hashchange', switchPageByHash);
   </script>
+  
+</body>
+
+</html>
