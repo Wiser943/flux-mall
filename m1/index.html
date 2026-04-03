@@ -201,7 +201,8 @@
             <div class="balance-actions">
               <a class="bal-btn outline" href="#deposit"><i class="ri-arrow-down-line"></i> Deposit</a>
               <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Withdraw</a>
-              <a class="bal-btn white" id="checkinBtn"  onclick="handleCheckIn()"  href="#transfer"><i class="ri-swap-line"></i> Check in</a>
+              <a class="bal-btn white" id="checkinBtn" onclick="handleCheckIn()" href="#referral"><i class="ri-gift-line"></i>
+                Check in</a>
             </div>
             
           </div>
@@ -266,7 +267,7 @@
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px;">Quick Actions</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
-              <a class="btn btn-ghost btn-sm w-full" href="#referral" style="justify-content:center;"><i class="ri-gift-line"></i> Refer</a>
+              <a class="btn btn-ghost btn-sm w-full" href="#wallet" style="justify-content:center;"><i class="ri-swap-line"></i> Wallet</a>
               <a class="btn btn-ghost btn-sm w-full" href="#plans" style="justify-content:center;"><i class="ri-bar-chart-box-line"></i> Plans</a>
               <a class="btn btn-ghost btn-sm w-full" href="#support" style="justify-content:center;"><i class="ri-bar-chart-box-line"></i>Help</a>
             </div>
@@ -1582,6 +1583,7 @@
       el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
       _openModal(document.getElementById('custom-alert-modal'));
     }
+    showAlert("blur",false)
     
     // ── showConfirm (called from script.js) ──
     // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
@@ -1590,6 +1592,8 @@
       document.getElementById('confirm-message').innerHTML = message || 'Are you sure?';
       document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
       document.getElementById('confirm-no-button').textContent = noText || 'Recheck Details';
+      if (window.navigator?.vibrate) window.navigator.vibrate(100);
+      
       const detailEl = document.getElementById('confirm-detail');
       if (detail) {
         detailEl.innerHTML = detail;
@@ -1601,7 +1605,6 @@
       _openModal(document.getElementById('custom-confirm-modal'));
     }
     
-    showConfirm("title", "message", "details", "yestext", "notext", "onconfirm", "oncancel")
     
     // ===== NAVIGATION =====
     const pageTitles = {
