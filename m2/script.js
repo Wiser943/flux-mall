@@ -500,6 +500,22 @@ window.addEventListener('DOMContentLoaded', function () {
 
       // ── MODE B: Token present — reset the password ──────
       if (RESET_TOKEN) {
+        const resetHidden = document.getElementById("reset-hidden").innerHTML=`
+                  <div class="input-group">
+            <label for="resetNewPassword">Password<span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-password input-icon"></i>
+              <input type="password" id="resetNewPassword" name="reset-password" placeholder="ru6fhkytc" required>
+            </div>
+          </div>
+                    <div class="input-group">
+            <label for="resetConfirmPassword">Confirm password<span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-password input-icon"></i>
+              <input type="password" id="resetConfirmPassword" name="reset-password" placeholder="must match" required>
+            </div>
+          </div>
+        `;
         const newPw  = document.getElementById('resetNewPassword')?.value   || '';
         const confPw = document.getElementById('resetConfirmPassword')?.value || '';
 
@@ -537,7 +553,7 @@ window.addEventListener('DOMContentLoaded', function () {
                 resetForm.reset();
                 // Clear token from URL so user can't reuse it
                 window.history.replaceState(null, '', window.location.pathname);
-                setTimeout(() => { window.location.hash = '#login-page'; }, 1500);
+                setTimeout(() => { window.location.hash = '#login'; }, 1500);
               } else {
                 // Token expired or invalid
                 const errMsg = data.error || 'Reset failed. The link may have expired.';
