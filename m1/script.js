@@ -1,10 +1,12 @@
 // ============================================================
 // FLUX MALL - User Dashboard Script (No Firebase)
 // All data fetched from Node.js/MongoDB backend via REST API
+// FEX Coin system integrated — balances stored & shown in FEX
 // ============================================================
 
 let currentUserData = null;
 let globalConfig = { minWithdraw: 2000, withdrawFee: 0 };
+let FEX_RATE = 0.7; // 1 FEX = ₦0.7 — overwritten by server on init
 
 // ─── API HELPER ────────────────────────────────────────────
 async function api(path, options = {}) {
@@ -56,56 +58,56 @@ async function init() {
   const meRes = await api('/api/auth/me');
   if (!meRes?.success) { logoutUser(); return; }
   currentUserData = meRes.user;
-  
+
   const configRes = await api('/api/user/config');
   if (configRes?.success) {
     const { config, payment, maintenance, wheel } = configRes;
-    
+
     if (maintenance?.enabled) { renderLockScreen('System Maintenance', 'Our site is currently undergoing scheduled upgrades.'); return; }
-    
+
     if (config.siteName) {
       document.querySelectorAll('.site-name').forEach(el => el.innerText = config.siteName);
       document.title = config.siteName;
     }
     if (config.siteLogo) {
-      chatSiteLogo = config.siteLogo; // capture for chat header
+      chatSiteLogo = config.siteLogo;
       document.querySelectorAll('.logo-img').forEach(img => {
         img.src = config.siteLogo;
         img.onerror = () => img.style.display = 'none';
       });
       let fav = document.querySelector("link[rel='icon']");
-      if (!fav) {
-        fav = document.createElement('link');
-        fav.rel = 'icon';
-        document.head.appendChild(fav);
-      }
+      if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
       fav.href = config.siteLogo;
     }
-    
+
     const ticker = document.getElementById('ticker-wrapper');
     if (ticker && config.announcement?.active) {
       ticker.style.display = 'flex';
       document.querySelectorAll('.ticker-text').forEach(el => el.textContent = config.announcement.text || '');
     } else if (ticker) ticker.style.display = 'none';
-    
+
     if (config.minWithdraw) globalConfig.minWithdraw = config.minWithdraw;
     if (config.withdrawFee !== undefined) globalConfig.withdrawFee = config.withdrawFee;
-    
+
     window.paymentConfig = payment;
-    
-    if (wheel?.prizes?.length) {
-      prizes = wheel.prizes;
-      drawWheel();
-    }
+
+    if (wheel?.prizes?.length) { prizes = wheel.prizes; drawWheel(); }
   }
-  
+
+  // ── Load live FEX rate from server ──────────────────────
+  const rateRes = await api('/api/user/fex-rate');
+  if (rateRes?.success) {
+    FEX_RATE = rateRes.fexRate;
+    console.log(`[FEX] Rate loaded: 1 FEX = ₦${FEX_RATE}`);
+  }
+
   renderUserUI();
-  
+
   if (currentUserData.status === 'Banned') {
     renderLockScreen('🚫 Account Banned', 'Your account has been suspended for violating our terms of service.');
     return;
   }
-  
+
   loadWithdrawals();
   loadTeamData();
   generateReferralLink();
@@ -113,45 +115,46 @@ async function init() {
   loadMyInvestments();
   collectDailyEarnings();
   fetchAmounts();
-  // initBankSync();
+  initBankSync();
   updateVerificationUI();
   fetchUserHistory();
   pollNotifications();
-  
+
   const today = new Date().toDateString();
   if (currentUserData.lastCheckIn === today) {
     const btn = document.getElementById('checkinBtn');
     if (btn) {
       btn.style.opacity = '0.5';
-            btn.innerHTML = `<i class="ri-check-line"></i> Checked in`;
-
+      btn.innerHTML = `<i class="ri-check-line"></i> Checked in`;
     }
   }
 }
 
 // ─── RENDER USER UI ───────────────────────────────────────
+// Balance stored as FEX — displayed as 🪙 FEX with ₦ equivalent below
 function renderUserUI() {
   const u = currentUserData;
-  /*
-    document.querySelectorAll('.userId').forEach(el => {
-      el.innerHTML = u.uid || u._id.substring(0, 8);
-      el.onclick = () => navigator.clipboard.writeText(u.uid || u._id)
-        .then(() => showToast('ID Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
-    });
-    document.querySelectorAll('.email').forEach(el => el.innerHTML = u.email);*/
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
+
+  const fexBal  = Number(u.ib) || 0;
+  const nairaEq = (fexBal * FEX_RATE).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fexFmt  = fexBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // Primary balance — shows FEX coins
   document.querySelectorAll('.balance').forEach(el => {
-    el.innerHTML = u.ib ? Number(u.ib).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
+    el.innerHTML = `🪙 ${fexFmt} <small style="font-size:0.6em;opacity:0.6;font-weight:400;">FEX</small>`;
   });
-  /*
-    document.getElementById('spinsLeft').innerText = u.freeSpins || 0;*/
+
+  // Secondary — shows naira equivalent (add class="balance-naira" to any element in HTML)
+  document.querySelectorAll('.balance-naira').forEach(el => {
+    el.innerHTML = `≈ ₦${nairaEq}`;
+  });
 }
-
-
 
 // ─── WITHDRAWALS ──────────────────────────────────────────
 async function loadWithdrawals() {
   const list = document.getElementById('withdrawList');
+  if (!list) return;
   const data = await api('/api/user/withdrawals');
   if (!data?.success) return;
   list.innerHTML = '';
@@ -160,43 +163,37 @@ async function loadWithdrawals() {
     return;
   }
   data.withdrawals.forEach(d => {
-    let badgeClass = d.status === 'pending' ? 'badge-pending' : d.status === 'success' ? 'badge-success' : 'badge-declined';
-    const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'Just now';
+    const badgeClass = d.status === 'pending' ? 'badge-pending' : d.status === 'success' ? 'badge-success' : 'badge-declined';
+    const dateStr    = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'Just now';
+    // Use stored nairaAmount if available, otherwise calculate from rate snapshot or current rate
+    const rate       = d.fexRate || FEX_RATE;
+    const nairaStr   = d.nairaAmount
+      ? `₦${Number(d.nairaAmount).toLocaleString()}`
+      : `₦${(Number(d.amount) * rate).toLocaleString()}`;
     list.innerHTML += `
       <div class="history-item">
         <div class="tx-details">
-          <span class="tx-amount">₦${Number(d.amount).toLocaleString()}</span>
-          <span class="tx-date">${dateStr}</span>
+          <span class="tx-amount">🪙 ${Number(d.amount).toLocaleString()} FEX</span>
+          <span class="tx-date">${nairaStr} · ${dateStr}</span>
         </div>
         <span class="badge ${badgeClass}">${d.status}</span>
       </div>`;
   });
 }
 
-
-
-
-
-
-
-
 // ======================================================
 // TRANSACTIONS ENGINE
-// Base: https://api.fluxmall.io
-// Endpoints: /api/deposit  /api/withdrawal  /api/activity
+// Endpoints: /api/user/deposits  /api/user/withdrawals  /api/user/activity
 // ======================================================
 const TXN_ENDPOINTS = {
-  deposit: '/api/user/deposits',
+  deposit:    '/api/user/deposits',
   withdrawal: '/api/user/withdrawals',
-  activity: '/api/user/activity',
+  activity:   '/api/user/activity',
 };
 
-// Raw data cache per type
 const txnCache = { deposit: null, withdrawal: null, activity: null };
-
-// Currently filtered + sorted rows shown in table
-let txnFiltered = [];
-let txnPage = 1;
+let txnFiltered  = [];
+let txnPage      = 1;
 const TXN_PER_PAGE = 10;
 
 function initTransactions() {
@@ -204,10 +201,8 @@ function initTransactions() {
   loadTransactions(type);
 }
 
-// ---- TYPE FILTER CHANGE ----
 function onTypeFilterChange() {
   const type = document.getElementById('txnTypeFilter').value;
-  // Reset status filter
   document.getElementById('txnStatusFilter').value = 'all';
   document.getElementById('txnSearch').value = '';
   txnPage = 1;
@@ -216,31 +211,25 @@ function onTypeFilterChange() {
 
 async function fetchEndpoint(type) {
   if (txnCache[type] !== null) return txnCache[type];
-  
   const json = await api(TXN_ENDPOINTS[type]);
   if (!json) throw new Error(`${type}: unauthorized or failed`);
-  
-  const rows = Array.isArray(json) ? json :
-    json.data ? json.data :
-    json.transactions ? json.transactions :
-    json.deposits ? json.deposits :
-    json.withdrawals ? json.withdrawals :
-    json.activity ? json.activity : [];
-  
+  const rows = Array.isArray(json) ? json
+    : json.data        ? json.data
+    : json.transactions ? json.transactions
+    : json.deposits    ? json.deposits
+    : json.withdrawals ? json.withdrawals
+    : json.activity    ? json.activity : [];
   const tagged = rows.map(r => ({ ...r, _type: type }));
   txnCache[type] = tagged;
   return tagged;
 }
-// ---- MAIN LOADER ----
+
 async function loadTransactions(type) {
   showTxnState('loading');
   setRefreshSpin(true);
-  
   try {
     let rows = [];
-    
     if (type === 'all') {
-      // Parallel fetch all three
       const [deps, wds, acts] = await Promise.all([
         fetchEndpoint('deposit'),
         fetchEndpoint('withdrawal'),
@@ -250,22 +239,15 @@ async function loadTransactions(type) {
     } else {
       rows = await fetchEndpoint(type);
     }
-    
-    // Sort newest first (tries common date field names)
     rows.sort((a, b) => {
-      const da = new Date(a.createdAt || a.date || a.created_at || a.timestamp || 0);
-      const db = new Date(b.createdAt || b.date || b.created_at || b.timestamp || 0);
+      const da = new Date(a.createdAt || a.date || 0);
+      const db = new Date(b.createdAt || b.date || 0);
       return db - da;
     });
-    
     txnFiltered = rows;
     txnPage = 1;
-    
-    // Console log totals for all loaded types
     logTxnTotals();
-    
     applyTxnFilters();
-    
   } catch (err) {
     console.error('[Transactions] Fetch error:', err);
     showTxnState('error');
@@ -275,159 +257,102 @@ async function loadTransactions(type) {
   }
 }
 
-// ---- APPLY SEARCH + STATUS FILTER ----
 function applyTxnFilters() {
   const status = document.getElementById('txnStatusFilter').value;
   const search = document.getElementById('txnSearch').value.trim().toLowerCase();
-  const type = document.getElementById('txnTypeFilter').value;
-  
-  // Re-build from cache
-  let rows = [];
-  if (type === 'all') {
-    rows = [
-      ...(txnCache.deposit || []),
-      ...(txnCache.withdrawal || []),
-      ...(txnCache.activity || []),
-    ];
-  } else {
-    rows = txnCache[type] || [];
-  }
-  
-  // Status filter
-  if (status !== 'all') {
-    rows = rows.filter(r => {
-      const s = (r.status || r.Status || '').toLowerCase();
-      return s === status;
-    });
-  }
-  
-  // Search filter
-  if (search) {
-    rows = rows.filter(r => {
-      const hay = JSON.stringify(r).toLowerCase();
-      return hay.includes(search);
-    });
-  }
-  
+  const type   = document.getElementById('txnTypeFilter').value;
+  let rows = type === 'all'
+    ? [...(txnCache.deposit||[]), ...(txnCache.withdrawal||[]), ...(txnCache.activity||[])]
+    : (txnCache[type] || []);
+  if (status !== 'all') rows = rows.filter(r => (r.status || '').toLowerCase() === status);
+  if (search) rows = rows.filter(r => JSON.stringify(r).toLowerCase().includes(search));
   txnFiltered = rows;
   txnPage = 1;
   renderTxnTable();
 }
 
-// ---- RENDER TABLE ----
 function renderTxnTable() {
   if (!txnFiltered.length) { showTxnState('empty'); return; }
-  
   showTxnState('table');
-  
   const start = (txnPage - 1) * TXN_PER_PAGE;
   const slice = txnFiltered.slice(start, start + TXN_PER_PAGE);
-  
-  const tbody = document.getElementById('txnTableBody');
-  tbody.innerHTML = slice.map(r => buildTxnRow(r)).join('');
-  
+  document.getElementById('txnTableBody').innerHTML = slice.map(r => buildTxnRow(r)).join('');
   renderPagination();
   renderSummaryPills();
 }
 
-// ---- BUILD ONE ROW ----
 function buildTxnRow(r) {
-  const type = r._type || 'activity';
-  const status = (r.status || r.Status || 'pending').toLowerCase();
-  const amount = r.amount || r.Amount || 0;
-  const desc = r.description || r.narration || r.note || r.purpose ||
-    r.bank_name || r.bankName || type.charAt(0).toUpperCase() + type.slice(1);
-  const ref = r.reference || r.ref || r.txn_id || r._id || r.id || '—';
-  const dateRaw = r.createdAt || r.date || r.created_at || r.timestamp;
-  const date = dateRaw ? new Date(dateRaw).toLocaleDateString('en-NG', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }) : '—';
-  
-  const typeBadge = buildTypeBadge(type);
-  const statBadge = buildStatusBadge(status);
-  const amtStr = buildAmountStr(type, amount);
-  
+  const type    = r._type || 'activity';
+  const status  = (r.status || 'pending').toLowerCase();
+  const amount  = r.amount || 0;
+  const desc    = r.description || r.narration || r.note || r.purpose || r.bank_name || r.bankName || type.charAt(0).toUpperCase() + type.slice(1);
+  const ref     = r.reference || r.ref || r.txn_id || r._id || '—';
+  const dateRaw = r.createdAt || r.date;
+  const date    = dateRaw ? new Date(dateRaw).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
   return `<tr>
-      <td style="max-width:180px;word-break:break-word;">${escHtml(String(desc))}</td>
-      <td>${typeBadge}</td>
-      <td>${amtStr}</td>
-      <td style="white-space:nowrap;font-size:12px;">${date}</td>
-      <td>${statBadge}</td>
-      <td style="font-family:monospace;font-size:11px;color:var(--text3);">${escHtml(String(ref)).substring(0,18)}</td>
-    </tr>`;
+    <td style="max-width:180px;word-break:break-word;">${escHtml(String(desc))}</td>
+    <td>${buildTypeBadge(type)}</td>
+    <td>${buildAmountStr(type, amount)}</td>
+    <td style="white-space:nowrap;font-size:12px;">${date}</td>
+    <td>${buildStatusBadge(status)}</td>
+    <td style="font-family:monospace;font-size:11px;color:var(--text3);">${escHtml(String(ref)).substring(0,18)}</td>
+  </tr>`;
 }
 
 function buildTypeBadge(type) {
   const map = {
-    deposit: 'background:var(--blue-bg);color:var(--blue)',
+    deposit:    'background:var(--blue-bg);color:var(--blue)',
     withdrawal: 'background:var(--red-bg);color:var(--red)',
-    activity: 'background:var(--accent-glow);color:var(--accent2)',
+    activity:   'background:var(--accent-glow);color:var(--accent2)',
   };
-  const label = type.charAt(0).toUpperCase() + type.slice(1);
-  return `<span class="badge" style="${map[type] || ''}">${label}</span>`;
+  return `<span class="badge" style="${map[type]||''}">${type.charAt(0).toUpperCase()+type.slice(1)}</span>`;
 }
 
 function buildStatusBadge(status) {
-  const map = { success: 'success', pending: 'pending', failed: 'failed', warning: 'pending' };
-  const cls = map[status] || 'pending';
-  return `<span class="badge ${cls}">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+  const map = { success:'success', pending:'pending', failed:'failed', warning:'pending' };
+  return `<span class="badge ${map[status]||'pending'}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>`;
 }
 
+// Amount shown as FEX coins, with naira equivalent below
 function buildAmountStr(type, amount) {
-  const num = parseFloat(amount) || 0;
-  const fmtd = '₦' + num.toLocaleString('en-NG', { minimumFractionDigits: 2 });
-  if (type === 'deposit' || type === 'activity') {
-    return `<span style="color:var(--green);font-weight:600;">+${fmtd}</span>`;
-  }
-  return `<span style="color:var(--red);font-weight:600;">-${fmtd}</span>`;
+  const num     = parseFloat(amount) || 0;
+  const naira   = (num * FEX_RATE).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+  const fexFmt  = num.toLocaleString('en-US', { minimumFractionDigits: 2 });
+  const isCredit = type === 'deposit' || type === 'activity';
+  const color   = isCredit ? 'var(--green)' : 'var(--red)';
+  const sign    = isCredit ? '+' : '-';
+  return `<span style="color:${color};font-weight:600;">${sign}🪙${fexFmt}</span><br>
+          <span style="font-size:11px;color:var(--text3);">≈ ₦${naira}</span>`;
 }
 
 function escHtml(str) {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ---- PAGINATION ----
 function renderPagination() {
-  const total = txnFiltered.length;
+  const total      = txnFiltered.length;
   const totalPages = Math.ceil(total / TXN_PER_PAGE);
-  const start = (txnPage - 1) * TXN_PER_PAGE + 1;
-  const end = Math.min(txnPage * TXN_PER_PAGE, total);
-  
-  document.getElementById('txnPageInfo').textContent =
-    `Showing ${start}–${end} of ${total} transactions`;
-  
+  const start      = (txnPage - 1) * TXN_PER_PAGE + 1;
+  const end        = Math.min(txnPage * TXN_PER_PAGE, total);
+  document.getElementById('txnPageInfo').textContent = `Showing ${start}–${end} of ${total} transactions`;
   document.getElementById('txnPrevBtn').disabled = txnPage <= 1;
   document.getElementById('txnNextBtn').disabled = txnPage >= totalPages;
-  
-  // Page number buttons (max 5 shown)
   const btnsEl = document.getElementById('txnPageBtns');
   btnsEl.innerHTML = '';
-  const range = getPageRange(txnPage, totalPages, 5);
-  range.forEach(p => {
+  getPageRange(txnPage, totalPages, 5).forEach(p => {
     const b = document.createElement('button');
-    b.className = 'btn btn-ghost btn-sm' + (p === txnPage ? ' active' : '');
-    b.style.cssText = p === txnPage ?
-      'background:var(--accent);color:#fff;min-width:32px;' :
-      'min-width:32px;';
+    b.className = 'btn btn-ghost btn-sm';
+    b.style.cssText = p === txnPage ? 'background:var(--accent);color:#fff;min-width:32px;' : 'min-width:32px;';
     b.textContent = p;
-    b.onclick = () => {
-      txnPage = p;
-      renderTxnTable();
-    };
+    b.onclick = () => { txnPage = p; renderTxnTable(); };
     btnsEl.appendChild(b);
   });
-  
-  document.getElementById('txnPagination').style.display =
-    totalPages > 1 ? 'flex' : 'none';
+  document.getElementById('txnPagination').style.display = totalPages > 1 ? 'flex' : 'none';
 }
 
 function getPageRange(current, total, size) {
   let start = Math.max(1, current - Math.floor(size / 2));
-  let end = Math.min(total, start + size - 1);
+  let end   = Math.min(total, start + size - 1);
   if (end - start + 1 < size) start = Math.max(1, end - size + 1);
   const range = [];
   for (let i = start; i <= end; i++) range.push(i);
@@ -440,66 +365,51 @@ function changeTxnPage(dir) {
   renderTxnTable();
 }
 
-// ---- SUMMARY PILLS ----
 function renderSummaryPills() {
-  const type = document.getElementById('txnTypeFilter').value;
-  const source = type === 'all' ? [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
-    (txnCache[type] || []);
-  
-  const total = source.length;
-  const success = source.filter(r => (r.status || '').toLowerCase() === 'success').length;
-  const pending = source.filter(r => (r.status || '').toLowerCase() === 'pending').length;
-  const failed = source.filter(r => (r.status || '').toLowerCase() === 'failed').length;
-  
-  document.getElementById('pill-total').innerHTML = `<i class="ri-list-check"></i> ${total} Total`;
+  const type   = document.getElementById('txnTypeFilter').value;
+  const source = type === 'all'
+    ? [...(txnCache.deposit||[]), ...(txnCache.withdrawal||[]), ...(txnCache.activity||[])]
+    : (txnCache[type] || []);
+  const total   = source.length;
+  const success = source.filter(r => (r.status||'').toLowerCase() === 'success').length;
+  const pending = source.filter(r => (r.status||'').toLowerCase() === 'pending').length;
+  const failed  = source.filter(r => (r.status||'').toLowerCase() === 'failed').length;
+  document.getElementById('pill-total').innerHTML   = `<i class="ri-list-check"></i> ${total} Total`;
   document.getElementById('pill-success').innerHTML = `<i class="ri-checkbox-circle-line"></i> ${success} Success`;
   document.getElementById('pill-pending').innerHTML = `<i class="ri-time-line"></i> ${pending} Pending`;
-  document.getElementById('pill-failed').innerHTML = `<i class="ri-close-circle-line"></i> ${failed} Failed`;
-  
+  document.getElementById('pill-failed').innerHTML  = `<i class="ri-close-circle-line"></i> ${failed} Failed`;
   document.getElementById('txnSummaryBar').style.display = 'flex';
 }
 
-// ---- CONSOLE LOG TOTALS ----
 function logTxnTotals() {
   const types = ['deposit', 'withdrawal', 'activity'];
-  
-  console.group('%c[NexVault] Transaction Totals', 'color:#8b85ff;font-weight:700;font-size:13px;');
-  
+  console.group('%c[FluxMall] Transaction Totals', 'color:#8b85ff;font-weight:700;font-size:13px;');
   types.forEach(type => {
     const rows = txnCache[type];
     if (!rows) return;
-    
-    const total = rows.length;
-    const success = rows.filter(r => (r.status || '').toLowerCase() === 'success');
-    const pending = rows.filter(r => (r.status || '').toLowerCase() === 'pending');
-    const failed = rows.filter(r => (r.status || '').toLowerCase() === 'failed');
-    const warning = rows.filter(r => (r.status || '').toLowerCase() === 'warning');
-    
-    const sumAmt = arr => arr.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
-    
+    const success = rows.filter(r => (r.status||'').toLowerCase() === 'success');
+    const pending = rows.filter(r => (r.status||'').toLowerCase() === 'pending');
+    const failed  = rows.filter(r => (r.status||'').toLowerCase() === 'failed');
+    const warning = rows.filter(r => (r.status||'').toLowerCase() === 'warning');
+    const sumFex  = arr => arr.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
+    const sumNaira = arr => (sumFex(arr) * FEX_RATE).toFixed(2);
     console.group(`%c${type.toUpperCase()}`, 'color:#f0f2f8;font-weight:600;');
-    console.log(`  Total records   : ${total}`);
-    console.log(`  ✅ Success       : ${success.length}  (₦${sumAmt(success).toLocaleString()})`);
-    console.log(`  ⏳ Pending       : ${pending.length}  (₦${sumAmt(pending).toLocaleString()})`);
-    console.log(`  ❌ Failed        : ${failed.length}   (₦${sumAmt(failed).toLocaleString()})`);
-    if (warning.length) {
-      console.log(`  ⚠️  Warning       : ${warning.length}  (₦${sumAmt(warning).toLocaleString()})`);
-    }
+    console.log(`  Total records : ${rows.length}`);
+    console.log(`  ✅ Success     : ${success.length}  (🪙${sumFex(success).toLocaleString()} FEX = ₦${sumNaira(success)})`);
+    console.log(`  ⏳ Pending     : ${pending.length}  (🪙${sumFex(pending).toLocaleString()} FEX = ₦${sumNaira(pending)})`);
+    console.log(`  ❌ Failed      : ${failed.length}   (🪙${sumFex(failed).toLocaleString()} FEX = ₦${sumNaira(failed)})`);
+    if (warning.length) console.log(`  ⚠️  Warning     : ${warning.length}  (🪙${sumFex(warning).toLocaleString()} FEX = ₦${sumNaira(warning)})`);
     console.groupEnd();
   });
-  
   console.groupEnd();
 }
 
-// ---- STATE MANAGER ----
 function showTxnState(state) {
-  document.getElementById('txnLoading').style.display = state === 'loading' ? 'block' : 'none';
-  document.getElementById('txnError').style.display = state === 'error' ? 'block' : 'none';
-  document.getElementById('txnEmpty').style.display = state === 'empty' ? 'block' : 'none';
-  document.getElementById('txnTableWrap').style.display = state === 'table' ? 'block' : 'none';
-  if (state !== 'table') {
-    document.getElementById('txnSummaryBar').style.display = 'none';
-  }
+  document.getElementById('txnLoading').style.display    = state === 'loading' ? 'block' : 'none';
+  document.getElementById('txnError').style.display      = state === 'error'   ? 'block' : 'none';
+  document.getElementById('txnEmpty').style.display      = state === 'empty'   ? 'block' : 'none';
+  document.getElementById('txnTableWrap').style.display  = state === 'table'   ? 'block' : 'none';
+  if (state !== 'table') document.getElementById('txnSummaryBar').style.display = 'none';
 }
 
 function setRefreshSpin(on) {
@@ -507,43 +417,34 @@ function setRefreshSpin(on) {
 }
 
 function refreshTransactions() {
-  // Bust cache for active type
   const type = document.getElementById('txnTypeFilter').value;
-  if (type === 'all') {
-    txnCache.deposit = txnCache.withdrawal = txnCache.activity = null;
-  } else {
-    txnCache[type] = null;
-  }
+  if (type === 'all') txnCache.deposit = txnCache.withdrawal = txnCache.activity = null;
+  else txnCache[type] = null;
   loadTransactions(type);
 }
 
-// ---- CSV EXPORT ----
 function exportTxnCSV() {
-  if (!txnFiltered.length) { showAlert('No transactions to export.', 'info'); return; }
-  const headers = ['Description', 'Type', 'Amount', 'Date', 'Status', 'Reference'];
+  if (!txnFiltered.length) { showToast('No transactions to export.', 'warning', 'ri-close-line', 'Empty'); return; }
+  const headers = ['Description','Type','FEX Amount','Naira Equiv','Date','Status','Reference'];
   const rows = txnFiltered.map(r => [
     r.description || r.narration || r._type || '',
     r._type || '',
     r.amount || 0,
+    ((parseFloat(r.amount)||0) * FEX_RATE).toFixed(2),
     r.createdAt || r.date || '',
     r.status || '',
     r.reference || r.ref || r._id || '',
   ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
-  
-  const csv = [headers.join(','), ...rows].join('\n');
+  const csv  = [headers.join(','), ...rows].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `transactions_${Date.now()}.csv`;
-  a.click();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `transactions_${Date.now()}.csv`; a.click();
   URL.revokeObjectURL(url);
-  showToast('CSV downloaded', '📄');
+  showToast('CSV downloaded', 'success', 'ri-download-line', 'Done');
 }
 
-// Auto-load when page first becomes visible
 document.addEventListener('DOMContentLoaded', () => {
-  // Pre-load quietly in background after 1s
   setTimeout(() => {
     if (!txnCache.deposit && !txnCache.withdrawal && !txnCache.activity) {
       Promise.all([
@@ -555,29 +456,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1200);
 });
 
-
-//ended here
-
 // ─── DEPOSIT INITIATION ───────────────────────────────────
 window.initiateDeposit = async function(amount) {
   if (!document.getElementById('attest')?.checked)
     return showToast('Please read and accept before proceeding.', 'warning', 'ri-close-line', 'Attestation');
-  
+
   amount = Number(amount);
   if (!amount) return showToast('Enter valid amount (Minimum 3000)', 'error', 'ri-close-line', 'Invalid Amount');
-  
+
   const refCode = Math.floor(10000000 + Math.random() * 90000000).toString();
-  const config = window.paymentConfig || {};
-  
+  const config  = window.paymentConfig || {};
+
   if (config.mode === 'korapay' && config.korapay?.publicKey) {
     payWithKorapay(amount, config.korapay.publicKey);
     return;
   }
-  
+
   const bankName = config.manual?.bankName || 'Contact Admin';
-  const accNum = config.manual?.accountNumber || '0000000000';
-  const accName = config.manual?.accountName || 'Admin';
-  
+  const accNum   = config.manual?.accountNumber || '0000000000';
+  const accName  = config.manual?.accountName || 'Admin';
+
   const modal = document.createElement('div');
   modal.id = 'paymentModal';
   modal.className = 'modal-overlay';
@@ -604,9 +502,11 @@ window.initiateDeposit = async function(amount) {
 
 window.submitManualDeposit = async (amount, refCode) => {
   closeModal();
+  // Convert naira amount to FEX before recording
+  const fexAmount = parseFloat((amount / FEX_RATE).toFixed(2));
   const data = await api('/api/user/deposit', {
     method: 'POST',
-    body: JSON.stringify({ amount, method: 'Bank Transfer', refCode: refCode || 'MAN_' + Date.now(), status: 'pending' })
+    body: JSON.stringify({ amount: fexAmount, method: 'Bank Transfer', refCode: refCode || 'MAN_' + Date.now(), status: 'pending' })
   });
   if (data?.success) {
     showToast('Deposit submitted! Awaiting admin approval.', 'info', 'ri-check-line', 'Submitted');
@@ -633,13 +533,14 @@ window.payWithKorapay = (amount, key) => {
     onSuccess: async (data) => {
       if (isProcessingDeposit) return;
       isProcessingDeposit = true;
+      // Convert naira paid → FEX units to credit user
+      const fexToCredit = parseFloat((amount / FEX_RATE).toFixed(2));
       const res = await api('/api/user/deposit', {
         method: 'POST',
-        body: JSON.stringify({ amount, method: 'Korapay', refCode: data.reference, status: 'success' })
+        body: JSON.stringify({ amount: fexToCredit, method: 'Korapay', refCode: data.reference, status: 'success' })
       });
       if (res?.success) {
-        showToast(`🎉 ₦${amount.toLocaleString()} added to wallet!`, 'success', 'ri-check-line', 'Success');
-        loadDeposits();
+        showToast(`🎉 🪙${fexToCredit.toLocaleString()} FEX added to wallet!`, 'success', 'ri-check-line', 'Success');
         refreshBalance();
       }
     }
@@ -648,29 +549,49 @@ window.payWithKorapay = (amount, key) => {
 
 // ─── WITHDRAWAL ───────────────────────────────────────────
 window.handleWithdrawalSubmit = async () => {
-  const amount = Number(document.getElementById('withdrawAmount').value);
+  const fexAmount = Number(document.getElementById('withdrawAmount').value);
   const btn = document.getElementById('withdrawBtn');
-  const u = currentUserData;
-  
+  const u   = currentUserData;
+
   if (!u.bankDetails?.accountNumber)
     return showToast('Please bind your Bank Account in the Profile section first.', 'warning', 'ri-close-line', 'Bank Required');
   if (!u.emailVerified)
     return showToast('❌ Verification Required! Verify your account first.', 'error', 'ri-close', 'Verify First');
-  if (amount < globalConfig.minWithdraw)
-    return showToast(`Minimum withdrawal is ₦${globalConfig.minWithdraw.toLocaleString()}`, 'warning', 'ri-close-line', 'Invalid Amount');
-  if (amount > u.ib)
-    return showToast('Insufficient balance.', 'warning', 'ri-close-line', 'Insufficient');
-  
-  const fee = (amount * globalConfig.withdrawFee) / 100;
-  const net = Math.floor(amount - fee);
-  if (!confirm(`Withdrawal: ₦${amount.toLocaleString()}\nFee (${globalConfig.withdrawFee}%): ₦${fee.toLocaleString()}\nYou receive: ₦${net.toLocaleString()}\n\nConfirm?`)) return;
-  
-  btn.disabled = true;
+  if (!fexAmount || fexAmount <= 0)
+    return showToast('Enter a valid FEX amount.', 'warning', 'ri-close-line', 'Invalid Amount');
+  if (fexAmount > u.ib)
+    return showToast('Insufficient FEX balance.', 'warning', 'ri-close-line', 'Insufficient');
+
+  // Fetch live conversion from server before confirming
+  const conv = await api('/api/user/convert-fex', {
+    method: 'POST',
+    body: JSON.stringify({ fexAmount })
+  });
+
+  if (!conv?.success)
+    return showToast(conv?.error || 'Could not fetch conversion rate.', 'error', 'ri-close-line', 'Error');
+
+  const { naira, fexRate } = conv;
+  const fee = parseFloat(((naira * globalConfig.withdrawFee) / 100).toFixed(2));
+  const net = parseFloat((naira - fee).toFixed(2));
+
+  if (!confirm(
+    `Withdraw: 🪙${fexAmount.toLocaleString()} FEX\n` +
+    `Rate: 1 FEX = ₦${fexRate}\n` +
+    `Naira Value: ₦${naira.toLocaleString()}\n` +
+    `Fee (${globalConfig.withdrawFee}%): ₦${fee.toLocaleString()}\n` +
+    `You receive: ₦${net.toLocaleString()}\n\nConfirm?`
+  )) return;
+
+  btn.disabled  = true;
   btn.innerText = 'Processing...';
   try {
-    const data = await api('/api/user/withdraw', { method: 'POST', body: JSON.stringify({ amount }) });
+    const data = await api('/api/user/withdraw', {
+      method: 'POST',
+      body: JSON.stringify({ fexAmount })
+    });
     if (data?.success) {
-      showToast('✅ Withdrawal request submitted!', 'info', 'ri-check-line', 'Success');
+      showToast(data.message || '✅ Withdrawal submitted!', 'info', 'ri-check-line', 'Success');
       document.getElementById('withdrawAmount').value = '';
       loadWithdrawals();
       refreshBalance();
@@ -680,51 +601,46 @@ window.handleWithdrawalSubmit = async () => {
   } catch (err) {
     showToast('Something went wrong.', 'warning', 'ri-close-line', 'Error');
   } finally {
-    btn.disabled = false;
+    btn.disabled  = false;
     btn.innerText = 'Confirm Withdrawal';
   }
 };
 
+// Live preview under withdrawal input — shows naira equivalent as user types
 window.updateWithdrawPreview = () => {
-  const amount = Number(document.getElementById('withdrawAmount').value) || 0;
-  const fee = (amount * globalConfig.withdrawFee) / 100;
-  const net = Math.floor(amount - fee);
-  const el = document.getElementById('netAmount');
-  if (el) el.innerText = `₦${net.toLocaleString()}`;
+  const fex   = Number(document.getElementById('withdrawAmount').value) || 0;
+  const naira = parseFloat((fex * FEX_RATE).toFixed(2));
+  const fee   = parseFloat(((naira * globalConfig.withdrawFee) / 100).toFixed(2));
+  const net   = parseFloat((naira - fee).toFixed(2));
+  const el    = document.getElementById('netAmount');
+  if (el) {
+    el.innerHTML = fex > 0
+      ? `₦${net.toLocaleString()} <span style="font-size:11px;opacity:0.6;">(🪙${fex.toLocaleString()} FEX @ ₦${FEX_RATE}/FEX)</span>`
+      : '₦0.00';
+  }
 };
 
 // ─── BANK SYNC ───────────────────────────────────────────
 async function initBankSync() {
   const u = currentUserData;
-  
-  // Load banks dropdown from Korapay
   await loadBanksDropdown();
-  
-  // Pre-fill existing bank details
   if (u.bankDetails?.accountNumber) {
-    const b = u.bankDetails;
+    const b  = u.bankDetails;
     const an = document.getElementById('accNumber');
     const ac = document.getElementById('accName');
     if (an) an.value = b.accountNumber || '';
-    if (ac) ac.value = b.accountName || '';
-    // Match bank in dropdown by name or code
+    if (ac) ac.value = b.accountName  || '';
     const bn = document.getElementById('bankName');
     if (bn) {
       const match = Array.from(bn.options).find(o => o.text === b.bankName || o.value === b.bankCode);
       if (match) bn.value = match.value;
     }
   }
-  
-  // Apply global lock
   const isMasterLocked = window.paymentConfig?.globalBankLock || false;
   const saveBtn = document.getElementById('saveBtn');
   if (isMasterLocked && u.bankDetails?.accountNumber) {
-    ['bankName', 'accNumber', 'accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
-    if (saveBtn) {
-      saveBtn.disabled = true;
-      saveBtn.innerText = 'Contact support';
-      saveBtn.style.display = 'none';
-    }
+    ['bankName','accNumber','accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = 'Contact support'; saveBtn.style.display = 'none'; }
     const msg = document.getElementById('status-msg');
     if (msg) msg.innerText = 'This feature is currently unavailable';
   }
@@ -745,11 +661,10 @@ async function loadBanksDropdown() {
     data.banks.forEach(bank => {
       const opt = document.createElement('option');
       opt.value = bank.code;
-      opt.text = bank.name;
+      opt.text  = bank.name;
       opt.dataset.name = bank.name;
       select.appendChild(opt);
     });
-    // If account number already exists, trigger verify
     const accNum = document.getElementById('accNumber')?.value;
     if (accNum?.length === 10) handleAccNumberInput(accNum);
   } catch (err) {
@@ -759,57 +674,77 @@ async function loadBanksDropdown() {
 
 // ─── ACCOUNT NUMBER AUTO-VERIFY ──────────────────────────
 let verifyTimer = null;
+
 window.handleAccNumberInput = (value) => {
+  clearTimeout(verifyTimer);
   const statusEl = document.getElementById('verifyStatus');
-  const accName = document.getElementById('accName');
-  if (accName) accName.value = '';
+  const accName  = document.getElementById('accName');
+  if (accName)  accName.value   = '';
   if (statusEl) statusEl.innerHTML = '';
   if (value.length !== 10) return;
-  // Debounce — wait 700ms after typing stops
-  clearTimeout(verifyTimer);
-  verifyTimer = setTimeout(() => verifyAccount(value), 700);
+
+  const bankCode = document.getElementById('bankName')?.value;
+
+  // Bank already selected — verify directly
+  if (bankCode) {
+    verifyAccount(value);
+    return;
+  }
+
+  // No bank — try auto-resolve against top banks
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">🔍 Detecting bank...</span>';
+  verifyTimer = setTimeout(async () => {
+    try {
+      const data = await api('/api/user/resolve-account', {
+        method: 'POST',
+        body: JSON.stringify({ accountNumber: value })
+      });
+      if (data?.success) {
+        if (accName) accName.value = data.accountName;
+        const bankSelect = document.getElementById('bankName');
+        if (bankSelect) bankSelect.value = data.bankCode;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName} · ${data.bankName}</span>`;
+      } else {
+        if (statusEl) statusEl.innerHTML = `<span style="color:orange">⚠️ ${data?.error || 'Could not detect bank. Please select manually.'}</span>`;
+      }
+    } catch (err) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:red">❌ Connection error</span>';
+    }
+  }, 700);
 };
 
 async function verifyAccount(accountNumber) {
   const bankSelect = document.getElementById('bankName');
-  const statusEl = document.getElementById('verifyStatus');
-  const accName = document.getElementById('accName');
-  const bankCode = bankSelect?.value;
-  
+  const statusEl   = document.getElementById('verifyStatus');
+  const accName    = document.getElementById('accName');
+  const bankCode   = bankSelect?.value;
   if (!bankCode) {
     if (statusEl) statusEl.innerHTML = '<span style="color:orange">⚠️ Please select a bank first</span>';
     return;
   }
   if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">🔍 Verifying account...</span>';
-  
   const data = await api('/api/user/verify-account', {
     method: 'POST',
     body: JSON.stringify({ accountNumber, bankCode })
   });
-  
   if (data?.success) {
-    if (accName) accName.value = data.accountName;
+    if (accName)  accName.value   = data.accountName;
     if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName}</span>`;
   } else {
-    if (accName) accName.value = '';
+    if (accName)  accName.value   = '';
     if (statusEl) statusEl.innerHTML = `<span style="color:red">❌ ${data?.error || 'Verification failed'}</span>`;
   }
 }
 
 window.handleSave = async () => {
   const bankSelect = document.getElementById('bankName');
-  const bankCode = bankSelect?.value;
-  const bankLabel = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
-  const aNum = document.getElementById('accNumber').value.trim();
-  const aName = document.getElementById('accName').value.trim();
-  
-  if (!bankCode)
-    return showToast('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (aNum.length !== 10)
-    return showToast('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (!aName)
-    return showToast('Account not verified yet. Wait for auto-verification.', 'warning', 'ri-close-line', 'Not Verified');
-  
+  const bankCode   = bankSelect?.value;
+  const bankLabel  = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
+  const aNum       = document.getElementById('accNumber').value.trim();
+  const aName      = document.getElementById('accName').value.trim();
+  if (!bankCode)         return showToast('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (aNum.length !== 10) return showToast('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (!aName)            return showToast('Account not verified yet.', 'warning', 'ri-close-line', 'Not Verified');
   const data = await api('/api/user/bank-details', {
     method: 'PUT',
     body: JSON.stringify({ bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName })
@@ -824,11 +759,11 @@ window.handleSave = async () => {
 
 // ─── DEPOSIT AMOUNTS ─────────────────────────────────────
 const amountListDiv = document.getElementById('amountGrid');
-const confirmInput = document.getElementById('customAmount');
-const confirmBtn = document.getElementById('rechargeBtn');
+const confirmInput  = document.getElementById('customAmount');
+const confirmBtn    = document.getElementById('rechargeBtn');
 
 async function fetchAmounts() {
-  const data = await api('/api/user/deposit-amounts');
+  const data    = await api('/api/user/deposit-amounts');
   const amounts = data?.amounts?.length ? data.amounts : [3000, 5000, 10000];
   displayAmounts(amounts);
 }
@@ -839,8 +774,10 @@ function displayAmounts(amounts) {
   amounts.forEach((amt, index) => {
     const card = document.createElement('div');
     card.className = 'amt-btn';
+    // Show both naira price and FEX they'll receive
+    const fexEquiv = parseFloat((amt / FEX_RATE).toFixed(2));
     if (index === 0) { card.classList.add('active'); if (confirmInput) confirmInput.value = amt.toFixed(2); }
-    card.innerText = `₦${amt.toLocaleString()}`;
+    card.innerHTML = `₦${amt.toLocaleString()} <small style="display:block;font-size:0.7em;opacity:0.7;">🪙 ${fexEquiv.toLocaleString()} FEX</small>`;
     card.onclick = () => {
       if (confirmInput) confirmInput.value = amt.toFixed(2);
       document.querySelectorAll('.amt-btn').forEach(c => c.classList.remove('active'));
@@ -874,8 +811,8 @@ async function loadShares() {
         <div class="share-details">
           <h3>${s.name}</h3>
           <div class="stats-row">
-            <div class="stat-item" style="text-align:left"><span>Price</span><b>₦${s.price.toLocaleString()}</b></div>
-            <div class="stat-item" style="text-align:right"><span>Daily Pay</span><b style="color:#10ac84;">₦${s.dailyIncome.toLocaleString()}</b></div>
+            <div class="stat-item" style="text-align:left"><span>Price</span><b>🪙${s.price.toLocaleString()} FEX</b></div>
+            <div class="stat-item" style="text-align:right"><span>Daily Pay</span><b style="color:#10ac84;">🪙${s.dailyIncome.toLocaleString()} FEX</b></div>
           </div>
           <button class="buy-btn" onclick="buyShare('${s._id}',${s.price},'${s.name}',${s.dailyIncome},${s.duration})">Invest Now</button>
         </div>
@@ -885,8 +822,8 @@ async function loadShares() {
 
 window.buyShare = async (id, price, name, daily, dur) => {
   if (currentUserData.ib < price)
-    return showToast('Insufficient Balance! Try depositing.', 'warning', 'ri-close-line', 'Insufficient Balance');
-  if (!confirm(`Buy ${name} for ₦${price.toLocaleString()}?`)) return;
+    return showToast('Insufficient FEX Balance! Try depositing.', 'warning', 'ri-close-line', 'Insufficient Balance');
+  if (!confirm(`Buy ${name} for 🪙${price.toLocaleString()} FEX?`)) return;
   const data = await api('/api/user/buy-share', {
     method: 'POST',
     body: JSON.stringify({ shareId: id, name, price, dailyIncome: daily, duration: dur })
@@ -914,24 +851,25 @@ async function loadMyInvestments() {
   }
   data.investments.forEach(d => {
     const purchaseDate = new Date(d.purchaseDate);
-    const now = new Date();
-    const daysPassed = Math.floor(Math.abs(now - purchaseDate) / (1000 * 60 * 60 * 24));
-    const remaining = d.duration - daysPassed;
-    const progressPct = Math.min(100, (daysPassed / d.duration) * 100);
+    const now          = new Date();
+    const daysPassed   = Math.floor(Math.abs(now - purchaseDate) / (1000 * 60 * 60 * 24));
+    const remaining    = d.duration - daysPassed;
+    const progressPct  = Math.min(100, (daysPassed / d.duration) * 100);
+    const claimed      = daysPassed * d.dailyIncome;
     container.innerHTML += `
       <div class="order-card block">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
           <span class="product-name">${d.shareName?.toUpperCase()}</span>
           <span class="status-badge"><i class="ri-flashlight-fill" style="color:#f1c40f"></i>Auto Claim On</span>
         </div>
-        <div class="info-row"><span class="label">Price:</span><span class="value">₦${d.pricePaid}</span></div>
-        <div class="info-row"><span class="label">Total Profit:</span><span class="value">₦${d.dailyIncome * d.duration}</span></div>
-        <div class="info-row"><span class="label">Daily Profit:</span><span class="value">₦${d.dailyIncome}</span></div>
+        <div class="info-row"><span class="label">Price:</span><span class="value">🪙${d.pricePaid.toLocaleString()} FEX</span></div>
+        <div class="info-row"><span class="label">Total Profit:</span><span class="value">🪙${(d.dailyIncome * d.duration).toLocaleString()} FEX</span></div>
+        <div class="info-row"><span class="label">Daily Profit:</span><span class="value">🪙${d.dailyIncome.toLocaleString()} FEX</span></div>
         <div class="info-row"><span class="label">Duration:</span><span class="value">${d.duration} Days</span></div>
         <div class="info-row"><span class="label">Date:</span><span class="value">${purchaseDate.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</span></div>
         <div class="info-row" style="font-weight:600;font-size:1rem;color:var(--success);">
           <span class="label">Claimed:</span>
-          <span class="value">₦${(daysPassed * d.dailyIncome).toLocaleString()}</span>
+          <span class="value">🪙${claimed.toLocaleString()} FEX</span>
         </div>
         <div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%"></div></div>
         <div class="info-row">
@@ -946,7 +884,7 @@ async function loadMyInvestments() {
 async function collectDailyEarnings() {
   const data = await api('/api/user/collect-earnings', { method: 'POST' });
   if (data?.credited > 0) {
-    showToast(`💰 Daily Profit: ₦${data.credited.toLocaleString()} added!`, 'info', 'ri-check-line', 'Profit Added');
+    showToast(`💰 Daily Profit: 🪙${data.credited.toLocaleString()} FEX added!`, 'info', 'ri-check-line', 'Profit Added');
     refreshBalance();
   }
 }
@@ -971,45 +909,40 @@ async function loadTeamData() {
 function generateReferralLink() {
   if (!currentUserData) return;
   const refId = currentUserData.uid || currentUserData._id;
-  const link = `${window.location.origin}/m2/index.html?ref=${refId}#signup-page`;
-  document.getElementById("refLink").innerHTML = `      
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referral Code</div>
-            <div class="ref-code-box">
-              <div class="ref-code">${refId}</div>
-              <button class="copy-btn" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy</button>
-            </div>
-            <div style="margin-top:16px;">
-              <label>Referral Link</label>
-              <div class="ref-code-box">
-                <div style="font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${link}
-                <button class="copy-btn" onclick="copyCode(
-              '${link}')"><i class="ri-file-copy-line"></i> Copy</button>
-              </div>
-            </div>
-            <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
-              <button class="btn btn-primary" onclick="showAlert('Referral link copied to clipboard!','success')"><i class="ri-share-line"></i> Share</button>
-              <button class="btn btn-outline" onclick="showAlert('Opening WhatsApp to share your referral link...','info')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
-              </div></div>
-            </div>`;
-  
-  document.getElementById("hRefCode").innerHTML = `              <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
-              <div class="ref-code">${refId}</div>
-              <div style="font-size:12px;color:var(--text2);margin-top:6px;">7 referrals • ₦8,400 earned</div>
-              <button class="copy-btn mt-4 w-full" style="margin-top:12px;" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy Code</button>`;
-  // document.querySelectorAll('.refLink').forEach(el => el.innerText = link);
-  /*  window.copyRefLink = () => {
-      navigator.clipboard.writeText(link)
-        .then(() => showToast('Referral link copied!', 'success', 'ri-clipboard-line', 'Copied!'));
-    };*/
+  const link  = `${window.location.origin}/m2/index.html?ref=${refId}#signup-page`;
+  document.getElementById('refLink').innerHTML = `
+    <div class="card">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referral Code</div>
+      <div class="ref-code-box">
+        <div class="ref-code">${refId}</div>
+        <button class="copy-btn" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy</button>
+      </div>
+      <div style="margin-top:16px;">
+        <label>Referral Link</label>
+        <div class="ref-code-box">
+          <div style="font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${link}</div>
+          <button class="copy-btn" onclick="copyCode('${link}')"><i class="ri-file-copy-line"></i> Copy</button>
+        </div>
+      </div>
+      <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="copyCode('${link}')"><i class="ri-share-line"></i> Share</button>
+        <button class="btn btn-outline" onclick="window.open('https://wa.me/?text=${encodeURIComponent(link)}','_blank')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
+      </div>
+    </div>`;
+
+  document.getElementById('hRefCode').innerHTML = `
+    <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
+    <div class="ref-code">${refId}</div>
+    <div style="font-size:12px;color:var(--text2);margin-top:6px;">${(currentUserData.referralCount||0)} referrals</div>
+    <button class="copy-btn mt-4 w-full" style="margin-top:12px;" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy Code</button>`;
 }
 
 // ─── SPIN WHEEL ───────────────────────────────────────────
 const canvas = document.getElementById('wheelCanvas');
-const ctx = canvas?.getContext('2d');
-let prizes = [];
+const ctx    = canvas?.getContext('2d');
+let prizes          = [];
 let currentRotation = 0;
-let isSpinning = false;
+let isSpinning      = false;
 
 function drawWheel() {
   if (!ctx || !prizes.length) return;
@@ -1052,7 +985,7 @@ window.spinWheel = async () => {
     }
     const win = data.prize;
     if (win.value > 0) {
-      showToast(`🎉 You're Lucky! Won ${win.label}!`, 'success', 'ri-check-line', "You're Lucky!");
+      showToast(`🎉 You're Lucky! Won 🪙${win.value} FEX!`, 'success', 'ri-check-line', "You're Lucky!");
     } else {
       showToast('Unlucky! Try Again', 'warning', 'ri-close-line', win.label);
     }
@@ -1066,7 +999,7 @@ async function pollNotifications() {
   const data = await api('/api/user/notifications');
   if (data?.success && data.notifications.length > lastNotifCount) {
     const latest = data.notifications[0];
-    const age = (Date.now() - new Date(latest.createdAt).getTime()) / 1000;
+    const age    = (Date.now() - new Date(latest.createdAt).getTime()) / 1000;
     if (age < 30) showToast(`${latest.title}\n${latest.message}`, 'info', 'ri-information-line', 'Notification');
     lastNotifCount = data.notifications.length;
   }
@@ -1083,25 +1016,24 @@ window.fetchUserHistory = async () => {
   list.innerHTML = '';
   data.activity.forEach(item => {
     const date = new Date(item.createdAt).toLocaleDateString();
-    const div = document.createElement('div');
+    const div  = document.createElement('div');
     div.className = 'txn-item';
     div.innerHTML = `
-                    <div class="txn-icon credit"><i class="ri-arrow-down-line"></i>${item.type}</div>
-                <div class="txn-info">
-                  <div class="txn-name">${item.desc}</div>
-                  <div class="txn-date">${date}</div>
-                </div>
-                <div class="txn-amount credit">₦${item.amount}</div>`;
+      <div class="txn-icon credit"><i class="ri-arrow-down-line"></i></div>
+      <div class="txn-info">
+        <div class="txn-name">${item.type} — ${item.desc}</div>
+        <div class="txn-date">${date}</div>
+      </div>
+      <div class="txn-amount credit">🪙${item.amount} FEX</div>`;
     list.appendChild(div);
   });
 };
 
-
 // ─── EMAIL VERIFICATION ───────────────────────────────────
 async function updateVerificationUI() {
   const container = document.getElementById('verifiedStatus');
-  const text = document.getElementById('verificationText');
-  const icon = document.getElementById('verificationIcon');
+  const text      = document.getElementById('verificationText');
+  const icon      = document.getElementById('verificationIcon');
   if (!container) return;
   const u = currentUserData;
   if (u.emailVerified) {
@@ -1139,13 +1071,9 @@ async function updateVerificationUI() {
 window.handleCheckIn = async () => {
   const data = await api('/api/user/checkin', { method: 'POST' });
   if (data?.success) {
-        showAlert(`Success, Check-in bonus ₦${data.bonus} added!`,true)
-
+    showToast(`✅ Check-in bonus 🪙${data.bonus} FEX added!`, 'success', 'ri-check-line', 'Checked In!');
     const btn = document.getElementById('checkinBtn');
-    if (btn) {
-      btn.style.opacity = '0.5';
-      btn.innerHTML = `<i class="ri-check-line"></i> Checked in`;
-    }
+    if (btn) { btn.style.opacity = '0.5'; btn.innerHTML = `<i class="ri-check-line"></i> Checked in`; }
     refreshBalance();
   } else {
     showToast(data?.error || 'Check-in failed.', 'warning', 'ri-close-line', 'Error');
@@ -1168,6 +1096,11 @@ window.copyText = (id) => {
     .then(() => showToast('Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
 };
 
+window.copyCode = (text) => {
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
+};
+
 function closeModal() {
   const modal = document.getElementById('paymentModal');
   if (modal) modal.remove();
@@ -1176,32 +1109,28 @@ function closeModal() {
 // ─── START ────────────────────────────────────────────────
 init();
 
-
-// ═══════════════════════════════════════════════════════════
-
-
 // ═══════════════════════════════════════════════════════════
 // CHAT SYSTEM — Professional FB-style
 // ═══════════════════════════════════════════════════════════
 
-let chatSessionId = null;
-let chatSessionStatus = 'active';
-let chatPollTimer = null;
-let chatTypingTimer = null;
+let chatSessionId      = null;
+let chatSessionStatus  = 'active';
+let chatPollTimer      = null;
+let chatTypingTimer    = null;
 let chatTypingPollTimer = null;
-let lastMsgCount = 0;
-let chatSoundEnabled = true;
-let chatSiteLogo = '';
-let replyingTo = null; // { msgId, sender, preview }
-let editingMsgId = null;
-let chatAllMessages = []; // full message cache for reply lookup
+let lastMsgCount       = 0;
+let chatSoundEnabled   = true;
+let chatSiteLogo       = '';
+let replyingTo         = null;
+let editingMsgId       = null;
+let chatAllMessages    = [];
 const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
 // ─── AUDIO BEEP ───────────────────────────────────────────
 function playChatSound() {
   try {
-    const ctx = new(window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
+    const ctx  = new(window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -1217,24 +1146,18 @@ function playChatSound() {
 window.openChat = async function() {
   window.location.hash = '#chat';
   lucide.createIcons();
-  
-  const logo = document.getElementById('chatAdminLogo');
+  const logo       = document.getElementById('chatAdminLogo');
   if (logo && chatSiteLogo) logo.src = chatSiteLogo;
-  
   const messagesEl = document.getElementById('chatMessages');
-  const loadingEl = document.getElementById('chatLoading');
+  const loadingEl  = document.getElementById('chatLoading');
   if (loadingEl) loadingEl.style.display = 'block';
-  
-  // Load settings to enforce image toggle + sound
   const settingsRes = await api('/api/user/chat/settings');
   if (settingsRes?.success) {
     chatSoundEnabled = settingsRes.settings?.sound !== false;
     const imgLabel = document.querySelector('label[for="chatImgInput"]');
     if (imgLabel) imgLabel.style.display = settingsRes.settings?.allowImages === false ? 'none' : 'flex';
   }
-  
   const sessionRes = await api('/api/user/chat/session');
-  
   if (sessionRes?.offline) {
     if (messagesEl) messagesEl.innerHTML = `
       <div style="text-align:center;padding:40px 20px;">
@@ -1246,12 +1169,9 @@ window.openChat = async function() {
     if (inputBar) inputBar.style.display = 'none';
     return;
   }
-  
   if (!sessionRes?.success) return;
-  
-  chatSessionId = sessionRes.session._id;
+  chatSessionId     = sessionRes.session._id;
   chatSessionStatus = sessionRes.session.status;
-  
   await loadChatMessages();
   startChatPolling();
   startTypingPoll();
@@ -1261,17 +1181,13 @@ window.openChat = async function() {
 async function loadChatMessages() {
   const data = await api('/api/user/chat/messages');
   if (!data?.success) return;
-  
-  chatSessionId = data.sessionId || chatSessionId;
+  chatSessionId     = data.sessionId     || chatSessionId;
   chatSessionStatus = data.sessionStatus || chatSessionStatus;
-  chatAllMessages = data.messages;
-  
+  chatAllMessages   = data.messages;
   renderChatMessages(data.messages);
   updateChatSessionUI();
-  
   const badge = document.getElementById('chatUnreadBadge');
   if (badge) badge.style.display = 'none';
-  
   lastMsgCount = data.messages.length;
 }
 
@@ -1281,17 +1197,14 @@ function renderChatMessages(messages) {
   if (!container) return;
   const loading = document.getElementById('chatLoading');
   if (loading) loading.style.display = 'none';
-  
   container.innerHTML = '';
   if (!messages.length) {
     container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px 0;font-size:13px;">No messages yet. Say hello 👋</div>`;
     return;
   }
-  
-  // Group messages by date
   let lastDate = '';
   messages.forEach(msg => {
-    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
     if (dateStr !== lastDate) {
       const divider = document.createElement('div');
       divider.style.cssText = 'text-align:center;margin:12px 0;';
@@ -1301,28 +1214,20 @@ function renderChatMessages(messages) {
     }
     container.appendChild(buildMsgBubble(msg, 'user'));
   });
-  
   container.scrollTop = container.scrollHeight;
 }
 
 // ─── BUILD MESSAGE BUBBLE ─────────────────────────────────
 function buildMsgBubble(msg, perspective) {
-  const isMe = (perspective === 'user') ? msg.sender === 'user' : msg.sender === 'admin';
-  const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const isMe    = (perspective === 'user') ? msg.sender === 'user' : msg.sender === 'admin';
+  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
   const wrapper = document.createElement('div');
   wrapper.dataset.msgId = msg._id;
-  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
-  
-  // ── Reply thread quote ──
+  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
   let replyHtml = '';
   if (msg.replyTo?.msgId) {
-    replyHtml = `
-      <div style="background:rgba(0,0,0,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:var(--text-muted);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
-        <span style="font-weight:700;color:var(--primary);margin-right:6px;">${msg.replyTo.sender === 'user' ? 'You' : 'Support'}</span>${msg.replyTo.preview}
-      </div>`;
+    replyHtml = `<div style="background:rgba(0,0,0,0.06);border-left:3px solid var(--primary);border-radius:6px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:var(--text-muted);max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;"><span style="font-weight:700;color:var(--primary);margin-right:6px;">${msg.replyTo.sender==='user'?'You':'Support'}</span>${msg.replyTo.preview}</div>`;
   }
-  
-  // ── Main content ──
   let bubbleContent = '';
   if (msg.deleted) {
     bubbleContent = `<span style="font-style:italic;opacity:0.6;font-size:13px;">🚫 This message was deleted</span>`;
@@ -1330,34 +1235,26 @@ function buildMsgBubble(msg, perspective) {
     bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
   } else if (msg.type === 'polar') {
     const answered = msg.polarAnswer;
-    const disabledAttr = answered ? 'disabled' : '';
-    const disabledStyle = answered ? 'opacity:0.5;cursor:not-allowed;' : 'cursor:pointer;';
     bubbleContent = `
       <div style="font-size:13px;margin-bottom:8px;font-weight:600;">❓ ${msg.polarQuestion}</div>
       ${answered
         ? `<div style="padding:6px 12px;border-radius:8px;font-weight:700;background:rgba(255,255,255,0.2);color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered==='yes'?'✅ You answered: Yes':'❌ You answered: No'}</div>`
         : `<div style="display:flex;gap:8px;margin-top:4px;">
-            <button onclick="answerPolar('${msg._id}','yes',this)" ${disabledAttr} style="background:#10ac84;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-weight:600;${disabledStyle}">✅ Yes</button>
-            <button onclick="answerPolar('${msg._id}','no',this)" ${disabledAttr} style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-weight:600;${disabledStyle}">❌ No</button>
+            <button onclick="answerPolar('${msg._id}','yes',this)" style="background:#10ac84;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-weight:600;cursor:pointer;">✅ Yes</button>
+            <button onclick="answerPolar('${msg._id}','no',this)" style="background:#e74c3c;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-weight:600;cursor:pointer;">❌ No</button>
           </div>`
       }`;
   } else {
     bubbleContent = `<span style="font-size:14px;line-height:1.5;word-break:break-word;">${msg.content}</span>`;
   }
-  
-  // ── Ticks (only for user's own messages) ──
   let ticksHtml = '';
   if (isMe && !msg.deleted) {
-    const tickColor = msg.read ? '#4fc3f7' : msg.delivered ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)';
+    const tickColor = msg.read ? '#4fc3f7' : 'rgba(255,255,255,0.5)';
     const tickLabel = msg.read ? '✓✓' : msg.delivered ? '✓✓' : '✓';
-    ticksHtml = `<span style="font-size:11px;color:${isMe ? tickColor : 'var(--text-muted)'};margin-left:4px;">${tickLabel}</span>`;
+    ticksHtml = `<span style="font-size:11px;color:${tickColor};margin-left:4px;">${tickLabel}</span>`;
   }
-  
-  // ── Edit/deleted label ──
-  const editedHtml = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.6;margin-left:4px;">edited</span>` : '';
-  
-  // ── Reactions ──
-  const reactEntries = Object.entries(msg.reactions || {}).filter(([, v]) => v.length > 0);
+  const editedHtml  = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.6;margin-left:4px;">edited</span>` : '';
+  const reactEntries = Object.entries(msg.reactions || {}).filter(([,v]) => v.length > 0);
   const reactionsHtml = reactEntries.length ? `
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
       ${reactEntries.map(([emoji, users]) => `
@@ -1365,18 +1262,15 @@ function buildMsgBubble(msg, perspective) {
           ${emoji} ${users.length}
         </span>`).join('')}
     </div>` : '';
-  
-  // ── Emoji reaction bar (shown on hover/long-press) ──
-  const emojiBarId = `ebar-${msg._id}`;
+  const emojiBarId  = `ebar-${msg._id}`;
   const emojiBarHtml = msg.deleted ? '' : `
-    <div id="${emojiBarId}" style="display:none;position:absolute;${isMe?'right:0':'left:0'};bottom:calc(100% + 4px);background:var(--card-bg,#fff);border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);display:none;gap:6px;z-index:100;white-space:nowrap;">
+    <div id="${emojiBarId}" style="display:none;position:absolute;${isMe?'right:0':'left:0'};bottom:calc(100% + 4px);background:var(--card-bg,#fff);border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);gap:6px;z-index:100;white-space:nowrap;">
       ${EMOJIS.map(e => `<span onclick="toggleReaction('${msg._id}','${e}');hideEmojiBar('${emojiBarId}')" style="font-size:20px;cursor:pointer;transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${e}</span>`).join('')}
       ${isMe && !msg.deleted ? `<span onclick="startReply('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Reply">↩️</span>
       <span onclick="startEdit('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Edit">✏️</span>
-      <span onclick="deleteMsg('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Delete">🗑️</span>` :
-      !isMe && !msg.deleted ? `<span onclick="startReply('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Reply">↩️</span>` : ''}
+      <span onclick="deleteMsg('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Delete">🗑️</span>`
+      : !isMe && !msg.deleted ? `<span onclick="startReply('${msg._id}');hideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 4px;" title="Reply">↩️</span>` : ''}
     </div>`;
-  
   wrapper.innerHTML = `
     ${emojiBarHtml}
     <div class="chat-bubble" data-msg-id="${msg._id}"
@@ -1391,212 +1285,124 @@ function buildMsgBubble(msg, perspective) {
       <span style="font-size:10px;color:var(--text-muted);">${time}</span>${editedHtml}${ticksHtml}
     </div>
     ${reactionsHtml}`;
-  
   return wrapper;
 }
 
-// ─── EMOJI BAR SHOW/HIDE ──────────────────────────────────
+// ─── EMOJI BAR ────────────────────────────────────────────
 let longPressTimer = null;
 
-window.showEmojiBar = function(e, barId) {
+function showEmojiBar(e, id) {
   e.preventDefault();
-  hideAllEmojiBars();
-  const bar = document.getElementById(barId);
+  document.querySelectorAll('[id^="ebar-"]').forEach(el => el.style.display = 'none');
+  const bar = document.getElementById(id);
   if (bar) bar.style.display = 'flex';
-};
-
-window.hideEmojiBar = function(barId) {
-  const bar = document.getElementById(barId);
-  if (bar) bar.style.display = 'none';
-};
-
-function hideAllEmojiBars() {
-  document.querySelectorAll('[id^="ebar-"]').forEach(b => b.style.display = 'none');
 }
 
-window.handleTouchStart = function(e, barId) {
-  longPressTimer = setTimeout(() => showEmojiBar(e, barId), 500);
-};
+function hideEmojiBar(id) {
+  const bar = document.getElementById(id);
+  if (bar) bar.style.display = 'none';
+}
 
-window.handleTouchEnd = function() {
+function handleTouchStart(e, id) {
+  longPressTimer = setTimeout(() => showEmojiBar(e, id), 500);
+}
+
+function handleTouchEnd() {
   clearTimeout(longPressTimer);
-};
-
-// Close emoji bars when tapping elsewhere
-document.addEventListener('click', e => {
-  if (!e.target.closest('[id^="ebar-"]') && !e.target.closest('.chat-bubble')) {
-    hideAllEmojiBars();
-  }
-});
+}
 
 // ─── REACTIONS ────────────────────────────────────────────
-window.toggleReaction = async function(msgId, emoji) {
-  const data = await api('/api/user/chat/react', {
-    method: 'POST',
-    body: JSON.stringify({ msgId, emoji })
-  });
+window.toggleReaction = async (msgId, emoji) => {
+  const data = await api('/api/user/chat/react', { method:'POST', body: JSON.stringify({ msgId, emoji }) });
   if (data?.success) await loadChatMessages();
 };
 
 // ─── REPLY ────────────────────────────────────────────────
-window.startReply = function(msgId) {
-  const msg = chatAllMessages.find(m => m._id === msgId);
-  if (!msg) return;
-  editingMsgId = null;
-  replyingTo = {
-    msgId,
-    sender: msg.sender,
-    preview: msg.type === 'image' ? '📷 Image' : msg.content?.substring(0, 80) || ''
-  };
-  const bar = document.getElementById('chatReplyBar');
-  const barText = document.getElementById('chatReplyBarText');
-  const barSender = document.getElementById('chatReplyBarSender');
-  if (bar) bar.style.display = 'flex';
-  if (barSender) barSender.textContent = msg.sender === 'user' ? 'You' : 'Support';
-  if (barText) barText.textContent = replyingTo.preview;
-  document.getElementById('chatInput')?.focus();
+window.startReply = (msgId) => {
+  const msgEl   = document.querySelector(`[data-msg-id="${msgId}"] .chat-bubble`);
+  const preview = msgEl?.innerText?.substring(0, 60) || '';
+  replyingTo    = { msgId, sender: 'user', preview };
+  const bar     = document.getElementById('replyPreviewBar');
+  if (bar) { bar.style.display = 'flex'; bar.querySelector?.('.reply-text') && (bar.querySelector('.reply-text').textContent = preview); }
 };
 
-window.cancelReply = function() {
+window.cancelReply = () => {
   replyingTo = null;
-  editingMsgId = null;
-  const bar = document.getElementById('chatReplyBar');
+  const bar  = document.getElementById('replyPreviewBar');
   if (bar) bar.style.display = 'none';
-  const input = document.getElementById('chatInput');
-  if (input) input.value = '';
-  input?.setAttribute('placeholder', 'Type a message...');
 };
 
 // ─── EDIT ─────────────────────────────────────────────────
-window.startEdit = function(msgId) {
-  const msg = chatAllMessages.find(m => m._id === msgId);
-  if (!msg || msg.deleted) return;
-  replyingTo = null;
+window.startEdit = (msgId) => {
+  const msg   = chatAllMessages.find(m => m._id === msgId);
+  if (!msg) return;
   editingMsgId = msgId;
-  const input = document.getElementById('chatInput');
-  if (input) {
-    input.value = msg.content;
-    input.focus();
-  }
-  const bar = document.getElementById('chatReplyBar');
-  const barSender = document.getElementById('chatReplyBarSender');
-  const barText = document.getElementById('chatReplyBarText');
-  if (bar) bar.style.display = 'flex';
-  if (barSender) barSender.textContent = '✏️ Editing';
-  if (barText) barText.textContent = msg.content?.substring(0, 80);
+  const input  = document.getElementById('chatInput');
+  if (input) { input.value = msg.content; input.focus(); }
 };
 
 // ─── DELETE ───────────────────────────────────────────────
-window.deleteMsg = async function(msgId) {
+window.deleteMsg = async (msgId) => {
   if (!confirm('Delete this message?')) return;
   const data = await api(`/api/user/chat/message/${msgId}`, { method: 'DELETE' });
   if (data?.success) await loadChatMessages();
-  else showToast(data?.error || 'Failed', 'error', 'ri-close-line', 'Error');
 };
 
 // ─── SEND MESSAGE ─────────────────────────────────────────
-window.sendChatMessage = async function() {
-  if (chatSessionStatus === 'ended') return showToast('This chat session has ended.', 'warning', 'ri-close-line', 'Ended');
-  const input = document.getElementById('chatInput');
-  const text = input?.value.trim();
-  if (!text) return;
-  
-  // Handle edit
+window.sendChatMessage = async () => {
+  const input   = document.getElementById('chatInput');
+  const content = input?.value?.trim();
+  if (!content && !editingMsgId) return;
+
   if (editingMsgId) {
-    const data = await api(`/api/user/chat/message/${editingMsgId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ content: text })
-    });
-    if (data?.success) {
-      cancelReply();
-      await loadChatMessages();
-    }
-    else showToast(data?.error || 'Failed', 'error', 'ri-close-line', 'Error');
+    const data = await api(`/api/user/chat/message/${editingMsgId}`, { method:'PUT', body: JSON.stringify({ content }) });
+    editingMsgId = null;
+    if (input) input.value = '';
+    if (data?.success) await loadChatMessages();
     return;
   }
-  
-  input.value = '';
-  
-  const body = { content: text, type: 'text' };
-  if (replyingTo) body.replyTo = replyingTo;
-  cancelReply();
-  
-  const data = await api('/api/user/chat/send', {
-    method: 'POST',
-    body: JSON.stringify(body)
-  });
+
+  const body = { type: 'text', content };
+  if (replyingTo) { body.replyTo = replyingTo; cancelReply(); }
+
+  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify(body) });
   if (data?.success) {
     chatAllMessages.push(data.message);
     const container = document.getElementById('chatMessages');
-    const empty = container?.querySelector('[style*="No messages"]');
-    if (empty) empty.remove();
     container?.appendChild(buildMsgBubble(data.message, 'user'));
-    container.scrollTop = container.scrollHeight;
+    if (container) container.scrollTop = container.scrollHeight;
     lastMsgCount++;
-  } else {
-    showToast(data?.error || 'Failed to send.', 'error', 'ri-close-line', 'Error');
   }
+  if (input) input.value = '';
 };
 
-// ─── ANSWER POLAR ─────────────────────────────────────────
-window.answerPolar = async function(msgId, answer, btnEl) {
-  // Disable both buttons immediately
-  if (btnEl) {
-    const parent = btnEl.closest('div');
-    if (parent) parent.querySelectorAll('button').forEach(b => {
-      b.disabled = true;
-      b.style.opacity = '0.5';
-      b.style.cursor = 'not-allowed';
-    });
-  }
-  
-  const data = await api('/api/user/chat/send', {
-    method: 'POST',
-    body: JSON.stringify({ content: answer, type: 'polar_answer', polarMsgId: msgId })
-  });
-  if (data?.success) {
-    await loadChatMessages();
-  } else {
-    showToast(data?.error || 'Failed to answer.', 'error', 'ri-close-line', 'Error');
-    if (btnEl) {
-      const parent = btnEl.closest('div');
-      if (parent) parent.querySelectorAll('button').forEach(b => {
-        b.disabled = false;
-        b.style.opacity = '1';
-        b.style.cursor = 'pointer';
-      });
-    }
-  }
+// ─── POLAR ANSWER ─────────────────────────────────────────
+window.answerPolar = async (msgId, answer, btn) => {
+  btn.disabled = true;
+  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify({ type:'polar_answer', content: answer, polarMsgId: msgId }) });
+  if (data?.success) await loadChatMessages();
 };
 
-// ─── UPLOAD IMAGE ─────────────────────────────────────────
-window.handleChatImageUpload = async function(input) {
-  const file = input.files[0];
+// ─── IMAGE UPLOAD ─────────────────────────────────────────
+window.handleChatImageUpload = async (input) => {
+  const file = input.files?.[0];
   if (!file) return;
-  if (chatSessionStatus === 'ended') return showToast('Session ended.', 'warning', 'ri-close-line', 'Ended');
-  
-  showToast('Uploading image...', 'info', 'ri-loader-line', 'Uploading');
-  
-  const keysRes = await api('/api/user/apikeys');
+  const keysRes  = await api('/api/user/apikeys');
   const imgbbKey = keysRes?.imgbb;
   if (!imgbbKey) return showToast('Image upload not configured.', 'error', 'ri-close-line', 'Error');
-  
   const formData = new FormData();
   formData.append('image', file);
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
+  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body: formData });
   const result = await res.json();
   if (!result.success) return showToast('Upload failed.', 'error', 'ri-close-line', 'Error');
-  
-  const body = { type: 'image', imageUrl: result.data.url, content: '📷 Image' };
-  if (replyingTo) body.replyTo = replyingTo;
-  cancelReply();
-  
-  const data = await api('/api/user/chat/send', { method: 'POST', body: JSON.stringify(body) });
+  const body = { type:'image', imageUrl: result.data.url, content:'📷 Image' };
+  if (replyingTo) { body.replyTo = replyingTo; cancelReply(); }
+  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify(body) });
   if (data?.success) {
     chatAllMessages.push(data.message);
     const container = document.getElementById('chatMessages');
     container?.appendChild(buildMsgBubble(data.message, 'user'));
-    container.scrollTop = container.scrollHeight;
+    if (container) container.scrollTop = container.scrollHeight;
     lastMsgCount++;
   }
   input.value = '';
@@ -1607,7 +1413,7 @@ window.onChatInputKeydown = function(e) {
   if (e.key === 'Enter') { sendChatMessage(); return; }
   clearTimeout(chatTypingTimer);
   chatTypingTimer = setTimeout(() => {
-    api('/api/user/chat/typing', { method: 'POST', body: '{}' });
+    api('/api/user/chat/typing', { method:'POST', body:'{}' });
   }, 300);
 };
 
@@ -1616,7 +1422,7 @@ function startTypingPoll() {
   chatTypingPollTimer = setInterval(async () => {
     if (window.location.hash !== '#chat' || !chatSessionId) return;
     const data = await api('/api/user/chat/typing');
-    const el = document.getElementById('chatTypingIndicator');
+    const el   = document.getElementById('chatTypingIndicator');
     if (el) el.style.display = data?.typing ? 'flex' : 'none';
   }, 2000);
 }
@@ -1627,13 +1433,13 @@ function stopTypingPoll() {
 
 // ─── UPDATE SESSION UI ────────────────────────────────────
 function updateChatSessionUI() {
-  const ended = chatSessionStatus === 'ended';
-  const badge = document.getElementById('chatEndedBadge');
+  const ended    = chatSessionStatus === 'ended';
+  const badge    = document.getElementById('chatEndedBadge');
   const inputBar = document.getElementById('chatInputBar');
   const statusDot = document.getElementById('chatStatusDot');
-  if (badge) badge.style.display = ended ? 'block' : 'none';
-  if (inputBar) inputBar.style.display = ended ? 'none' : 'flex';
-  if (statusDot) statusDot.textContent = ended ? '● Session Ended' : '● Online';
+  if (badge)     badge.style.display     = ended ? 'block' : 'none';
+  if (inputBar)  inputBar.style.display  = ended ? 'none'  : 'flex';
+  if (statusDot) statusDot.textContent   = ended ? '● Session Ended' : '● Online';
 }
 
 // ─── POLL FOR NEW MESSAGES ────────────────────────────────
@@ -1644,9 +1450,9 @@ function startChatPolling() {
     const data = await api('/api/user/chat/messages');
     if (!data?.success) return;
     if (data.messages.length !== lastMsgCount || JSON.stringify(data.messages.map(m => m.reactions)) !== JSON.stringify(chatAllMessages.map(m => m.reactions))) {
-      const newMsgs = data.messages.slice(lastMsgCount);
+      const newMsgs     = data.messages.slice(lastMsgCount);
       const hasAdminMsg = newMsgs.some(m => m.sender === 'admin');
-      chatAllMessages = data.messages;
+      chatAllMessages   = data.messages;
       renderChatMessages(data.messages);
       if (chatSoundEnabled && hasAdminMsg) playChatSound();
       lastMsgCount = data.messages.length;
@@ -1663,11 +1469,11 @@ function stopChatPolling() {
 // ─── POLL UNREAD BADGE ────────────────────────────────────
 async function pollChatUnread() {
   if (window.location.hash === '#chat') { setTimeout(pollChatUnread, 10000); return; }
-  const data = await api('/api/user/chat/unread');
+  const data  = await api('/api/user/chat/unread');
   const badge = document.getElementById('chatUnreadBadge');
   if (badge && data?.unread > 0) {
-    badge.textContent = data.unread;
-    badge.style.display = 'flex';
+    badge.textContent    = data.unread;
+    badge.style.display  = 'flex';
   } else if (badge) {
     badge.style.display = 'none';
   }
@@ -1677,126 +1483,3 @@ async function pollChatUnread() {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(pollChatUnread, 3000);
 });
-
-
-
-  // ── FIX 1: declare the timer variable (was commented out before) ──
- // let verifyTimer = null;
-
-  // ── Helpers ──────────────────────────────────────────────
-  function setStatus(msg, color) {
-    document.getElementById('verifyStatus').innerHTML =
-      `<span style="color:${color}">${msg}</span>`;
-  }
-
-  function clearFields() {
-    document.getElementById('accName').value = '';
-    document.getElementById('verifyStatus').innerHTML = '';
-  }
-
-  // ── Called when user changes the bank dropdown ───────────
-  // Only runs if a full 10-digit account number is already present
-  window.handleBankSelect = async () => {
-    const bankCode  = document.getElementById('bankSelect').value;
-    const accNumber = document.getElementById('accNumber').value.trim();
-
-    // Not ready yet — silently wait
-    if (!bankCode || accNumber.length !== 10) return;
-
-    setStatus('🔍 Verifying account...', 'blue');
-    document.getElementById('accName').value = '';
-
-    try {
-      const data = await api('/api/user/verify-account', {
-        method: 'POST',
-        body: JSON.stringify({ accountNumber: accNumber, bankCode })
-      });
-
-      if (data?.success) {
-        document.getElementById('accName').value = data.accountName;
-        setStatus(`✅ ${data.accountName}`, '#10ac84');
-      } else {
-        document.getElementById('accName').value = '';
-        setStatus(`❌ ${data?.error || 'Verification failed'}`, 'red');
-      }
-    } catch (err) {
-      setStatus('❌ Server error', 'red');
-    }
-  };
-
-  // ── Called on every keystroke in the account number field ─
-  window.handleAccNumberInput = (value) => {
-    // ── FIX 2: always clear the previous timer first ──────
-    clearTimeout(verifyTimer);
-
-    // Reset UI while user is still typing
-    clearFields();
-
-    // Not 10 digits yet — nothing to do
-    if (value.length !== 10) return;
-
-    const bankCode = document.getElementById('bankSelect').value;
-
-    // ── FIX 3: if bank already selected, verify immediately ──
-    // (no "Detecting..." flash — status is set inside handleBankSelect)
-    if (bankCode) {
-      handleBankSelect();
-      return;
-    }
-
-    // No bank selected — try auto-resolve after short debounce
-    setStatus('🔍 Detecting bank...', '#4318ff');
-
-    verifyTimer = setTimeout(async () => {
-      try {
-        const data = await api('/api/user/resolve-account', {
-          method: 'POST',
-          body: JSON.stringify({ accountNumber: value })
-        });
-
-        if (data?.success) {
-          document.getElementById('accName').value = data.accountName;
-
-          // Auto-select the resolved bank in the dropdown
-          document.getElementById('bankSelect').value = data.bankCode;
-
-          setStatus(`✅ ${data.accountName} · ${data.bankName}`, '#10ac84');
-        } else {
-          // Korapay couldn't find it in the top-banks list
-          setStatus(`⚠️ ${data?.error || 'Could not detect bank. Please select manually.'}`, 'orange');
-        }
-      } catch (err) {
-        setStatus('❌ Connection error', 'red');
-      }
-    }, 700); // 700ms debounce — fires once user stops typing
-  };
-
-  // ── Save button ───────────────────────────────────────────
-  window.handleSave = async () => {
-    const accountNumber = document.getElementById('accNumber').value.trim();
-    const bankCode      = document.getElementById('bankSelect').value;
-    const bankName      = document.getElementById('bankSelect').selectedOptions[0]?.text || '';
-    const accountName   = document.getElementById('accName').value.trim();
-
-    if (!accountNumber || accountNumber.length !== 10)
-      return setStatus('❌ Enter a valid 10-digit account number.', 'red');
-    if (!bankCode)
-      return setStatus('❌ Please select your bank.', 'red');
-    if (!accountName)
-      return setStatus('❌ Account name not verified yet.', 'red');
-
-    try {
-      const data = await api('/api/user/bank-details', {
-        method: 'PUT',
-        body: JSON.stringify({ bankName, bankCode, accountNumber, accountName })
-      });
-
-      if (data?.success) {
-        setStatus('✅ Bank details saved!', '#10ac84');
-      } else {
-        setStatus(`❌ ${data?.error || 'Failed to save.'}`, 'red');
-      }
-    } catch (err) {
-      setStatus('❌ Server error', 'red');
-    }
-  };
