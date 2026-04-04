@@ -199,10 +199,10 @@
             <div class="balance-label">Available Balance</div>
             <div class="balance-amount">₦<span class="balance">0.00</span></div>
             <div class="balance-actions">
-              <a class="bal-btn outline" href="#deposit"><i class="ri-arrow-down-line"></i> Deposit</a>
-              <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Withdraw</a>
               <a class="bal-btn white" id="checkinBtn" onclick="handleCheckIn()" href="#referral"><i class="ri-gift-line"></i>
                 Check in</a>
+              <a class="bal-btn outline" href="#deposit"><i class="ri-arrow-down-line"></i> Deposit</a>
+              <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Withdraw</a>
             </div>
             
           </div>
@@ -1580,12 +1580,12 @@
     function showAlert(message, isSuccess) {
       const el = document.getElementById('alert-message');
       if (window.navigator?.vibrate) window.navigator.vibrate(100);
-
+      
       el.innerHTML = message;
       el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
       _openModal(document.getElementById('custom-alert-modal'));
     }
-    showAlert("blur",false)
+    showAlert("blur", false)
     
     // ── showConfirm (called from script.js) ──
     // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
