@@ -1048,7 +1048,7 @@ window.fetchUserHistory = async () => {
       </div>
       <div class="txn-info">
         <div class="txn-name">
-            <strong>${typeConfig.type}</strong> — ${item.desc}
+            <strong>${item.type}</strong> — ${item.desc}
         </div>
         <div class="txn-date">${date}</div>
       </div>
