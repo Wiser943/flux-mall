@@ -121,12 +121,10 @@ async function init() {
   const today = new Date().toDateString();
   if (currentUserData.lastCheckIn === today) {
     const btn = document.getElementById('checkinBtn');
-    const msg = document.getElementById('checkinMsg');
-    if (msg) msg.innerText = 'Already claimed! Check back tomorrow.';
     if (btn) {
       btn.style.opacity = '0.5';
-      btn.className = 'check-box active';
-      btn.innerHTML = `<i class="ri-check-line"></i>`;
+            btn.innerHTML = `<i class="ri-check-line"></i> Checked in`;
+
     }
   }
 }
@@ -1144,12 +1142,9 @@ window.handleCheckIn = async () => {
         showAlert(`Success, Check-in bonus ₦${data.bonus} added!`,true)
 
     const btn = document.getElementById('checkinBtn');
-    const msg = document.getElementById('checkinMsg');
-    if (msg) msg.innerText = 'Already claimed! Check back tomorrow.';
     if (btn) {
       btn.style.opacity = '0.5';
-      btn.className = 'check-box active';
-      btn.innerHTML = `<i class="ri-check-line"></i>`;
+      btn.innerHTML = `<i class="ri-check-line"></i> Checked in`;
     }
     refreshBalance();
   } else {
