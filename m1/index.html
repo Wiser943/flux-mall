@@ -1579,6 +1579,8 @@
     // ── showAlert (called from script.js) ──
     function showAlert(message, isSuccess) {
       const el = document.getElementById('alert-message');
+      if (window.navigator?.vibrate) window.navigator.vibrate(100);
+
       el.innerHTML = message;
       el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
       _openModal(document.getElementById('custom-alert-modal'));
