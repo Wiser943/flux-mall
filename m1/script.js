@@ -1010,24 +1010,53 @@ async function pollNotifications() {
 window.fetchUserHistory = async () => {
   const list = document.getElementById('historyList');
   if (!list) return;
-  list.innerHTML = 'Loading history...';
+  
+  list.innerHTML = '<div class="loading">Loading history...</div>';
+  
   const data = await api('/api/user/activity');
-  if (!data?.success) return;
+  if (!data?.success) {
+      list.innerHTML = '<div class="error">Failed to load history.</div>';
+      return;
+  }
+  
   list.innerHTML = '';
+
+  // 1. Define the mapping for icons and styles
+  const config = {
+    checkin: { icon: 'ri-gift-line', class: 'credit' },
+    deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
+    shares: { icon: 'ri-share-forward-line', class: 'credit' },
+    withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' }
+  };
+
   data.activity.forEach(item => {
     const date = new Date(item.createdAt).toLocaleDateString();
-    const div  = document.createElement('div');
+    
+    // 2. Get the config based on the type, fallback to a default if type is unknown
+    const typeConfig = config[item.type] || { icon: 'ri-exchange-line', class: 'neutral' };
+    
+    const div = document.createElement('div');
     div.className = 'txn-item';
+    
+    // 3. Inject the dynamic icon and class
     div.innerHTML = `
-      <div class="txn-icon credit"><i class="ri-arrow-down-line"></i></div>
+      <div class="txn-icon ${typeConfig.class}">
+        <i class="${typeConfig.icon}"></i>
+      </div>
       <div class="txn-info">
-        <div class="txn-name">${item.type} — ${item.desc}</div>
+        <div class="txn-name" style="text-transform: capitalize;">
+            ${item.type} — ${item.desc}
+        </div>
         <div class="txn-date">${date}</div>
       </div>
-      <div class="txn-amount credit">🪙${item.amount} FEX</div>`;
+      <div class="txn-amount ${typeConfig.class}">
+        ${typeConfig.class === 'debit' ? '-' : ''}🪙${item.amount} FEX
+      </div>`;
+      
     list.appendChild(div);
   });
 };
+
 
 // ─── EMAIL VERIFICATION ───────────────────────────────────
 async function updateVerificationUI() {
