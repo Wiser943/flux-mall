@@ -1024,7 +1024,7 @@ window.fetchUserHistory = async () => {
   const config = {
     checkin: { icon: 'ri-gift-line', class: 'credit', label: 'Check-in' },
     deposit: { icon: 'ri-arrow-down-line', class: 'credit', label: 'Deposit' },
-    share: { icon: 'ri-share-forward-line', class: 'pending', label: 'Share' },
+    share: { icon: 'ri-time-line', class: 'pending', label: 'Share' },
     withdrawal: { icon: 'ri-arrow-up-line', class: 'debit', label: 'Withdrawal' }
   };
 
@@ -1034,7 +1034,7 @@ window.fetchUserHistory = async () => {
     // 2. Get the config or use defaults
     const typeConfig = config[item.type] || { 
         icon: 'ri-exchange-line', 
-        class: 'neutral', 
+        class: 'credit', 
         label: item.type // Fallback to raw type if not in config
     };
     
@@ -1048,7 +1048,7 @@ window.fetchUserHistory = async () => {
       </div>
       <div class="txn-info">
         <div class="txn-name">
-            <strong>${typeConfig.label}</strong> — ${item.desc}
+            <strong>${typeConfig.type}</strong> — ${item.desc}
         </div>
         <div class="txn-date">${date}</div>
       </div>
