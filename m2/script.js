@@ -111,6 +111,213 @@ function validateEmail(input, errorEl) {
   return true;
 }
 
+// ─── TOKEN EXTRACTION ─────────────────────────────────────
+// Reads token from: /#forgot-password-page?token=xxx
+// or standard query string: /account.html?token=xxx
+function getResetToken() {
+  // Try hash-based query string first: /#forgot-password-page?token=abc
+  const hash = window.location.hash || '';
+  const hashQuery = hash.includes('?') ? hash.split('?')[1] : '';
+  const params = new URLSearchParams(hashQuery || window.location.search);
+  return params.get('token') || null;
+}
+
+// ─── RESET FORM UI SWITCHER ───────────────────────────────
+// Swaps the forgot-password page between "send email" mode
+// and "set new password" mode based on whether a token is present.
+function applyResetMode(token) {
+  // Elements that always exist in the forgot-password page
+  const emailField      = document.getElementById('resetEmail');
+  const emailWrapper    = emailField ? emailField.closest('.input-group, .form-group, div') : null;
+  const submitBtn       = document.getElementById('resetSubmitBtn');
+  const formTitle       = document.getElementById('resetFormTitle');
+  const formSubtitle    = document.getElementById('resetFormSubtitle');
+
+  if (!token) {
+    // ── SEND EMAIL MODE (default) ───────────────────────
+    // Restore email field visibility (in case user navigates back)
+    if (emailField) emailField.closest('[data-reset-email-wrap]')?.removeAttribute('style');
+    removePwFields();
+    return;
+  }
+
+  // ── SET NEW PASSWORD MODE ────────────────────────────
+  // 1. Hide the email input row
+  if (emailField) {
+    const wrap = findFieldWrapper(emailField);
+    if (wrap) wrap.style.display = 'none';
+  }
+
+  // 2. Update page headings if they exist
+  if (formTitle)    formTitle.textContent    = 'Set New Password';
+  if (formSubtitle) formSubtitle.textContent = 'Choose a strong password for your account.';
+
+  // 3. Inject new-password + confirm-password fields before the submit button
+  if (submitBtn && !document.getElementById('resetNewPassword')) {
+    const newPwHtml = `
+      <div id="resetPwFields" style="margin-bottom:0;">
+        <div class="input-group" style="margin-bottom:14px;">
+          <label style="font-size:13px;font-weight:500;color:var(--text-muted,#707eae);display:block;margin-bottom:6px;">New Password</label>
+          <div style="position:relative;">
+            <input
+              type="password"
+              id="resetNewPassword"
+              placeholder="Enter new password"
+              autocomplete="new-password"
+              oninput="onResetPwInput()"
+              style="width:100%;padding:12px 44px 12px 14px;border:1px solid var(--border,#e0e5f2);border-radius:10px;background:var(--input-bg,#f4f7fe);font-size:14px;outline:none;transition:border 0.2s;"
+            >
+            <span onclick="toggleResetPw('resetNewPassword',this)"
+              style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;color:var(--text-muted,#707eae);">
+              👁️
+            </span>
+          </div>
+          <!-- Strength bar -->
+          <div id="resetStrengthWrap" style="display:none;margin-top:6px;">
+            <div style="height:4px;background:var(--border,#e0e5f2);border-radius:99px;overflow:hidden;">
+              <div id="resetStrengthFill" style="height:100%;width:0;border-radius:99px;transition:width 0.4s,background 0.3s;"></div>
+            </div>
+            <div id="resetStrengthLabel" style="font-size:11px;font-weight:600;color:#aaa;margin-top:4px;"></div>
+          </div>
+        </div>
+        <div class="input-group" style="margin-bottom:20px;">
+          <label style="font-size:13px;font-weight:500;color:var(--text-muted,#707eae);display:block;margin-bottom:6px;">Confirm Password</label>
+          <div style="position:relative;">
+            <input
+              type="password"
+              id="resetConfirmPassword"
+              placeholder="Re-enter your password"
+              autocomplete="new-password"
+              oninput="onResetConfirmInput()"
+              style="width:100%;padding:12px 44px 12px 14px;border:1px solid var(--border,#e0e5f2);border-radius:10px;background:var(--input-bg,#f4f7fe);font-size:14px;outline:none;transition:border 0.2s;"
+            >
+            <span onclick="toggleResetPw('resetConfirmPassword',this)"
+              style="position:absolute;right:14px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;color:var(--text-muted,#707eae);">
+              👁️
+            </span>
+          </div>
+          <div id="resetConfirmHint" style="font-size:12px;margin-top:5px;min-height:16px;"></div>
+        </div>
+      </div>`;
+
+    submitBtn.insertAdjacentHTML('beforebegin', newPwHtml);
+  }
+
+  // 4. Update button label
+  if (submitBtn) {
+    submitBtn.textContent = 'Reset Password';
+    submitBtn.disabled    = true; // stays disabled until both fields valid
+  }
+}
+
+// Finds the closest meaningful wrapper div for a field
+// Walks up until it finds something that isn't just the form itself
+function findFieldWrapper(el) {
+  let node = el.parentElement;
+  while (node && node.tagName !== 'FORM') {
+    // Stop at a recognised wrapper class or a div/p that directly holds the input
+    if (
+      node.classList.contains('input-group') ||
+      node.classList.contains('form-group') ||
+      node.classList.contains('field-wrap') ||
+      (node.tagName === 'DIV' && node.parentElement?.tagName !== 'DIV')
+    ) return node;
+    node = node.parentElement;
+  }
+  return el.parentElement; // fallback — hide the immediate parent
+}
+
+function removePwFields() {
+  const el = document.getElementById('resetPwFields');
+  if (el) el.remove();
+}
+
+// ─── PASSWORD STRENGTH (reset page) ──────────────────────
+const RESET_REQS = [
+  pw => pw.length >= 8,
+  pw => /[A-Z]/.test(pw),
+  pw => /[0-9]/.test(pw),
+  pw => /[^A-Za-z0-9]/.test(pw),
+];
+
+const RESET_STRENGTH_MAP = [
+  { label: '',        color: 'transparent', pct: '0%'   },
+  { label: 'Weak',    color: '#ef4444',     pct: '25%'  },
+  { label: 'Fair',    color: '#f59e0b',     pct: '50%'  },
+  { label: 'Good',    color: '#3b82f6',     pct: '75%'  },
+  { label: 'Strong',  color: '#22c55e',     pct: '100%' },
+];
+
+function calcResetStrength(pw) {
+  return RESET_REQS.filter(fn => fn(pw)).length;
+}
+
+window.onResetPwInput = function () {
+  const pw    = document.getElementById('resetNewPassword')?.value || '';
+  const score = calcResetStrength(pw);
+  const map   = RESET_STRENGTH_MAP[score];
+
+  const wrap  = document.getElementById('resetStrengthWrap');
+  const fill  = document.getElementById('resetStrengthFill');
+  const lbl   = document.getElementById('resetStrengthLabel');
+
+  if (wrap) wrap.style.display = pw.length ? 'block' : 'none';
+  if (fill) { fill.style.width = map.pct; fill.style.background = map.color; }
+  if (lbl)  { lbl.textContent = map.label ? 'Strength: ' + map.label : ''; lbl.style.color = map.color; }
+
+  // Re-validate confirm if already typed
+  const confirm = document.getElementById('resetConfirmPassword');
+  if (confirm && confirm.value) onResetConfirmInput();
+
+  updateResetSubmitBtn();
+};
+
+window.onResetConfirmInput = function () {
+  const pw      = document.getElementById('resetNewPassword')?.value   || '';
+  const confirm = document.getElementById('resetConfirmPassword')?.value || '';
+  const hint    = document.getElementById('resetConfirmHint');
+  const input   = document.getElementById('resetConfirmPassword');
+
+  if (!confirm) {
+    if (hint)  hint.textContent = '';
+    if (input) { input.style.borderColor = ''; }
+    updateResetSubmitBtn();
+    return;
+  }
+
+  if (pw === confirm) {
+    if (hint)  { hint.textContent = '✓ Passwords match'; hint.style.color = '#22c55e'; }
+    if (input) input.style.borderColor = '#22c55e';
+  } else {
+    if (hint)  { hint.textContent = '✗ Passwords do not match'; hint.style.color = '#ef4444'; }
+    if (input) input.style.borderColor = '#ef4444';
+  }
+
+  updateResetSubmitBtn();
+};
+
+function updateResetSubmitBtn() {
+  const pw      = document.getElementById('resetNewPassword')?.value   || '';
+  const confirm = document.getElementById('resetConfirmPassword')?.value || '';
+  const btn     = document.getElementById('resetSubmitBtn');
+  if (!btn) return;
+  const valid = pw === confirm && pw.length >= 8 && calcResetStrength(pw) >= 2;
+  btn.disabled = !valid;
+}
+
+// Toggle show/hide for the injected password fields
+window.toggleResetPw = function (inputId, span) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type    = 'text';
+    span.textContent = '🙈';
+  } else {
+    input.type    = 'password';
+    span.textContent = '👁️';
+  }
+};
+
 // ─── WIRE UP FORMS ────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function () {
 
@@ -119,13 +326,32 @@ window.addEventListener('DOMContentLoaded', function () {
     fetchReferrer(refParam);
   }
 
-  // Enable reset button only when email is typed
-  const resetEmailEl = document.getElementById('resetEmail');
-  const resetBtnEl   = document.getElementById('resetSubmitBtn');
-  if (resetEmailEl && resetBtnEl) {
-    resetEmailEl.addEventListener('input', function () {
-      resetBtnEl.disabled = resetEmailEl.value.trim() === '';
-    });
+  // ── Check for reset token & switch mode ─────────────────
+  const RESET_TOKEN = getResetToken();
+
+  // If the page hash is already on forgot-password-page, apply mode now.
+  // Otherwise wait for switchPageByHash to navigate there — handled below.
+  if (window.location.hash.includes('forgot-password-page')) {
+    applyResetMode(RESET_TOKEN);
+  }
+
+  // Also apply whenever the hash changes to forgot-password-page
+  // (handles navigation from another page on the same account.html)
+  window.addEventListener('hashchange', function () {
+    if (window.location.hash.includes('forgot-password-page')) {
+      applyResetMode(RESET_TOKEN);
+    }
+  });
+
+  // Enable reset button only when email is typed (only in email mode)
+  if (!RESET_TOKEN) {
+    const resetEmailEl = document.getElementById('resetEmail');
+    const resetBtnEl   = document.getElementById('resetSubmitBtn');
+    if (resetEmailEl && resetBtnEl) {
+      resetEmailEl.addEventListener('input', function () {
+        resetBtnEl.disabled = resetEmailEl.value.trim() === '';
+      });
+    }
   }
 
   // ══════════════════════════════════════
@@ -262,20 +488,86 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   // ══════════════════════════════════════
-  // FORGOT PASSWORD
+  // FORGOT PASSWORD / RESET PASSWORD
+  // Both modes use the same resetForm and resetSubmitBtn.
+  // MODE A — no token: sends reset email to /api/auth/forgot-password
+  // MODE B — token present: submits new password to /api/auth/reset-password
   // ══════════════════════════════════════
   if (resetForm) {
     resetForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      const email     = document.getElementById('resetEmail').value.trim();
       const submitBtn = document.getElementById('resetSubmitBtn');
+
+      // ── MODE B: Token present — reset the password ──────
+      if (RESET_TOKEN) {
+        const newPw  = document.getElementById('resetNewPassword')?.value   || '';
+        const confPw = document.getElementById('resetConfirmPassword')?.value || '';
+
+        if (!newPw || newPw.length < 8) {
+          showAlert('Password must be at least 8 characters.', false);
+          return;
+        }
+        if (newPw !== confPw) {
+          showAlert('Passwords do not match.', false);
+          return;
+        }
+        if (calcResetStrength(newPw) < 2) {
+          showAlert('Password is too weak. Please choose a stronger password.', false);
+          return;
+        }
+
+        showConfirm({
+          title:   'Confirm New Password',
+          message: 'Are you sure you want to set this as your new password?',
+          detail:  '',
+          yesText: 'Yes, Reset Password',
+          noText:  'Cancel',
+          onConfirm: async function () {
+            submitBtn.disabled  = true;
+            submitBtn.innerText = 'Resetting...';
+            try {
+              const res = await fetch('/api/auth/reset-password', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ token: RESET_TOKEN, newPassword: newPw })
+              });
+              const data = await res.json();
+              if (data.success) {
+                showAlert('Password reset successfully! You can now log in.', true);
+                resetForm.reset();
+                // Clear token from URL so user can't reuse it
+                window.history.replaceState(null, '', window.location.pathname);
+                setTimeout(() => { window.location.hash = '#login-page'; }, 1500);
+              } else {
+                // Token expired or invalid
+                const errMsg = data.error || 'Reset failed. The link may have expired.';
+                showAlert(errMsg, false);
+                if (errMsg.toLowerCase().includes('expired') || errMsg.toLowerCase().includes('invalid')) {
+                  // Redirect back to forgot-password so they can request a new link
+                  setTimeout(() => { window.location.hash = '#forgot-password-page'; }, 2000);
+                }
+              }
+            } catch (err) {
+              showAlert('Network error. Please try again.', false);
+            } finally {
+              submitBtn.disabled  = false;
+              submitBtn.innerText = 'Reset Password';
+            }
+          },
+          onCancel: function () {}
+        });
+
+        return; // stop here — don't fall through to MODE A
+      }
+
+      // ── MODE A: No token — send reset email ─────────────
+      const email = document.getElementById('resetEmail').value.trim();
 
       if (!email) {
         showAlert('Please enter your email address.', false);
         return;
       }
 
-      // Show confirm bottom sheet
       showConfirm({
         title:   'Send Reset Link',
         message: 'We will email a password reset link to this address. Is it correct?',
@@ -306,9 +598,7 @@ window.addEventListener('DOMContentLoaded', function () {
             submitBtn.innerText = 'Send Reset Link';
           }
         },
-        onCancel: function () {
-          // User tapped Recheck — form stays open, nothing to do
-        }
+        onCancel: function () {}
       });
     });
   }
@@ -318,4 +608,3 @@ window.addEventListener('DOMContentLoaded', function () {
 // ─── INIT ─────────────────────────────────────────────────
 syncBranding();
 checkSession();
-
