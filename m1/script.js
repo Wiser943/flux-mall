@@ -1020,36 +1020,41 @@ window.fetchUserHistory = async () => {
   
   list.innerHTML = '';
 
-  // 1. Define the mapping for icons and styles
+  // 1. Updated mapping with specific 'label' strings
   const config = {
-    checkin: { icon: 'ri-gift-line', class: 'credit' },
-    deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
-    share: { icon: 'ri-time-line-line', class: 'pending' },
-    withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' }
+    checkin: { icon: 'ri-gift-line', class: 'credit', label: 'Check-in' },
+    deposit: { icon: 'ri-arrow-down-line', class: 'credit', label: 'Deposit' },
+    share: { icon: 'ri-share-forward-line', class: 'pending', label: 'Share' },
+    withdrawal: { icon: 'ri-arrow-up-line', class: 'debit', label: 'Withdrawal' }
   };
 
   data.activity.forEach(item => {
     const date = new Date(item.createdAt).toLocaleDateString();
     
-    // 2. Get the config based on the type, fallback to a default if type is unknown
-    const typeConfig = config[item.type] || { icon: 'ri-exchange-line', class: 'neutral' };
+    // 2. Get the config or use defaults
+    const typeConfig = config[item.type] || { 
+        icon: 'ri-exchange-line', 
+        class: 'neutral', 
+        label: item.type // Fallback to raw type if not in config
+    };
     
     const div = document.createElement('div');
     div.className = 'txn-item';
     
-    // 3. Inject the dynamic icon and class
-    
+    // 3. Render using typeConfig.label instead of item.type
     div.innerHTML = `
       <div class="txn-icon ${typeConfig.class}">
         <i class="${typeConfig.icon}"></i>
       </div>
       <div class="txn-info">
-        <div class="txn-name" style="text-transform: capitalize;">${item.type}-${item.desc}
+        <div class="txn-name">
+            <strong>${typeConfig.label}</strong> — ${item.desc}
         </div>
         <div class="txn-date">${date}</div>
       </div>
       <div class="txn-amount ${typeConfig.class}">
-        ${typeConfig.class === 'debit' ? '-' : ''}🪙${item.amount}      </div>`;
+        ${typeConfig.class === 'debit' ? '-' : ''}🪙${item.amount} FEX
+      </div>`;
       
     list.appendChild(div);
   });
