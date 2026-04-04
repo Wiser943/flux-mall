@@ -227,7 +227,8 @@ async function uploadToImgBB(file, statusEl) {
 window.showModal = (cfg) => {
   const old = document.getElementById(cfg.id);
   if (old) old.remove();
-  
+        if (window.navigator?.vibrate) window.navigator.vibrate(100);
+
   const overlay = document.createElement('div');
   overlay.id = cfg.id;
   overlay.className = 'modal-overlay';
