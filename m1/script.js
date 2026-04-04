@@ -125,7 +125,7 @@ async function init() {
     const btn = document.getElementById('checkinBtn');
     if (btn) {
       btn.style.opacity = '0.5';
-      btn.innerHTML = `<i class="ri-check-line"></i> Checked in`;
+      btn.innerHTML = `<i class="ri-gift-line"></i> Refer`;
     }
   }
 }
@@ -1025,7 +1025,7 @@ window.fetchUserHistory = async () => {
   const config = {
     checkin: { icon: 'ri-gift-line', class: 'credit' },
     deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
-    shares: { icon: 'ri-share-forward-line', class: 'credit' },
+    shares: { icon: 'ri-time-line-line', class: 'pending' },
     withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' }
   };
 
@@ -1044,14 +1044,12 @@ window.fetchUserHistory = async () => {
         <i class="${typeConfig.icon}"></i>
       </div>
       <div class="txn-info">
-        <div class="txn-name" style="text-transform: capitalize;">
-            ${item.type} — ${item.desc}
+        <div class="txn-name" style="text-transform: capitalize;">${item.desc}
         </div>
         <div class="txn-date">${date}</div>
       </div>
       <div class="txn-amount ${typeConfig.class}">
-        ${typeConfig.class === 'debit' ? '-' : ''}🪙${item.amount} FEX
-      </div>`;
+        ${typeConfig.class === 'debit' ? '-' : ''}🪙${item.amount}      </div>`;
       
     list.appendChild(div);
   });
@@ -1102,7 +1100,7 @@ window.handleCheckIn = async () => {
   if (data?.success) {
     showToast(`✅ Check-in bonus 🪙${data.bonus} FEX added!`, 'success', 'ri-check-line', 'Checked In!');
     const btn = document.getElementById('checkinBtn');
-    if (btn) { btn.style.opacity = '0.5'; btn.innerHTML = `<i class="ri-check-line"></i> Checked in`; }
+    if (btn) { btn.style.opacity = '0.5'; btn.innerHTML = `<i class="ri-gift-line"></i> Refer`; }
     refreshBalance();
   } else {
     showToast(data?.error || 'Check-in failed.', 'warning', 'ri-close-line', 'Error');
