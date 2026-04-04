@@ -1319,6 +1319,8 @@
     // ── showAlert (called from script.js) ──
     function showAlert(message, isSuccess) {
       const el = document.getElementById('alert-message');
+      if (window.navigator?.vibrate) window.navigator.vibrate(100);
+
       el.innerHTML = message;
       el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
       _openModal(document.getElementById('custom-alert-modal'));
@@ -1327,7 +1329,8 @@
     // ── showConfirm (called from script.js) ──
     // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
     function showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel }) {
-      document.getElementById('confirm-title').textContent = title || 'Confirm Details';
+           if (window.navigator?.vibrate) window.navigator.vibrate(100);
+ document.getElementById('confirm-title').textContent = title || 'Confirm Details';
       document.getElementById('confirm-message').innerHTML = message || 'Are you sure?';
       document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
       document.getElementById('confirm-no-button').textContent = noText || 'Recheck Details';
