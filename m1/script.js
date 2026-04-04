@@ -124,7 +124,6 @@ async function init() {
   if (currentUserData.lastCheckIn === today) {
     const btn = document.getElementById('checkinBtn');
     if (btn) {
-      btn.style.opacity = '0.5';
       btn.innerHTML = `<i class="ri-gift-line"></i> Refer`;
     }
   }
@@ -142,7 +141,7 @@ function renderUserUI() {
 
   // Primary balance — shows FEX coins
   document.querySelectorAll('.balance').forEach(el => {
-    el.innerHTML = `🪙 ${fexFmt} <small style="font-size:0.6em;opacity:0.6;font-weight:400;">FEX</small>`;
+    el.innerHTML = `${fexFmt} <small style="font-size:0.6em;opacity:0.6;font-weight:400;">FEX</small>`;
   });
 
   // Secondary — shows naira equivalent (add class="balance-naira" to any element in HTML)
@@ -1025,7 +1024,7 @@ window.fetchUserHistory = async () => {
   const config = {
     checkin: { icon: 'ri-gift-line', class: 'credit' },
     deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
-    shares: { icon: 'ri-time-line-line', class: 'pending' },
+    share: { icon: 'ri-time-line-line', class: 'pending' },
     withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' }
   };
 
@@ -1039,12 +1038,13 @@ window.fetchUserHistory = async () => {
     div.className = 'txn-item';
     
     // 3. Inject the dynamic icon and class
+    
     div.innerHTML = `
       <div class="txn-icon ${typeConfig.class}">
         <i class="${typeConfig.icon}"></i>
       </div>
       <div class="txn-info">
-        <div class="txn-name" style="text-transform: capitalize;">${item.desc}
+        <div class="txn-name" style="text-transform: capitalize;">${item.desc}-${item.desc}
         </div>
         <div class="txn-date">${date}</div>
       </div>
@@ -1100,7 +1100,7 @@ window.handleCheckIn = async () => {
   if (data?.success) {
     showToast(`✅ Check-in bonus 🪙${data.bonus} FEX added!`, 'success', 'ri-check-line', 'Checked In!');
     const btn = document.getElementById('checkinBtn');
-    if (btn) { btn.style.opacity = '0.5'; btn.innerHTML = `<i class="ri-gift-line"></i> Refer`; }
+    if (btn) { btn.innerHTML = `<i class="ri-gift-line"></i> Refer`; }
     refreshBalance();
   } else {
     showToast(data?.error || 'Check-in failed.', 'warning', 'ri-close-line', 'Error');
