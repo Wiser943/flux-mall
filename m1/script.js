@@ -1044,7 +1044,7 @@ window.fetchUserHistory = async () => {
         <i class="${typeConfig.icon}"></i>
       </div>
       <div class="txn-info">
-        <div class="txn-name" style="text-transform: capitalize;">${item.desc}-${item.desc}
+        <div class="txn-name" style="text-transform: capitalize;">${item.type}-${item.desc}
         </div>
         <div class="txn-date">${date}</div>
       </div>
