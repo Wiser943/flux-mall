@@ -238,7 +238,7 @@ router.post('/forgot-password', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'No account found with that email.' });
 
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-    const resetUrl  = `${process.env.NETLIFY_URL}/m2/index.html?token=${resetToken}#reset-password-page`;
+    const resetUrl  = `${process.env.NETLIFY_URL}/m2/index.html?token=${resetToken}#forgot-password-page`;
 
     res.json({ success: true, message: 'A password reset link has been sent to your email.' });
 
