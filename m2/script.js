@@ -37,29 +37,8 @@ async function syncBranding() {
       link.href = config.siteLogo;
     }
 
-    if (config.theme) applyTheme(config.theme);
-
   } catch (err) {
     console.log('Branding sync failed:', err);
-  }
-}
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  root.style.setProperty('--primary', theme.primary || '#4318ff');
-  root.style.setProperty('--accent-green', theme.secondary || '#05cd99');
-  if (theme.mode === 'dark') {
-    root.style.setProperty('--right-panel-bg', '#0b1437');
-    root.style.setProperty('--card-bg', '#111c44');
-    root.style.setProperty('--text-white', '#ffffff');
-    root.style.setProperty('--input-bg', '#1b254b');
-    root.style.setProperty('--border', 'rgba(255,255,255,0.1)');
-  } else {
-    root.style.setProperty('--right-panel-bg', '#f4f7fe');
-    root.style.setProperty('--card-bg', '#ffffff');
-    root.style.setProperty('--text-white', '#2b3674');
-    root.style.setProperty('--input-bg', '#f4f7fe');
-    root.style.setProperty('--border', '#e0e5f2');
   }
 }
 
@@ -141,7 +120,7 @@ function applyResetMode(token) {
     }
     if (submitBtn) {
       submitBtn.textContent = 'Send Reset Link';
-      submitBtn.disabled    = true;
+    //  submitBtn.disabled    = true;
     }
     return;
   }
@@ -213,6 +192,7 @@ function applyResetMode(token) {
   if (submitBtn) {
     submitBtn.textContent = 'Reset Password';
     updateResetSubmitBtn();
+    
   }
 }
 
@@ -290,6 +270,8 @@ window.onResetConfirmInput = function () {
   if (pw === confirm) {
     if (hint)  { hint.textContent = '✓ Passwords match'; hint.style.color = '#22c55e'; }
     if (input) input.style.borderColor = '#22c55e';
+    doResetPassword()
+    document.getElementById('resetSubmitBtn').style.display="none";
   } else {
     if (hint)  { hint.textContent = '✗ Passwords do not match'; hint.style.color = '#ef4444'; }
     if (input) input.style.borderColor = '#ef4444';
@@ -301,8 +283,8 @@ window.onResetConfirmInput = function () {
 function updateResetSubmitBtn() {
   const pw      = document.getElementById('resetNewPassword')?.value    || '';
   const confirm = document.getElementById('resetConfirmPassword')?.value || '';
-  const btn     = document.getElementById('resetSubmitBtn');
-  if (!btn) return;
+  const btn = document.getElementById('resetSubmitBtn');
+  //if (!btn) return;
   const valid = pw.length >= 8 && pw === confirm && calcResetStrength(pw) >= 2;
   btn.disabled = !valid;
 }
@@ -336,7 +318,7 @@ async function doResetPassword() {
     return;
   }
 
-  if (btn) { btn.disabled = true; btn.innerText = 'Resetting...'; }
+  if (btn) {/* btn.disabled = true;*/ btn.innerText = 'Resetting...'; }
 
   try {
     const res = await fetch('/api/auth/reset-password', {
@@ -396,7 +378,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const resetBtnEl   = document.getElementById('resetSubmitBtn');
     if (resetEmailEl && resetBtnEl) {
       resetEmailEl.addEventListener('input', function () {
-        resetBtnEl.disabled = resetEmailEl.value.trim() === '';
+       resetBtnEl.disabled = resetEmailEl.value.trim() === '';
       });
     }
   }
@@ -436,7 +418,7 @@ window.addEventListener('DOMContentLoaded', function () {
         yesText: 'Proceed with Signup',
         noText:  'Recheck Details',
         onConfirm: async function () {
-          submitSignupBtn.disabled  = true;
+         // submitSignupBtn.disabled  = true;
           submitSignupBtn.innerText = 'Please Wait...';
           try {
             const res = await fetch('/api/auth/signup', {
@@ -489,7 +471,7 @@ window.addEventListener('DOMContentLoaded', function () {
         yesText: 'Proceed to Login',
         noText:  'Recheck Details',
         onConfirm: async function () {
-          submitBtn.disabled  = true;
+        //  submitBtn.disabled  = true;
           submitBtn.innerText = 'Signing in...';
           try {
             const res = await fetch('/api/auth/login', {
@@ -535,7 +517,6 @@ window.addEventListener('DOMContentLoaded', function () {
   if (resetForm) {
     resetForm.addEventListener('submit', function (e) {
       e.preventDefault();
-
       // ── MODE B: token present — call doResetPassword directly ──
       // FIX: We call doResetPassword() directly instead of wrapping
       // it in showConfirm, which was silently failing when detail:''
@@ -561,7 +542,7 @@ window.addEventListener('DOMContentLoaded', function () {
         yesText: 'Yes, Send Link',
         noText:  'Recheck Email',
         onConfirm: async function () {
-          submitBtn.disabled  = true;
+        submitBtn.disabled  = true;
           submitBtn.innerText = 'Sending...';
           try {
             const res = await fetch('/api/auth/forgot-password', {
