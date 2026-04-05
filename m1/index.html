@@ -58,7 +58,7 @@
     </div>
     
     <div class="sidebar-user">
-      <div class="user-avatar">AJ</div>
+      <div class="user-avatar avtr">AJ</div>
       <div class="user-info">
         <div class="user-name userName">User</div>
         <div class="user-badge">✦ Premium</div>
@@ -145,7 +145,7 @@
         <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="Toggle theme"><i class="ri-moon-line"></i></button>
         <a class="notif-btn" href="#notifications"><i class="ri-notification-3-line"></i></a>
         <a class="topbar-user" href="#profile">
-          <div class="t-avatar">AJ</div>
+          <div class="t-avatar avtr">AJ</div>
           <span class="t-name userName">Adebayo J.</span>
         </a>
       </div>
@@ -1420,11 +1420,11 @@
           <div style="display:flex;flex-direction:column;gap:16px;">
             <!-- Avatar -->
             <div class="card" style="text-align:center;">
-              <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:#fff;margin:0 auto 16px;">AJ</div>
+              <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:#fff;margin:0 auto 16px;" class="avtr">AJ</div>
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;" class="userName">User</div>
               <div class="text-sm mb-4" style="margin-top:4px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b8bdbcbbb8a0b6f7b3b8b4bcaa99beb4b8b0b5f7bab6b4">[email&#160;protected]</a></div>
               <span class="badge success">✦ Premium · Gold Tier</span>
-              <div style="margin-top:16px;"><button class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button></div>
+              <div style="display:none;margin-top:16px;"><button class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button></div>
             </div>
             
             <!-- KYC -->
@@ -1432,8 +1432,7 @@
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">KYC Verification</div>
               <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
                 <div class="flex-between"><span style="color:var(--text2)">Identity</span><span class="badge success">✓ Verified</span></div>
-                <div class="flex-between"><span style="color:var(--text2)">Address</span><span class="badge success">✓ Verified</span></div>
-                <div class="flex-between"><span style="color:var(--text2)">BVN</span><span class="badge success">✓ Linked</span></div>
+               
                 <div class="flex-between"><span style="color:var(--text2)">NIN</span><span class="badge pending">Pending</span></div>
               </div>
               <button class="btn btn-outline btn-sm mt-4" style="margin-top:14px;" onclick="showAlert('KYC verification form has been opened.','📋','info')">Complete NIN</button>
