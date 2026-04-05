@@ -154,6 +154,15 @@
     <!-- ===== PAGES ===== -->
     <div class="page-content">
       
+      <div id="deposit-section">
+  <h3>Deposits</h3>
+  <p>Total: <span id="deposit-total-count">0</span></p>
+  <p>Success: <span id="deposit-success-count">0</span> (₦<span id="deposit-success-naira">0.00</span>)</p>
+  <p>Pending: <span id="deposit-pending-count">0</span></p>
+</div>
+
+
+      
       <!-- HOME PAGE -->
       <div class="page active" id="home">
         <div class="section-header flex-between mb-6">
@@ -213,7 +222,7 @@
               <a class="btn btn-ghost btn-sm" href="#transactions" onclick="initTransactions();">View All <i class="ri-arrow-right-line"></i></a>
             </div>
             <div id="historyList">
-              <p>No recent transactionsto show</p>
+              <small class="loading">_No recent transactions</small>
             </div><!--
             <div class="txn-item">
               <div class="txn-icon debit"><i class="ri-arrow-up-line"></i></div>
