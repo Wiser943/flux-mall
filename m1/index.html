@@ -60,7 +60,7 @@
     <div class="sidebar-user">
       <div class="user-avatar">AJ</div>
       <div class="user-info">
-        <div class="user-name userName">Adebayo James</div>
+        <div class="user-name userName">User</div>
         <div class="user-badge">✦ Premium</div>
       </div>
     </div>
@@ -158,7 +158,7 @@
       <div class="page active" id="home">
         <div class="section-header flex-between mb-6">
           <div>
-            <div class="section-title">Hi, <span class="userName">Adebayo</span><i class="ri-hand-heart-line" style="color:var(--yellow);font-size:20px;vertical-align:middle"></i></div>
+            <div class="section-title">Hi, <span class="userName"></span><i class="ri-hand-heart-line" style="color:var(--yellow);font-size:20px;vertical-align:middle"></i></div>
             <div class="section-sub">Here's what's happening with your account today.</div>
           </div>
           <a class="btn btn-primary" href="#deposit" style="display: none;"><i class="ri-add-line"></i> Add Funds</a>
@@ -1421,7 +1421,7 @@
             <!-- Avatar -->
             <div class="card" style="text-align:center;">
               <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:#fff;margin:0 auto 16px;">AJ</div>
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;">Adebayo James</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;" class="userName">User</div>
               <div class="text-sm mb-4" style="margin-top:4px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b8bdbcbbb8a0b6f7b3b8b4bcaa99beb4b8b0b5f7bab6b4">[email&#160;protected]</a></div>
               <span class="badge success">✦ Premium · Gold Tier</span>
               <div style="margin-top:16px;"><button class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button></div>
@@ -1443,22 +1443,11 @@
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:20px;">Edit Profile</div>
             <div class="form-row">
-              <div class="form-group"><label>First Name</label><input type="text" value="Adebayo"></div>
+              <div class="form-group"><label>First Name</label><input type="text" class="userName" value="Adebayo"></div>
               <div class="form-group"><label>Last Name</label><input type="text" value="James"></div>
             </div>
             <div class="form-group"><label>Email Address</label><input type="email" value="adebayo.james@gmail.com"></div>
-            <div class="form-group"><label>Phone Number</label><input type="tel" value="+234 812 345 6789"></div>
-            <div class="form-group"><label>Date of Birth</label><input type="date" value="1995-03-14"></div>
-            <div class="form-group"><label>State of Residence</label>
-              <select>
-                <option>Lagos</option>
-                <option>Abuja (FCT)</option>
-                <option>Rivers</option>
-                <option>Kano</option>
-                <option>Oyo</option>
-              </select>
-            </div>
-            <div class="form-group"><label>Home Address</label><input type="text" value="12 Lekki Phase 1, Lagos"></div>
+
             <div style="display:flex;gap:10px;">
               <button class="btn btn-primary" onclick="showAlert('Profile updated successfully!','✅','success')">Save Changes</button>
               <button class="btn btn-ghost">Cancel</button>
@@ -1585,7 +1574,6 @@
       el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
       _openModal(document.getElementById('custom-alert-modal'));
     }
-    showAlert("blur", false)
     
     // ── showConfirm (called from script.js) ──
     // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
