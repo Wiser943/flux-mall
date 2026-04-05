@@ -838,7 +838,7 @@
       margin-bottom: 20px;
       font-size: 0.83rem;
       color: var(--modal-sub);
-      line-height: 2;
+      line-height: 2;overflow: hidden;
     }
     
     .modal-detail strong {
@@ -955,8 +955,7 @@
 </head>
 
 <body>
-  
-  <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle theme">
+    <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle theme">
     <i class="fas fa-moon icon-moon"></i>
     <i class="fas fa-sun icon-sun"></i>
   </button>
@@ -1021,7 +1020,7 @@
               <label for="resetEmail">EMAIL <span>*</span></label>
               <div class="input-wrapper">
                 <i class="fas fa-envelope input-icon"></i>
-                <input type="email" id="resetEmail" name="reset-email" placeholder="yourmail@gmail.com" required>
+                <input type="email" id="resetEmail" name="reset-email" placeholder="yourmail@gmail.com">
               </div>
               <p id="resetEmailError" class="error-message"></p>
             </div>
