@@ -136,7 +136,7 @@ function renderUserUI() {
   const u = currentUserData;
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
   document.querySelectorAll('.avtr').forEach(el => {
-  el.innerHTML = u.username?.slice(0, 2).toUpperCase() || '??';
+  el.innerHTML = u.username?.slice(0).toUpperCase() || '??';
 });
 
   const fexBal  = Number(u.ib) || 0;
