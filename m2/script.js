@@ -206,7 +206,7 @@ function applyResetMode(token) {
   // 4. Update button label
   if (submitBtn) {
     submitBtn.textContent = 'Reset Password';
-    submitBtn.disabled    = true; // stays disabled until both fields valid
+  //  submitBtn.disabled    = true; // stays disabled until both fields valid
   }
 }
 
