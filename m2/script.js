@@ -494,13 +494,8 @@ window.addEventListener('DOMContentLoaded', function () {
   // MODE B — token present: submits new password to /api/auth/reset-password
   // ══════════════════════════════════════
   if (resetForm) {
-    resetForm.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const submitBtn = document.getElementById('resetSubmitBtn');
-
-      // ── MODE B: Token present — reset the password ──────
-      if (RESET_TOKEN) {
-        const resetHidden = document.getElementById("reset-hidden").innerHTML=`
+    if (RESET_TOKEN) {
+      const resetHidden = document.getElementById("reset-hidden").innerHTML = `
                   <div class="input-group">
             <label for="resetNewPassword">Password<span>*</span></label>
             <div class="input-wrapper">
@@ -516,6 +511,14 @@ window.addEventListener('DOMContentLoaded', function () {
             </div>
           </div>
         `;
+    }
+    resetForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('resetSubmitBtn');
+
+      // ── MODE B: Token present — reset the password ──────
+      if (RESET_TOKEN) {
+        
         const newPw  = document.getElementById('resetNewPassword')?.value   || '';
         const confPw = document.getElementById('resetConfirmPassword')?.value || '';
 
@@ -539,7 +542,7 @@ window.addEventListener('DOMContentLoaded', function () {
           yesText: 'Yes, Reset Password',
           noText:  'Cancel',
           onConfirm: async function () {
-           // submitBtn.disabled  = true;
+           submitBtn.disabled  = true;
             submitBtn.innerText = 'Resetting...';
             try {
               const res = await fetch('/api/auth/reset-password', {
