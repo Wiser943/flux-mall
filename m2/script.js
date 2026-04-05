@@ -323,7 +323,7 @@ async function doResetPassword() {
         title: 'Change password',
         message: 'Are you certain you want to change your password?.',
         detail: '<strong>TOKEN</strong>'+ RESET_TOKEN,
-        yesText: 'Proceed with Signup',
+        yesText: 'Proceed with Reset',
         noText: 'Recheck Details',
         onConfirm: async function() {
           try {
