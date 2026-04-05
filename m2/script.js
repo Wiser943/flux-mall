@@ -539,7 +539,7 @@ window.addEventListener('DOMContentLoaded', function () {
           yesText: 'Yes, Reset Password',
           noText:  'Cancel',
           onConfirm: async function () {
-            submitBtn.disabled  = true;
+           // submitBtn.disabled  = true;
             submitBtn.innerText = 'Resetting...';
             try {
               const res = await fetch('/api/auth/reset-password', {
