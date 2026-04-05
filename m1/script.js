@@ -393,16 +393,46 @@ function renderSummaryPills() {
 
 function logTxnTotals() {
   const types = ['deposit', 'withdrawal', 'activity'];
+  
+  // Helper to safely update HTML text
+  const updateUI = (id, value) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+
   console.group('%c[FluxMall] Transaction Totals', 'color:#8b85ff;font-weight:700;font-size:13px;');
+
   types.forEach(type => {
     const rows = txnCache[type];
     if (!rows) return;
+
     const success = rows.filter(r => (r.status||'').toLowerCase() === 'success');
     const pending = rows.filter(r => (r.status||'').toLowerCase() === 'pending');
     const failed  = rows.filter(r => (r.status||'').toLowerCase() === 'failed');
     const warning = rows.filter(r => (r.status||'').toLowerCase() === 'warning');
+
     const sumFex  = arr => arr.reduce((s,r) => s + (parseFloat(r.amount)||0), 0);
     const sumNaira = arr => (sumFex(arr) * FEX_RATE).toFixed(2);
+
+    // --- UI UPDATE LOGIC ---
+    // Update Total Count
+    updateUI(`${type}-total-count`, rows.length);
+
+    // Update specific statuses
+    const statuses = [
+        { name: 'success', data: success },
+        { name: 'pending', data: pending },
+        { name: 'failed', data: failed },
+        { name: 'warning', data: warning }
+    ];
+
+    statuses.forEach(s => {
+        updateUI(`${type}-${s.name}-count`, s.data.length);
+        updateUI(`${type}-${s.name}-fex`, sumFex(s.data).toLocaleString());
+        updateUI(`${type}-${s.name}-naira`, sumNaira(s.data));
+    });
+
+    // --- ORIGINAL CONSOLE LOGGING ---
     console.group(`%c${type.toUpperCase()}`, 'color:#f0f2f8;font-weight:600;');
     console.log(`  Total records : ${rows.length}`);
     console.log(`  ✅ Success     : ${success.length}  (🪙${sumFex(success).toLocaleString()} FEX = ₦${sumNaira(success)})`);
@@ -411,9 +441,9 @@ function logTxnTotals() {
     if (warning.length) console.log(`  ⚠️  Warning     : ${warning.length}  (🪙${sumFex(warning).toLocaleString()} FEX = ₦${sumNaira(warning)})`);
     console.groupEnd();
   });
+
   console.groupEnd();
 }
-
 function showTxnState(state) {
   document.getElementById('txnLoading').style.display    = state === 'loading' ? 'block' : 'none';
   document.getElementById('txnError').style.display      = state === 'error'   ? 'block' : 'none';
@@ -1015,7 +1045,7 @@ window.fetchUserHistory = async () => {
   const list = document.getElementById('historyList');
   if (!list) return;
   
-  list.innerHTML = '<div class="loading">Loading history...</div>';
+  list.innerHTML = '<small class="loading">Loading</small>';
   
   const data = await api('/api/user/activity');
   if (!data?.success) {
@@ -1032,7 +1062,9 @@ window.fetchUserHistory = async () => {
     share: { icon: 'ri-time-line', class: 'pending', label: 'Share' },
     withdrawal: { icon: 'ri-arrow-up-line', class: 'debit', label: 'Withdrawal' }
   };
-
+if (!data) {list.innerHTML=`<small class="loading">_No recent transactions</small>`;
+  
+}
   data.activity.forEach(item => {
     const date = new Date(item.createdAt).toLocaleDateString();
     
