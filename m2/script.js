@@ -494,24 +494,6 @@ window.addEventListener('DOMContentLoaded', function () {
   // MODE B — token present: submits new password to /api/auth/reset-password
   // ══════════════════════════════════════
   if (resetForm) {
-    if (RESET_TOKEN) {
-      const resetHidden = document.getElementById("reset-hidden").innerHTML = `
-                  <div class="input-group">
-            <label for="resetNewPassword">Password<span>*</span></label>
-            <div class="input-wrapper">
-              <i class="fas fa-password input-icon"></i>
-              <input type="password" id="resetNewPassword" name="reset-password" placeholder="ru6fhkytc" required>
-            </div>
-          </div>
-                    <div class="input-group">
-            <label for="resetConfirmPassword">Confirm password<span>*</span></label>
-            <div class="input-wrapper">
-              <i class="fas fa-password input-icon"></i>
-              <input type="password" id="resetConfirmPassword" name="reset-password" placeholder="must match" required>
-            </div>
-          </div>
-        `;
-    }
     resetForm.addEventListener('submit', function (e) {
       e.preventDefault();
       const submitBtn = document.getElementById('resetSubmitBtn');
