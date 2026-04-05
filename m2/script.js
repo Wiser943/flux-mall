@@ -120,7 +120,7 @@ function applyResetMode(token) {
     }
     if (submitBtn) {
       submitBtn.textContent = 'Send Reset Link';
-    //  submitBtn.disabled    = true;
+    submitBtn.disabled    = true;
     }
     return;
   }
@@ -319,8 +319,14 @@ async function doResetPassword() {
   }
 
   if (btn) {/* btn.disabled = true;*/ btn.innerText = 'Resetting...'; }
-
-  try {
+        showConfirm({
+        title: 'Change password',
+        message: 'Are you certain you want to change your password?.',
+        detail: '<strong>TOKEN</strong>'+ RESET_TOKEN,
+        yesText: 'Proceed with Signup',
+        noText: 'Recheck Details',
+        onConfirm: async function() {
+          try {
     const res = await fetch('/api/auth/reset-password', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -351,6 +357,9 @@ async function doResetPassword() {
   } finally {
     if (btn) { btn.disabled = false; btn.innerText = 'Reset Password'; }
   }
+        },
+        onCancel: function() {}
+      });
 }
 
 // ─── WIRE UP FORMS ────────────────────────────────────────
@@ -418,7 +427,7 @@ window.addEventListener('DOMContentLoaded', function () {
         yesText: 'Proceed with Signup',
         noText:  'Recheck Details',
         onConfirm: async function () {
-         // submitSignupBtn.disabled  = true;
+         submitSignupBtn.disabled  = true;
           submitSignupBtn.innerText = 'Please Wait...';
           try {
             const res = await fetch('/api/auth/signup', {
