@@ -135,6 +135,9 @@ async function init() {
 function renderUserUI() {
   const u = currentUserData;
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
+  document.querySelectorAll('.avtr').forEach(el => {
+  el.innerHTML = u.username?.slice(0, 2).toUpperCase() || '??';
+});
 
   const fexBal  = Number(u.ib) || 0;
   const nairaEq = (fexBal * FEX_RATE).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
