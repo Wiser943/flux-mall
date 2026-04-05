@@ -1014,10 +1014,9 @@
     <div class="right-side">
       <div class="form-wrapper">
         <div class="lock-icon"><i class="fas fa-unlock"></i></div>
-        <h1>Password Reset</h1>
-        <p class="subtitle">Enter your email and we'll send a recovery link.</p>
+        <h1 id="resetFormTitle">Password Reset</h1>
+        <p class="subtitle" id="resetFormSubtitle">Enter your email and we'll send a recovery link.</p>
         <form id="resetForm">
-          <div id="reset-hidden">
             <div class="input-group">
               <label for="resetEmail">EMAIL <span>*</span></label>
               <div class="input-wrapper">
@@ -1026,7 +1025,6 @@
               </div>
               <p id="resetEmailError" class="error-message"></p>
             </div>
-          </div>
           <button type="submit" class="signin-btn" id="resetSubmitBtn" disabled>Send Reset Link</button>
           <div class="footer-link" style="margin-top:16px;">
             <a href="#login-page" class="create-link"><i class="fas fa-arrow-left" style="margin-right:5px;"></i>Back to Login</a>
