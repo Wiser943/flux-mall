@@ -40,6 +40,7 @@ window.showToast = function(text, type = 'success', icon = '', title = '') {
 // ─── LOGOUT ───────────────────────────────────────────────
 window.logoutUser = async function() {
   await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      showAlert("Signing you out!!", false)
   localStorage.removeItem('loggedInUser');
   window.location.href = '/m2/index.html#login-page';
 };
@@ -143,6 +144,13 @@ function renderUserUI() {
   document.querySelectorAll('.balance').forEach(el => {
     el.innerHTML = `${fexFmt} <small style="font-size:0.6em;opacity:0.6;font-weight:400;">FEX</small>`;
   });
+/*
+  document.getElementById('hRefCode').innerHTML = `
+    <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
+    <div class="ref-code">${refId}</div>
+    <div style="font-size:12px;color:var(--text2);margin-top:6px;">${(currentUserData.referralCount||0)} referrals</div>
+    <button class="copy-btn mt-4 w-full" style="margin-top:12px;" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy Code</button>`;*/
+
 
   // Secondary — shows naira equivalent (add class="balance-naira" to any element in HTML)
   document.querySelectorAll('.balance-naira').forEach(el => {
@@ -928,12 +936,6 @@ function generateReferralLink() {
         <button class="btn btn-outline" onclick="window.open('https://wa.me/?text=${encodeURIComponent(link)}','_blank')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
       </div>
     </div>`;
-
-  document.getElementById('hRefCode').innerHTML = `
-    <div style="font-size:12px;color:var(--text3);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;">YOUR REFERRAL CODE</div>
-    <div class="ref-code">${refId}</div>
-    <div style="font-size:12px;color:var(--text2);margin-top:6px;">${(currentUserData.referralCount||0)} referrals</div>
-    <button class="copy-btn mt-4 w-full" style="margin-top:12px;" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy Code</button>`;
 }
 
 // ─── SPIN WHEEL ───────────────────────────────────────────
@@ -1022,7 +1024,7 @@ window.fetchUserHistory = async () => {
 
   // 1. Updated mapping with specific 'label' strings
   const config = {
-    checkin: { icon: 'ri-gift-line', class: 'credit', label: 'Check-in' },
+    checkin: { icon: 'ri-gift-line', class: 'credit', label: 'checkin' },
     deposit: { icon: 'ri-arrow-down-line', class: 'credit', label: 'Deposit' },
     share: { icon: 'ri-time-line', class: 'pending', label: 'Share' },
     withdrawal: { icon: 'ri-arrow-up-line', class: 'debit', label: 'Withdrawal' }
