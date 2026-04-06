@@ -281,18 +281,18 @@
           <div class="card mb-6" style="background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(167,139,250,0.08));border-color:rgba(108,99,255,0.2)" id="hRefCode">
           </div>
         </div>
-<div class="card">
-  <div class="flex-between mb-4">
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Spending Activity</div>
-    <div class="tabs" style="margin-bottom:0;">
-      <div class="tab active" onclick="switchTab(this); renderActivityChart('7D')">7D</div>
-      <div class="tab" onclick="switchTab(this); renderActivityChart('30D')">30D</div>
-      <div class="tab" onclick="switchTab(this); renderActivityChart('90D')">90D</div>
-    </div>
-  </div>
-  <div class="mini-chart" id="activityChart"></div>
-  <div id="activityChartLabels" style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text3);"></div>
-</div>
+        <div class="card">
+          <div class="flex-between mb-4">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Spending Activity</div>
+            <div class="tabs" style="margin-bottom:0;">
+              <div class="tab active" onclick="switchTab(this); renderActivityChart('7D')">7D</div>
+              <div class="tab" onclick="switchTab(this); renderActivityChart('30D')">30D</div>
+              <div class="tab" onclick="switchTab(this); renderActivityChart('90D')">90D</div>
+            </div>
+          </div>
+          <div class="mini-chart" id="activityChart"></div>
+          <div id="activityChartLabels" style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text3);"></div>
+        </div>
       </div>
       
       <!-- WALLET PAGE -->
@@ -1604,23 +1604,35 @@
     }
     
     // ===== THEME =====
-    let isDark = true;
+    const _savedTheme = localStorage.getItem('fluxTheme');
+    const _sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let isDark = _savedTheme ? _savedTheme === 'dark' : _sysDark;
+    
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    (function() {
+      const btn = document.getElementById('themeBtn');
+      if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
+      const st = document.getElementById('settingsThemeToggle');
+      if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
+    })();
     
     function toggleTheme() {
       isDark = !isDark;
       document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      document.getElementById('themeBtn').textContent = isDark ? '🌙' : '☀️';
+      localStorage.setItem('fluxTheme', isDark ? 'dark' : 'light');
+      const btn = document.getElementById('themeBtn');
+      if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
       const st = document.getElementById('settingsThemeToggle');
       if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
     }
     
     // ── TAB SWITCHER ─────────────────────────────────────────
-window.switchTab = function(el) {
-  const parent = el.closest('.tabs');
-  if (!parent) return;
-  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-};
+    window.switchTab = function(el) {
+      const parent = el.closest('.tabs');
+      if (!parent) return;
+      parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+    };
     
     // ===== COPY CODE =====
     function copyCode(text) {
