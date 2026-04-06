@@ -305,7 +305,7 @@ function buildTxnRow(r) {
     <td>${buildAmountStr(type, amount)}</td>
     <td style="white-space:nowrap;font-size:12px;">${date}</td>
     <td>${buildStatusBadge(status)}</td>
-    <td style="font-family:monospace;font-size:11px;color:var(--text3);">${escHtml(String(ref)).substring(0,18)}</td>
+    <td style="font-family:monospace;font-size:11px;color:var(--text3);">${escHtml(String(ref)).substring(0,8)}</td>
   </tr>`;
 }
 
@@ -331,8 +331,8 @@ function buildAmountStr(type, amount) {
   const isCredit = type === 'deposit' || type === 'activity';
   const color   = isCredit ? 'var(--green)' : 'var(--red)';
   const sign    = isCredit ? '+' : '-';
-  return `<span style="color:${color};font-weight:600;">${sign}🪙${fexFmt}</span><br>
-          <span style="font-size:11px;color:var(--text3);">≈ ₦${naira}</span>`;
+  return `<span style="color:${color};font-weight:500;">${sign}🪙${fexFmt}</span><br>
+          <span style="font-size:10px;color:var(--text3);">≈ ₦${naira}</span>`;
 }
 
 function escHtml(str) {
