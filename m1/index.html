@@ -92,9 +92,6 @@
         <a class="dnav-item nav-item" href="#withdraw">
           <span class="nav-icon"><i class="ri-arrow-up-circle-line"></i></span> Withdraw
         </a>
-        <a class="dnav-item nav-item" href="#transfer">
-          <span class="nav-icon"><i class="ri-swap-line"></i></span> Transfer
-        </a>
       </div>
       
       <div class="nav-section">
@@ -160,7 +157,7 @@
   <p>Pending: <span id="deposit-pending-count">0</span></p>
 </div>
 -->
-
+      
       
       <!-- HOME PAGE -->
       <div class="page active" id="home">
@@ -183,7 +180,7 @@
           <div class="stat-card green">
             <div class="stat-icon green"><i class="ri-arrow-down-circle-line"></i></div>
             <div class="stat-value">₦<span id="deposit-success-naira">0.00</span></div>
-            <div class="stat-label" >Total Deposited</div>
+            <div class="stat-label">Total Deposited</div>
             <div class="stat-change up"><i class="ri-arrow-up-s-line"></i><span id="deposit-success-count">None</span> in last session</div>
           </div>
           <div class="stat-card blue">
@@ -335,7 +332,7 @@
               <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Withdraw</a>
             </div>
           </div>
-          <div class="card" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(74,222,128,0.05));border-color:rgba(34,197,94,0.2)">
+          <div class="card" style=" display:none;background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(74,222,128,0.05));border-color:rgba(34,197,94,0.2)">
             <div class="stat-icon green" style="margin-bottom:12px"><i class="ri-safe-2-line"></i></div>
             <div class="stat-label">Savings Wallet</div>
             <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:28px;margin:6px 0;">₦15,000</div>
@@ -349,7 +346,7 @@
           </div>
         </div>
         
-        <div class="grid-2">
+        <div class="grid-2 mb-8">
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Virtual Account</div>
             <div style="background:var(--bg2);border-radius:var(--radius-sm);padding:20px;margin-bottom:16px;">
@@ -387,6 +384,69 @@
                   <div class="progress-fill yellow" style="width:33%"></div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- TRANSFER TAB -->
+        <div class="section-header mb-6">
+          <div class="section-title">Internal Transfer</div>
+          <div class="section-sub">Send funds to another Fluxmall Exchange user or between your wallets</div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="card">
+            <div class="tabs mb-6">
+              <div class="tab active" onclick="switchTab(this)">To User</div>
+              <div class="tab" onclick="switchTab(this)">Between Wallets</div>
+            </div>
+            <div class="form-group">
+              <label>Recipient Username or ID</label>
+              <div class="input-icon">
+                <span class="icon">@</span>
+                <input type="text" placeholder="e.g. tunde.Fluxmall Exchange">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Amount</label>
+              <div class="amount-input">
+                <span class="currency">₦</span>
+                <input type="number" placeholder="0.00" id="transferAmount">
+              </div>
+              <div class="quick-amounts">
+                <span class="qa-btn" onclick="setAmount('transferAmount','500')">₦500</span>
+                <span class="qa-btn" onclick="setAmount('transferAmount','1000')">₦1,000</span>
+                <span class="qa-btn" onclick="setAmount('transferAmount','5000')">₦5,000</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Note (optional)</label>
+              <input type="text" placeholder="Add a description...">
+            </div>
+            <div class="form-group">
+              <label>PIN</label>
+              <input type="password" placeholder="4-digit PIN" maxlength="4">
+            </div>
+            <button class="btn btn-primary w-full" onclick="showAlert('Transfer sent successfully!','success')"><i class="ri-send-plane-line"></i> Send Transfer</button>
+          </div>
+          
+          <div class="card">
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Recent Recipients</div>
+            <div class="txn-item" style="cursor:pointer">
+              <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">TO</div>
+              <div class="txn-info">
+                <div class="txn-name">Tunde Okonkwo</div>
+                <div class="txn-date">tunde.Fluxmall Exchange • Last sent Jun 10</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="showAlert('Tunde Okonkwo selected as transfer recipient.','✅','success')">Select</button>
+            </div>
+            <div class="txn-item" style="cursor:pointer">
+              <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">FA</div>
+              <div class="txn-info">
+                <div class="txn-name">Funmi Adesanya</div>
+                <div class="txn-date">funmi.Fluxmall Exchange • Last sent May 22</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="showAlert('Funmi Adesanya selected as transfer recipient.','✅','success')">Select</button>
             </div>
           </div>
         </div>
@@ -891,71 +951,6 @@
         </div>
       </div>
       
-      <!-- TRANSFER PAGE -->
-      <div class="page" id="transfer">
-        <div class="section-header mb-6">
-          <div class="section-title">Internal Transfer</div>
-          <div class="section-sub">Send funds to another Fluxmall Exchange user or between your wallets</div>
-        </div>
-        
-        <div class="grid-2">
-          <div class="card">
-            <div class="tabs mb-6">
-              <div class="tab active" onclick="switchTab(this)">To User</div>
-              <div class="tab" onclick="switchTab(this)">Between Wallets</div>
-            </div>
-            <div class="form-group">
-              <label>Recipient Username or ID</label>
-              <div class="input-icon">
-                <span class="icon">@</span>
-                <input type="text" placeholder="e.g. tunde.Fluxmall Exchange">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Amount</label>
-              <div class="amount-input">
-                <span class="currency">₦</span>
-                <input type="number" placeholder="0.00" id="transferAmount">
-              </div>
-              <div class="quick-amounts">
-                <span class="qa-btn" onclick="setAmount('transferAmount','500')">₦500</span>
-                <span class="qa-btn" onclick="setAmount('transferAmount','1000')">₦1,000</span>
-                <span class="qa-btn" onclick="setAmount('transferAmount','5000')">₦5,000</span>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Note (optional)</label>
-              <input type="text" placeholder="Add a description...">
-            </div>
-            <div class="form-group">
-              <label>PIN</label>
-              <input type="password" placeholder="4-digit PIN" maxlength="4">
-            </div>
-            <button class="btn btn-primary w-full" onclick="showAlert('Transfer sent successfully!','success')"><i class="ri-send-plane-line"></i> Send Transfer</button>
-          </div>
-          
-          <div class="card">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Recent Recipients</div>
-            <div class="txn-item" style="cursor:pointer">
-              <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">TO</div>
-              <div class="txn-info">
-                <div class="txn-name">Tunde Okonkwo</div>
-                <div class="txn-date">tunde.Fluxmall Exchange • Last sent Jun 10</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="showAlert('Tunde Okonkwo selected as transfer recipient.','✅','success')">Select</button>
-            </div>
-            <div class="txn-item" style="cursor:pointer">
-              <div class="user-avatar" style="width:38px;height:38px;font-size:14px;">FA</div>
-              <div class="txn-info">
-                <div class="txn-name">Funmi Adesanya</div>
-                <div class="txn-date">funmi.Fluxmall Exchange • Last sent May 22</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="showAlert('Funmi Adesanya selected as transfer recipient.','✅','success')">Select</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <!-- REFERRAL PAGE -->
       <div class="page" id="referral">
         <div class="section-header mb-6">
@@ -1429,8 +1424,8 @@
               <div style="width:80px;height:80px;background:linear-gradient(135deg,var(--accent),#a78bfa);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:30px;color:#fff;margin:0 auto 16px;" class="avtr">AJ</div>
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;" class="userName">User</div>
               <div class="text-sm mb-4" style="margin-top:4px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b8bdbcbbb8a0b6f7b3b8b4bcaa99beb4b8b0b5f7bab6b4">[email&#160;protected]</a></div>
-              <span class="badge success">✦ Premium · Gold Tier</span>
-              <div style="display:none;margin-top:16px;"><button class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button></div>
+              <span class="badge success">✦ Premium · Tier</span>
+              <div style="margin-top:16px;"><button style="display: none;" class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button><a class="btn btn-outline btn-sm" href="#support">Support</a></div>
             </div>
             
             <!-- KYC -->
@@ -1499,13 +1494,11 @@
         <a class="nav-sheet-item" onclick="closeNavSheet()" href="#invest"><span class="ns-icon"><i class="ri-line-chart-line"></i></span><span class="ns-label">Investments</span></a>
         <a class="nav-sheet-item" href="#deposit" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-arrow-down-circle-line"></i></span><span class="ns-label">Deposit</span></a>
         <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon"><i class="ri-arrow-up-circle-line"></i></span><span class="ns-label">Withdraw</span></a>
-        <a class="nav-sheet-item" href="#transfer" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-swap-line"></i></span><span class="ns-label">Transfer</span></a>
         <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-gift-line"></i></span><span class="ns-label">Referral</span></a>
         <a class="nav-sheet-item" href="#plans" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Plans</span></a>
         <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-notification-3-line"></i></span><span class="ns-label">Alerts</span></a>
         <a class="nav-sheet-item" href="#settings" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-settings-3-line"></i></span><span class="ns-label">Settings</span></a>
         <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-user-3-line"></i></span><span class="ns-label">Profile</span></a>
-        <a class="nav-sheet-item" href="#support" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-customer-service-2-line"></i></span><span class="ns-label">Support</span></a>
         <div class="nav-sheet-item" style="color: red;" onclick="logoutUser();closeNavSheet()"><span class="ns-icon"><i class="ri-logout-box-r-line"></i></span><span class="ns-label">Logout</span></div>
       </div>
     </div>
