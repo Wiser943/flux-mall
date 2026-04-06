@@ -153,14 +153,13 @@
     
     <!-- ===== PAGES ===== -->
     <div class="page-content">
-      
+      <!---
       <div id="deposit-section">
   <h3>Deposits</h3>
   <p>Total: <span id="deposit-total-count">0</span></p>
-  <p>Success: <span>0</span> (₦)</p>
   <p>Pending: <span id="deposit-pending-count">0</span></p>
 </div>
-
+-->
 
       
       <!-- HOME PAGE -->
@@ -175,7 +174,7 @@
         
         <!-- STAT CARDS -->
         <div class="grid-4 mb-6">
-          <div class="stat-card purple">
+          <div class="stat-card purple" style="display: none;">
             <div class="stat-icon purple"><i class="ri-money-naira-circle-line"></i></div>
             <div class="stat-value">₦48,250</div>
             <div class="stat-label">Total Balance</div>
@@ -211,7 +210,7 @@
               <a class="bal-btn white" id="checkinBtn" onclick="handleCheckIn()" href="#referral"><i class="ri-gift-line"></i>
                 Check in</a>
               <a class="bal-btn outline" href="#deposit"><i class="ri-arrow-down-line"></i> Deposit</a>
-              <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Withdraw</a>
+              <a class="bal-btn outline" href="#wallet"><i class="ri-swap-line"></i> Wallet</a>
             </div>
             
           </div>
@@ -275,7 +274,7 @@
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:14px;">Quick Actions</div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
-              <a class="btn btn-ghost btn-sm w-full" href="#wallet" style="justify-content:center;"><i class="ri-swap-line"></i> Wallet</a>
+              <a class="btn btn-ghost btn-sm w-full" href="#wallet" style="display:none;justify-content:center;"><i class="ri-swap-line"></i> Wallet</a>
               <a class="btn btn-ghost btn-sm w-full" href="#plans" style="justify-content:center;"><i class="ri-bar-chart-box-line"></i> Plans</a>
               <a class="btn btn-ghost btn-sm w-full" href="#support" style="justify-content:center;"><i class="ri-bar-chart-box-line"></i>Help</a>
             </div>
@@ -329,10 +328,11 @@
         <div class="grid-3 mb-6">
           <div class="balance-card">
             <div class="balance-label">Main Balance</div>
-            <div class="balance-amount">₦48,250.00</div>
+            <div class="balance-amount balance-naira">₦0.00</div>
             <div class="balance-actions">
               <a class="bal-btn white" href="#deposit"><i class="ri-arrow-down-line"></i> Fund</a>
               <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Send</a>
+              <a class="bal-btn outline" href="#withdraw"><i class="ri-arrow-up-line"></i> Withdraw</a>
             </div>
           </div>
           <div class="card" style="background:linear-gradient(135deg,rgba(34,197,94,0.15),rgba(74,222,128,0.05));border-color:rgba(34,197,94,0.2)">
