@@ -300,10 +300,9 @@ function buildTxnRow(r) {
   const dateRaw = r.createdAt || r.date;
   const date    = dateRaw ? new Date(dateRaw).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
   return `<tr>
-    <td style="max-width:180px;word-break:break-word;">${escHtml(String(desc))}</td>
     <td>${buildTypeBadge(type)}</td>
-    <td>${buildAmountStr(type, amount)}</td>
-    <td style="white-space:nowrap;font-size:12px;">${date}</td>
+    <td style="max-width:180px;">${buildAmountStr(type, amount)}</td>
+    <td style="white-space:nowrap;font-size:10px;">${date}</td>
     <td>${buildStatusBadge(status)}</td>
     <td style="font-family:monospace;font-size:11px;color:var(--text3);">${escHtml(String(ref)).substring(0,8)}</td>
   </tr>`;
