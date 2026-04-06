@@ -1040,6 +1040,9 @@ async function pollNotifications() {
 }
 
 // ─── ACTIVITY / HISTORY ───────────────────────────────────
+// Cache the activity data so chart re-renders don't re-fetch
+let _activityData = [];
+
 window.fetchUserHistory = async () => {
   const list = document.getElementById('historyList');
   if (!list) return;
@@ -1048,55 +1051,109 @@ window.fetchUserHistory = async () => {
   
   const data = await api('/api/user/activity');
   if (!data?.success) {
-      list.innerHTML = '<div class="error">Failed to load history.</div>';
-      return;
+    list.innerHTML = '<div class="error">Failed to load history.</div>';
+    return;
   }
   
-  list.innerHTML = '';
-
-  // 1. Updated mapping with specific 'label' strings
-  const config = {
-    checkin: { icon: 'ri-gift-line', class: 'credit', label: 'checkin' },
-    deposit: { icon: 'ri-arrow-down-line', class: 'credit', label: 'Deposit' },
-    share: { icon: 'ri-time-line', class: 'pending', label: 'Share' },
-    withdrawal: { icon: 'ri-arrow-up-line', class: 'debit', label: 'Withdrawal' }
-  };
-if (!data) {list.innerHTML=`<small class="loading">_No recent transactions</small>`;
+  if (!data.activity?.length) {
+    list.innerHTML = '<small class="loading">No recent transactions</small>';
+    return;
+  }
   
-}
+  // Cache for chart use
+  _activityData = data.activity;
+  
+  // ── Render history list ───────────────────────────────
+  const config = {
+    checkin: { icon: 'ri-gift-line', class: 'credit' },
+    'Check-in': { icon: 'ri-gift-line', class: 'credit' },
+    Deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
+    deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
+    share: { icon: 'ri-time-line', class: 'pending' },
+    Share: { icon: 'ri-time-line', class: 'pending' },
+    Shares: { icon: 'ri-time-line', class: 'pending' },
+    Withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' },
+    withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' },
+  };
+  
+  list.innerHTML = '';
   data.activity.forEach(item => {
     const date = new Date(item.createdAt).toLocaleDateString();
-    
-    // 2. Get the config or use defaults
-    const typeConfig = config[item.type] || { 
-        icon: 'ri-exchange-line', 
-        class: 'credit', 
-        label: item.type // Fallback to raw type if not in config
-    };
-    
+    const typeConfig = config[item.type] || { icon: 'ri-exchange-line', class: 'credit' };
     const div = document.createElement('div');
     div.className = 'txn-item';
-    
-    // 3. Render using typeConfig.label instead of item.type
     div.innerHTML = `
       <div class="txn-icon ${typeConfig.class}">
         <i class="${typeConfig.icon}"></i>
       </div>
       <div class="txn-info">
-        <div class="txn-name">
-            <strong>${item.type}</strong> — ${item.desc}
-        </div>
+        <div class="txn-name"><strong>${item.type}</strong> — ${item.desc}</div>
         <div class="txn-date">${date}</div>
       </div>
       <div class="txn-amount ${typeConfig.class}">
-        ${typeConfig.class === 'debit' ? '-' : ''}🪙${item.amount} FEX
+        ${typeConfig.class === 'debit' ? '-' : ''}🪙${Number(item.amount).toLocaleString()} FEX
       </div>`;
-      
     list.appendChild(div);
   });
+  
+  // ── Render chart with default 7D view ─────────────────
+  renderActivityChart('7D');
 };
 
-
+// ── CHART RENDERER ────────────────────────────────────────
+window.renderActivityChart = function(range) {
+  const chartEl = document.getElementById('activityChart');
+  const labelsEl = document.getElementById('activityChartLabels');
+  if (!chartEl || !labelsEl) return;
+  
+  const now = new Date();
+  let days = 7;
+  if (range === '30D') days = 30;
+  if (range === '90D') days = 90;
+  
+  // Build day buckets from oldest → today
+  const buckets = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    buckets.push({
+      date: d.toDateString(),
+      label: d.toLocaleDateString('en-NG', { weekday: 'short' }),
+      total: 0
+    });
+  }
+  
+  // Sum activity amounts into matching day bucket
+  _activityData.forEach(item => {
+    const itemDate = new Date(item.createdAt).toDateString();
+    const bucket = buckets.find(b => b.date === itemDate);
+    if (bucket) bucket.total += parseFloat(item.amount) || 0;
+  });
+  
+  // Find max for percentage scaling (min 1 to avoid division by zero)
+  const max = Math.max(...buckets.map(b => b.total), 1);
+  
+  // Decide how many labels to show based on range
+  const labelEvery = days <= 7 ? 1 : days <= 30 ? 5 : 15;
+  
+  // Render bars
+  chartEl.innerHTML = buckets.map((b, i) => {
+    const pct = Math.max(6, Math.round((b.total / max) * 100)); // min 6% so bar is visible
+    const isToday = b.date === now.toDateString();
+    return `<div
+      class="bar${isToday ? ' active' : ''}"
+      style="height:${pct}%;flex:1;"
+      title="${b.label}: 🪙${b.total.toLocaleString()} FEX"
+    ></div>`;
+  }).join('');
+  
+  // Render labels — only show some to avoid crowding
+  labelsEl.innerHTML = buckets.map((b, i) =>
+    (i % labelEvery === 0 || i === buckets.length - 1) ?
+    `<span>${b.label}</span>` :
+    `<span></span>`
+  ).join('');
+};
 // ─── EMAIL VERIFICATION ───────────────────────────────────
 async function updateVerificationUI() {
   const container = document.getElementById('verifiedStatus');
