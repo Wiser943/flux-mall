@@ -1302,16 +1302,30 @@ function confirmBan(id) {
     </div>`);
 }
 
+// ── Ban / Unban ────────────────────────────────────────────
 function submitBan(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  u.status = u.status === 'banned' ? 'unverified' : 'banned';
-  closeModal();
-  updateUMStats();
-  applyFilters();
-  if (activeUserId === id) openDetail(id);
-  showToast(`${u.name} ${u.status==='banned'?'banned':'unbanned'}`, 'info');
+  const newStatus = u.status === 'banned' ? 'Active' : 'Banned';
+  const reason    = document.getElementById('ban-reason')?.value || '';
+
+  api(`/api/admin/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ status: newStatus, banReason: reason })
+  }).then(data => {
+    if (data?.success) {
+      u.status = newStatus === 'Banned' ? 'banned' : 'unverified';
+      closeModal();
+      updateUMStats();
+      applyFilters();
+      if (activeUserId === id) openDetail(id);
+      showToast(`${u.name} ${u.status === 'banned' ? 'banned' : 'unbanned'}`, 'info');
+    } else {
+      showToast(data?.error || 'Failed to update ban status.', 'error');
+    }
+  });
 }
+
 
 function confirmDelete(id) {
   const u = UM_USERS.find(x => x.id === id);
