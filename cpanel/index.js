@@ -2344,16 +2344,15 @@ async function initChatPage() {
 
 // Loads real sessions from API and renders them in the chat list sidebar
 async function loadChatSessionsIntoList() {
-  const list    = document.getElementById('chatList');
-  const noChats = document.getElementById('noChats');
+  const list = document.getElementById('chatList');
   if (!list) return;
 
   const data = await api('/api/admin/chat/sessions');
 
-  // API failed or not available — fall back to mock data silently
   if (!data?.success) {
-    if (list.innerHTML === '') {
-      // Only render mock if list is completely empty (first load fail)
+    // API failed — only show mock if nothing rendered yet
+    if (!window._chatSessions?.length) {
+      window._chatSessions = null; // null = use CHAT_USERS fallback
       renderChatList(CHAT_USERS);
     }
     return;
@@ -2361,32 +2360,30 @@ async function loadChatSessionsIntoList() {
 
   const sessions = data.sessions || [];
 
-  // Map API session shape → the shape renderChatList expects
   const mapped = sessions.map((s, i) => ({
-    id:       s._id,
-    name:     s.username || 'Unknown User',
-    initials: (s.username || 'U').substring(0, 2).toUpperCase(),
-    email:    s.userEmail || '',
-    online:   s.status !== 'ended',
-    unread:   s.unreadAdmin || 0,
-    pinned:   s.pinned || false,
-    muted:    s.muted  || false,
-    status:   s.status === 'ended' ? 'resolved' : 'open',
-    balance:  s.userId?.ib || 0,
-    shares:   s.userId?.shares || 0,
-    deposits: s.userId?.transCount || 0,
-    referrals:s.userId?.refPoints || 0,
-    lastMsg:  s.lastMessage || 'No messages yet',
-    lastTime: s.lastMessageAt
+    id:        s._id,          // id === sessionId — openChat checks sessionId directly
+    sessionId: s._id,
+    name:      s.username || 'Unknown User',
+    initials:  (s.username || 'U').substring(0, 2).toUpperCase(),
+    email:     s.userEmail || '',
+    online:    s.status !== 'ended',
+    unread:    s.unreadAdmin || 0,
+    pinned:    s.pinned  || false,
+    muted:     s.muted   || false,
+    status:    s.status === 'ended' ? 'resolved' : 'open',
+    balance:   s.userId?.ib         || 0,
+    shares:    s.userId?.shares      || 0,
+    deposits:  s.userId?.transCount  || 0,
+    referrals: s.userId?.refPoints   || 0,
+    lastMsg:   s.lastMessage   || 'No messages yet',
+    lastTime:  s.lastMessageAt
       ? new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : '',
     color:    COLORS[i % COLORS.length],
-    // keep original session id so openChat can open the real session
-    sessionId: s._id,
-    userData:  s.userId,
+    userData: s.userId,
   }));
 
-  // Update badge counts in footer
+  // Badge counts
   const openCount     = mapped.filter(u => u.status === 'open').length;
   const unreadCount   = mapped.reduce((a, u) => a + u.unread, 0);
   const resolvedCount = mapped.filter(u => u.status === 'resolved').length;
@@ -2397,10 +2394,8 @@ async function loadChatSessionsIntoList() {
   setEl('badge-all',     mapped.length);
   setEl('badge-unread',  unreadCount);
 
-  // Store mapped sessions globally so search/filter can re-use them
   window._chatSessions = mapped;
 
-  // Apply current filter + search before rendering
   const q = document.getElementById('chatSearch')?.value.trim().toLowerCase() || '';
   handleChatSearch(q);
 }
@@ -2596,15 +2591,18 @@ function handleChatSearch(query) {
   const q        = query.trim().toLowerCase();
   const clearBtn = document.getElementById('searchClearBtn');
   clearBtn?.classList.toggle('visible', q.length > 0);
-  // Use real API sessions if available, else fall back to mock
-  let users = window._chatSessions || CHAT_USERS;
+
+  // Use real API sessions if available, else mock
+  let users = window._chatSessions?.length ? window._chatSessions : CHAT_USERS;
+
   if (q) {
     users = users.filter(u =>
-      u.name.toLowerCase().includes(q) ||
+      u.name.toLowerCase().includes(q)    ||
       u.lastMsg.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q)
+      (u.email || '').toLowerCase().includes(q)
     );
   }
+
   users = applyChatFilter(users);
   renderChatList(users, q);
 }
