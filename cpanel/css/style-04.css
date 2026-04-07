@@ -1,86 +1,3 @@
-:root {
-  --color-primary: #6C9BCF;
-  --color-danger: #FF0060;
-  --color-success: #1B9C85;
-  --color-warning: #F7D060;
-  --color-white: #fff;
-  --color-info-dark: #7d8da1;
-  --color-dark: #363949;
-  --color-light: rgba(132, 139, 200, 0.18);
-  --color-dark-variant: #677483;
-  --color-background: #f6f6f9;
-  
-  --card-border-radius: 2rem;
-  --border-radius-1: 0.4rem;
-  --border-radius-2: 1.2rem;
-  
-  --card-padding: 1.8rem;
-  --padding-1: 1.2rem;
-  
-  --box-shadow: 0 2rem 3rem var(--color-light);
-}
-
-.dark-mode-variables {
-  --color-background: #181a1e;
-  --color-white: #202528;
-  --color-dark: #edeffd;
-  --color-dark-variant: #a3bdcc;
-  --color-light: rgba(0, 0, 0, 0.4);
-  --box-shadow: 0 2rem 3rem var(--color-light);
-}
-
-
-
-/* ══════════════════════════════════════
-   VARIABLES
-══════════════════════════════════════ */
-:root {
-  --green: #2E7D52;
-  --green-light: #4CAF7D;
-  --green-dark: #1B4D32;
-  --yellow: #f59e0b;
-  --danger: #ef4444;
-  --blue: #3b82f6;
-  --radius: 14px;
-  --radius-sm: 9px;
-  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-[data-theme="dark"] {
-  --bg: #0b1410;
-  --surface: #101e18;
-  --card: #132018;
-  --card-2: #0f1c15;
-  --border: #1e3628;
-  --text: #e8f5ee;
-  --text-sub: #5a8068;
-  --text-muted: #3d5e4a;
-  --input-bg: #0d1a13;
-  --accent: var(--green-light);
-  --toggle-off: #1e3628;
-  --toggle-on: var(--green);
-  --badge-bg: rgba(76, 175, 125, 0.1);
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-}
-
-[data-theme="light"] {
-  --bg: #f0f5f2;
-  --surface: #ffffff;
-  --card: #ffffff;
-  --card-2: #f7faf8;
-  --border: #dde8e2;
-  --text: #0f2018;
-  --text-sub: #4a7060;
-  --text-muted: #9ab8aa;
-  --input-bg: #f4f9f6;
-  --accent: #2E7D52;
-  --toggle-off: #d1e0d8;
-  --toggle-on: var(--green);
-  --badge-bg: rgba(46, 125, 82, 0.08);
-  --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
-}
-
-
 
 /* ══════════════════════════════════════
    RESET
@@ -636,7 +553,7 @@ select.form-input {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 2px;
+  margin:4px 0 2px 0;
 }
 
 .toggle-info .tgl-sub {
@@ -1837,81 +1754,6 @@ select.form-input {
   }
 }
 
-#chats .reminders {
-  margin-top: 2rem;
-}
-
-#chats .reminders .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.8rem;
-}
-
-#chats .reminders .header span {
-  padding: 10px;
-  box-shadow: var(--box-shadow);
-  background-color: var(--color-white);
-  border-radius: 50%;
-}
-
-#chats .reminders .notification {
-  background-color: var(--color-white);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.7rem;
-  padding: 1.4rem var(--card-padding);
-  border-radius: var(--border-radius-2);
-  box-shadow: var(--box-shadow);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#chats .reminders .notification:hover {
-  box-shadow: none;
-}
-
-#chats .reminders .notification .content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0;
-  width: 100%;
-}
-
-#chats .reminders .notification .icon {
-  padding: 0.6rem;
-  color: var(--color-white);
-  background-color: var(--color-success);
-  border-radius: 20%;
-  display: flex;
-}
-
-#chats .reminders .notification.deactive .icon {
-  background-color: var(--color-danger);
-}
-
-#chats .reminders .add-reminder {
-  background-color: var(--color-white);
-  border: 2px dashed var(--color-primary);
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-#chats .reminders .add-reminder:hover {
-  background-color: var(--color-primary);
-  color: white;
-}
-
-#chats .reminders .add-reminder div {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
 
 
 
