@@ -383,11 +383,11 @@ function renderSummaryPills() {
   const success = source.filter(r => (r.status||'').toLowerCase() === 'success').length;
   const pending = source.filter(r => (r.status||'').toLowerCase() === 'pending').length;
   const failed  = source.filter(r => (r.status||'').toLowerCase() === 'failed').length;
-  document.getElementById('pill-total').innerHTML   = `<i class="ri-list-check"></i> ${total} Total`;
+/*  document.getElementById('pill-total').innerHTML   = `<i class="ri-list-check"></i> ${total} Total`;
   document.getElementById('pill-success').innerHTML = `<i class="ri-checkbox-circle-line"></i> ${success} Success`;
   document.getElementById('pill-pending').innerHTML = `<i class="ri-time-line"></i> ${pending} Pending`;
   document.getElementById('pill-failed').innerHTML  = `<i class="ri-close-circle-line"></i> ${failed} Failed`;
-  document.getElementById('txnSummaryBar').style.display = 'flex';
+  document.getElementById('txnSummaryBar').style.display = 'flex';*/
 }
 
 function logTxnTotals() {
