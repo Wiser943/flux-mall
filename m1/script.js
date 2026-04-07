@@ -928,21 +928,53 @@ async function collectDailyEarnings() {
   }
 }
 
-// ─── TEAM / REFERRAL ──────────────────────────────────────
 async function loadTeamData() {
   const data = await api('/api/user/team');
   if (!data?.success) return;
-  const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+
+  const setEl = (id, val) => { 
+    const el = document.getElementById(id); 
+    if (el) el.innerText = val; 
+  };
+
+  // Update counts
   setEl('level1Count', data.level1.count);
   setEl('level2Count', data.level2.count);
   setEl('level3Count', data.level3.count);
+
   const teamContainer = document.getElementById('teamContainer');
-  if (teamContainer) {
-    teamContainer.innerHTML = '';
-    data.level1.users.forEach(u => {
-      teamContainer.innerHTML += `<div class="team-member"><span>${u.username}</span><span>${u.email}</span></div>`;
-    });
+  if (!teamContainer) return;
+
+  if (data.level1.users.length === 0) {
+    teamContainer.innerHTML = `
+      <div class="empty-state">
+        <i class="ri-user-add-line"></i>
+        <p>No referrals yet. Share your link to start earning!</p>
+      </div>`;
+    return;
   }
+
+  teamContainer.innerHTML = '';
+  data.level1.users.forEach(u => {
+    // Get initials for avatar (e.g., "ZA")
+    const initials = u.username ? u.username.slice(0, 2).toUpperCase() : '??';
+    const joinedDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short' }) : 'Recent';
+
+    teamContainer.innerHTML += `
+      <div class="referral-card">
+        <div class="ref-left">
+          <div class="ref-avatar">${initials}</div>
+          <div class="ref-info">
+            <span class="ref-name">${u.username || 'Anonymous'}</span>
+            <span class="ref-email">${u.email}</span>
+          </div>
+        </div>
+        <div class="ref-right">
+          <span class="ref-date">${joinedDate}</span>
+          <span class="ref-badge active">Verified</span>
+        </div>
+      </div>`;
+  });
 }
 
 function generateReferralLink() {
