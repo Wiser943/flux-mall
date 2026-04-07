@@ -94,7 +94,7 @@ body {
     position: fixed;
     left: 0;
     background: var(--card);
-    width: 200px;
+    width: 220px;
     height: 100%;
     z-index: 2000;
     overflow-x: hidden;
