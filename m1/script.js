@@ -929,61 +929,66 @@ async function collectDailyEarnings() {
 }
 
 async function loadTeamData() {
-  const data = await api('/api/user/team');
-  if (!data?.success) return;
-
   const teamContainer = document.getElementById('teamContainer');
   if (!teamContainer) return;
 
-  // 1. Build the table skeleton
-  teamContainer.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Joined</th>
-          <th>Status</th>
-          <th>Earned</th>
-        </tr>
-      </thead>
-      <tbody id="referralTableBody">
-        </tbody>
-    </table>`;
+  const data = await api('/api/user/team');
+  if (!data?.success) return;
 
-  const tbody = document.getElementById('referralTableBody');
   const users = data.level1.users || [];
 
+  // 1. Handle the empty state immediately
   if (users.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--text3);">No referrals found.</td></tr>`;
+    teamContainer.innerHTML = `
+      <div style="text-align:center; padding:3rem; color:var(--text3); border:1px dashed rgba(255,255,255,0.1); border-radius:12px;">
+        <i class="ri-user-add-line" style="font-size:24px; opacity:0.5;"></i>
+        <p style="margin-top:10px;">No referrals found yet.</p>
+      </div>`;
     return;
   }
 
-  // 2. Loop through users and create the rows
+  // 2. Build the table rows as a single string
+  let tableRows = '';
+
   users.forEach(u => {
-    // Format Date: e.g., "Jun 10, 2025"
     const date = u.createdAt 
       ? new Date(u.createdAt).toLocaleDateString('en-NG', { month:'short', day:'2-digit', year:'numeric' }) 
       : '—';
 
-    // Logic for Status Badges
     const status = (u.status || 'pending').toLowerCase();
     const isSuccess = status === 'active' || status === 'success';
     const badgeClass = isSuccess ? 'success' : 'pending';
     const statusText = isSuccess ? 'Active' : 'Pending';
 
-    // Logic for Earnings (Assuming 1200 per active ref based on your Grower tier)
     const earnedAmount = u.earned || (isSuccess ? 1200 : 0);
     const amountColor = earnedAmount > 0 ? 'var(--green)' : 'var(--yellow)';
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${u.username || 'Anonymous'}</td>
-      <td>${date}</td>
-      <td><span class="badge ${badgeClass}">${statusText}</span></td>
-      <td style="color:${amountColor}; font-weight:600;">₦${earnedAmount.toLocaleString()}</td>
-    `;
-    tbody.appendChild(tr);
+    tableRows += `
+      <tr>
+        <td>${u.username || 'Anonymous'}</td>
+        <td>${date}</td>
+        <td><span class="badge ${badgeClass}">${statusText}</span></td>
+        <td style="color:${amountColor}; font-weight:600;">₦${earnedAmount.toLocaleString()}</td>
+      </tr>`;
   });
+
+  // 3. Inject the entire table structure at once
+  teamContainer.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Earned</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 function generateReferralLink() {
