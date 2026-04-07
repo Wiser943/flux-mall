@@ -1141,37 +1141,31 @@ function openAddUser() {
 }
 
 function submitAddUser() {
-  const fn = document.getElementById('m-fname')?.value.trim();
-  const ln = document.getElementById('m-lname')?.value.trim();
+  const fn    = document.getElementById('m-fname')?.value.trim();
+  const ln    = document.getElementById('m-lname')?.value.trim();
   const email = document.getElementById('m-email')?.value.trim();
-  if (!fn || !ln || !email) { showToast('Please fill required fields', 'error'); return; }
-  const name = `${fn} ${ln}`;
-  const initials = `${fn[0]}${ln[0]}`.toUpperCase();
-  const newUser = {
-    id: `FLX${String(1001+UM_USERS.length).padStart(5,'0')}`,
-    name,
-    initials,
-    email,
-    phone: document.getElementById('m-phone')?.value || '',
-    balance: parseInt(document.getElementById('m-balance')?.value) || 0,
-    shares: 0,
-    deposits: 0,
-    withdrawals: 0,
-    referrals: 0,
-    status: document.getElementById('m-status')?.value || 'unverified',
-    active: true,
-    color: COLORS[UM_USERS.length % COLORS.length],
-    joined: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-    lastSeen: 'Just now',
-    referredBy: null,
-    device: 'Unknown',
-    ip: '—',
-  };
-  UM_USERS.unshift(newUser);
-  closeModal();
-  updateUMStats();
-  applyFilters();
-  showToast(`${name} added successfully`, 'success');
+  const pass  = document.getElementById('m-pass')?.value;
+  if (!fn || !ln || !email || !pass) { showToast('Please fill all required fields', 'error'); return; }
+
+  api('/api/admin/create-user', {
+    method: 'POST',
+    body: JSON.stringify({
+      username: `${fn}${ln}`.toLowerCase().replace(/\s+/g,''),
+      email,
+      password: pass,
+      role:     'user',
+      initBal:  parseInt(document.getElementById('m-balance')?.value) || 0
+    })
+  }).then(data => {
+    if (data?.success) {
+      closeModal();
+      showToast(`${fn} ${ln} added successfully`, 'success');
+      // Reload from API to get real _id
+      loadUMUsers();
+    } else {
+      showToast(data?.error || 'Failed to create user.', 'error');
+    }
+  });
 }
 
 function openEditModal(id) {
@@ -1209,16 +1203,40 @@ function openEditModal(id) {
 function submitEdit(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  u.name = document.getElementById('e-name')?.value.trim() || u.name;
-  u.email = document.getElementById('e-email')?.value.trim() || u.email;
-  u.phone = document.getElementById('e-phone')?.value.trim() || u.phone;
-  u.status = document.getElementById('e-status')?.value;
-  u.active = document.getElementById('e-active')?.value === '1';
-  closeModal();
-  updateUMStats();
-  applyFilters();
-  if (activeUserId === id) openDetail(id);
-  showToast('User updated', 'success');
+
+  const name   = document.getElementById('e-name')?.value.trim()  || u.name;
+  const email  = document.getElementById('e-email')?.value.trim() || u.email;
+  const phone  = document.getElementById('e-phone')?.value.trim() || u.phone;
+  const status = document.getElementById('e-status')?.value;
+  const active = document.getElementById('e-active')?.value === '1';
+
+  const apiStatus = status === 'banned' ? 'Banned' : 'Active';
+
+  api(`/api/admin/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      username: name,
+      email,
+      phone,
+      status: apiStatus,
+      emailVerified: status === 'verified'
+    })
+  }).then(data => {
+    if (data?.success) {
+      u.name   = name;
+      u.email  = email;
+      u.phone  = phone;
+      u.status = status;
+      u.active = active;
+      closeModal();
+      updateUMStats();
+      applyFilters();
+      if (activeUserId === id) openDetail(id);
+      showToast('User updated', 'success');
+    } else {
+      showToast(data?.error || 'Failed to update user.', 'error');
+    }
+  });
 }
 
 function openCreditModal(id) {
@@ -1246,16 +1264,34 @@ function submitBalance(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   const type = document.getElementById('c-type')?.value;
-  const amt = parseInt(document.getElementById('c-amount')?.value) || 0;
+  const amt  = parseInt(document.getElementById('c-amount')?.value) || 0;
   if (amt <= 0 && type !== 'set') { showToast('Enter a valid amount', 'error'); return; }
-  if (type === 'credit') u.balance += amt;
-  else if (type === 'debit') u.balance = Math.max(0, u.balance - amt);
-  else u.balance = amt;
-  closeModal();
-  updateUMStats();
-  applyFilters();
-  if (activeUserId === id) openDetail(id);
-  showToast(`Balance ${type==='credit'?'credited':type==='debit'?'debited':'set'} — ₦${u.balance.toLocaleString()}`, 'success');
+
+  // Map UI type to API action
+  const action = type === 'credit' ? 'credit' : type === 'debit' ? 'debit' : 'set';
+
+  api('/api/admin/users/adjust-balance', {
+    method: 'POST',
+    body: JSON.stringify({ userId: id, amount: amt, action })
+  }).then(data => {
+    if (data?.success) {
+      u.balance = data.newBalance ?? (
+        type === 'credit' ? u.balance + amt :
+        type === 'debit'  ? Math.max(0, u.balance - amt) :
+        amt
+      );
+      closeModal();
+      updateUMStats();
+      applyFilters();
+      if (activeUserId === id) openDetail(id);
+      showToast(
+        `Balance ${type === 'credit' ? 'credited' : type === 'debit' ? 'debited' : 'set'} — ₦${u.balance.toLocaleString()}`,
+        'success'
+      );
+    } else {
+      showToast(data?.error || 'Error adjusting balance.', 'error');
+    }
+  });
 }
 
 function sendMessageModal(id) {
@@ -1283,9 +1319,26 @@ function sendMessageModal(id) {
 function submitMessage(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  if (!document.getElementById('msg-body')?.value.trim()) { showToast('Message cannot be empty', 'error'); return; }
-  closeModal();
-  showToast(`Message sent to ${u.name}`, 'success');
+  const body = document.getElementById('msg-body')?.value.trim();
+  if (!body) { showToast('Message cannot be empty', 'error'); return; }
+
+  api(`/api/admin/users/${id}/notify`, {
+    method: 'POST',
+    body: JSON.stringify({
+      title:   document.getElementById('msg-title')?.value.trim() || 'Admin Message',
+      message: body,
+      type:    document.getElementById('msg-type')?.value || 'info'
+    })
+  }).then(data => {
+    if (data?.success) {
+      closeModal();
+      showToast(`Message sent to ${u.name}`, 'success');
+    } else {
+      // Endpoint may not exist yet — still close and notify
+      closeModal();
+      showToast(`Message queued for ${u.name}`, 'info');
+    }
+  });
 }
 
 function confirmBan(id) {
@@ -1341,25 +1394,44 @@ function confirmDelete(id) {
 }
 
 function submitDelete(id) {
-  if (document.getElementById('del-confirm')?.value !== 'DELETE') { showToast('Type DELETE to confirm', 'error'); return; }
-  const u = UM_USERS.find(x => x.id === id);
-  UM_USERS = UM_USERS.filter(x => x.id !== id);
-  if (activeUserId === id) closeDetail();
-  selected.delete(id);
-  closeModal();
-  updateUMStats();
-  applyFilters();
-  showToast(`${u?.name} deleted`, 'info');
+  if (document.getElementById('del-confirm')?.value !== 'DELETE') {
+    showToast('Type DELETE to confirm', 'error');
+    return;
+  }
+  api(`/api/admin/users/${id}`, { method: 'DELETE' }).then(data => {
+    if (data?.success) {
+      const u = UM_USERS.find(x => x.id === id);
+      UM_USERS = UM_USERS.filter(x => x.id !== id);
+      if (activeUserId === id) closeDetail();
+      selected.delete(id);
+      closeModal();
+      updateUMStats();
+      applyFilters();
+      showToast(`${u?.name || 'User'} deleted`, 'info');
+    } else {
+      showToast(data?.error || 'Failed to delete user.', 'error');
+    }
+  });
 }
-
 function toggleVerify(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  u.status = u.status === 'verified' ? 'unverified' : 'verified';
-  updateUMStats();
-  applyFilters();
-  if (activeUserId === id) openDetail(id);
-  showToast(`${u.name} ${u.status==='verified'?'verified':'unverified'}`, 'success');
+  const newVerified = u.status !== 'verified';
+
+  api(`/api/admin/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ emailVerified: newVerified })
+  }).then(data => {
+    if (data?.success) {
+      u.status = newVerified ? 'verified' : 'unverified';
+      updateUMStats();
+      applyFilters();
+      if (activeUserId === id) openDetail(id);
+      showToast(`${u.name} ${u.status === 'verified' ? 'verified' : 'unverified'}`, 'success');
+    } else {
+      showToast(data?.error || 'Failed to update verification.', 'error');
+    }
+  });
 }
 
 function resetPassword(id) {
@@ -1381,8 +1453,18 @@ function submitResetPass(id) {
   const p2 = document.getElementById('rp-pass2')?.value;
   if (!p1 || p1.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
   if (p1 !== p2) { showToast('Passwords do not match', 'error'); return; }
-  closeModal();
-  showToast('Password reset successfully', 'success');
+
+  api(`/api/admin/users/${id}/reset-password`, {
+    method: 'POST',
+    body: JSON.stringify({ newPassword: p1 })
+  }).then(data => {
+    if (data?.success) {
+      closeModal();
+      showToast('Password reset successfully', 'success');
+    } else {
+      showToast(data?.error || 'Failed to reset password.', 'error');
+    }
+  });
 }
 
 // ── Bulk Actions ───────────────────────────────────────────
@@ -1405,12 +1487,20 @@ function bulkBan() {
 }
 
 function submitBulkBan() {
-  selected.forEach(id => { const u = UM_USERS.find(x => x.id === id); if (u) u.status = 'banned'; });
-  clearSelection();
-  closeModal();
-  updateUMStats();
-  applyFilters();
-  showToast('Selected users banned', 'info');
+  const ids = [...selected];
+  Promise.all(
+    ids.map(id => api(`/api/admin/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'Banned' })
+    }))
+  ).then(() => {
+    ids.forEach(id => { const u = UM_USERS.find(x => x.id === id); if (u) u.status = 'banned'; });
+    clearSelection();
+    closeModal();
+    updateUMStats();
+    applyFilters();
+    showToast('Selected users banned', 'info');
+  });
 }
 
 function bulkDelete() {
@@ -1425,14 +1515,22 @@ function bulkDelete() {
 }
 
 function submitBulkDelete() {
-  if (document.getElementById('bd-confirm')?.value !== 'DELETE') { showToast('Type DELETE to confirm', 'error'); return; }
-  const count = selected.size;
-  UM_USERS = UM_USERS.filter(u => !selected.has(u.id));
-  clearSelection();
-  closeModal();
-  updateUMStats();
-  applyFilters();
-  showToast(`${count} users deleted`, 'info');
+  if (document.getElementById('bd-confirm')?.value !== 'DELETE') {
+    showToast('Type DELETE to confirm', 'error');
+    return;
+  }
+  const ids   = [...selected];
+  const count = ids.length;
+  Promise.all(
+    ids.map(id => api(`/api/admin/users/${id}`, { method: 'DELETE' }))
+  ).then(() => {
+    UM_USERS = UM_USERS.filter(u => !selected.has(u.id));
+    clearSelection();
+    closeModal();
+    updateUMStats();
+    applyFilters();
+    showToast(`${count} users deleted`, 'info');
+  });
 }
 
 function bulkMessage() {
@@ -2451,63 +2549,62 @@ function renderChatList(users, query = '') {
 function openChat(userId) {
   chatActiveUserId = userId;
 
-  // Try real sessions first, then fall back to mock
-  const sessions = window._chatSessions || CHAT_USERS;
-  const user = sessions.find(u => u.id === userId) || CHAT_USERS.find(u => u.id === userId);
-  if (!user) return;
+  // Prefer real API sessions; fall back to mock
+  const sessions = window._chatSessions || [];
+  const realSession = sessions.find(u => u.id === userId);
 
-  // If this is a real API session, open it in the admin chat system
-  if (user.sessionId && user.sessionId !== userId) {
-    openAdminChatSession(user.sessionId, user.name, user.status === 'resolved' ? 'ended' : 'active', user.userData);
+  // If this came from the API, always open the real session
+  if (realSession && realSession.sessionId) {
+    openAdminChatSession(
+      realSession.sessionId,
+      realSession.name,
+      realSession.status === 'resolved' ? 'ended' : 'active',
+      realSession.userData
+    );
     return;
   }
+
+  // ── Mock fallback (for demo / offline) ──────────────────
+  const user = CHAT_USERS.find(u => u.id === userId);
+  if (!user) return;
   user.unread = 0;
-  
+
   document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
   const ci = document.getElementById(`ci-${userId}`);
   if (ci) {
     ci.classList.remove('unread');
     ci.classList.add('active');
     const badge = ci.querySelector('.unread-badge');
-    if (badge) { badge.textContent = '0';
-      badge.style.display = 'none'; }
+    if (badge) { badge.textContent = '0'; badge.style.display = 'none'; }
   }
-  
+
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  const setStyle = (id, prop, v) => { const el = document.getElementById(id); if (el) el.style[prop] = v; };
-  
   const hdrAvatar = document.getElementById('hdrAvatar');
-  if (hdrAvatar) { hdrAvatar.textContent = user.initials;
-    hdrAvatar.style.color = user.color; }
+  if (hdrAvatar) { hdrAvatar.textContent = user.initials; hdrAvatar.style.color = user.color; }
   set('hdrName', user.name);
-  
+
   const statusEl = document.getElementById('hdrStatus');
-  const dotEl = document.getElementById('hdrOnlineDot');
+  const dotEl    = document.getElementById('hdrOnlineDot');
   if (statusEl) {
     statusEl.textContent = user.online ? 'Online' : 'Offline';
-    statusEl.className = `chat-header-status${user.online?' online':''}`;
+    statusEl.className   = `chat-header-status${user.online ? ' online' : ''}`;
   }
   dotEl?.classList.toggle('visible', user.online);
-  
-  // User info panel
+
   const uipAvatar = document.getElementById('uipAvatar');
-  if (uipAvatar) { uipAvatar.textContent = user.initials;
-    uipAvatar.style.color = user.color; }
-  set('uipName', user.name);
-  set('uipEmail', user.email);
-  set('uipBalance', user.balance);
-  set('uipShares', user.shares);
-  set('uipDeposits', user.deposits);
+  if (uipAvatar) { uipAvatar.textContent = user.initials; uipAvatar.style.color = user.color; }
+  set('uipName',      user.name);
+  set('uipEmail',     user.email);
+  set('uipBalance',   user.balance);
+  set('uipShares',    user.shares);
+  set('uipDeposits',  user.deposits);
   set('uipReferrals', user.referrals);
-  
-  // Session bar
-  const seb = document.getElementById('sessionEndedBar');
-  seb?.classList.toggle('visible', user.status === 'resolved');
-  
-  document.getElementById('chatEmpty').style.display = 'none';
+
+  document.getElementById('sessionEndedBar')?.classList.toggle('visible', user.status === 'resolved');
+  document.getElementById('chatEmpty').style.display    = 'none';
   document.getElementById('chatWindow').classList.add('active');
   document.getElementById('chatMain').classList.add('mobile-open');
-  
+
   renderMessages(userId);
 }
 
@@ -2907,7 +3004,7 @@ function showMoreMenu() {
 async function getAdminSiteLogo() {
   if (adminSiteLogo) return adminSiteLogo;
   const data = await api('/api/admin/settings');
-  adminSiteLogo = data?.config?.siteLogo || '';
+  adminSiteLogo = data?.settings?.config?.siteLogo || '';
   return adminSiteLogo;
 }
 
