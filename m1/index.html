@@ -445,9 +445,13 @@
         <!-- FILTER BAR -->
         <div class="card mb-4">
           <div class="flex-center flex-gap-2 flex-wrap" style="gap:10px;">
-            <div class="input-icon" style="flex:1;min-width:200px;">
+            <div class="input-icon" style="display:flex;gap:2px;flex:1;min-width:200px;">
               <span class="icon"><i class="ri-search-line"></i></span>
               <input type="text" id="txnSearch" placeholder="Search transactions..." oninput="applyTxnFilters()">
+              
+                          <button class="btn btn-ghost btn-sm" onclick="refreshTransactions()" id="txnRefreshBtn" title="Refresh">
+              <i class="ri-refresh-line"></i>
+            </button>
             </div>
             <select id="txnTypeFilter" style="width:auto;" onchange="onTypeFilterChange()">
               <option value="all">All Types</option>
@@ -461,9 +465,7 @@
               <option value="pending">Pending</option>
               <option value="failed">Failed</option>
             </select>
-            <button class="btn btn-ghost btn-sm" onclick="refreshTransactions()" id="txnRefreshBtn" title="Refresh">
-              <i class="ri-refresh-line"></i>
-            </button>
+
           </div>
         </div>
         
