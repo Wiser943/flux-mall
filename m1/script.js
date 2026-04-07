@@ -932,48 +932,57 @@ async function loadTeamData() {
   const data = await api('/api/user/team');
   if (!data?.success) return;
 
-  const setEl = (id, val) => { 
-    const el = document.getElementById(id); 
-    if (el) el.innerText = val; 
-  };
-
-  // Update counts
-  setEl('level1Count', data.level1.count);
-  setEl('level2Count', data.level2.count);
-  setEl('level3Count', data.level3.count);
-
   const teamContainer = document.getElementById('teamContainer');
   if (!teamContainer) return;
 
-  if (data.level1.users.length === 0) {
-    teamContainer.innerHTML = `
-      <div class="empty-state">
-        <i class="ri-user-add-line"></i>
-        <p>No referrals yet. Share your link to start earning!</p>
-      </div>`;
+  // 1. Build the table skeleton
+  teamContainer.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Joined</th>
+          <th>Status</th>
+          <th>Earned</th>
+        </tr>
+      </thead>
+      <tbody id="referralTableBody">
+        </tbody>
+    </table>`;
+
+  const tbody = document.getElementById('referralTableBody');
+  const users = data.level1.users || [];
+
+  if (users.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:2rem; color:var(--text3);">No referrals found.</td></tr>`;
     return;
   }
 
-  teamContainer.innerHTML = '';
-  data.level1.users.forEach(u => {
-    // Get initials for avatar (e.g., "ZA")
-    const initials = u.username ? u.username.slice(0, 2).toUpperCase() : '??';
-    const joinedDate = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short' }) : 'Recent';
+  // 2. Loop through users and create the rows
+  users.forEach(u => {
+    // Format Date: e.g., "Jun 10, 2025"
+    const date = u.createdAt 
+      ? new Date(u.createdAt).toLocaleDateString('en-NG', { month:'short', day:'2-digit', year:'numeric' }) 
+      : '—';
 
-    teamContainer.innerHTML += `
-      <div class="referral-card">
-        <div class="ref-left">
-          <div class="ref-avatar">${initials}</div>
-          <div class="ref-info">
-            <span class="ref-name">${u.username || 'Anonymous'}</span>
-            <span class="ref-email">${u.email}</span>
-          </div>
-        </div>
-        <div class="ref-right">
-          <span class="ref-date">${joinedDate}</span>
-          <span class="ref-badge active">Verified</span>
-        </div>
-      </div>`;
+    // Logic for Status Badges
+    const status = (u.status || 'pending').toLowerCase();
+    const isSuccess = status === 'active' || status === 'success';
+    const badgeClass = isSuccess ? 'success' : 'pending';
+    const statusText = isSuccess ? 'Active' : 'Pending';
+
+    // Logic for Earnings (Assuming 1200 per active ref based on your Grower tier)
+    const earnedAmount = u.earned || (isSuccess ? 1200 : 0);
+    const amountColor = earnedAmount > 0 ? 'var(--green)' : 'var(--yellow)';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${u.username || 'Anonymous'}</td>
+      <td>${date}</td>
+      <td><span class="badge ${badgeClass}">${statusText}</span></td>
+      <td style="color:${amountColor}; font-weight:600;">₦${earnedAmount.toLocaleString()}</td>
+    `;
+    tbody.appendChild(tr);
   });
 }
 
