@@ -895,27 +895,32 @@ async function loadMyInvestments() {
     const remaining    = d.duration - daysPassed;
     const progressPct  = Math.min(100, (daysPassed / d.duration) * 100);
     const claimed      = daysPassed * d.dailyIncome;
-    container.innerHTML += `
-      <div class="order-card block">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <span class="product-name">${d.shareName?.toUpperCase()}</span>
-          <span class="status-badge"><i class="ri-flashlight-fill" style="color:#f1c40f"></i>Auto Claim On</span>
-        </div>
-        <div class="info-row"><span class="label">Price:</span><span class="value">🪙${d.pricePaid.toLocaleString()} FEX</span></div>
-        <div class="info-row"><span class="label">Total Profit:</span><span class="value">🪙${(d.dailyIncome * d.duration).toLocaleString()} FEX</span></div>
-        <div class="info-row"><span class="label">Daily Profit:</span><span class="value">🪙${d.dailyIncome.toLocaleString()} FEX</span></div>
-        <div class="info-row"><span class="label">Duration:</span><span class="value">${d.duration} Days</span></div>
-        <div class="info-row"><span class="label">Date:</span><span class="value">${purchaseDate.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })}</span></div>
-        <div class="info-row" style="font-weight:600;font-size:1rem;color:var(--success);">
-          <span class="label">Claimed:</span>
-          <span class="value">🪙${claimed.toLocaleString()} FEX</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${progressPct}%"></div></div>
-        <div class="info-row">
-          <span style="background:var(--success);color:white;" class="btn btn-secondary"><i class="ri-flashlight-fill" style="color:#f1c40f"></i>${d.status} Running</span>
-          <span class="status-badge">${remaining} Days Left</span>
-        </div>
-      </div>`;
+    
+      container.innerHTML+=`          <div class="card" style="border-left:3px solid var(--green);">
+            <div class="flex-between mb-4">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">${d.shareName?.toUpperCase()} — ${d.duration}</div>
+                <div class="text-xs mt-4">Started: May 14, 2025 · Matures: Aug 14, 2025</div>
+              </div>
+              <span class="badge success">Active</span>
+            </div>
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <div class="text-xs mb-4">Principal</div>
+                <div style="font-weight:700;">🪙${d.pricePaid.toLocaleString()} FEX</div>
+              </div>
+              <div>
+                <div class="text-xs mb-4">Return Rate</div>
+                <div style="font-weight:700;color:var(--green);">15% ROI</div>
+              </div>
+            </div>
+            <div class="flex-between mb-4 text-sm">
+              <span>Progress</span><span>${remaining} Days Left</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill green" style="${progressPct}"></div>
+            </div>
+          </div>`;
   });
 }
 
@@ -1242,12 +1247,12 @@ async function updateVerificationUI() {
 window.handleCheckIn = async () => {
   const data = await api('/api/user/checkin', { method: 'POST' });
   if (data?.success) {
-    showToast(`✅ Check-in bonus 🪙${data.bonus} FEX added!`, 'success', 'ri-check-line', 'Checked In!');
+    showAlert(`✅ Check-in bonus 🪙${data.bonus} FEX added!`, 'success', 'ri-check-line', 'Checked In!');
     const btn = document.getElementById('checkinBtn');
     if (btn) { btn.innerHTML = `<i class="ri-gift-line"></i> Refer`; }
     refreshBalance();
   } else {
-    showToast(data?.error || 'Check-in failed.', 'warning', 'ri-close-line', 'Error');
+    showAlert(data?.error || 'Check-in failed.', 'warning');
   }
 };
 
