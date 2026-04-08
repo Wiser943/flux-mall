@@ -11,6 +11,9 @@
 
 // ─── BRANDING & CONFIG ────────────────────────────────────
 async function syncBranding() {
+  setTimeout(() => {
+    document.querySelector('.loader-container').style.display = 'none';
+  }, 3000);
   try {
     const res  = await fetch('/api/user/config');
     const data = await res.json();
@@ -338,7 +341,7 @@ async function doResetPassword() {
       showAlert('Password reset successfully! You can now log in.', true);
       // Clear token from URL so the link can't be reused
       window.history.replaceState(null, '', window.location.pathname);
-      setTimeout(() => { window.location.hash = '#login-page'; }, 1500);
+      setTimeout(() => { window.location.hash = '#login'; }, 1500);
     } else {
       const errMsg = data.error || 'Reset failed. The link may have expired.';
       showAlert(errMsg, false);
@@ -444,7 +447,7 @@ window.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
               showAlert('Account created successfully! Please log in.', true);
               signupForm.reset();
-              window.location.hash = '#login-page';
+              window.location.hash = '#login';
             } else {
               showAlert(data.error || 'Signup failed. Please try again.', false);
             }
@@ -563,7 +566,7 @@ window.addEventListener('DOMContentLoaded', function () {
             if (data.success) {
               showAlert('Reset link sent! Check your inbox or spam folder.', true);
               resetForm.reset();
-              window.location.hash = '#login-page';
+              window.location.hash = '#login';
             } else {
               showAlert(data.error || 'Failed to send reset email.', false);
             }
