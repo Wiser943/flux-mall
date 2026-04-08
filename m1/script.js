@@ -16,6 +16,11 @@ async function api(path, options = {}) {
     ...options
   });
   if (res.status === 401) { logoutUser(); return null; }
+  
+  if (res.json) {
+    document.querySelector(".loader-container").style.display="none";
+
+  }
   return res.json();
 }
 
