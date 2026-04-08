@@ -692,32 +692,6 @@
       background: var(--gold-dark);
     }
     
-    /* ── LOADER ── */
-    .loader-container {
-      position: fixed;
-      inset: 0;
-      background: var(--dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    
-    .loader {
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(76, 175, 125, 0.15);
-      border-top-color: var(--gold-light);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-    }
-    
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-    
     /* ══════════════════════════════════════
        BOTTOM SHEET MODALS
     ══════════════════════════════════════ */
@@ -838,7 +812,8 @@
       margin-bottom: 20px;
       font-size: 0.83rem;
       color: var(--modal-sub);
-      line-height: 2;overflow: hidden;
+      line-height: 2;
+      overflow: hidden;
     }
     
     .modal-detail strong {
@@ -951,17 +926,65 @@
         right: 12px;
       }
     }
+    
+    /* HTML: <div class="loader"></div> */
+    .loader-container {
+      position: fixed;
+      width: 100%;
+      height: 100vh;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(6px);
+      
+    }
+    
+    .loader {
+      --r1: 154%;
+      --r2: 68.5%;
+      width: 60px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background:
+        radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #2E7D52 80%),
+        radial-gradient(var(--r1) var(--r2) at bottom, #2E7D52 79.5%, #0000 80%),
+        radial-gradient(var(--r1) var(--r2) at top, #0000 79.5%, #2E7D52 80%),
+        #ccc;
+      background-size: 50.5% 220%;
+      background-position: -100% 0%, 0% 0%, 100% 0%;
+      background-repeat: no-repeat;
+      animation: l9 2s infinite alternate;
+    }
+    
+    @keyframes l9 {
+      33% {
+        background-position: 0% 33%, 100% 33%, 200% 33%
+      }
+      
+      66% {
+        background-position: -100% 66%, 0% 66%, 100% 66%
+      }
+      
+      100% {
+        background-position: 0% 100%, 100% 100%, 200% 100%
+      }
+    }
   </style>
 </head>
 
 <body>
-    <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle theme">
+  <button class="theme-toggle-btn" id="theme-toggle-btn" title="Toggle theme">
     <i class="fas fa-moon icon-moon"></i>
     <i class="fas fa-sun icon-sun"></i>
   </button>
   
   <div class="shape shape-1"></div>
-  
+  <div class="loader-container">
+    <div class="loader">
+    </div>
+  </div>
   <div id="referrerSection" style="display:none;" class="referrer-box">
     <div class="referrer-info">
       <i class="fas fa-user-plus"></i>
@@ -1016,14 +1039,14 @@
         <h1 id="resetFormTitle">Password Reset</h1>
         <p class="subtitle" id="resetFormSubtitle">Enter your email and we'll send a recovery link.</p>
         <form id="resetForm">
-            <div class="input-group">
-              <label for="resetEmail">EMAIL <span>*</span></label>
-              <div class="input-wrapper">
-                <i class="fas fa-envelope input-icon"></i>
-                <input type="email" id="resetEmail" name="reset-email" placeholder="yourmail@gmail.com">
-              </div>
-              <p id="resetEmailError" class="error-message"></p>
+          <div class="input-group">
+            <label for="resetEmail">EMAIL <span>*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="resetEmail" name="reset-email" placeholder="yourmail@gmail.com">
             </div>
+            <p id="resetEmailError" class="error-message"></p>
+          </div>
           <button type="submit" class="signin-btn" id="resetSubmitBtn" disabled>Send Reset Link</button>
           <div class="footer-link" style="margin-top:16px;">
             <a href="#login-page" class="create-link"><i class="fas fa-arrow-left" style="margin-right:5px;"></i>Back to Login</a>
