@@ -479,13 +479,13 @@ showConfirm({
       <div class="bank-details">
         <div class="detail-row"><p style="font-size:0.9rem;color:#666">Transfer the exact amount to:</p></div>
         <div class="detail-row"><span>Bank:</span>
-        <strong><span>${bankName}</span> <i onclick="copyCode(${bankName})" class="ri-copy-line"></i>
+        <strong><span>${bankName}</span> <i onclick="copyCode(${bankName})" class="ri-file-copy-line"></i>
         </strong>
         </div>
         <div class="detail-row"><span>Account:</span><strong id="modalAcc">${accNum}</strong></div>
         <div class="detail-row"><span>Name:</span><strong>${accName}</strong></div>
         <hr style="border:0;border-top:1px solid #e2e8f0;margin:15px 0;">
-        <div style="text-align:center;cursor:pointer" onclick="copyText('modalRef')">
+        <div style="text-align:center;cursor:pointer" onclick="copyCode('modalRef')">
           <span style="font-size:0.75rem;color:#666;text-transform:uppercase;font-weight:bold;">Use this Reference as Narration</span>
           <span class="ref-box" id="modalRef">${refCode}</span>
       `,
