@@ -1893,3 +1893,32 @@
     background: var(--border);
     margin: 20px 0;
   }
+  
+  /* HTML: <div class="loader"></div> */
+  .loader-container{
+    position: fixed;width:100%;
+    height:100vh;
+    z-index:100;display: flex;justify-content: center;align-items: center;background: var(--modal-overlay);backdrop-filter: blur(6px);
+
+  }
+.loader {    
+  --r1: 154%;
+  --r2: 68.5%;
+  width: 60px;
+  aspect-ratio: 1;
+  border-radius: 50%; 
+  background:
+    radial-gradient(var(--r1) var(--r2) at top   ,#0000 79.5%,#2E7D52 80%),
+    radial-gradient(var(--r1) var(--r2) at bottom,#2E7D52 79.5%,#0000 80%),
+    radial-gradient(var(--r1) var(--r2) at top   ,#0000 79.5%,#2E7D52 80%),
+    #ccc;
+  background-size: 50.5% 220%;
+  background-position: -100% 0%,0% 0%,100% 0%;
+  background-repeat:no-repeat;
+  animation: l9 2s infinite alternate;
+}
+@keyframes l9 {
+    33%  {background-position:    0% 33% ,100% 33% ,200% 33% }
+    66%  {background-position: -100%  66%,0%   66% ,100% 66% }
+    100% {background-position:    0% 100%,100% 100%,200% 100%}
+}
