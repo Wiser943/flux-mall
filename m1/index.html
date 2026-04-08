@@ -115,9 +115,7 @@
           <span class="nav-icon"><i class="ri-notification-3-line"></i></span> Notifications
           <span class="nav-badge red">3</span>
         </a>
-        <a class="dnav-item nav-item" href="#settings">
-          <span class="nav-icon"><i class="ri-settings-3-line"></i></span> Settings
-        </a>
+        
         <a class="dnav-item nav-item" href="#support">
           <span class="nav-icon"><i class="ri-customer-service-2-line"></i></span> Support
         </a>
@@ -1154,143 +1152,6 @@
         </div>
       </div>
       
-      <!-- SETTINGS PAGE -->
-      <div class="page" id="settings">
-        <div class="section-header mb-6">
-          <div class="section-title">Settings</div>
-          <div class="section-sub">Manage your account preferences and security</div>
-        </div>
-        
-        <div class="grid-2">
-          <div style="display:flex;flex-direction:column;gap:16px;">
-            <!-- Security -->
-            <div class="card">
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔒 Security</div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Two-Factor Authentication</div>
-                  <div class="s-desc">Adds an extra layer of security</div>
-                </div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Login Notifications</div>
-                  <div class="s-desc">Alert on new device login</div>
-                </div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Transaction PIN</div>
-                  <div class="s-desc">Required for withdrawals</div>
-                </div>
-                <button class="btn btn-ghost btn-sm" onclick="showAlert('PIN change request initiated. Check your email.','info')">Change PIN</button>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Password</div>
-                  <div class="s-desc">Last changed 30 days ago</div>
-                </div>
-                <button class="btn btn-ghost btn-sm" onclick="showAlert('Password reset email sent to your inbox.','success')">Change</button>
-              </div>
-            </div>
-            
-            <!-- Notifications Settings -->
-            <div class="card">
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔔 Notifications</div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Email Notifications</div>
-                  <div class="s-desc">Transaction alerts via email</div>
-                </div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">SMS Alerts</div>
-                  <div class="s-desc">Text alerts for transactions</div>
-                </div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Push Notifications</div>
-                  <div class="s-desc">Browser/app push alerts</div>
-                </div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Marketing Emails</div>
-                  <div class="s-desc">Promotions and offers</div>
-                </div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-            </div>
-          </div>
-          
-          <div style="display:flex;flex-direction:column;gap:16px;">
-            <!-- Appearance -->
-            <div class="card">
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🎨 Appearance</div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Dark Mode</div>
-                  <div class="s-desc">Switch between light and dark</div>
-                </div>
-                <div class="toggle on" id="settingsThemeToggle" onclick="toggleTheme(); this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Compact View</div>
-                  <div class="s-desc">Reduce spacing in tables</div>
-                </div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-            </div>
-            
-            <!-- Privacy -->
-            <div class="card">
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🛡️ Privacy</div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Hide Balance</div>
-                  <div class="s-desc">Mask amounts on dashboard</div>
-                </div>
-                <div class="toggle" onclick="this.classList.toggle('on')"></div>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Profile Visibility</div>
-                  <div class="s-desc">Show profile to referrals</div>
-                </div>
-                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-              </div>
-            </div>
-            
-            <!-- Danger Zone -->
-            <div class="card" style="border-color:rgba(239,68,68,0.2);">
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;color:var(--red);">⚠️ Danger Zone</div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Freeze Account</div>
-                  <div class="s-desc">Temporarily disable all activity</div>
-                </div>
-                <button class="btn btn-danger btn-sm" onclick="showConfirm('This will temporarily disable all account activity. Are you sure?','Freeze Account', ()=>showAlert('Account freeze request sent to support.','⚠️','warning'), 'warning')">Freeze</button>
-              </div>
-              <div class="settings-row">
-                <div class="settings-info">
-                  <div class="s-title">Close Account</div>
-                  <div class="s-desc">Permanently delete your account</div>
-                </div>
-                <button class="btn btn-danger btn-sm" onclick="showConfirm('This will permanently delete your account and all data. This cannot be undone.','Delete Account', ()=>showAlert('Please contact support@Fluxmall Exchange.io to complete account deletion.','❌','danger'), 'danger')">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <!-- SUPPORT PAGE -->
       <div class="page" id="support">
         <div class="section-header mb-6">
@@ -1373,6 +1234,8 @@
               <div style="margin-top:16px;"><button style="display: none;" class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button><a class="btn btn-outline btn-sm" href="#support">Support</a></div>
             </div>
             
+            
+            
             <!-- KYC -->
             <div class="card">
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">KYC Verification</div>
@@ -1396,6 +1259,140 @@
             <div style="display:flex;gap:10px;">
               <button class="btn btn-primary" onclick="showAlert('Profile updated successfully!','✅','success')">Save Changes</button>
               <button class="btn btn-ghost">Cancel</button>
+            </div>
+          </div>
+          
+          <div class="section-header mb-6">
+            <div class="section-title">Settings</div>
+            <div class="section-sub">Manage your account preferences and security</div>
+          </div>
+          
+          <div class="grid-2">
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <!-- Security -->
+              <div class="card">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔒 Security</div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Two-Factor Authentication</div>
+                    <div class="s-desc">Adds an extra layer of security</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Login Notifications</div>
+                    <div class="s-desc">Alert on new device login</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Transaction PIN</div>
+                    <div class="s-desc">Required for withdrawals</div>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" onclick="showAlert('PIN change request initiated. Check your email.','info')">Change PIN</button>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Password</div>
+                    <div class="s-desc">Last changed 30 days ago</div>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" onclick="showAlert('Password reset email sent to your inbox.','success')">Change</button>
+                </div>
+              </div>
+              
+              <!-- Notifications Settings -->
+              <div class="card">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔔 Notifications</div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Email Notifications</div>
+                    <div class="s-desc">Transaction alerts via email</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">SMS Alerts</div>
+                    <div class="s-desc">Text alerts for transactions</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Push Notifications</div>
+                    <div class="s-desc">Browser/app push alerts</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Marketing Emails</div>
+                    <div class="s-desc">Promotions and offers</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <!-- Appearance -->
+              <div class="card">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🎨 Appearance</div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Dark Mode</div>
+                    <div class="s-desc">Switch between light and dark</div>
+                  </div>
+                  <div class="toggle on" id="settingsThemeToggle" onclick="toggleTheme(); this.classList.toggle('on')"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Compact View</div>
+                    <div class="s-desc">Reduce spacing in tables</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+              
+              <!-- Privacy -->
+              <div class="card">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🛡️ Privacy</div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Hide Balance</div>
+                    <div class="s-desc">Mask amounts on dashboard</div>
+                  </div>
+                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Profile Visibility</div>
+                    <div class="s-desc">Show profile to referrals</div>
+                  </div>
+                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                </div>
+              </div>
+              
+              <!-- Danger Zone -->
+              <div class="card" style="border-color:rgba(239,68,68,0.2);">
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;color:var(--red);">⚠️ Danger Zone</div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Freeze Account</div>
+                    <div class="s-desc">Temporarily disable all activity</div>
+                  </div>
+                  <button class="btn btn-danger btn-sm" onclick="showConfirm('This will temporarily disable all account activity. Are you sure?','Freeze Account', ()=>showAlert('Account freeze request sent to support.','⚠️','warning'), 'warning')">Freeze</button>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-info">
+                    <div class="s-title">Close Account</div>
+                    <div class="s-desc">Permanently delete your account</div>
+                  </div>
+                  <button class="btn btn-danger btn-sm" onclick="showConfirm('This will permanently delete your account and all data. This cannot be undone.','Delete Account', ()=>showAlert('Please contact support@Fluxmall Exchange.io to complete account deletion.','❌','danger'), 'danger')">Delete</button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1442,7 +1439,6 @@
         <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-gift-line"></i></span><span class="ns-label">Referral</span></a>
         <a class="nav-sheet-item" href="#tasks" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Tasks</span></a>
         <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-notification-3-line"></i></span><span class="ns-label">Alerts</span></a>
-        <a class="nav-sheet-item" href="#settings" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-settings-3-line"></i></span><span class="ns-label">Settings</span></a>
         <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-user-3-line"></i></span><span class="ns-label">Profile</span></a>
         <div class="nav-sheet-item" style="color: red;" onclick="logoutUser();closeNavSheet()"><span class="ns-icon"><i class="ri-logout-box-r-line"></i></span><span class="ns-label">Logout</span></div>
       </div>
@@ -1551,7 +1547,6 @@
       referral: 'Referral Program',
       plans: 'Investment Plans',
       notifications: 'Notifications',
-      settings: 'Settings',
       support: 'Help & Support',
       profile: 'My Profile'
     };
