@@ -449,7 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1200);
 });
 
-initiateDeposit(4000)
+//initiateDeposit(4000)
 // ─── DEPOSIT INITIATION ───────────────────────────────────
 window.initiateDeposit = async function(amount) {
   if (!document.getElementById('attest')?.checked)
