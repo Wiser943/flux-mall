@@ -464,16 +464,13 @@ window.initiateDeposit = async function(amount) {/*
   if (config.mode === 'korapay' && config.korapay?.publicKey) {
     payWithKorapay(amount, config.korapay.publicKey);
     return;
-  }
-
+}
   // ── Manual bank transfer fallback ────────────────────────
   const refCode  = Math.floor(10000000 + Math.random() * 90000000).toString();
   const bankName = config.manual?.bankName     || 'Contact Admin';
   const accNum   = config.manual?.accountNumber || '0000000000';
   const accName  = config.manual?.accountName  || 'Admin';
   
-console.log(bankName);
-
 showConfirm({
         title: 'Complete Transfer',
         message: 'Proceed to your bank app to complete this transfer.',
@@ -481,7 +478,10 @@ showConfirm({
       <strong style="font-size:1.3rem;font-weight:800;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</strong>
       <div class="bank-details">
         <div class="detail-row"><p style="font-size:0.9rem;color:#666">Transfer the exact amount to:</p></div>
-        <div class="detail-row"><span>Bank:</span><strong>${bankName}</strong></div>
+        <div class="detail-row"><span>Bank:</span>
+        <strong><span>${bankName}</span> <i onclick="copyCode(${bankName})" class="ri-copy-line"></i>
+        </strong>
+        </div>
         <div class="detail-row"><span>Account:</span><strong id="modalAcc">${accNum}</strong></div>
         <div class="detail-row"><span>Name:</span><strong>${accName}</strong></div>
         <hr style="border:0;border-top:1px solid #e2e8f0;margin:15px 0;">
