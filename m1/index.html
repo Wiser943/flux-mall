@@ -1446,7 +1446,7 @@
       });
       
       // ── showAlert (called from script.js) ──
-      function showAlert(message, isSuccess) {
+      function showAlert(message, isSuccess, type="success", desc="Good") {
         const el = document.getElementById('alert-message');
         if (window.navigator?.vibrate) window.navigator.vibrate(100);
         
