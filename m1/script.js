@@ -1211,6 +1211,22 @@ async function updateVerificationUI() {
   const text      = document.getElementById('verificationText');
   const icon      = document.getElementById('verificationIcon');
   if (!container) return;
+  container.innerHTML=`   <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Account Status</div>
+            <div class="flex-center flex-gap-2 mb-4">
+              <span style="font-size:22px;color:var(--green)"><i class="ri-shield-check-line"></i></span>
+              <div>
+                <div style="font-size:13px;font-weight:600;">KYC Verified</div>
+                <div class="text-xs">Full access enabled</div>
+              </div>
+            </div>
+            <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.5px;">ACCOUNT LEVEL</div>
+            <div style="font-weight:700;color:var(--accent2);font-size:18px;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:6px;"><i class="ri-medal-line"></i> Gold Tier</div>
+            <div class="progress-bar mt-4">
+              <div class="progress-fill purple" style="width:74%"></div>
+            </div>
+            <div class="text-xs mt-4">₦26,000 to Platinum</div>
+    `;
+    
   const u = currentUserData;
   if (u.emailVerified) {
     if (text) text.innerText = 'Verified';
