@@ -1235,13 +1235,9 @@ async function updateVerificationUI() {
         <div class="text-xs" id="verificationText">Checking...</div>
       </div>
     </div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.5px;">ACCOUNT LEVEL</div> <
-  div style = "font-weight:700;color:var(--accent2);font-size:18px;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:6px;" > <i class="ri-medal-line"></i>
-  Gold Tier < /div> <
-    div class = "progress-bar mt-4" >
-    <div class="progress-fill purple" style="width:74%"></div> <
-    /div> <
-    div class = "text-xs mt-4" > ₦26, 000 to Platinum < /div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-weight:600;letter-spacing:0.5px;">ACCOUNT LEVEL</div>
+      <div style = "font-weight:700;color:var(--accent2);font-size:18px;font-family:'Syne',sans-serif;display:flex;align-items:center;gap:6px;"> <i class="ri-medal-line"></i>Gold Tier </div> <div class = "progress-bar mt-4">
+    <div class="progress-fill purple" style="width:74%"></div> </div> <div class = "text-xs mt-4"> ₦26, 000 to Platinum </div>
   `;
   
   // 2. Now select the elements we just created
