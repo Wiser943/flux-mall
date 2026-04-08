@@ -16,7 +16,7 @@ async function api(path, options = {}) {
     ...options
   });
   if (res.status === 401) { logoutUser(); return null; }
-
+  
   if (res.json) {
     setTimeout(() => {
       document.querySelector('.loader-container').style.display = 'none';
@@ -47,13 +47,13 @@ async function init() {
   const meRes = await api('/api/auth/me');
   if (!meRes?.success) { logoutUser(); return; }
   currentUserData = meRes.user;
-
+  
   const configRes = await api('/api/user/config');
   if (configRes?.success) {
     const { config, payment, maintenance, wheel } = configRes;
-
+    
     if (maintenance?.enabled) { renderLockScreen('System Maintenance', 'Our site is currently undergoing scheduled upgrades.'); return; }
-
+    
     if (config.siteName) {
       document.querySelectorAll('.site-name').forEach(el => el.innerText = config.siteName);
       document.title = config.siteName;
@@ -65,38 +65,41 @@ async function init() {
         img.onerror = () => img.style.display = 'none';
       });
       let fav = document.querySelector("link[rel='icon']");
-      if (!fav) { fav = document.createElement('link'); fav.rel = 'icon'; document.head.appendChild(fav); }
+      if (!fav) { fav = document.createElement('link');
+        fav.rel = 'icon';
+        document.head.appendChild(fav); }
       fav.href = config.siteLogo;
     }
-
+    
     const ticker = document.getElementById('ticker-wrapper');
     if (ticker && config.announcement?.active) {
       ticker.style.display = 'flex';
       document.querySelectorAll('.ticker-text').forEach(el => el.textContent = config.announcement.text || '');
     } else if (ticker) ticker.style.display = 'none';
-
+    
     if (config.minWithdraw) globalConfig.minWithdraw = config.minWithdraw;
     if (config.withdrawFee !== undefined) globalConfig.withdrawFee = config.withdrawFee;
-
+    
     window.paymentConfig = payment;
-
-    if (wheel?.prizes?.length) { prizes = wheel.prizes; drawWheel(); }
+    
+    if (wheel?.prizes?.length) { prizes = wheel.prizes;
+      drawWheel(); }
   }
-
+  
   // ── Load live FEX rate from server ──────────────────────
   const rateRes = await api('/api/user/fex-rate');
   if (rateRes?.success) {
     FEX_RATE = rateRes.fexRate;
     console.log(`[FEX] Rate loaded: 1 FEX = ₦${FEX_RATE}`);
   }
-
+  
   renderUserUI();
-
+  
   if (currentUserData.status === 'Banned') {
     renderLockScreen('🚫 Account Banned', 'Your account has been suspended for violating our terms of service.');
     return;
   }
-
+  
   loadWithdrawals();
   loadTeamData();
   generateReferralLink();
@@ -108,7 +111,7 @@ async function init() {
   updateVerificationUI();
   fetchUserHistory();
   pollNotifications();
-
+  
   const today = new Date().toDateString();
   if (currentUserData.lastCheckIn === today) {
     const btn = document.getElementById('checkinBtn');
@@ -123,15 +126,15 @@ function renderUserUI() {
   document.querySelectorAll('.avtr').forEach(el => {
     el.innerHTML = u.username?.slice(0, 1).toUpperCase() || '??';
   });
-
-  const fexBal  = Number(u.ib) || 0;
+  
+  const fexBal = Number(u.ib) || 0;
   const nairaEq = (fexBal * FEX_RATE).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fexFmt  = fexBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
+  const fexFmt = fexBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  
   document.querySelectorAll('.balance').forEach(el => {
     el.innerHTML = `${fexFmt} <small style="font-size:0.6em;opacity:0.6;font-weight:400;">FEX</small>`;
   });
-
+  
   document.querySelectorAll('.balance-naira').forEach(el => {
     el.innerHTML = `≈ ₦${nairaEq}`;
   });
@@ -150,11 +153,11 @@ async function loadWithdrawals() {
   }
   data.withdrawals.forEach(d => {
     const badgeClass = d.status === 'pending' ? 'badge-pending' : d.status === 'success' ? 'badge-success' : 'badge-declined';
-    const dateStr    = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'Just now';
-    const rate       = d.fexRate || FEX_RATE;
-    const nairaStr   = d.nairaAmount
-      ? `₦${Number(d.nairaAmount).toLocaleString()}`
-      : `₦${(Number(d.amount) * rate).toLocaleString()}`;
+    const dateStr = d.createdAt ? new Date(d.createdAt).toLocaleDateString() : 'Just now';
+    const rate = d.fexRate || FEX_RATE;
+    const nairaStr = d.nairaAmount ?
+      `₦${Number(d.nairaAmount).toLocaleString()}` :
+      `₦${(Number(d.amount) * rate).toLocaleString()}`;
     list.innerHTML += `
       <div class="history-item">
         <div class="tx-details">
@@ -170,14 +173,14 @@ async function loadWithdrawals() {
 // TRANSACTIONS ENGINE
 // ======================================================
 const TXN_ENDPOINTS = {
-  deposit:    '/api/user/deposits',
+  deposit: '/api/user/deposits',
   withdrawal: '/api/user/withdrawals',
-  activity:   '/api/user/activity',
+  activity: '/api/user/activity',
 };
 
 const txnCache = { deposit: null, withdrawal: null, activity: null };
-let txnFiltered  = [];
-let txnPage      = 1;
+let txnFiltered = [];
+let txnPage = 1;
 const TXN_PER_PAGE = 10;
 
 function initTransactions() {
@@ -197,12 +200,12 @@ async function fetchEndpoint(type) {
   if (txnCache[type] !== null) return txnCache[type];
   const json = await api(TXN_ENDPOINTS[type]);
   if (!json) throw new Error(`${type}: unauthorized or failed`);
-  const rows = Array.isArray(json) ? json
-    : json.data        ? json.data
-    : json.transactions ? json.transactions
-    : json.deposits    ? json.deposits
-    : json.withdrawals ? json.withdrawals
-    : json.activity    ? json.activity : [];
+  const rows = Array.isArray(json) ? json :
+    json.data ? json.data :
+    json.transactions ? json.transactions :
+    json.deposits ? json.deposits :
+    json.withdrawals ? json.withdrawals :
+    json.activity ? json.activity : [];
   const tagged = rows.map(r => ({ ...r, _type: type }));
   txnCache[type] = tagged;
   return tagged;
@@ -244,10 +247,10 @@ async function loadTransactions(type) {
 function applyTxnFilters() {
   const status = document.getElementById('txnStatusFilter').value;
   const search = document.getElementById('txnSearch').value.trim().toLowerCase();
-  const type   = document.getElementById('txnTypeFilter').value;
-  let rows = type === 'all'
-    ? [...(txnCache.deposit||[]), ...(txnCache.withdrawal||[]), ...(txnCache.activity||[])]
-    : (txnCache[type] || []);
+  const type = document.getElementById('txnTypeFilter').value;
+  let rows = type === 'all' ?
+    [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
+    (txnCache[type] || []);
   if (status !== 'all') rows = rows.filter(r => (r.status || '').toLowerCase() === status);
   if (search) rows = rows.filter(r => JSON.stringify(r).toLowerCase().includes(search));
   txnFiltered = rows;
@@ -266,12 +269,12 @@ function renderTxnTable() {
 }
 
 function buildTxnRow(r) {
-  const type    = r._type || 'activity';
-  const status  = (r.status || 'pending').toLowerCase();
-  const amount  = r.amount || 0;
-  const ref     = r.reference || r.ref || r.txn_id || r._id || '—';
+  const type = r._type || 'activity';
+  const status = (r.status || 'pending').toLowerCase();
+  const amount = r.amount || 0;
+  const ref = r.reference || r.ref || r.txn_id || r._id || '—';
   const dateRaw = r.createdAt || r.date;
-  const date    = dateRaw ? new Date(dateRaw).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+  const date = dateRaw ? new Date(dateRaw).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
   return `<tr>
     <td>${buildTypeBadge(type)}</td>
     <td style="max-width:180px;">${buildAmountStr(type, amount)}</td>
@@ -283,38 +286,38 @@ function buildTxnRow(r) {
 
 function buildTypeBadge(type) {
   const map = {
-    deposit:    'background:var(--blue-bg);color:var(--blue)',
+    deposit: 'background:var(--blue-bg);color:var(--blue)',
     withdrawal: 'background:var(--red-bg);color:var(--red)',
-    activity:   'background:var(--accent-glow);color:var(--accent2)',
+    activity: 'background:var(--accent-glow);color:var(--accent2)',
   };
   return `<span class="badge" style="${map[type]||''}">${type.charAt(0).toUpperCase()+type.slice(1)}</span>`;
 }
 
 function buildStatusBadge(status) {
-  const map = { success:'success', pending:'pending', failed:'failed', warning:'pending' };
+  const map = { success: 'success', pending: 'pending', failed: 'failed', warning: 'pending' };
   return `<span class="badge ${map[status]||'pending'}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>`;
 }
 
 function buildAmountStr(type, amount) {
-  const num     = parseFloat(amount) || 0;
-  const naira   = (num * FEX_RATE).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-  const fexFmt  = num.toLocaleString('en-US', { minimumFractionDigits: 2 });
+  const num = parseFloat(amount) || 0;
+  const naira = (num * FEX_RATE).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+  const fexFmt = num.toLocaleString('en-US', { minimumFractionDigits: 2 });
   const isCredit = type === 'deposit' || type === 'activity';
-  const color   = isCredit ? 'var(--green)' : 'var(--red)';
-  const sign    = isCredit ? '+' : '-';
+  const color = isCredit ? 'var(--green)' : 'var(--red)';
+  const sign = isCredit ? '+' : '-';
   return `<span style="color:${color};font-weight:500;">${sign}🪙${fexFmt}</span><br>
           <span style="font-size:10px;color:var(--text3);">≈ ₦${naira}</span>`;
 }
 
 function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function renderPagination() {
-  const total      = txnFiltered.length;
+  const total = txnFiltered.length;
   const totalPages = Math.ceil(total / TXN_PER_PAGE);
-  const start      = (txnPage - 1) * TXN_PER_PAGE + 1;
-  const end        = Math.min(txnPage * TXN_PER_PAGE, total);
+  const start = (txnPage - 1) * TXN_PER_PAGE + 1;
+  const end = Math.min(txnPage * TXN_PER_PAGE, total);
   document.getElementById('txnPageInfo').textContent = `Showing ${start}–${end} of ${total} transactions`;
   document.getElementById('txnPrevBtn').disabled = txnPage <= 1;
   document.getElementById('txnNextBtn').disabled = txnPage >= totalPages;
@@ -325,7 +328,8 @@ function renderPagination() {
     b.className = 'btn btn-ghost btn-sm';
     b.style.cssText = p === txnPage ? 'background:var(--accent);color:#fff;min-width:32px;' : 'min-width:32px;';
     b.textContent = p;
-    b.onclick = () => { txnPage = p; renderTxnTable(); };
+    b.onclick = () => { txnPage = p;
+      renderTxnTable(); };
     btnsEl.appendChild(b);
   });
   document.getElementById('txnPagination').style.display = totalPages > 1 ? 'flex' : 'none';
@@ -333,7 +337,7 @@ function renderPagination() {
 
 function getPageRange(current, total, size) {
   let start = Math.max(1, current - Math.floor(size / 2));
-  let end   = Math.min(total, start + size - 1);
+  let end = Math.min(total, start + size - 1);
   if (end - start + 1 < size) start = Math.max(1, end - size + 1);
   const range = [];
   for (let i = start; i <= end; i++) range.push(i);
@@ -347,44 +351,44 @@ function changeTxnPage(dir) {
 }
 
 function renderSummaryPills() {
-  const type   = document.getElementById('txnTypeFilter').value;
-  const source = type === 'all'
-    ? [...(txnCache.deposit||[]), ...(txnCache.withdrawal||[]), ...(txnCache.activity||[])]
-    : (txnCache[type] || []);
+  const type = document.getElementById('txnTypeFilter').value;
+  const source = type === 'all' ?
+    [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
+    (txnCache[type] || []);
   // Summary pill elements are commented out in HTML — kept here for easy re-enable
   void source;
 }
 
 function logTxnTotals() {
   const types = ['deposit', 'withdrawal', 'activity'];
-
+  
   const updateUI = (id, value) => {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   };
-
+  
   console.group('%c[FluxMall] Transaction Totals', 'color:#8b85ff;font-weight:700;font-size:13px;');
-
+  
   types.forEach(type => {
     const rows = txnCache[type];
     if (!rows) return;
-
-    const success = rows.filter(r => (r.status||'').toLowerCase() === 'success');
-    const pending = rows.filter(r => (r.status||'').toLowerCase() === 'pending');
-    const failed  = rows.filter(r => (r.status||'').toLowerCase() === 'failed');
-    const warning = rows.filter(r => (r.status||'').toLowerCase() === 'warning');
-
-    const sumFex   = arr => arr.reduce((s, r) => s + (parseFloat(r.amount)||0), 0);
+    
+    const success = rows.filter(r => (r.status || '').toLowerCase() === 'success');
+    const pending = rows.filter(r => (r.status || '').toLowerCase() === 'pending');
+    const failed = rows.filter(r => (r.status || '').toLowerCase() === 'failed');
+    const warning = rows.filter(r => (r.status || '').toLowerCase() === 'warning');
+    
+    const sumFex = arr => arr.reduce((s, r) => s + (parseFloat(r.amount) || 0), 0);
     const sumNaira = arr => (sumFex(arr) * FEX_RATE).toFixed(2);
-
+    
     updateUI(`${type}-total-count`, rows.length);
-    [{ name:'success', data:success },{ name:'pending', data:pending },{ name:'failed', data:failed },{ name:'warning', data:warning }]
-      .forEach(s => {
-        updateUI(`${type}-${s.name}-count`, s.data.length);
-        updateUI(`${type}-${s.name}-fex`,   sumFex(s.data).toLocaleString());
-        updateUI(`${type}-${s.name}-naira`, sumNaira(s.data));
-      });
-
+    [{ name: 'success', data: success }, { name: 'pending', data: pending }, { name: 'failed', data: failed }, { name: 'warning', data: warning }]
+    .forEach(s => {
+      updateUI(`${type}-${s.name}-count`, s.data.length);
+      updateUI(`${type}-${s.name}-fex`, sumFex(s.data).toLocaleString());
+      updateUI(`${type}-${s.name}-naira`, sumNaira(s.data));
+    });
+    
     console.group(`%c${type.toUpperCase()}`, 'color:#f0f2f8;font-weight:600;');
     console.log(`  Total records : ${rows.length}`);
     console.log(`  ✅ Success     : ${success.length}  (🪙${sumFex(success).toLocaleString()} FEX = ₦${sumNaira(success)})`);
@@ -393,15 +397,15 @@ function logTxnTotals() {
     if (warning.length) console.log(`  ⚠️  Warning     : ${warning.length}  (🪙${sumFex(warning).toLocaleString()} FEX = ₦${sumNaira(warning)})`);
     console.groupEnd();
   });
-
+  
   console.groupEnd();
 }
 
 function showTxnState(state) {
-  document.getElementById('txnLoading').style.display    = state === 'loading' ? 'block' : 'none';
-  document.getElementById('txnError').style.display      = state === 'error'   ? 'block' : 'none';
-  document.getElementById('txnEmpty').style.display      = state === 'empty'   ? 'block' : 'none';
-  document.getElementById('txnTableWrap').style.display  = state === 'table'   ? 'block' : 'none';
+  document.getElementById('txnLoading').style.display = state === 'loading' ? 'block' : 'none';
+  document.getElementById('txnError').style.display = state === 'error' ? 'block' : 'none';
+  document.getElementById('txnEmpty').style.display = state === 'empty' ? 'block' : 'none';
+  document.getElementById('txnTableWrap').style.display = state === 'table' ? 'block' : 'none';
   if (state !== 'table') document.getElementById('txnSummaryBar').style.display = 'none';
 }
 
@@ -418,21 +422,23 @@ function refreshTransactions() {
 
 function exportTxnCSV() {
   if (!txnFiltered.length) { showAlert('No transactions to export.', 'warning', 'ri-close-line', 'Empty'); return; }
-  const headers = ['Description','Type','FEX Amount','Naira Equiv','Date','Status','Reference'];
+  const headers = ['Description', 'Type', 'FEX Amount', 'Naira Equiv', 'Date', 'Status', 'Reference'];
   const rows = txnFiltered.map(r => [
     r.description || r.narration || r._type || '',
     r._type || '',
     r.amount || 0,
-    ((parseFloat(r.amount)||0) * FEX_RATE).toFixed(2),
+    ((parseFloat(r.amount) || 0) * FEX_RATE).toFixed(2),
     r.createdAt || r.date || '',
     r.status || '',
     r.reference || r.ref || r._id || '',
   ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(','));
-  const csv  = [headers.join(','), ...rows].join('\n');
+  const csv = [headers.join(','), ...rows].join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = `transactions_${Date.now()}.csv`; a.click();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `transactions_${Date.now()}.csv`;
+  a.click();
   URL.revokeObjectURL(url);
   showAlert('CSV downloaded', 'success', 'ri-download-line', 'Done');
 }
@@ -451,30 +457,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //initiateDeposit(4000)
 // ─── DEPOSIT INITIATION ───────────────────────────────────
-window.initiateDeposit = async function(amount) {/*
-  if (!document.getElementById('attest')?.checked)
-    return showAlert('Please read and accept before proceeding.', 'warning', 'ri-close-line', 'Attestation');
-*/
+window.initiateDeposit = async function(amount) {
+  /*
+    if (!document.getElementById('attest')?.checked)
+      return showAlert('Please read and accept before proceeding.', 'warning', 'ri-close-line', 'Attestation');
+  */
   amount = Number(amount);
   if (!amount) return showAlert('Enter valid amount (Minimum 3000)', 'error', 'ri-close-line', 'Invalid Amount');
-
+  
   const config = window.paymentConfig || {};
-
+  
   // ── Korapay mode: use custom modal instead of Korapay popup ──
   if (config.mode === 'korapay' && config.korapay?.publicKey) {
     payWithKorapay(amount, config.korapay.publicKey);
     return;
-}
+  }
   // ── Manual bank transfer fallback ────────────────────────
-  const refCode  = Math.floor(10000000 + Math.random() * 90000000).toString();
-  const bankName = config.manual?.bankName     || 'Contact Admin';
-  const accNum   = config.manual?.accountNumber || '0000000000';
-  const accName  = config.manual?.accountName  || 'Admin';
+  const refCode = Math.floor(10000000 + Math.random() * 90000000).toString();
+  const bankName = config.manual?.bankName || 'Contact Admin';
+  const accNum = config.manual?.accountNumber || '0000000000';
+  const accName = config.manual?.accountName || 'Admin';
   
-showConfirm({
-        title: 'Complete Transfer',
-        message: 'Proceed to your bank app to complete this transfer.',
-        detail:`  
+  showConfirm({
+    title: 'Complete Transfer',
+    message: 'Proceed to your bank app to complete this transfer.',
+    detail: `  
       <strong style="font-size:1.3rem;font-weight:800;">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</strong>
       <div class="bank-details">
         <div class="detail-row"><p style="font-size:0.9rem;color:#666">Transfer the exact amount to:</p></div>
@@ -494,23 +501,24 @@ showConfirm({
           <span style="font-size:0.75rem;color:#666;text-transform:uppercase;font-weight:bold;">Use this Reference as Narration</span>
           <span class="ref-box" id="modalRef">${refCode}</span>
       `,
-        yesText: 'Done',
-        noText: 'Cancel',
-        onConfirm: async function() {
-// closeModal();
- const fexAmount = parseFloat((amount / FEX_RATE).toFixed(2));
- const data = await api('/api/user/deposit', {
-   method: 'POST',
-   body: JSON.stringify({ amount: fexAmount, method: 'Bank Transfer', refCode: refCode || 'MAN_' + Date.now(), status: 'pending' })
- });
- if (data?.success) {
-   showAlert('Deposit submitted! Awaiting admin approval.', 'info', 'ri-check-line', 'Submitted');
- } else {
-   showAlert(data?.error || 'Error submitting deposit.', 'error', 'ri-close-line', 'Error');
- }     },
-        onCancel: function() {}
+    yesText: 'Done',
+    noText: 'Cancel',
+    onConfirm: async function() {
+      // closeModal();
+      const fexAmount = parseFloat((amount / FEX_RATE).toFixed(2));
+      const data = await api('/api/user/deposit', {
+        method: 'POST',
+        body: JSON.stringify({ amount: fexAmount, method: 'Bank Transfer', refCode: refCode || 'MAN_' + Date.now(), status: 'pending' })
       });
-      //to be pasted
+      if (data?.success) {
+        showAlert('Deposit submitted! Awaiting admin approval.', 'info', 'ri-check-line', 'Submitted');
+      } else {
+        showAlert(data?.error || 'Error submitting deposit.', 'error', 'ri-close-line', 'Error');
+      }
+    },
+    onCancel: function() {}
+  });
+  //to be pasted
 };
 
 /*
@@ -543,26 +551,26 @@ window.payWithKorapay = async (amount, _key) => {
       <p style="color:var(--text3);font-size:12px;margin-top:6px;">This takes a few seconds</p>
     </div>`;
   document.body.appendChild(loadingModal);
-
+  
   try {
     // Step 2 — ask server to create a Korapay virtual account charge
     const data = await api('/api/user/initiate-korapay', {
       method: 'POST',
       body: JSON.stringify({ amount })
     });
-
+    
     closeModal(); // remove loading modal
-
+    
     if (!data?.success) {
       return showAlert(data?.error || 'Could not initialize payment. Try again.', 'error', 'ri-close-line', 'Error');
     }
-
+    
     // Step 3 — show our own custom modal with the bank details
     const fexToCredit = parseFloat((amount / FEX_RATE).toFixed(2));
-    const expiryText  = data.expiresAt
-      ? `⏱ Expires at ${new Date(data.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-      : '⏱ Valid for this session only';
-
+    const expiryText = data.expiresAt ?
+      `⏱ Expires at ${new Date(data.expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` :
+      '⏱ Valid for this session only';
+    
     const modal = document.createElement('div');
     modal.id = 'paymentModal';
     modal.className = 'modal-overlay';
@@ -617,7 +625,7 @@ window.payWithKorapay = async (amount, _key) => {
         </button>
       </div>`;
     document.body.appendChild(modal);
-
+    
   } catch (err) {
     closeModal();
     showAlert('Something went wrong. Please try again.', 'error', 'ri-close-line', 'Error');
@@ -633,10 +641,10 @@ window.confirmKorapayDeposit = async (reference, fexAmount) => {
   const data = await api('/api/user/deposit', {
     method: 'POST',
     body: JSON.stringify({
-      amount:  fexAmount,
-      method:  'Korapay',
+      amount: fexAmount,
+      method: 'Korapay',
       refCode: reference,
-      status:  'pending'
+      status: 'pending'
     })
   });
   if (data?.success) {
@@ -651,8 +659,8 @@ window.confirmKorapayDeposit = async (reference, fexAmount) => {
 window.handleWithdrawalSubmit = async () => {
   const fexAmount = Number(document.getElementById('withdrawAmount').value);
   const btn = document.getElementById('withdrawBtn');
-  const u   = currentUserData;
-
+  const u = currentUserData;
+  
   if (!u.bankDetails?.accountNumber)
     return showAlert('Please bind your Bank Account in the Profile section first.', 'warning', 'ri-close-line', 'Bank Required');
   if (!u.emailVerified)
@@ -661,28 +669,28 @@ window.handleWithdrawalSubmit = async () => {
     return showAlert('Enter a valid FEX amount.', 'warning', 'ri-close-line', 'Invalid Amount');
   if (fexAmount > u.ib)
     return showAlert('Insufficient FEX balance.', 'warning', 'ri-close-line', 'Insufficient');
-
+  
   const conv = await api('/api/user/convert-fex', {
     method: 'POST',
     body: JSON.stringify({ fexAmount })
   });
-
+  
   if (!conv?.success)
     return showAlert(conv?.error || 'Could not fetch conversion rate.', 'error', 'ri-close-line', 'Error');
-
+  
   const { naira, fexRate } = conv;
   const fee = parseFloat(((naira * globalConfig.withdrawFee) / 100).toFixed(2));
   const net = parseFloat((naira - fee).toFixed(2));
-
+  
   if (!confirm(
-    `Withdraw: 🪙${fexAmount.toLocaleString()} FEX\n` +
-    `Rate: 1 FEX = ₦${fexRate}\n` +
-    `Naira Value: ₦${naira.toLocaleString()}\n` +
-    `Fee (${globalConfig.withdrawFee}%): ₦${fee.toLocaleString()}\n` +
-    `You receive: ₦${net.toLocaleString()}\n\nConfirm?`
-  )) return;
-
-  btn.disabled  = true;
+      `Withdraw: 🪙${fexAmount.toLocaleString()} FEX\n` +
+      `Rate: 1 FEX = ₦${fexRate}\n` +
+      `Naira Value: ₦${naira.toLocaleString()}\n` +
+      `Fee (${globalConfig.withdrawFee}%): ₦${fee.toLocaleString()}\n` +
+      `You receive: ₦${net.toLocaleString()}\n\nConfirm?`
+    )) return;
+  
+  btn.disabled = true;
   btn.innerText = 'Processing...';
   try {
     const data = await api('/api/user/withdraw', {
@@ -700,21 +708,21 @@ window.handleWithdrawalSubmit = async () => {
   } catch (err) {
     showAlert('Something went wrong.', 'warning', 'ri-close-line', 'Error');
   } finally {
-    btn.disabled  = false;
+    btn.disabled = false;
     btn.innerText = 'Confirm Withdrawal';
   }
 };
 
 window.updateWithdrawPreview = () => {
-  const fex   = Number(document.getElementById('withdrawAmount').value) || 0;
+  const fex = Number(document.getElementById('withdrawAmount').value) || 0;
   const naira = parseFloat((fex * FEX_RATE).toFixed(2));
-  const fee   = parseFloat(((naira * globalConfig.withdrawFee) / 100).toFixed(2));
-  const net   = parseFloat((naira - fee).toFixed(2));
-  const el    = document.getElementById('netAmount');
+  const fee = parseFloat(((naira * globalConfig.withdrawFee) / 100).toFixed(2));
+  const net = parseFloat((naira - fee).toFixed(2));
+  const el = document.getElementById('netAmount');
   if (el) {
-    el.innerHTML = fex > 0
-      ? `₦${net.toLocaleString()} <span style="font-size:11px;opacity:0.6;">(🪙${fex.toLocaleString()} FEX @ ₦${FEX_RATE}/FEX)</span>`
-      : '₦0.00';
+    el.innerHTML = fex > 0 ?
+      `₦${net.toLocaleString()} <span style="font-size:11px;opacity:0.6;">(🪙${fex.toLocaleString()} FEX @ ₦${FEX_RATE}/FEX)</span>` :
+      '₦0.00';
   }
 };
 
@@ -723,11 +731,11 @@ async function initBankSync() {
   const u = currentUserData;
   await loadBanksDropdown();
   if (u.bankDetails?.accountNumber) {
-    const b  = u.bankDetails;
+    const b = u.bankDetails;
     const an = document.getElementById('accNumber');
     const ac = document.getElementById('accName');
     if (an) an.value = b.accountNumber || '';
-    if (ac) ac.value = b.accountName  || '';
+    if (ac) ac.value = b.accountName || '';
     const bn = document.getElementById('bankName');
     if (bn) {
       const match = Array.from(bn.options).find(o => o.text === b.bankName || o.value === b.bankCode);
@@ -737,8 +745,10 @@ async function initBankSync() {
   const isMasterLocked = window.paymentConfig?.globalBankLock || false;
   const saveBtn = document.getElementById('saveBtn');
   if (isMasterLocked && u.bankDetails?.accountNumber) {
-    ['bankName','accNumber','accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.innerText = 'Contact support'; saveBtn.style.display = 'none'; }
+    ['bankName', 'accNumber', 'accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+    if (saveBtn) { saveBtn.disabled = true;
+      saveBtn.innerText = 'Contact support';
+      saveBtn.style.display = 'none'; }
     const msg = document.getElementById('status-msg');
     if (msg) msg.innerText = 'This feature is currently unavailable';
   }
@@ -758,7 +768,7 @@ async function loadBanksDropdown() {
     data.banks.forEach(bank => {
       const opt = document.createElement('option');
       opt.value = bank.code;
-      opt.text  = bank.name;
+      opt.text = bank.name;
       opt.dataset.name = bank.name;
       select.appendChild(opt);
     });
@@ -775,15 +785,15 @@ let verifyTimer = null;
 window.handleAccNumberInput = (value) => {
   clearTimeout(verifyTimer);
   const statusEl = document.getElementById('verifyStatus');
-  const accName  = document.getElementById('accName');
-  if (accName)  accName.value   = '';
+  const accName = document.getElementById('accName');
+  if (accName) accName.value = '';
   if (statusEl) statusEl.innerHTML = '';
   if (value.length !== 10) return;
-
+  
   const bankCode = document.getElementById('bankName')?.value;
-
+  
   if (bankCode) { verifyAccount(value); return; }
-
+  
   if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">🔍 Detecting bank...</span>';
   verifyTimer = setTimeout(async () => {
     try {
@@ -807,9 +817,9 @@ window.handleAccNumberInput = (value) => {
 
 async function verifyAccount(accountNumber) {
   const bankSelect = document.getElementById('bankName');
-  const statusEl   = document.getElementById('verifyStatus');
-  const accName    = document.getElementById('accName');
-  const bankCode   = bankSelect?.value;
+  const statusEl = document.getElementById('verifyStatus');
+  const accName = document.getElementById('accName');
+  const bankCode = bankSelect?.value;
   if (!bankCode) {
     if (statusEl) statusEl.innerHTML = '<span style="color:orange">⚠️ Please select a bank first</span>';
     return;
@@ -820,23 +830,23 @@ async function verifyAccount(accountNumber) {
     body: JSON.stringify({ accountNumber, bankCode })
   });
   if (data?.success) {
-    if (accName)  accName.value   = data.accountName;
+    if (accName) accName.value = data.accountName;
     if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName}</span>`;
   } else {
-    if (accName)  accName.value   = '';
+    if (accName) accName.value = '';
     if (statusEl) statusEl.innerHTML = `<span style="color:red">❌ ${data?.error || 'Verification failed'}</span>`;
   }
 }
 
 window.handleSave = async () => {
   const bankSelect = document.getElementById('bankName');
-  const bankCode   = bankSelect?.value;
-  const bankLabel  = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
-  const aNum       = document.getElementById('accNumber').value.trim();
-  const aName      = document.getElementById('accName').value.trim();
-  if (!bankCode)          return showAlert('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
+  const bankCode = bankSelect?.value;
+  const bankLabel = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
+  const aNum = document.getElementById('accNumber').value.trim();
+  const aName = document.getElementById('accName').value.trim();
+  if (!bankCode) return showAlert('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
   if (aNum.length !== 10) return showAlert('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (!aName)             return showAlert('Account not verified yet.', 'warning', 'ri-close-line', 'Not Verified');
+  if (!aName) return showAlert('Account not verified yet.', 'warning', 'ri-close-line', 'Not Verified');
   const data = await api('/api/user/bank-details', {
     method: 'PUT',
     body: JSON.stringify({ bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName })
@@ -851,11 +861,11 @@ window.handleSave = async () => {
 
 // ─── DEPOSIT AMOUNTS ─────────────────────────────────────
 const amountListDiv = document.getElementById('amountGrid');
-const confirmInput  = document.getElementById('customAmount');
-const confirmBtn    = document.getElementById('rechargeBtn');
+const confirmInput = document.getElementById('customAmount');
+const confirmBtn = document.getElementById('rechargeBtn');
 
 async function fetchAmounts() {
-  const data    = await api('/api/user/deposit-amounts');
+  const data = await api('/api/user/deposit-amounts');
   const amounts = data?.amounts?.length ? data.amounts : [3000, 5000, 10000];
   displayAmounts(amounts);
 }
@@ -942,11 +952,11 @@ async function loadMyInvestments() {
   }
   data.investments.forEach(d => {
     const purchaseDate = new Date(d.purchaseDate);
-    const now          = new Date();
-    const daysPassed   = Math.floor(Math.abs(now - purchaseDate) / (1000 * 60 * 60 * 24));
-    const remaining    = d.duration - daysPassed;
-    const progressPct  = Math.min(100, (daysPassed / d.duration) * 100);
-
+    const now = new Date();
+    const daysPassed = Math.floor(Math.abs(now - purchaseDate) / (1000 * 60 * 60 * 24));
+    const remaining = d.duration - daysPassed;
+    const progressPct = Math.min(100, (daysPassed / d.duration) * 100);
+    
     container.innerHTML += `
       <div class="card" style="border-left:3px solid var(--green);">
         <div class="flex-between mb-4">
@@ -989,12 +999,12 @@ async function collectDailyEarnings() {
 async function loadTeamData() {
   const teamContainer = document.getElementById('teamContainer');
   if (!teamContainer) return;
-
+  
   const data = await api('/api/user/team');
   if (!data?.success) return;
-
+  
   const users = data.level1.users || [];
-
+  
   if (users.length === 0) {
     teamContainer.innerHTML = `
       <div style="text-align:center;padding:3rem;color:var(--text3);border:1px dashed rgba(255,255,255,0.1);border-radius:12px;">
@@ -1003,16 +1013,16 @@ async function loadTeamData() {
       </div>`;
     return;
   }
-
+  
   let tableRows = '';
   users.forEach(u => {
-    const date = u.createdAt
-      ? new Date(u.createdAt).toLocaleDateString('en-NG', { month:'short', day:'2-digit', year:'numeric' })
-      : '—';
-    const status      = (u.status || 'pending').toLowerCase();
-    const isSuccess   = status === 'active' || status === 'success';
-    const badgeClass  = isSuccess ? 'success' : 'pending';
-    const statusText  = isSuccess ? 'Active' : 'Pending';
+    const date = u.createdAt ?
+      new Date(u.createdAt).toLocaleDateString('en-NG', { month: 'short', day: '2-digit', year: 'numeric' }) :
+      '—';
+    const status = (u.status || 'pending').toLowerCase();
+    const isSuccess = status === 'active' || status === 'success';
+    const badgeClass = isSuccess ? 'success' : 'pending';
+    const statusText = isSuccess ? 'Active' : 'Pending';
     const earnedAmount = u.earned || (isSuccess ? 1200 : 0);
     const amountColor = earnedAmount > 0 ? 'var(--green)' : 'var(--yellow)';
     tableRows += `
@@ -1023,7 +1033,7 @@ async function loadTeamData() {
         <td style="color:${amountColor};font-weight:600;">₦${earnedAmount.toLocaleString()}</td>
       </tr>`;
   });
-
+  
   teamContainer.innerHTML = `
     <div class="table-wrap">
       <table>
@@ -1041,7 +1051,7 @@ async function loadTeamData() {
 function generateReferralLink() {
   if (!currentUserData) return;
   const refId = currentUserData.uid || currentUserData._id;
-  const link  = `${window.location.origin}/m2/index.html?ref=${refId}#signup-page`;
+  const link = `${window.location.origin}/m2/index.html?ref=${refId}#signup-page`;
   document.getElementById('refLink').innerHTML = `
     <div class="card">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referral Code</div>
@@ -1065,10 +1075,10 @@ function generateReferralLink() {
 
 // ─── SPIN WHEEL ───────────────────────────────────────────
 const canvas = document.getElementById('wheelCanvas');
-const ctx    = canvas?.getContext('2d');
-let prizes          = [];
+const ctx = canvas?.getContext('2d');
+let prizes = [];
 let currentRotation = 0;
-let isSpinning      = false;
+let isSpinning = false;
 
 function drawWheel() {
   if (!ctx || !prizes.length) return;
@@ -1125,7 +1135,7 @@ async function pollNotifications() {
   const data = await api('/api/user/notifications');
   if (data?.success && data.notifications.length > lastNotifCount) {
     const latest = data.notifications[0];
-    const age    = (Date.now() - new Date(latest.createdAt).getTime()) / 1000;
+    const age = (Date.now() - new Date(latest.createdAt).getTime()) / 1000;
     if (age < 30) showAlert(`${latest.title}\n${latest.message}`, 'info', 'ri-information-line', 'Notification');
     lastNotifCount = data.notifications.length;
   }
@@ -1138,40 +1148,40 @@ let _activityData = [];
 window.fetchUserHistory = async () => {
   const list = document.getElementById('historyList');
   if (!list) return;
-
+  
   list.innerHTML = '<small class="loading">Loading</small>';
-
+  
   const data = await api('/api/user/activity');
   if (!data?.success) {
     list.innerHTML = '<div class="error">Failed to load history.</div>';
     return;
   }
-
+  
   if (!data.activity?.length) {
     list.innerHTML = '<small class="loading">No recent transactions</small>';
     return;
   }
-
+  
   _activityData = data.activity;
-
+  
   const config = {
-    checkin:    { icon: 'ri-gift-line',       class: 'credit' },
-    'Check-in': { icon: 'ri-gift-line',       class: 'credit' },
-    Deposit:    { icon: 'ri-arrow-down-line', class: 'credit' },
-    deposit:    { icon: 'ri-arrow-down-line', class: 'credit' },
-    share:      { icon: 'ri-time-line',       class: 'pending' },
-    Share:      { icon: 'ri-time-line',       class: 'pending' },
-    Shares:     { icon: 'ri-time-line',       class: 'pending' },
-    Withdrawal: { icon: 'ri-arrow-up-line',   class: 'debit' },
-    withdrawal: { icon: 'ri-arrow-up-line',   class: 'debit' },
+    checkin: { icon: 'ri-gift-line', class: 'credit' },
+    'Check-in': { icon: 'ri-gift-line', class: 'credit' },
+    Deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
+    deposit: { icon: 'ri-arrow-down-line', class: 'credit' },
+    share: { icon: 'ri-time-line', class: 'pending' },
+    Share: { icon: 'ri-time-line', class: 'pending' },
+    Shares: { icon: 'ri-time-line', class: 'pending' },
+    Withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' },
+    withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' },
   };
-
+  
   list.innerHTML = '';
   data.activity.forEach(item => {
-    const date       = new Date(item.createdAt).toLocaleDateString();
+    const date = new Date(item.createdAt).toLocaleDateString();
     const typeConfig = config[item.type] || { icon: 'ri-exchange-line', class: 'credit' };
-    const div        = document.createElement('div');
-    div.className    = 'txn-item';
+    const div = document.createElement('div');
+    div.className = 'txn-item';
     div.innerHTML = `
       <div class="txn-icon ${typeConfig.class}">
         <i class="${typeConfig.icon}"></i>
@@ -1185,42 +1195,42 @@ window.fetchUserHistory = async () => {
       </div>`;
     list.appendChild(div);
   });
-
+  
   renderActivityChart('7D');
 };
 
 window.renderActivityChart = function(range) {
-  const chartEl  = document.getElementById('activityChart');
+  const chartEl = document.getElementById('activityChart');
   const labelsEl = document.getElementById('activityChartLabels');
   if (!chartEl || !labelsEl) return;
-
-  const now  = new Date();
-  let days   = 7;
+  
+  const now = new Date();
+  let days = 7;
   if (range === '30D') days = 30;
   if (range === '90D') days = 90;
-
+  
   const buckets = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(now.getDate() - i);
     buckets.push({ date: d.toDateString(), label: d.toLocaleDateString('en-NG', { weekday: 'short' }), total: 0 });
   }
-
+  
   _activityData.forEach(item => {
     const itemDate = new Date(item.createdAt).toDateString();
-    const bucket   = buckets.find(b => b.date === itemDate);
+    const bucket = buckets.find(b => b.date === itemDate);
     if (bucket) bucket.total += parseFloat(item.amount) || 0;
   });
-
-  const max        = Math.max(...buckets.map(b => b.total), 1);
+  
+  const max = Math.max(...buckets.map(b => b.total), 1);
   const labelEvery = days <= 7 ? 1 : days <= 30 ? 5 : 15;
-
+  
   chartEl.innerHTML = buckets.map((b) => {
-    const pct     = Math.max(6, Math.round((b.total / max) * 100));
+    const pct = Math.max(6, Math.round((b.total / max) * 100));
     const isToday = b.date === now.toDateString();
     return `<div class="bar${isToday ? ' active' : ''}" style="height:${pct}%;flex:1;" title="${b.label}: 🪙${b.total.toLocaleString()} FEX"></div>`;
   }).join('');
-
+  
   labelsEl.innerHTML = buckets.map((b, i) =>
     (i % labelEvery === 0 || i === buckets.length - 1) ? `<span>${b.label}</span>` : `<span></span>`
   ).join('');
@@ -1230,25 +1240,21 @@ window.renderActivityChart = function(range) {
 async function updateVerificationUI() {
   const container = document.getElementById('verifiedStatus');
   if (!container) return;
-
+  
   container.innerHTML = `
-    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Account Status</div>
-    <div class="flex-center flex-gap-2 mb-4">
-      <span id="verificationIcon" style="font-size:22px;"><i class="ri-shield-check-line"></i></span>
-      <div>
-        <div style="font-size:13px;font-weight:600;" id="verificationLabel">Account Status</div>
-        <div class="text-xs" id="verificationText">Checking...</div>
-      </div>
-    </div>
+  <div id="verificationIcon" class="stat-icon purple"><i class="ri-shield-check-line"></i></div>
+            <div class="stat-value">Account Status</div>
+            <div class="stat-label" id="verificationText">Checking...</div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>Type:Fex user</div>
 `;
-
-  const text  = document.getElementById('verificationText');
+  
+  const text = document.getElementById('verificationText');
   const label = document.getElementById('verificationLabel');
-  const icon  = document.getElementById('verificationIcon');
-  const u     = currentUserData || {};
-
+  const icon = document.getElementById('verificationIcon');
+  const u = currentUserData || {};
+  
   if (u.emailVerified) {
-    if (text)  text.innerText  = 'Full access enabled';
+    if (text) text.innerText = 'Full access enabled';
     if (label) label.innerText = 'Verified';
     container.classList.remove('unverified-red');
     container.classList.add('verified-green', 'status-badge');
@@ -1256,7 +1262,7 @@ async function updateVerificationUI() {
     container.onclick = null;
     container.style.cursor = 'default';
   } else {
-    if (text)  text.innerText  = 'Click to send verification link';
+    if (text) text.innerText = 'Click to send verification link';
     if (label) label.innerText = 'Unverified';
     container.classList.remove('verified-green');
     container.classList.add('unverified-red', 'status-badge');
@@ -1330,24 +1336,24 @@ init();
 // CHAT SYSTEM — Professional FB-style
 // ═══════════════════════════════════════════════════════════
 
-let chatSessionId       = null;
-let chatSessionStatus   = 'active';
-let chatPollTimer       = null;
-let chatTypingTimer     = null;
+let chatSessionId = null;
+let chatSessionStatus = 'active';
+let chatPollTimer = null;
+let chatTypingTimer = null;
 let chatTypingPollTimer = null;
-let lastMsgCount        = 0;
-let chatSoundEnabled    = true;
-let chatSiteLogo        = '';
-let replyingTo          = null;
-let editingMsgId        = null;
-let chatAllMessages     = [];
+let lastMsgCount = 0;
+let chatSoundEnabled = true;
+let chatSiteLogo = '';
+let replyingTo = null;
+let editingMsgId = null;
+let chatAllMessages = [];
 const EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
 // ─── AUDIO BEEP ───────────────────────────────────────────
 function playChatSound() {
   try {
-    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
-    const osc  = ctx.createOscillator();
+    const ctx = new(window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -1363,10 +1369,10 @@ function playChatSound() {
 window.openChat = async function() {
   window.location.hash = '#chat';
   lucide.createIcons();
-  const logo       = document.getElementById('chatAdminLogo');
+  const logo = document.getElementById('chatAdminLogo');
   if (logo && chatSiteLogo) logo.src = chatSiteLogo;
   const messagesEl = document.getElementById('chatMessages');
-  const loadingEl  = document.getElementById('chatLoading');
+  const loadingEl = document.getElementById('chatLoading');
   if (loadingEl) loadingEl.style.display = 'block';
   const settingsRes = await api('/api/user/chat/settings');
   if (settingsRes?.success) {
@@ -1387,7 +1393,7 @@ window.openChat = async function() {
     return;
   }
   if (!sessionRes?.success) return;
-  chatSessionId     = sessionRes.session._id;
+  chatSessionId = sessionRes.session._id;
   chatSessionStatus = sessionRes.session.status;
   await loadChatMessages();
   startChatPolling();
@@ -1398,9 +1404,9 @@ window.openChat = async function() {
 async function loadChatMessages() {
   const data = await api('/api/user/chat/messages');
   if (!data?.success) return;
-  chatSessionId     = data.sessionId     || chatSessionId;
+  chatSessionId = data.sessionId || chatSessionId;
   chatSessionStatus = data.sessionStatus || chatSessionStatus;
-  chatAllMessages   = data.messages;
+  chatAllMessages = data.messages;
   renderChatMessages(data.messages);
   updateChatSessionUI();
   const badge = document.getElementById('chatUnreadBadge');
@@ -1421,7 +1427,7 @@ function renderChatMessages(messages) {
   }
   let lastDate = '';
   messages.forEach(msg => {
-    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
     if (dateStr !== lastDate) {
       const divider = document.createElement('div');
       divider.style.cssText = 'text-align:center;margin:12px 0;';
@@ -1436,8 +1442,8 @@ function renderChatMessages(messages) {
 
 // ─── BUILD MESSAGE BUBBLE ─────────────────────────────────
 function buildMsgBubble(msg, perspective) {
-  const isMe    = (perspective === 'user') ? msg.sender === 'user' : msg.sender === 'admin';
-  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  const isMe = (perspective === 'user') ? msg.sender === 'user' : msg.sender === 'admin';
+  const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const wrapper = document.createElement('div');
   wrapper.dataset.msgId = msg._id;
   wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
@@ -1470,8 +1476,8 @@ function buildMsgBubble(msg, perspective) {
     const tickLabel = msg.read ? '✓✓' : msg.delivered ? '✓✓' : '✓';
     ticksHtml = `<span style="font-size:11px;color:${tickColor};margin-left:4px;">${tickLabel}</span>`;
   }
-  const editedHtml   = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.6;margin-left:4px;">edited</span>` : '';
-  const reactEntries = Object.entries(msg.reactions || {}).filter(([,v]) => v.length > 0);
+  const editedHtml = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.6;margin-left:4px;">edited</span>` : '';
+  const reactEntries = Object.entries(msg.reactions || {}).filter(([, v]) => v.length > 0);
   const reactionsHtml = reactEntries.length ? `
     <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
       ${reactEntries.map(([emoji, users]) => `
@@ -1479,7 +1485,7 @@ function buildMsgBubble(msg, perspective) {
           ${emoji} ${users.length}
         </span>`).join('')}
     </div>` : '';
-  const emojiBarId   = `ebar-${msg._id}`;
+  const emojiBarId = `ebar-${msg._id}`;
   const emojiBarHtml = msg.deleted ? '' : `
     <div id="${emojiBarId}" style="display:none;position:absolute;${isMe?'right:0':'left:0'};bottom:calc(100% + 4px);background:var(--card-bg,#fff);border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);gap:6px;z-index:100;white-space:nowrap;">
       ${EMOJIS.map(e => `<span onclick="toggleReaction('${msg._id}','${e}');hideEmojiBar('${emojiBarId}')" style="font-size:20px;cursor:pointer;transition:transform 0.1s;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${e}</span>`).join('')}
@@ -1533,16 +1539,16 @@ function handleTouchEnd() {
 
 // ─── REACTIONS ────────────────────────────────────────────
 window.toggleReaction = async (msgId, emoji) => {
-  const data = await api('/api/user/chat/react', { method:'POST', body: JSON.stringify({ msgId, emoji }) });
+  const data = await api('/api/user/chat/react', { method: 'POST', body: JSON.stringify({ msgId, emoji }) });
   if (data?.success) await loadChatMessages();
 };
 
 // ─── REPLY ────────────────────────────────────────────────
 window.startReply = (msgId) => {
-  const msgEl   = document.querySelector(`[data-msg-id="${msgId}"] .chat-bubble`);
+  const msgEl = document.querySelector(`[data-msg-id="${msgId}"] .chat-bubble`);
   const preview = msgEl?.innerText?.substring(0, 60) || '';
-  replyingTo    = { msgId, sender: 'user', preview };
-  const bar     = document.getElementById('replyPreviewBar');
+  replyingTo = { msgId, sender: 'user', preview };
+  const bar = document.getElementById('replyPreviewBar');
   if (bar) {
     bar.style.display = 'flex';
     const rt = bar.querySelector('.reply-text');
@@ -1552,7 +1558,7 @@ window.startReply = (msgId) => {
 
 window.cancelReply = () => {
   replyingTo = null;
-  const bar  = document.getElementById('replyPreviewBar');
+  const bar = document.getElementById('replyPreviewBar');
   if (bar) bar.style.display = 'none';
 };
 
@@ -1561,8 +1567,9 @@ window.startEdit = (msgId) => {
   const msg = chatAllMessages.find(m => m._id === msgId);
   if (!msg) return;
   editingMsgId = msgId;
-  const input  = document.getElementById('chatInput');
-  if (input) { input.value = msg.content; input.focus(); }
+  const input = document.getElementById('chatInput');
+  if (input) { input.value = msg.content;
+    input.focus(); }
 };
 
 // ─── DELETE ───────────────────────────────────────────────
@@ -1574,22 +1581,23 @@ window.deleteMsg = async (msgId) => {
 
 // ─── SEND MESSAGE ─────────────────────────────────────────
 window.sendChatMessage = async () => {
-  const input   = document.getElementById('chatInput');
+  const input = document.getElementById('chatInput');
   const content = input?.value?.trim();
   if (!content && !editingMsgId) return;
-
+  
   if (editingMsgId) {
-    const data = await api(`/api/user/chat/message/${editingMsgId}`, { method:'PUT', body: JSON.stringify({ content }) });
+    const data = await api(`/api/user/chat/message/${editingMsgId}`, { method: 'PUT', body: JSON.stringify({ content }) });
     editingMsgId = null;
     if (input) input.value = '';
     if (data?.success) await loadChatMessages();
     return;
   }
-
+  
   const body = { type: 'text', content };
-  if (replyingTo) { body.replyTo = replyingTo; cancelReply(); }
-
-  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify(body) });
+  if (replyingTo) { body.replyTo = replyingTo;
+    cancelReply(); }
+  
+  const data = await api('/api/user/chat/send', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
     chatAllMessages.push(data.message);
     const container = document.getElementById('chatMessages');
@@ -1603,7 +1611,7 @@ window.sendChatMessage = async () => {
 // ─── POLAR ANSWER ─────────────────────────────────────────
 window.answerPolar = async (msgId, answer, btn) => {
   btn.disabled = true;
-  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify({ type:'polar_answer', content: answer, polarMsgId: msgId }) });
+  const data = await api('/api/user/chat/send', { method: 'POST', body: JSON.stringify({ type: 'polar_answer', content: answer, polarMsgId: msgId }) });
   if (data?.success) await loadChatMessages();
 };
 
@@ -1611,17 +1619,18 @@ window.answerPolar = async (msgId, answer, btn) => {
 window.handleChatImageUpload = async (input) => {
   const file = input.files?.[0];
   if (!file) return;
-  const keysRes  = await api('/api/user/apikeys');
+  const keysRes = await api('/api/user/apikeys');
   const imgbbKey = keysRes?.imgbb;
   if (!imgbbKey) return showAlert('Image upload not configured.', 'error', 'ri-close-line', 'Error');
   const formData = new FormData();
   formData.append('image', file);
-  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body: formData });
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
   const result = await res.json();
   if (!result.success) return showAlert('Upload failed.', 'error', 'ri-close-line', 'Error');
-  const body = { type:'image', imageUrl: result.data.url, content:'📷 Image' };
-  if (replyingTo) { body.replyTo = replyingTo; cancelReply(); }
-  const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify(body) });
+  const body = { type: 'image', imageUrl: result.data.url, content: '📷 Image' };
+  if (replyingTo) { body.replyTo = replyingTo;
+    cancelReply(); }
+  const data = await api('/api/user/chat/send', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
     chatAllMessages.push(data.message);
     const container = document.getElementById('chatMessages');
@@ -1637,7 +1646,7 @@ window.onChatInputKeydown = function(e) {
   if (e.key === 'Enter') { sendChatMessage(); return; }
   clearTimeout(chatTypingTimer);
   chatTypingTimer = setTimeout(() => {
-    api('/api/user/chat/typing', { method:'POST', body:'{}' });
+    api('/api/user/chat/typing', { method: 'POST', body: '{}' });
   }, 300);
 };
 
@@ -1646,7 +1655,7 @@ function startTypingPoll() {
   chatTypingPollTimer = setInterval(async () => {
     if (window.location.hash !== '#chat' || !chatSessionId) return;
     const data = await api('/api/user/chat/typing');
-    const el   = document.getElementById('chatTypingIndicator');
+    const el = document.getElementById('chatTypingIndicator');
     if (el) el.style.display = data?.typing ? 'flex' : 'none';
   }, 2000);
 }
@@ -1657,13 +1666,13 @@ function stopTypingPoll() {
 
 // ─── UPDATE SESSION UI ────────────────────────────────────
 function updateChatSessionUI() {
-  const ended     = chatSessionStatus === 'ended';
-  const badge     = document.getElementById('chatEndedBadge');
-  const inputBar  = document.getElementById('chatInputBar');
+  const ended = chatSessionStatus === 'ended';
+  const badge = document.getElementById('chatEndedBadge');
+  const inputBar = document.getElementById('chatInputBar');
   const statusDot = document.getElementById('chatStatusDot');
-  if (badge)     badge.style.display    = ended ? 'block' : 'none';
-  if (inputBar)  inputBar.style.display = ended ? 'none'  : 'flex';
-  if (statusDot) statusDot.textContent  = ended ? '● Session Ended' : '● Online';
+  if (badge) badge.style.display = ended ? 'block' : 'none';
+  if (inputBar) inputBar.style.display = ended ? 'none' : 'flex';
+  if (statusDot) statusDot.textContent = ended ? '● Session Ended' : '● Online';
 }
 
 // ─── POLL FOR NEW MESSAGES ────────────────────────────────
@@ -1674,10 +1683,10 @@ function startChatPolling() {
     const data = await api('/api/user/chat/messages');
     if (!data?.success) return;
     if (data.messages.length !== lastMsgCount ||
-        JSON.stringify(data.messages.map(m => m.reactions)) !== JSON.stringify(chatAllMessages.map(m => m.reactions))) {
-      const newMsgs     = data.messages.slice(lastMsgCount);
+      JSON.stringify(data.messages.map(m => m.reactions)) !== JSON.stringify(chatAllMessages.map(m => m.reactions))) {
+      const newMsgs = data.messages.slice(lastMsgCount);
       const hasAdminMsg = newMsgs.some(m => m.sender === 'admin');
-      chatAllMessages   = data.messages;
+      chatAllMessages = data.messages;
       renderChatMessages(data.messages);
       if (chatSoundEnabled && hasAdminMsg) playChatSound();
       lastMsgCount = data.messages.length;
@@ -1694,10 +1703,10 @@ function stopChatPolling() {
 // ─── POLL UNREAD BADGE ────────────────────────────────────
 async function pollChatUnread() {
   if (window.location.hash === '#chat') { setTimeout(pollChatUnread, 10000); return; }
-  const data  = await api('/api/user/chat/unread');
+  const data = await api('/api/user/chat/unread');
   const badge = document.getElementById('chatUnreadBadge');
   if (badge && data?.unread > 0) {
-    badge.textContent   = data.unread;
+    badge.textContent = data.unread;
     badge.style.display = 'flex';
   } else if (badge) {
     badge.style.display = 'none';
