@@ -1243,9 +1243,9 @@ async function updateVerificationUI() {
   
   container.innerHTML = `
   <div id="verificationIcon" class="stat-icon purple"><i class="ri-shield-check-line"></i></div>
-            <div class="stat-value">Account Status</div>
+            <div class="stat-value">Status</div>
             <div class="stat-label" id="verificationText">Checking...</div>
-            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>Type:Fex user</div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>Type: Fex</div>
 `;
   
   const text = document.getElementById('verificationText');
