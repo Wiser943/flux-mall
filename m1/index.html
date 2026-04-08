@@ -1336,330 +1336,271 @@
               </div>
             </div>
             
-            <div style="display:flex;flex-direction:column;gap:16px;">
-              <!-- Appearance -->
-              <div class="card">
-                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🎨 Appearance</div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Dark Mode</div>
-                    <div class="s-desc">Switch between light and dark</div>
-                  </div>
-                  <div class="toggle on" id="settingsThemeToggle" onclick="toggleTheme(); this.classList.toggle('on')"></div>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Compact View</div>
-                    <div class="s-desc">Reduce spacing in tables</div>
-                  </div>
-                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
-                </div>
-              </div>
-              
-              <!-- Privacy -->
-              <div class="card">
-                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🛡️ Privacy</div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Hide Balance</div>
-                    <div class="s-desc">Mask amounts on dashboard</div>
-                  </div>
-                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Profile Visibility</div>
-                    <div class="s-desc">Show profile to referrals</div>
-                  </div>
-                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-                </div>
-              </div>
-              
-              <!-- Danger Zone -->
-              <div class="card" style="border-color:rgba(239,68,68,0.2);">
-                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;color:var(--red);">⚠️ Danger Zone</div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Freeze Account</div>
-                    <div class="s-desc">Temporarily disable all activity</div>
-                  </div>
-                  <button class="btn btn-danger btn-sm" onclick="showConfirm('This will temporarily disable all account activity. Are you sure?','Freeze Account', ()=>showAlert('Account freeze request sent to support.','⚠️','warning'), 'warning')">Freeze</button>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Close Account</div>
-                    <div class="s-desc">Permanently delete your account</div>
-                  </div>
-                  <button class="btn btn-danger btn-sm" onclick="showConfirm('This will permanently delete your account and all data. This cannot be undone.','Delete Account', ()=>showAlert('Please contact support@Fluxmall Exchange.io to complete account deletion.','❌','danger'), 'danger')">Delete</button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
-      
-    </div><!-- /page-content -->
-  </div><!-- /main -->
-  
-  
-  <!-- ===== MOBILE BOTTOM NAV ===== -->
-  <nav class="mobile-nav" id="mobileNav">
-    <div class="mobile-nav-inner">
-      <!---
+        
+      </div><!-- /page-content -->
+    </div><!-- /main -->
+    
+    
+    <!-- ==== MOBILE BOTTOM NAV === -->
+    <nav class="mobile-nav" id="mobileNav">
+      <div class="mobile-nav-inner">
+        <!---
       <a class="mnav-item nav-item" href="#referral">
         <span class="mnav-icon">◉</span>
         <span class="mnav-label">Referral</span>
        <!--- <span class="nav-badge"></span>---
       </a>--->
-      <button class="mnav-item nav-item" id="nav-more" onclick="openNavSheet()">
-      
-        <i class="mnav-icon ri-arrow-up-wide-line"></i>
-        <span class="mnav-label" id="pageTitle">Fluxmall</span>
-      </button>
-    </div>
-  </nav>
-  
-  <!-- ===== NAV SHEET (More) ===== -->
-  <div class="nav-sheet-backdrop" id="navSheetBackdrop" onclick="closeNavSheet()">
-    <div class="nav-sheet" onclick="event.stopPropagation()">
-      <div class="nav-sheet-handle"></div>
-      <div class="sidebar-logo" style="transform: scale(0.8);padding: 0;margin: 0;">
-        <div class="logo-icon"><i class="ri-safe-2-line"></i></div>
-        <div class="logo-text">Flux<span>Mall</span></div>
+        <button class="mnav-item nav-item" id="nav-more" onclick="openNavSheet()">
+        
+          <i class="mnav-icon ri-arrow-up-wide-line"></i>
+          <span class="mnav-label" id="pageTitle">Fluxmall</span>
+        </button>
       </div>
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;color:var(--text2);">All Pages | Exchange</div>
-      
-      <div class="nav-sheet-grid">
-        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#home"><span class="ns-icon"><i class="ri-home-5-line"></i></span><span class="ns-label">Overview</span></a>
-        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#wallet"><span class="ns-icon"><i class="ri-wallet-3-line"></i></span><span class="ns-label">Wallet</span></a>
-        <a class="nav-sheet-item" onclick="closeNavSheet();initTransactions();" href="#transactions"><span class="ns-icon"><i class="ri-arrow-up-down-line"></i></span><span class="ns-label">Transactions</span></a>
-        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#invest"><span class="ns-icon"><i class="ri-line-chart-line"></i></span><span class="ns-label">Investments</span></a>
-        <a class="nav-sheet-item" href="#deposit" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-arrow-down-circle-line"></i></span><span class="ns-label">Deposit</span></a>
-        <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon"><i class="ri-arrow-up-circle-line"></i></span><span class="ns-label">Withdraw</span></a>
-        <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-gift-line"></i></span><span class="ns-label">Referral</span></a>
-        <a class="nav-sheet-item" href="#tasks" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Tasks</span></a>
-        <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-notification-3-line"></i></span><span class="ns-label">Alerts</span></a>
-        <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-user-3-line"></i></span><span class="ns-label">Profile</span></a>
-        <div class="nav-sheet-item" style="color: red;" onclick="logoutUser();closeNavSheet()"><span class="ns-icon"><i class="ri-logout-box-r-line"></i></span><span class="ns-label">Logout</span></div>
+    </nav>
+    
+    <!-- ===== NAV SHEET (More) ===== -->
+    <div class="nav-sheet-backdrop" id="navSheetBackdrop" onclick="closeNavSheet()">
+      <div class="nav-sheet" onclick="event.stopPropagation()">
+        <div class="nav-sheet-handle"></div>
+        <div class="sidebar-logo" style="transform: scale(0.8);padding: 0;margin: 0;">
+          <div class="logo-icon"><i class="ri-safe-2-line"></i></div>
+          <div class="logo-text">Flux<span>Mall</span></div>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;color:var(--text2);">All Pages | Exchange</div>
+        
+        <div class="nav-sheet-grid">
+          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#home"><span class="ns-icon"><i class="ri-home-5-line"></i></span><span class="ns-label">Overview</span></a>
+          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#wallet"><span class="ns-icon"><i class="ri-wallet-3-line"></i></span><span class="ns-label">Wallet</span></a>
+          <a class="nav-sheet-item" onclick="closeNavSheet();initTransactions();" href="#transactions"><span class="ns-icon"><i class="ri-arrow-up-down-line"></i></span><span class="ns-label">Transactions</span></a>
+          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#invest"><span class="ns-icon"><i class="ri-line-chart-line"></i></span><span class="ns-label">Investments</span></a>
+          <a class="nav-sheet-item" href="#deposit" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-arrow-down-circle-line"></i></span><span class="ns-label">Deposit</span></a>
+          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon"><i class="ri-arrow-up-circle-line"></i></span><span class="ns-label">Withdraw</span></a>
+          <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-gift-line"></i></span><span class="ns-label">Referral</span></a>
+          <a class="nav-sheet-item" href="#tasks" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Tasks</span></a>
+          <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-notification-3-line"></i></span><span class="ns-label">Alerts</span></a>
+          <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-user-3-line"></i></span><span class="ns-label">Profile</span></a>
+          <div class="nav-sheet-item" style="color: red;" onclick="logoutUser();closeNavSheet()"><span class="ns-icon"><i class="ri-logout-box-r-line"></i></span><span class="ns-label">Logout</span></div>
+        </div>
       </div>
     </div>
-  </div>
-  
-  
-  <script src="script.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-          .then(reg => console.log('[SW] Registered:', reg.scope))
-          .catch(err => console.log('[SW] Registration failed:', err));
+    
+    
+    <script src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(reg => console.log('[SW] Registered:', reg.scope))
+            .catch(err => console.log('[SW] Registration failed:', err));
+        });
+      }
+      
+      
+      let _confirmCb = null;
+      let _cancelCb = null;
+      
+      function _openModal(modal) {
+        modal.style.display = 'flex';
+        // double rAF so display:flex is painted before class triggers transition
+        requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('show')));
+      }
+      
+      function _closeModal(modal) {
+        modal.classList.remove('show');
+        const content = modal.querySelector('.modal-content');
+        content.addEventListener('transitionend', () => {
+          if (!modal.classList.contains('show')) modal.style.display = 'none';
+        }, { once: true });
+      }
+      
+      // Overlay clicks close the modal
+      document.getElementById('custom-alert-modal').addEventListener('click', function(e) {
+        if (e.target === this) _closeModal(this);
       });
-    }
-    
-    
-    let _confirmCb = null;
-    let _cancelCb = null;
-    
-    function _openModal(modal) {
-      modal.style.display = 'flex';
-      // double rAF so display:flex is painted before class triggers transition
-      requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('show')));
-    }
-    
-    function _closeModal(modal) {
-      modal.classList.remove('show');
-      const content = modal.querySelector('.modal-content');
-      content.addEventListener('transitionend', () => {
-        if (!modal.classList.contains('show')) modal.style.display = 'none';
-      }, { once: true });
-    }
-    
-    // Overlay clicks close the modal
-    document.getElementById('custom-alert-modal').addEventListener('click', function(e) {
-      if (e.target === this) _closeModal(this);
-    });
-    document.getElementById('custom-confirm-modal').addEventListener('click', function(e) {
-      if (e.target === this) _closeModal(this);
-    });
-    
-    // Alert buttons
-    document.getElementById('alert-ok-button').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
-    document.getElementById('closeAlertBtn').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
-    
-    // Confirm buttons — ONE listener each, reads callback ref
-    document.getElementById('confirm-yes-button').addEventListener('click', () => {
-      _closeModal(document.getElementById('custom-confirm-modal'));
-      if (_confirmCb) {
-        const fn = _confirmCb;
-        _confirmCb = null;
-        fn();
-      }
-    });
-    document.getElementById('confirm-no-button').addEventListener('click', () => {
-      _closeModal(document.getElementById('custom-confirm-modal'));
-      if (_cancelCb) {
-        const fn = _cancelCb;
-        _cancelCb = null;
-        fn();
-      }
-    });
-    
-    // ── showAlert (called from script.js) ──
-    function showAlert(message, isSuccess) {
-      const el = document.getElementById('alert-message');
-      if (window.navigator?.vibrate) window.navigator.vibrate(100);
+      document.getElementById('custom-confirm-modal').addEventListener('click', function(e) {
+        if (e.target === this) _closeModal(this);
+      });
       
-      el.innerHTML = message;
-      el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
-      _openModal(document.getElementById('custom-alert-modal'));
-    }
-    
-    // ── showConfirm (called from script.js) ──
-    // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
-    function showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel }) {
-      document.getElementById('confirm-title').textContent = title || 'Confirm Details';
-      document.getElementById('confirm-message').innerHTML = message || 'Are you sure?';
-      document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
-      document.getElementById('confirm-no-button').textContent = noText || 'Recheck Details';
-      if (window.navigator?.vibrate) window.navigator.vibrate(100);
+      // Alert buttons
+      document.getElementById('alert-ok-button').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
+      document.getElementById('closeAlertBtn').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
       
-      const detailEl = document.getElementById('confirm-detail');
-      if (detail) {
-        detailEl.innerHTML = detail;
-        detailEl.style.display = 'block';
+      // Confirm buttons — ONE listener each, reads callback ref
+      document.getElementById('confirm-yes-button').addEventListener('click', () => {
+        _closeModal(document.getElementById('custom-confirm-modal'));
+        if (_confirmCb) {
+          const fn = _confirmCb;
+          _confirmCb = null;
+          fn();
+        }
+      });
+      document.getElementById('confirm-no-button').addEventListener('click', () => {
+        _closeModal(document.getElementById('custom-confirm-modal'));
+        if (_cancelCb) {
+          const fn = _cancelCb;
+          _cancelCb = null;
+          fn();
+        }
+      });
+      
+      // ── showAlert (called from script.js) ──
+      function showAlert(message, isSuccess) {
+        const el = document.getElementById('alert-message');
+        if (window.navigator?.vibrate) window.navigator.vibrate(100);
+        
+        el.innerHTML = message;
+        el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
+        _openModal(document.getElementById('custom-alert-modal'));
       }
-      else { detailEl.style.display = 'none'; }
-      _confirmCb = onConfirm || null;
-      _cancelCb = onCancel || null;
-      _openModal(document.getElementById('custom-confirm-modal'));
-    }
-    
-    
-    // ===== NAVIGATION =====
-    const pageTitles = {
-      home: 'Overview',
-      wallet: 'My Wallet',
-      transactions: 'Transactions',
-      invest: 'Investments',
-      deposit: 'Deposit',
-      withdraw: 'Withdraw',
-      transfer: 'Transfer',
-      referral: 'Referral Program',
-      plans: 'Investment Plans',
-      notifications: 'Notifications',
-      support: 'Help & Support',
-      profile: 'My Profile'
-    };
-    
-    
-    // ===== SIDEBAR =====
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-      document.getElementById('overlay').classList.toggle('active');
-    }
-    
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('overlay').classList.remove('active');
-    }
-    
-    // ===== THEME =====
-    const _savedTheme = localStorage.getItem('fluxTheme');
-    const _sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    let isDark = _savedTheme ? _savedTheme === 'dark' : _sysDark;
-    
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    (function() {
-      const btn = document.getElementById('themeBtn');
-      if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
-      const st = document.getElementById('settingsThemeToggle');
-      if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
-    })();
-    
-    function toggleTheme() {
-      isDark = !isDark;
+      
+      // ── showConfirm (called from script.js) ──
+      // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
+      function showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel }) {
+        document.getElementById('confirm-title').textContent = title || 'Confirm Details';
+        document.getElementById('confirm-message').innerHTML = message || 'Are you sure?';
+        document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
+        document.getElementById('confirm-no-button').textContent = noText || 'Recheck Details';
+        if (window.navigator?.vibrate) window.navigator.vibrate(100);
+        
+        const detailEl = document.getElementById('confirm-detail');
+        if (detail) {
+          detailEl.innerHTML = detail;
+          detailEl.style.display = 'block';
+        }
+        else { detailEl.style.display = 'none'; }
+        _confirmCb = onConfirm || null;
+        _cancelCb = onCancel || null;
+        _openModal(document.getElementById('custom-confirm-modal'));
+      }
+      
+      
+      // ===== NAVIGATION =====
+      const pageTitles = {
+        home: 'Overview',
+        wallet: 'My Wallet',
+        transactions: 'Transactions',
+        invest: 'Investments',
+        deposit: 'Deposit',
+        withdraw: 'Withdraw',
+        transfer: 'Transfer',
+        referral: 'Referral Program',
+        plans: 'Investment Plans',
+        notifications: 'Notifications',
+        support: 'Help & Support',
+        profile: 'My Profile'
+      };
+      
+      
+      // ===== SIDEBAR =====
+      function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('active');
+      }
+      
+      function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('overlay').classList.remove('active');
+      }
+      
+      // ===== THEME =====
+      const _savedTheme = localStorage.getItem('fluxTheme');
+      const _sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      let isDark = _savedTheme ? _savedTheme === 'dark' : _sysDark;
+      
       document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      localStorage.setItem('fluxTheme', isDark ? 'dark' : 'light');
-      const btn = document.getElementById('themeBtn');
-      if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
-      const st = document.getElementById('settingsThemeToggle');
-      if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
-    }
-    
-    // ── TAB SWITCHER ─────────────────────────────────────────
-    window.switchTab = function(el) {
-      const parent = el.closest('.tabs');
-      if (!parent) return;
-      parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-    };
-    
-    // ===== COPY CODE =====
-    function copyCode(text) {
-      navigator.clipboard.writeText(text).catch(() => {});
-      showAlert('Copied to clipboard:\n' + text, '📋', 'success');
-    }
-    
-    // ===== QUICK AMOUNTS =====
-    function setAmount(id, val) {
-      const el = document.getElementById(id);
-      if (el) {
-        el.value = val;
-        el.focus();
+      (function() {
+        const btn = document.getElementById('themeBtn');
+        if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
+        const st = document.getElementById('settingsThemeToggle');
+        if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
+      })();
+      
+      function toggleTheme() {
+        isDark = !isDark;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('fluxTheme', isDark ? 'dark' : 'light');
+        const btn = document.getElementById('themeBtn');
+        if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
+        const st = document.getElementById('settingsThemeToggle');
+        if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
       }
-    }
-    
-    function openNavSheet() {
-      const bd = document.getElementById('navSheetBackdrop');
-      const sheet = bd.querySelector('.nav-sheet');
-      sheet.style.transform = '';
-      sheet.style.transition = '';
-      bd.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function closeNavSheet() {
-      const bd = document.getElementById('navSheetBackdrop');
-      const sheet = bd.querySelector('.nav-sheet');
-      sheet.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
-      sheet.style.transform = 'translateY(100%)';
-      setTimeout(() => {
-        bd.classList.remove('open');
+      
+      // ── TAB SWITCHER ─────────────────────────────────────────
+      window.switchTab = function(el) {
+        const parent = el.closest('.tabs');
+        if (!parent) return;
+        parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+      };
+      
+      // ===== COPY CODE =====
+      function copyCode(text) {
+        navigator.clipboard.writeText(text).catch(() => {});
+        showAlert('Copied to clipboard:\n' + text, '📋', 'success');
+      }
+      
+      // ===== QUICK AMOUNTS =====
+      function setAmount(id, val) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.value = val;
+          el.focus();
+        }
+      }
+      
+      function openNavSheet() {
+        const bd = document.getElementById('navSheetBackdrop');
+        const sheet = bd.querySelector('.nav-sheet');
         sheet.style.transform = '';
         sheet.style.transition = '';
-        document.body.style.overflow = '';
-      }, 360);
-    }
-    
-    
-    const userName = document.querySelectorAll(".userName");
-    const userId = document.querySelectorAll(".userId");
-    const userEmail = document.querySelectorAll(".email");
-    const tBalance = document.querySelectorAll(".balance");
-    
-    //  lucide.createIcons();
-    const navItems = document.querySelectorAll('.nav-item');
-    const allPages = document.querySelectorAll('.page');
-    
-    function switchPageByHash() {
-      const hash = window.location.hash || '#home';
-      const targetId = hash.substring(1);
-      const targetElement = document.getElementById(targetId);
-      if (targetElement) {
-        allPages.forEach(page => page.classList.add('hidden'));
-        navItems.forEach(item => item.classList.remove('active'));
-        targetElement.classList.remove('hidden');
-        navItems.forEach(item => {
-          if (item.getAttribute('href') === hash) item.classList.add('active');
-        });
-        document.getElementById('pageTitle').textContent = pageTitles[targetId] || targetId;
+        bd.classList.add('open');
+        document.body.style.overflow = 'hidden';
       }
-    }
+      
+      function closeNavSheet() {
+        const bd = document.getElementById('navSheetBackdrop');
+        const sheet = bd.querySelector('.nav-sheet');
+        sheet.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
+        sheet.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+          bd.classList.remove('open');
+          sheet.style.transform = '';
+          sheet.style.transition = '';
+          document.body.style.overflow = '';
+        }, 360);
+      }
+      
+      
+      const userName = document.querySelectorAll(".userName");
+      const userId = document.querySelectorAll(".userId");
+      const userEmail = document.querySelectorAll(".email");
+      const tBalance = document.querySelectorAll(".balance");
+      
+      //  lucide.createIcons();
+      const navItems = document.querySelectorAll('.nav-item');
+      const allPages = document.querySelectorAll('.page');
+      
+      function switchPageByHash() {
+        const hash = window.location.hash || '#home';
+        const targetId = hash.substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          allPages.forEach(page => page.classList.add('hidden'));
+          navItems.forEach(item => item.classList.remove('active'));
+          targetElement.classList.remove('hidden');
+          navItems.forEach(item => {
+            if (item.getAttribute('href') === hash) item.classList.add('active');
+          });
+          document.getElementById('pageTitle').textContent = pageTitles[targetId] || targetId;
+        }
+      }
+      
+      window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
+      window.addEventListener('hashchange', switchPageByHash);
+    </script>
     
-    window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
-    window.addEventListener('hashchange', switchPageByHash);
-  </script>
-  
 </body>
 
 </html>
