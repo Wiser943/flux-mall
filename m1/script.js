@@ -449,6 +449,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1200);
 });
 
+initiateDeposit(4000)
 // ─── DEPOSIT INITIATION ───────────────────────────────────
 window.initiateDeposit = async function(amount) {
   if (!document.getElementById('attest')?.checked)
@@ -470,6 +471,8 @@ window.initiateDeposit = async function(amount) {
   const bankName = config.manual?.bankName     || 'Contact Admin';
   const accNum   = config.manual?.accountNumber || '0000000000';
   const accName  = config.manual?.accountName  || 'Admin';
+  
+console.log(bankName);
 
   const modal = document.createElement('div');
   modal.id = 'paymentModal';
