@@ -417,7 +417,7 @@ function refreshTransactions() {
 }
 
 function exportTxnCSV() {
-  if (!txnFiltered.length) { showToast('No transactions to export.', 'warning', 'ri-close-line', 'Empty'); return; }
+  if (!txnFiltered.length) { showAlert('No transactions to export.', 'warning', 'ri-close-line', 'Empty'); return; }
   const headers = ['Description','Type','FEX Amount','Naira Equiv','Date','Status','Reference'];
   const rows = txnFiltered.map(r => [
     r.description || r.narration || r._type || '',
@@ -434,7 +434,7 @@ function exportTxnCSV() {
   const a    = document.createElement('a');
   a.href = url; a.download = `transactions_${Date.now()}.csv`; a.click();
   URL.revokeObjectURL(url);
-  showToast('CSV downloaded', 'success', 'ri-download-line', 'Done');
+  showAlert('CSV downloaded', 'success', 'ri-download-line', 'Done');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -453,10 +453,10 @@ initiateDeposit(4000)
 // ─── DEPOSIT INITIATION ───────────────────────────────────
 window.initiateDeposit = async function(amount) {
   if (!document.getElementById('attest')?.checked)
-    return showToast('Please read and accept before proceeding.', 'warning', 'ri-close-line', 'Attestation');
+    return showAlert('Please read and accept before proceeding.', 'warning', 'ri-close-line', 'Attestation');
 
   amount = Number(amount);
-  if (!amount) return showToast('Enter valid amount (Minimum 3000)', 'error', 'ri-close-line', 'Invalid Amount');
+  if (!amount) return showAlert('Enter valid amount (Minimum 3000)', 'error', 'ri-close-line', 'Invalid Amount');
 
   const config = window.paymentConfig || {};
 
@@ -506,9 +506,9 @@ window.submitManualDeposit = async (amount, refCode) => {
     body: JSON.stringify({ amount: fexAmount, method: 'Bank Transfer', refCode: refCode || 'MAN_' + Date.now(), status: 'pending' })
   });
   if (data?.success) {
-    showToast('Deposit submitted! Awaiting admin approval.', 'info', 'ri-check-line', 'Submitted');
+    showAlert('Deposit submitted! Awaiting admin approval.', 'info', 'ri-check-line', 'Submitted');
   } else {
-    showToast(data?.error || 'Error submitting deposit.', 'error', 'ri-close-line', 'Error');
+    showAlert(data?.error || 'Error submitting deposit.', 'error', 'ri-close-line', 'Error');
   }
 };
 
@@ -538,7 +538,7 @@ window.payWithKorapay = async (amount, _key) => {
     closeModal(); // remove loading modal
 
     if (!data?.success) {
-      return showToast(data?.error || 'Could not initialize payment. Try again.', 'error', 'ri-close-line', 'Error');
+      return showAlert(data?.error || 'Could not initialize payment. Try again.', 'error', 'ri-close-line', 'Error');
     }
 
     // Step 3 — show our own custom modal with the bank details
@@ -604,7 +604,7 @@ window.payWithKorapay = async (amount, _key) => {
 
   } catch (err) {
     closeModal();
-    showToast('Something went wrong. Please try again.', 'error', 'ri-close-line', 'Error');
+    showAlert('Something went wrong. Please try again.', 'error', 'ri-close-line', 'Error');
     console.error('[Korapay Modal Error]', err);
   }
 };
@@ -624,10 +624,10 @@ window.confirmKorapayDeposit = async (reference, fexAmount) => {
     })
   });
   if (data?.success) {
-    showToast('Deposit submitted! Will be credited once your transfer confirms.', 'info', 'ri-check-line', 'Submitted');
+    showAlert('Deposit submitted! Will be credited once your transfer confirms.', 'info', 'ri-check-line', 'Submitted');
     refreshBalance();
   } else {
-    showToast(data?.error || 'Error recording deposit.', 'error', 'ri-close-line', 'Error');
+    showAlert(data?.error || 'Error recording deposit.', 'error', 'ri-close-line', 'Error');
   }
 };
 
@@ -638,13 +638,13 @@ window.handleWithdrawalSubmit = async () => {
   const u   = currentUserData;
 
   if (!u.bankDetails?.accountNumber)
-    return showToast('Please bind your Bank Account in the Profile section first.', 'warning', 'ri-close-line', 'Bank Required');
+    return showAlert('Please bind your Bank Account in the Profile section first.', 'warning', 'ri-close-line', 'Bank Required');
   if (!u.emailVerified)
-    return showToast('❌ Verification Required! Verify your account first.', 'error', 'ri-close', 'Verify First');
+    return showAlert('❌ Verification Required! Verify your account first.', 'error', 'ri-close', 'Verify First');
   if (!fexAmount || fexAmount <= 0)
-    return showToast('Enter a valid FEX amount.', 'warning', 'ri-close-line', 'Invalid Amount');
+    return showAlert('Enter a valid FEX amount.', 'warning', 'ri-close-line', 'Invalid Amount');
   if (fexAmount > u.ib)
-    return showToast('Insufficient FEX balance.', 'warning', 'ri-close-line', 'Insufficient');
+    return showAlert('Insufficient FEX balance.', 'warning', 'ri-close-line', 'Insufficient');
 
   const conv = await api('/api/user/convert-fex', {
     method: 'POST',
@@ -652,7 +652,7 @@ window.handleWithdrawalSubmit = async () => {
   });
 
   if (!conv?.success)
-    return showToast(conv?.error || 'Could not fetch conversion rate.', 'error', 'ri-close-line', 'Error');
+    return showAlert(conv?.error || 'Could not fetch conversion rate.', 'error', 'ri-close-line', 'Error');
 
   const { naira, fexRate } = conv;
   const fee = parseFloat(((naira * globalConfig.withdrawFee) / 100).toFixed(2));
@@ -674,15 +674,15 @@ window.handleWithdrawalSubmit = async () => {
       body: JSON.stringify({ fexAmount })
     });
     if (data?.success) {
-      showToast(data.message || '✅ Withdrawal submitted!', 'info', 'ri-check-line', 'Success');
+      showAlert(data.message || '✅ Withdrawal submitted!', 'info', 'ri-check-line', 'Success');
       document.getElementById('withdrawAmount').value = '';
       loadWithdrawals();
       refreshBalance();
     } else {
-      showToast(data?.error || 'Error submitting withdrawal.', 'error', 'ri-close-line', 'Error');
+      showAlert(data?.error || 'Error submitting withdrawal.', 'error', 'ri-close-line', 'Error');
     }
   } catch (err) {
-    showToast('Something went wrong.', 'warning', 'ri-close-line', 'Error');
+    showAlert('Something went wrong.', 'warning', 'ri-close-line', 'Error');
   } finally {
     btn.disabled  = false;
     btn.innerText = 'Confirm Withdrawal';
@@ -818,18 +818,18 @@ window.handleSave = async () => {
   const bankLabel  = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
   const aNum       = document.getElementById('accNumber').value.trim();
   const aName      = document.getElementById('accName').value.trim();
-  if (!bankCode)          return showToast('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (aNum.length !== 10) return showToast('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (!aName)             return showToast('Account not verified yet.', 'warning', 'ri-close-line', 'Not Verified');
+  if (!bankCode)          return showAlert('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (aNum.length !== 10) return showAlert('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (!aName)             return showAlert('Account not verified yet.', 'warning', 'ri-close-line', 'Not Verified');
   const data = await api('/api/user/bank-details', {
     method: 'PUT',
     body: JSON.stringify({ bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName })
   });
   if (data?.success) {
-    showToast('✅ Bank details saved successfully!', 'info', 'ri-check-line', 'Success');
+    showAlert('✅ Bank details saved successfully!', 'info', 'ri-check-line', 'Success');
     currentUserData.bankDetails = { bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName };
   } else {
-    showToast(data?.error || 'Error saving bank details.', 'error', 'ri-close-line', 'Error');
+    showAlert(data?.error || 'Error saving bank details.', 'error', 'ri-close-line', 'Error');
   }
 };
 
@@ -897,19 +897,19 @@ async function loadShares() {
 
 window.buyShare = async (id, price, name, daily, dur) => {
   if (currentUserData.ib < price)
-    return showToast('Insufficient FEX Balance! Try depositing.', 'warning', 'ri-close-line', 'Insufficient Balance');
+    return showAlert('Insufficient FEX Balance! Try depositing.', 'warning', 'ri-close-line', 'Insufficient Balance');
   if (!confirm(`Buy ${name} for 🪙${price.toLocaleString()} FEX?`)) return;
   const data = await api('/api/user/buy-share', {
     method: 'POST',
     body: JSON.stringify({ shareId: id, name, price, dailyIncome: daily, duration: dur })
   });
   if (data?.success) {
-    showToast('🎁 Bonus: 2 Free Spins earned!', 'success', 'ri-close-line', 'Bonus Earned');
-    showToast('Investment Active!', 'info', 'ri-check-line', 'Investment Active');
+    showAlert('🎁 Bonus: 2 Free Spins earned!', 'success', 'ri-close-line', 'Bonus Earned');
+    showAlert('Investment Active!', 'info', 'ri-check-line', 'Investment Active');
     refreshBalance();
     loadMyInvestments();
   } else {
-    showToast(data?.error || 'Error buying share.', 'error', 'ri-close-line', 'Error');
+    showAlert(data?.error || 'Error buying share.', 'error', 'ri-close-line', 'Error');
   }
 };
 
@@ -964,7 +964,7 @@ async function loadMyInvestments() {
 async function collectDailyEarnings() {
   const data = await api('/api/user/collect-earnings', { method: 'POST' });
   if (data?.credited > 0) {
-    showToast(`💰 Daily Profit: 🪙${data.credited.toLocaleString()} FEX added!`, 'info', 'ri-check-line', 'Profit Added');
+    showAlert(`💰 Daily Profit: 🪙${data.credited.toLocaleString()} FEX added!`, 'info', 'ri-check-line', 'Profit Added');
     refreshBalance();
   }
 }
@@ -1088,16 +1088,16 @@ window.spinWheel = async () => {
     isSpinning = false;
     if (spinBtn) spinBtn.disabled = false;
     if (!data?.success) {
-      showToast(data?.error || 'Spin failed.', 'error', 'ri-close-line', 'Error');
+      showAlert(data?.error || 'Spin failed.', 'error', 'ri-close-line', 'Error');
       currentRotation -= (7 * 360) + randomStop;
       if (canvas) canvas.style.transform = `rotate(${currentRotation}deg)`;
       return;
     }
     const win = data.prize;
     if (win.value > 0) {
-      showToast(`🎉 You're Lucky! Won 🪙${win.value} FEX!`, 'success', 'ri-check-line', "You're Lucky!");
+      showAlert(`🎉 You're Lucky! Won 🪙${win.value} FEX!`, 'success', 'ri-check-line', "You're Lucky!");
     } else {
-      showToast('Unlucky! Try Again', 'warning', 'ri-close-line', win.label);
+      showAlert('Unlucky! Try Again', 'warning', 'ri-close-line', win.label);
     }
     refreshBalance();
   }, 4000);
@@ -1110,7 +1110,7 @@ async function pollNotifications() {
   if (data?.success && data.notifications.length > lastNotifCount) {
     const latest = data.notifications[0];
     const age    = (Date.now() - new Date(latest.createdAt).getTime()) / 1000;
-    if (age < 30) showToast(`${latest.title}\n${latest.message}`, 'info', 'ri-information-line', 'Notification');
+    if (age < 30) showAlert(`${latest.title}\n${latest.message}`, 'info', 'ri-information-line', 'Notification');
     lastNotifCount = data.notifications.length;
   }
   setTimeout(pollNotifications, 15000);
@@ -1301,12 +1301,12 @@ async function refreshBalance() {
 window.copyText = (id) => {
   const el = document.getElementById(id);
   if (el) navigator.clipboard.writeText(el.innerText)
-    .then(() => showToast('Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
+    .then(() => showAlert('Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
 };
 
 window.copyCode = (text) => {
   navigator.clipboard.writeText(text)
-    .then(() => showToast('Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
+    .then(() => showAlert('Copied!', 'success', 'ri-clipboard-line', 'Copied!'));
 };
 
 function closeModal() {
@@ -1604,12 +1604,12 @@ window.handleChatImageUpload = async (input) => {
   if (!file) return;
   const keysRes  = await api('/api/user/apikeys');
   const imgbbKey = keysRes?.imgbb;
-  if (!imgbbKey) return showToast('Image upload not configured.', 'error', 'ri-close-line', 'Error');
+  if (!imgbbKey) return showAlert('Image upload not configured.', 'error', 'ri-close-line', 'Error');
   const formData = new FormData();
   formData.append('image', file);
   const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body: formData });
   const result = await res.json();
-  if (!result.success) return showToast('Upload failed.', 'error', 'ri-close-line', 'Error');
+  if (!result.success) return showAlert('Upload failed.', 'error', 'ri-close-line', 'Error');
   const body = { type:'image', imageUrl: result.data.url, content:'📷 Image' };
   if (replyingTo) { body.replyTo = replyingTo; cancelReply(); }
   const data = await api('/api/user/chat/send', { method:'POST', body: JSON.stringify(body) });
