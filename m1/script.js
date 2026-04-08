@@ -474,11 +474,10 @@ window.initiateDeposit = async function(amount) {/*
   
 console.log(bankName);
 
-  const modal = document.createElement('div');
-  modal.id = 'paymentModal';
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal-content">
+showConfirm({
+        title: 'Complete Transfer',
+        message: 'Are you certain you want to change your password?.',
+        detail:`    <div class="modal-content">
       <h3 style="margin-top:0;color:var(--teal)">Complete Transfer</h3>
       <strong style="font-size:1.3rem;color:#666">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</strong>
       <div class="bank-details">
@@ -490,14 +489,28 @@ console.log(bankName);
         <div style="text-align:center;cursor:pointer" onclick="copyText('modalRef')">
           <span style="font-size:0.75rem;color:#666;text-transform:uppercase;font-weight:bold;">Use this Reference as Narration</span>
           <span class="ref-box" id="modalRef">${refCode}</span>
-        </div>
-        <p style="font-size:0.8rem;color:#666;text-align:center;margin-top:10px;">Note this account is only for this transaction</p>
-      </div>
-      <button class="share-btn" onclick="submitManualDeposit(${amount}, '${refCode}')">I Have Sent the Money</button>
-    </div>`;
-  document.body.appendChild(modal);
+        </div>`,
+        
+        yesText: 'Done',
+        noText: 'Cancel',
+        onConfirm: async function() {
+// closeModal();
+ const fexAmount = parseFloat((amount / FEX_RATE).toFixed(2));
+ const data = await api('/api/user/deposit', {
+   method: 'POST',
+   body: JSON.stringify({ amount: fexAmount, method: 'Bank Transfer', refCode: refCode || 'MAN_' + Date.now(), status: 'pending' })
+ });
+ if (data?.success) {
+   showAlert('Deposit submitted! Awaiting admin approval.', 'info', 'ri-check-line', 'Submitted');
+ } else {
+   showAlert(data?.error || 'Error submitting deposit.', 'error', 'ri-close-line', 'Error');
+ }     },
+        onCancel: function() {}
+      });
+      //to be pasted
 };
 
+/*
 window.submitManualDeposit = async (amount, refCode) => {
   closeModal();
   const fexAmount = parseFloat((amount / FEX_RATE).toFixed(2));
@@ -511,7 +524,7 @@ window.submitManualDeposit = async (amount, refCode) => {
     showAlert(data?.error || 'Error submitting deposit.', 'error', 'ri-close-line', 'Error');
   }
 };
-
+*/
 // ─── KORAPAY CUSTOM MODAL ────────────────────────────────
 // Calls server-side Korapay Collect API, then renders our own
 // modal with the virtual bank account details — no Korapay popup.
