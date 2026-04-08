@@ -477,8 +477,7 @@ console.log(bankName);
 showConfirm({
         title: 'Complete Transfer',
         message: 'Are you certain you want to change your password?.',
-        detail:`    <div class="modal-content">
-      <h3 style="margin-top:0;color:var(--teal)">Complete Transfer</h3>
+        detail:`  
       <strong style="font-size:1.3rem;color:#666">₦${amount.toLocaleString('en-NG', { minimumFractionDigits: 2 })}</strong>
       <div class="bank-details">
         <div class="detail-row"><p style="font-size:0.9rem;color:#666">Transfer the exact amount to:</p></div>
@@ -489,7 +488,7 @@ showConfirm({
         <div style="text-align:center;cursor:pointer" onclick="copyText('modalRef')">
           <span style="font-size:0.75rem;color:#666;text-transform:uppercase;font-weight:bold;">Use this Reference as Narration</span>
           <span class="ref-box" id="modalRef">${refCode}</span>
-        </div>`,
+      `,
         
         yesText: 'Done',
         noText: 'Cancel',
