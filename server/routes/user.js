@@ -173,7 +173,6 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
 });
 
 // ─── GET /api/user/fex-rate ───────────────────────────────
-// Returns the current FEX → Naira conversion rate from config
 router.get('/fex-rate', requireAuth, async (req, res) => {
   try {
     const config  = await Settings.findOne({ key: 'config' });
@@ -185,7 +184,6 @@ router.get('/fex-rate', requireAuth, async (req, res) => {
 });
 
 // ─── POST /api/user/convert-fex ──────────────────────────
-// Called at withdrawal time — converts FEX to Naira at live rate
 router.post('/convert-fex', requireAuth, async (req, res) => {
   try {
     const { fexAmount } = req.body;
@@ -202,6 +200,69 @@ router.post('/convert-fex', requireAuth, async (req, res) => {
       summary:   `🪙 ${fexAmount} FEX × ₦${fexRate} = ₦${naira.toLocaleString()}`
     });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/user/initiate-korapay ─────────────────────
+// Calls Korapay Collect API server-side — returns virtual bank
+// account details so the frontend can show its OWN custom modal
+// instead of Korapay's default popup widget.
+router.post('/initiate-korapay', requireAuth, async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || Number(amount) <= 0)
+      return res.status(400).json({ error: 'Invalid amount.' });
+
+    const secretKey = process.env.KORAPAY_SECRET_KEY;
+    if (!secretKey)
+      return res.status(400).json({ error: 'Payment not configured.' });
+
+    const reference = 'DEP_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+    const u = req.user;
+
+    const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/initialize', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${secretKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount: Number(amount),
+        currency: 'NGN',
+        reference,
+        customer: {
+          name: u.username || 'User',
+          email: u.email
+        },
+        channels: ['bank_transfer'],
+        notification_url: process.env.KORAPAY_WEBHOOK_URL || `${process.env.APP_URL}/api/webhook/korapay`
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.status || !result.data) {
+      console.error('[Korapay Init]', result);
+      return res.status(400).json({ error: result.message || 'Failed to initialize payment. Try again.' });
+    }
+
+    const payData     = result.data;
+    const bankTransfer = payData.payment_options?.bank_transfer;
+
+    res.json({
+      success:       true,
+      reference:     payData.reference,
+      amount:        payData.amount,
+      currency:      payData.currency,
+      bankName:      bankTransfer?.bank_name      || null,
+      accountNumber: bankTransfer?.account_number || null,
+      accountName:   bankTransfer?.account_name   || u.username,
+      expiresAt:     bankTransfer?.expires_at      || null,
+    });
+
+  } catch (err) {
+    console.error('[Korapay Init Error]', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -240,7 +301,6 @@ router.get('/deposits', requireAuth, async (req, res) => {
 });
 
 // ─── POST /api/user/withdraw ──────────────────────────────
-// Receives fexAmount — converts to Naira at live rate server-side
 router.post('/withdraw', requireAuth, async (req, res) => {
   try {
     if (!requireVerified(req, res)) return;
@@ -250,7 +310,7 @@ router.post('/withdraw', requireAuth, async (req, res) => {
     const config = await Settings.findOne({ key: 'config' });
 
     const fexRate     = config?.value?.fexRate     || 0.7;
-    const minWithdraw = config?.value?.minWithdraw  || 2000; // in Naira
+    const minWithdraw = config?.value?.minWithdraw  || 2000;
     const withdrawFee = config?.value?.withdrawFee  || 0;
 
     if (!user.bankDetails?.accountNumber)
@@ -260,7 +320,6 @@ router.post('/withdraw', requireAuth, async (req, res) => {
     if (Number(fexAmount) > user.ib)
       return res.status(400).json({ error: 'Insufficient FEX balance.' });
 
-    // Convert FEX → Naira at live rate
     const nairaAmount = parseFloat((Number(fexAmount) * fexRate).toFixed(2));
     const minFex      = Math.ceil(minWithdraw / fexRate);
 
@@ -272,7 +331,6 @@ router.post('/withdraw', requireAuth, async (req, res) => {
     const feeAmount = parseFloat(((nairaAmount * withdrawFee) / 100).toFixed(2));
     const netAmount = parseFloat((nairaAmount - feeAmount).toFixed(2));
 
-    // Deduct FEX from wallet
     await User.findByIdAndUpdate(user._id, { $inc: { ib: -Number(fexAmount) } });
 
     await Activity.create({
@@ -285,12 +343,12 @@ router.post('/withdraw', requireAuth, async (req, res) => {
     const withdrawal = await Withdrawal.create({
       userId:           user._id,
       username:         user.username,
-      amount:           Number(fexAmount),  // stored in FEX
-      nairaAmount,                          // naira equivalent at time of request
-      fexRate,                              // rate snapshot
+      amount:           Number(fexAmount),
+      nairaAmount,
+      fexRate,
       fee:              feeAmount,
       feePercentage:    withdrawFee,
-      netAmount,                            // naira the user actually receives
+      netAmount,
       status:           'pending',
       bankDetails:      user.bankDetails,
       remainingBalance: user.ib - Number(fexAmount)
@@ -650,8 +708,8 @@ async function notifyAdmin(username, messagePreview) {
   try {
     const admin = await User.findOne({ role: 'admin' }).select('email');
     if (!admin?.email) return;
-    const config       = await Settings.findOne({ key: 'config' });
-    const siteName     = config?.value?.siteName || 'Flux Mall';
+    const config        = await Settings.findOne({ key: 'config' });
+    const siteName      = config?.value?.siteName || 'Flux Mall';
     const adminPanelUrl = process.env.APP_URL
       ? `${process.env.APP_URL}/cpanel/admin.html`
       : 'https://fluxmall.online/cpanel/admin.html';
