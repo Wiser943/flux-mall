@@ -451,10 +451,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //initiateDeposit(4000)
 // ─── DEPOSIT INITIATION ───────────────────────────────────
-window.initiateDeposit = async function(amount) {
+window.initiateDeposit = async function(amount) {/*
   if (!document.getElementById('attest')?.checked)
     return showAlert('Please read and accept before proceeding.', 'warning', 'ri-close-line', 'Attestation');
-
+*/
   amount = Number(amount);
   if (!amount) return showAlert('Enter valid amount (Minimum 3000)', 'error', 'ri-close-line', 'Invalid Amount');
 
