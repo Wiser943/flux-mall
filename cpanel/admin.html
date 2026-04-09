@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="css/style-02.css">
   <link rel="stylesheet" href="css/style-03.css">
   <link rel="stylesheet" href="css/style-04.css">
-<link rel="icon" type="image/png" href="../img/logo.png">
+  <link rel="icon" type="image/png" href="../img/logo.png">
   <title>Responsive Dashboard | Fluxmall</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
@@ -108,16 +108,22 @@
   <div class="content">
     <!-- Navbar -->
     <nav>
-      <i class='bx bx-menu'></i>
+      <i class='bx bx-menu menu-bar'></i>
       <div class="last">
-    <button class="theme-toggle" onclick="toggleTheme()" id="theme-toggle" title="Toggle theme"><i class="ri-moon-line"></i></button>
-        <a href="#" class="notif">
-          <i class='bx bx-bell'></i>
-          <span class="count">12</span>
-        </a>
-        <a href="#" class="profile">
-          <img src="images/logo.png">
-        </a>
+        <div>
+          <span class="theme-toggle" id="theme-toggle" title="Toggle theme"><i class="ri-moon-line"></i></span>
+          <a href="#" class="notif">
+            <i class='ri-notification-2-line'></i>
+            <span class="count">12</span>
+          </a>
+        </div>
+        <div>
+          <a href="#" class="profile">
+            <img src="images/logo.png">
+          </a>
+          <small><b>Admin</b></small>
+          <span style="color: red;"><i class="ri-logout-box-r-line"></i></span>
+        </div>
       </div>
     </nav>
     
@@ -362,7 +368,7 @@
       
     </main>
     <main class="page" id="chats">
-
+      
       <!-- ════════════════ SIDEBAR ════════════════ -->
       <div class="chat-list" id="chatlist">
         
