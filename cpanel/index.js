@@ -3689,6 +3689,25 @@ document.addEventListener('keydown', (e) => {
 // ══════════════════════════════════════════════════════════
 //  SECTION 16 — STARTUP
 // ══════════════════════════════════════════════════════════
+// ── STATE ──────────────────────────────────────────────────
+let _deposits    = [];
+let _withdrawals = [];
+let _activity    = [];
+
+let _dFiltered = [], _wFiltered = [], _aFiltered = [];
+
+const PER_PAGE = 15;
+let dPage = 1, wPage = 1, aPage = 1;
+
+// ── AVATAR COLOR MAP ───────────────────────────────────────
+const COLORS = ['#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
+function avatarColor(str) {
+  let h = 0;
+  for (let i = 0; i < (str||'').length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  return COLORS[Math.abs(h) % COLORS.length];
+}
+function initials(str) { return (str || '?').slice(0,2).toUpperCase(); }
+
 
 // Init on DOM ready
 document.addEventListener('DOMContentLoaded', () => {
@@ -3699,6 +3718,621 @@ document.addEventListener('DOMContentLoaded', () => {
   const saved = localStorage.getItem('fm_admin_theme') || 'light';
   updateThemeIcons(saved);
 });
+
+window.addEventListener('DOMContentLoaded', () => {
+  loadDeposits();
+  loadWithdrawals();
+  loadActivity();
+});
+
+async function refreshAll() {
+  loadDeposits();
+  loadWithdrawals();
+  loadActivity();
+}
+
+// ═══════════════════════════════════════════════════════════
+// DEPOSITS
+// ═══════════════════════════════════════════════════════════
+async function loadDeposits() {
+  setLoading('depositTableBody', 6);
+  const data = await api('/api/admin/deposits');
+  if (!data?.success) { setError('depositTableBody', 6, 'Failed to load deposits'); return; }
+  _deposits  = data.deposits || [];
+  _dFiltered = [..._deposits];
+  updateDepositStats();
+  renderDepositsPage();
+}
+
+function updateDepositStats() {
+  const total    = _deposits.length;
+  const approved = _deposits.filter(d => d.status === 'success').length;
+  const pending  = _deposits.filter(d => d.status === 'pending').length;
+  const withdrawCount = _withdrawals.length;
+
+  setText('statTotalDeposits',    total);
+  setText('statApprovedDeposits', approved);
+  setText('statPendingDeposits',  pending);
+  setText('statTotalWithdrawals', withdrawCount);
+  setText('tcDeposits',           total);
+}
+
+function filterDeposits(term) {
+  term = term.toLowerCase();
+  _dFiltered = _deposits.filter(d => {
+    const user = d.userId?.username || d.userId?._id || d.userId || '';
+    const ref  = d.refCode || '';
+    return user.toString().toLowerCase().includes(term) || ref.toLowerCase().includes(term);
+  });
+  dPage = 1;
+  renderDepositsPage();
+}
+
+function filterDepositStatus(status) {
+  _dFiltered = status === 'all' ? [..._deposits] : _deposits.filter(d => d.status === status);
+  dPage = 1;
+  renderDepositsPage();
+}
+
+function renderDepositsPage() {
+  const tbody = document.getElementById('depositTableBody');
+  if (!tbody) return;
+  if (!_dFiltered.length) { setEmpty('depositTableBody', 6, 'No deposits found'); hidePagination('deposit'); return; }
+
+  const slice = paginate(_dFiltered, dPage, PER_PAGE);
+  tbody.innerHTML = slice.map(i => {
+    const date     = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : 'Now';
+    const userId   = i.userId?._id || i.userId || '';
+    const userName = i.userId?.username || userId.toString().substring(0,8);
+    const ref      = (i.refCode || '').substring(0, 10);
+    const fex      = Number(i.amount);
+    const naira    = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+
+    return `<tr>
+      <td>
+        <div class="user-chip">
+          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
+          <div>
+            <div class="username">${userName}</div>
+            <div class="user-id">${userId.toString().substring(0,8)}…</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="amt-fex">🪙 ${fex.toLocaleString()} FEX</div>
+        <div class="amt-naira">≈ ₦${naira}</div>
+      </td>
+      <td><code style="font-size:11px;color:var(--text3);">${ref}…</code></td>
+      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
+      <td>${statusBadge(i.status)}</td>
+      <td>
+        <div class="action-group">
+          ${i.status === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
+              <i class="ri-check-line"></i> Approve
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="declineDeposit('${i._id}')">
+              <i class="ri-close-line"></i>
+            </button>
+          ` : `
+            <button class="btn btn-ghost btn-sm" onclick="viewDepositDetail(${JSON.stringify(i).replace(/"/g,'&quot;')})">
+              <i class="ri-eye-line"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteDeposit('${i._id}')">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          `}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination('deposit', _dFiltered.length, dPage, (p) => { dPage = p; renderDepositsPage(); });
+}
+
+window.approveDeposit = async (id, userId, amount, username) => {
+  if (!confirm(`Approve 🪙${Number(amount).toLocaleString()} FEX deposit from ${username}?`)) return;
+  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+  if (data?.success) {
+    showToast('✅ Deposit approved — user credited!', 'success');
+    loadDeposits();
+  } else {
+    showToast(data?.error || 'Error approving deposit.', 'error');
+  }
+};
+
+window.declineDeposit = async (id) => {
+  if (!confirm('Decline this deposit?')) return;
+  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+  if (data?.success) { showToast('Deposit declined.', 'warning'); loadDeposits(); }
+  else showToast(data?.error || 'Error.', 'error');
+};
+
+window.deleteDeposit = async (id) => {
+  if (!confirm('Delete this deposit record permanently?')) return;
+  await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
+  showToast('Record deleted.', 'warning');
+  loadDeposits();
+};
+
+window.viewDepositDetail = (i) => {
+  const userName = i.userId?.username || i.userId?.toString().substring(0,8) || '—';
+  const fex   = Number(i.amount);
+  const naira = (fex * 0.7).toLocaleString();
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <div class="info-card">
+          <label>User</label>
+          <div class="val">${userName}</div>
+        </div>
+        <div class="info-card">
+          <label>Status</label>
+          <div class="val">${statusBadge(i.status)}</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="info-card">
+          <label>Amount (FEX)</label>
+          <div class="val">🪙 ${fex.toLocaleString()}</div>
+        </div>
+        <div class="info-card">
+          <label>Naira Equiv.</label>
+          <div class="val">₦${naira}</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="info-card" style="flex:1">
+          <label>Reference</label>
+          <div class="val" style="font-family:monospace;font-size:12px;">${i.refCode || '—'}</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="info-card">
+          <label>Method</label>
+          <div class="val">${i.method || 'Bank Transfer'}</div>
+        </div>
+        <div class="info-card">
+          <label>Date</label>
+          <div class="val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      ${i.status === 'pending' ? `<button class="btn btn-success" onclick="approveDeposit('${i._id}','','${i.amount}','user');closeModal()"><i class="ri-check-line"></i> Approve</button>` : ''}
+    </div>
+  `);
+};
+
+// ═══════════════════════════════════════════════════════════
+// WITHDRAWALS
+// ═══════════════════════════════════════════════════════════
+async function loadWithdrawals() {
+  setLoading('withdrawTableBody', 7);
+  const data = await api('/api/admin/withdrawals');
+  if (!data?.success) { setError('withdrawTableBody', 7, 'Failed to load withdrawals'); return; }
+  _withdrawals  = data.withdrawals || [];
+  _wFiltered    = [..._withdrawals];
+  setText('tcWithdrawals',        _withdrawals.length);
+  setText('statTotalWithdrawals', _withdrawals.length);
+  renderWithdrawalsPage();
+}
+
+function filterWithdrawals(term) {
+  term = term.toLowerCase();
+  _wFiltered = _withdrawals.filter(w => {
+    const user = w.username || w.userId?.toString() || '';
+    const acc  = w.bankDetails?.accountNumber || '';
+    const bank = w.bankDetails?.bankName || '';
+    return user.toLowerCase().includes(term) || acc.includes(term) || bank.toLowerCase().includes(term);
+  });
+  wPage = 1;
+  renderWithdrawalsPage();
+}
+
+function filterWithdrawalStatus(status) {
+  _wFiltered = status === 'all' ? [..._withdrawals] : _withdrawals.filter(w => w.status === status);
+  wPage = 1;
+  renderWithdrawalsPage();
+}
+
+function renderWithdrawalsPage() {
+  const tbody = document.getElementById('withdrawTableBody');
+  if (!tbody) return;
+  if (!_wFiltered.length) { setEmpty('withdrawTableBody', 7, 'No withdrawals found'); hidePagination('withdraw'); return; }
+
+  const slice = paginate(_wFiltered, wPage, PER_PAGE);
+  tbody.innerHTML = slice.map(w => {
+    const date     = w.createdAt ? new Date(w.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+    const userName = w.username  || w.userId?.toString().substring(0,8) || '—';
+    const fex      = Number(w.amount);
+    const net      = Number(w.netAmount || (fex * 0.7));
+    const rate     = w.fexRate || 0.7;
+
+    return `<tr>
+      <td>
+        <div class="user-chip">
+          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
+          <div>
+            <div class="username">${userName}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="amt-fex">🪙 ${fex.toLocaleString()} FEX</div>
+        <div class="amt-naira">@ ₦${rate}/FEX</div>
+      </td>
+      <td>
+        <div class="amt-fex">₦${net.toLocaleString()}</div>
+        ${w.fee ? `<div class="amt-naira">fee: ₦${Number(w.fee).toLocaleString()}</div>` : ''}
+      </td>
+      <td>
+        <div class="bank-tag">
+          <i class="ri-bank-line"></i>
+          ${w.bankDetails?.bankName || '—'}
+        </div>
+        <div class="amt-naira" style="margin-top:3px;">${w.bankDetails?.accountNumber || '—'} · ${w.bankDetails?.accountName || ''}</div>
+      </td>
+      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
+      <td>${statusBadge(w.status)}</td>
+      <td>
+        <div class="action-group">
+          ${w.status === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w._id}','${userName}','${net}')">
+              <i class="ri-money-dollar-circle-line"></i> Pay
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="declineWithdrawal('${w._id}')">
+              <i class="ri-close-line"></i>
+            </button>
+          ` : `
+            <button class="btn btn-ghost btn-sm" onclick="viewWithdrawalDetail(${JSON.stringify(w).replace(/"/g,'&quot;')})">
+              <i class="ri-eye-line"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteWithdrawal('${w._id}')">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          `}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination('withdraw', _wFiltered.length, wPage, (p) => { wPage = p; renderWithdrawalsPage(); });
+}
+
+window.approveWithdrawal = async (id, username, net) => {
+  if (!confirm(`Confirm payment of ₦${Number(net).toLocaleString()} to ${username}?`)) return;
+  const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+  if (data?.success) { showToast('✅ Withdrawal marked as paid!', 'success'); loadWithdrawals(); }
+  else showToast(data?.error || 'Error.', 'error');
+};
+
+window.declineWithdrawal = async (id) => {
+  if (!confirm('Decline and refund user?')) return;
+  const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+  if (data?.success) { showToast('Withdrawal declined — user refunded.', 'warning'); loadWithdrawals(); }
+  else showToast(data?.error || 'Error.', 'error');
+};
+
+window.deleteWithdrawal = async (id) => {
+  if (!confirm('Delete this withdrawal record?')) return;
+  await api(`/api/admin/withdrawals/${id}`, { method: 'DELETE' });
+  showToast('Record deleted.', 'warning');
+  loadWithdrawals();
+};
+
+window.viewWithdrawalDetail = (w) => {
+  const fex  = Number(w.amount);
+  const net  = Number(w.netAmount || fex * 0.7);
+  const rate = w.fexRate || 0.7;
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-arrow-up-circle-line" style="color:var(--danger)"></i> Withdrawal Detail</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <div class="info-card">
+          <label>User</label>
+          <div class="val">${w.username || '—'}</div>
+        </div>
+        <div class="info-card">
+          <label>Status</label>
+          <div class="val">${statusBadge(w.status)}</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="info-card">
+          <label>FEX Amount</label>
+          <div class="val">🪙 ${fex.toLocaleString()}</div>
+        </div>
+        <div class="info-card">
+          <label>Naira Payout</label>
+          <div class="val">₦${net.toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="info-card">
+          <label>Rate</label>
+          <div class="val">₦${rate}/FEX</div>
+        </div>
+        <div class="info-card">
+          <label>Fee</label>
+          <div class="val">₦${Number(w.fee || 0).toLocaleString()}</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="info-card" style="flex:1">
+          <label>Bank</label>
+          <div class="val">${w.bankDetails?.bankName || '—'}</div>
+        </div>
+        <div class="info-card" style="flex:1">
+          <label>Account</label>
+          <div class="val" style="font-family:monospace">${w.bankDetails?.accountNumber || '—'}</div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <div class="info-card" style="flex:1">
+          <label>Account Name</label>
+          <div class="val">${w.bankDetails?.accountName || '—'}</div>
+        </div>
+        <div class="info-card">
+          <label>Date</label>
+          <div class="val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      ${w.status === 'pending' ? `<button class="btn btn-success" onclick="approveWithdrawal('${w._id}','${w.username}','${net}');closeModal()"><i class="ri-check-line"></i> Mark Paid</button>` : ''}
+    </div>
+  `);
+};
+
+// ═══════════════════════════════════════════════════════════
+// ACTIVITY
+// ═══════════════════════════════════════════════════════════
+async function loadActivity() {
+  setLoading('activityTableBody', 5);
+  // /api/admin/activity — returns all users activity logs
+  // Falls back to analytics deposits if endpoint unavailable
+  const data = await api('/api/admin/activity');
+  if (!data?.success) { setError('activityTableBody', 5, 'Activity log unavailable'); return; }
+  _activity  = data.activity || data.logs || [];
+  _aFiltered = [..._activity];
+  setText('tcActivity', _activity.length);
+  renderActivityPage();
+}
+
+function filterActivity(term) {
+  term = term.toLowerCase();
+  _aFiltered = _activity.filter(a =>
+    (a.desc || '').toLowerCase().includes(term) ||
+    (a.type || '').toLowerCase().includes(term) ||
+    (a.userId?.username || '').toLowerCase().includes(term)
+  );
+  aPage = 1;
+  renderActivityPage();
+}
+
+function filterActivityType(type) {
+  _aFiltered = type === 'all' ? [..._activity] : _activity.filter(a => a.type === type);
+  aPage = 1;
+  renderActivityPage();
+}
+
+function renderActivityPage() {
+  const tbody = document.getElementById('activityTableBody');
+  if (!tbody) return;
+  if (!_aFiltered.length) { setEmpty('activityTableBody', 5, 'No activity logs found'); hidePagination('activity'); return; }
+
+  const typeIcon = {
+    'Deposit':    { icon: 'ri-arrow-down-circle-line', color: 'var(--primary)' },
+    'Withdrawal': { icon: 'ri-arrow-up-circle-line',   color: 'var(--danger)'  },
+    'Check-in':   { icon: 'ri-gift-line',              color: 'var(--success)' },
+    'Shares':     { icon: 'ri-stock-line',             color: 'var(--warning)' },
+    'share':      { icon: 'ri-stock-line',             color: 'var(--warning)' },
+    'Won spin':   { icon: 'ri-trophy-line',            color: 'var(--success)' },
+    'Spin Loss':  { icon: 'ri-medal-line',             color: 'var(--text3)'   },
+  };
+
+  const slice = paginate(_aFiltered, aPage, PER_PAGE);
+  tbody.innerHTML = slice.map(a => {
+    const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+    const userName = a.userId?.username || a.username || '—';
+    const ti = typeIcon[a.type] || { icon: 'ri-exchange-line', color: 'var(--text3)' };
+    const fex = parseFloat(a.amount) || 0;
+    const isCredit = !['Withdrawal', 'Spin Loss'].includes(a.type);
+
+    return `<tr>
+      <td>
+        <div class="user-chip">
+          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
+          <div class="username">${userName}</div>
+        </div>
+      </td>
+      <td>
+        <span class="badge blue" style="gap:4px;">
+          <i class="${ti.icon}" style="color:${ti.color}"></i>
+          ${a.type || '—'}
+        </span>
+      </td>
+      <td>
+        <div class="amt-fex" style="color:${isCredit ? 'var(--success)' : 'var(--danger)'}">
+          ${isCredit ? '+' : '-'}🪙 ${fex.toLocaleString()} FEX
+        </div>
+      </td>
+      <td style="font-size:12px;color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.desc || '—'}</td>
+      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
+    </tr>`;
+  }).join('');
+
+  renderPagination('activity', _aFiltered.length, aPage, (p) => { aPage = p; renderActivityPage(); });
+}
+
+// ═══════════════════════════════════════════════════════════
+// EXPORT CSV
+// ═══════════════════════════════════════════════════════════
+function exportAllCSV() {
+  // Determine which tab is active
+  const active = document.querySelector('.tab-panel.active')?.id;
+  let rows = [], headers = [], name = '';
+
+  if (active === 'panel-deposits') {
+    headers = ['Date','User','Amount FEX','Ref','Status','Method'];
+    rows = _dFiltered.map(d => [
+      d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '',
+      d.userId?.username || d.userId || '',
+      d.amount, d.refCode, d.status, d.method || 'Bank Transfer'
+    ]);
+    name = 'deposits';
+  } else if (active === 'panel-withdrawals') {
+    headers = ['Date','User','FEX','Naira','Bank','Account','Status'];
+    rows = _wFiltered.map(w => [
+      w.createdAt ? new Date(w.createdAt).toLocaleDateString() : '',
+      w.username || '',
+      w.amount, w.netAmount,
+      w.bankDetails?.bankName || '', w.bankDetails?.accountNumber || '',
+      w.status
+    ]);
+    name = 'withdrawals';
+  } else {
+    headers = ['Date','User','Type','Amount FEX','Description'];
+    rows = _aFiltered.map(a => [
+      a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',
+      a.userId?.username || '',
+      a.type, a.amount, a.desc
+    ]);
+    name = 'activity';
+  }
+
+  const csv  = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `fluxmall_${name}_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('CSV exported ✓', 'success');
+}
+
+// ═══════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════
+function statusBadge(s) {
+  const map = {
+    success:  'success', approved: 'success',
+    pending:  'pending',
+    declined: 'declined', failed: 'declined'
+  };
+  const cls = map[s] || 'pending';
+  const dot = { success:'🟢', pending:'🟡', declined:'🔴' }[cls] || '⚪';
+  return `<span class="badge ${cls}">${dot} ${(s||'pending').charAt(0).toUpperCase() + (s||'pending').slice(1)}</span>`;
+}
+
+function paginate(arr, page, per) {
+  const start = (page-1)*per;
+  return arr.slice(start, start+per);
+}
+
+function renderPagination(prefix, total, page, onPage) {
+  const totalPages = Math.ceil(total / PER_PAGE);
+  const start = (page-1)*PER_PAGE + 1;
+  const end   = Math.min(page*PER_PAGE, total);
+  const wrap  = document.getElementById(prefix+'Pagination');
+  const info  = document.getElementById(prefix+'PageInfo');
+  const btns  = document.getElementById(prefix+'PageBtns');
+  if (!wrap) return;
+
+  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
+  if (info) info.textContent = `${start}–${end} of ${total}`;
+
+  // Build page buttons
+  const range = [];
+  let s = Math.max(1, page - 2);
+  let e = Math.min(totalPages, s + 4);
+  if (e-s < 4) s = Math.max(1, e-4);
+  for (let i = s; i <= e; i++) range.push(i);
+
+  btns.innerHTML = `
+    <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
+    ${range.map(p => `<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
+    <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
+}
+
+function hidePagination(prefix) {
+  const wrap = document.getElementById(prefix+'Pagination');
+  if (wrap) wrap.style.display = 'none';
+}
+
+function setLoading(tbodyId, cols) {
+  const el = document.getElementById(tbodyId);
+  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>`;
+}
+
+function setEmpty(tbodyId, cols, msg) {
+  const el = document.getElementById(tbodyId);
+  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-inbox-line"></i><p>${msg}</p></div></td></tr>`;
+}
+
+function setError(tbodyId, cols, msg) {
+  const el = document.getElementById(tbodyId);
+  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-error-warning-line" style="color:var(--danger)"></i><p>${msg}</p></div></td></tr>`;
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ── MODAL ──────────────────────────────────────────────────
+function showModal(html) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = '_txnModalOverlay';
+  overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+  overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
+  document.body.appendChild(overlay);
+}
+
+function closeModal() {
+  document.getElementById('_txnModalOverlay')?.remove();
+}
+
+// ── TOAST ──────────────────────────────────────────────────
+let _toastWrap = null;
+function showToast(msg, type = 'success') {
+  if (!_toastWrap) {
+    _toastWrap = document.createElement('div');
+    _toastWrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
+    document.body.appendChild(_toastWrap);
+  }
+  const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
+  const t = document.createElement('div');
+  t.style.cssText = `
+    background:${colors[type]||'#4318ff'};color:#fff;
+    padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;
+    box-shadow:0 4px 16px rgba(0,0,0,0.15);
+    animation:toastIn 0.22s ease;
+    pointer-events:auto;
+  `;
+  t.textContent = msg;
+  _toastWrap.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+
+
+
 
 // Boot — check session
 //checkAdminSession();
