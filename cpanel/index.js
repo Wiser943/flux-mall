@@ -144,26 +144,6 @@ async function api(path, options = {}) {
   }
 }
 
-// ── Toast ──────────────────────────────────────────────────
-// One unified toast — works for both showToast() and toast() callers
-function showToast(msg, type = 'success') {
-  // Try toast-container first (settings/users), fallback to toast (chat)
-  const container = document.getElementById('toast-container') || document.getElementById('toast');
-  if (!container) return;
-  const icons = { success: 'ri-check-circle-line', error: 'ri-error-warning-line', info: 'ri-information-line', warning: 'ri-alert-line' };
-  const el = document.createElement('div');
-  el.className = `toast-msg ${type}`;
-  el.innerHTML = `<i class="${icons[type]||icons.info}"></i><span>${msg}</span>`;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(-6px) scale(0.95)';
-    el.style.transition = '0.3s';
-    setTimeout(() => el.remove(), 300);
-  }, 3000);
-}
-// Alias so both calling conventions work
-const toast = showToast;
 
 // ── Flash title ────────────────────────────────────────────
 window.startFlash = (msg) => {
@@ -4311,10 +4291,12 @@ function closeModal() {
 */
 // ── TOAST ──────────────────────────────────────────────────
 let _toastWrap = null;
+const toast=showToast;
+
 function showToast(msg, type = 'success') {
   if (!_toastWrap) {
     _toastWrap = document.createElement('div');
-    _toastWrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
+    _toastWrap.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;height:40px;overflow:hidden;justify-content:flex-start'
     document.body.appendChild(_toastWrap);
   }
   const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
@@ -4336,4 +4318,4 @@ function showToast(msg, type = 'success') {
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
