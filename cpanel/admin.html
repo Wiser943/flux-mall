@@ -67,7 +67,7 @@
     </a>
     <div class="side-menu">
       <li><a class="nav-item active" href="#dashboard"><i class='bx bxs-dashboard'></i><span>Dashboard</span></a></li>
-      <li><a class="nav-item" href="#analytics"><i class='bx bx-analyse'></i><span>Analytics</span></a></li>
+      <li><a class="nav-item" href="#transactions"><i class='bx bx-analyse'></i><span>Transactions</span></a></li>
       <li><a class="nav-item" href="#chats"><i class='bx bx-message-square-dots'></i><span>Live chats</span></a></li>
       <li><a class="nav-item" href="#users"><i class='bx bx-group'></i><span>User Management</span></a></li>
       <li><a class="nav-item" href="#settings"><i class='bx bx-cog'></i><span>Settings</span></a></li>
@@ -114,7 +114,7 @@
           <span class="theme-toggle" id="theme-toggle" title="Toggle theme"><i class="ri-moon-line"></i></span>
           <a href="#" class="notif">
             <i class='ri-notification-2-line'></i>
-            <span class="count">12</span>
+            <span class="count"></span>
           </a>
         </div>
         <div>
@@ -265,10 +265,9 @@
         
         <!-- End of Reminders-->
         
+        
       </div>
-      
-    </main>
-    <main class="page" id="analytics">
+
       <div class="header">
         <div class="left">
           <h1>Analytics</h1>
@@ -366,9 +365,187 @@
         </div>
       </div>
       
+
     </main>
+    <main class="page" id="transactions">
+  <!-- ── PAGE HEADER ───────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1><i class="ri-exchange-funds-line" style="color:var(--primary);margin-right:6px;"></i>Transactions</h1>
+      <div class="subtitle">Deposits · Withdrawals · Activity log</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="exportAllCSV()"><i class="ri-download-2-line"></i> Export</button>
+    </div>
+  </div>
+
+  <!-- ── STAT STRIP ────────────────────────────────────── -->
+  <div class="stat-strip">
+    <div class="stat-card blue">
+      <div class="stat-val" id="statTotalDeposits">—</div>
+      <div class="stat-label">Total Deposits</div>
+      <i class="ri-arrow-down-circle-line stat-icon"></i>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-val" id="statApprovedDeposits">—</div>
+      <div class="stat-label">Approved</div>
+      <i class="ri-checkbox-circle-line stat-icon"></i>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-val" id="statPendingDeposits">—</div>
+      <div class="stat-label">Pending</div>
+      <i class="ri-time-line stat-icon"></i>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-val" id="statTotalWithdrawals">—</div>
+      <div class="stat-label">Withdrawals</div>
+      <i class="ri-arrow-up-circle-line stat-icon"></i>
+    </div>
+  </div>
+
+  <!-- ── TABS CONTAINER ────────────────────────────────── -->
+  <div class="tabs-wrap">
+
+    <!-- Tab Buttons -->
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab('deposits',this)">
+        <i class="ri-arrow-down-circle-line"></i>
+        <span>Deposits</span>
+        <span class="tab-count" id="tcDeposits">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('withdrawals',this)">
+        <i class="ri-arrow-up-circle-line"></i>
+        <span>Withdrawals</span>
+        <span class="tab-count" id="tcWithdrawals">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('activity',this)">
+        <i class="ri-list-check"></i>
+        <span>Activity</span>
+        <span class="tab-count" id="tcActivity">0</span>
+      </button>
+    </div>
+
+    <!-- ══ DEPOSITS TAB ══════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-deposits">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search user, ref…" oninput="filterDeposits(this.value)">
+        </div>
+        <select class="filter-select" onchange="filterDepositStatus(this.value)">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="success">Approved</option>
+          <option value="declined">Declined</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Amount</th>
+              <th>Reference</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="depositTableBody">
+            <tr><td colspan="6"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="depositPagination" style="display:none;">
+        <span id="depositPageInfo"></span>
+        <div class="page-btns" id="depositPageBtns"></div>
+      </div>
+    </div>
+
+    <!-- ══ WITHDRAWALS TAB ════════════════════════════════ -->
+    <div class="tab-panel" id="panel-withdrawals">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search user, account…" oninput="filterWithdrawals(this.value)">
+        </div>
+        <select class="filter-select" onchange="filterWithdrawalStatus(this.value)">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="success">Paid</option>
+          <option value="declined">Declined</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Amount (FEX)</th>
+              <th>Naira Value</th>
+              <th>Bank Details</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="withdrawTableBody">
+            <tr><td colspan="7"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="withdrawPagination" style="display:none;">
+        <span id="withdrawPageInfo"></span>
+        <div class="page-btns" id="withdrawPageBtns"></div>
+      </div>
+    </div>
+
+    <!-- ══ ACTIVITY TAB ═══════════════════════════════════ -->
+    <div class="tab-panel" id="panel-activity">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search description, type…" oninput="filterActivity(this.value)">
+        </div>
+        <select class="filter-select" onchange="filterActivityType(this.value)">
+          <option value="all">All Types</option>
+          <option value="Deposit">Deposit</option>
+          <option value="Withdrawal">Withdrawal</option>
+          <option value="Check-in">Check-in</option>
+          <option value="Shares">Investment</option>
+          <option value="Won spin">Spin Win</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Description</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="activityTableBody">
+            <tr><td colspan="5"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="activityPagination" style="display:none;">
+        <span id="activityPageInfo"></span>
+        <div class="page-btns" id="activityPageBtns"></div>
+      </div>
+    </div>
+
+  </div><!-- /tabs-wrap -->
+</main><!-- /page -->
+
     <main class="page" id="chats">
-      
       <!-- ════════════════ SIDEBAR ════════════════ -->
       <div class="chat-list" id="chatlist">
         
