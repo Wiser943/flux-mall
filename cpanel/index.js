@@ -310,7 +310,9 @@ const handleSidebarResponsive = () => {
   if (window.innerWidth >= 768) {
     sideBar?.classList.remove('close'); // Always open on laptops
   } else {
-    sideBar?.classList.add('close');    // Always closed on mobile initially
+   // sideBar?.classList.add('close');    // Always closed on mobile initially
+   sideBar?.classList.remove('close'); // Always open on laptops
+
   }
 };
 
@@ -329,7 +331,7 @@ if (sideBar) {
     }
   });
 }
-
+/*Potentially disabled by admin
 // 4. Close when clicking anywhere else (Mobile Only)
 document.addEventListener('click', (e) => {
   if (window.innerWidth < 768) {
@@ -339,7 +341,7 @@ document.addEventListener('click', (e) => {
     }
   }
 });
-
+*/
 // Theme toggle (header button)
 const toggler = document.getElementById('theme-toggle');
 
@@ -4334,4 +4336,4 @@ function showToast(msg, type = 'success') {
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
