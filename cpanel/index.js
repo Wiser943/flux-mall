@@ -3696,7 +3696,6 @@ let _activity    = [];
 
 let _dFiltered = [], _wFiltered = [], _aFiltered = [];
 
-const PER_PAGE = 15;
 let dPage = 1, wPage = 1, aPage = 1;
 
 // ── AVATAR COLOR MAP ───────────────────────────────────────
