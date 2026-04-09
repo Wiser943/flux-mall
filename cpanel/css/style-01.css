@@ -664,8 +664,8 @@ body {
         position: fixed;
         bottom: 0;
         top: unset;
-        z-index: 600000;
-        padding: 0;
+        z-index: 60000;
+        padding: 0;overflow: hidden;
         align-items: center;
         height: 60px;
         justify-content: flex-start;
@@ -813,7 +813,7 @@ body {
     padding: 20px 16px 80px;
   }
 
-  /* ── PAGE HEADER ───────────────────────────────────────── 
+  /* ── PAGE HEADER ───────────────────────────────────────── */
   .page-header {
     display: flex;
     align-items: center;
@@ -826,7 +826,6 @@ body {
     font-size: 20px;
     font-weight: 800;
     color: var(--text1);
-    letter-spacing: -0.3px;
   }
   .page-header .subtitle {
     font-size: 12px;
@@ -935,35 +934,7 @@ body {
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
-  /* ── TOOLBAR ───────────────────────────────────────────── */
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .search-box {
-    flex: 1;
-    min-width: 160px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 12px;
-  }
-  .search-box i { color: var(--text3); font-size: 15px; }
-  .search-box input {
-    border: none;
-    background: transparent;
-    font-size: 13px;
-    color: var(--text1);
-    outline: none;
-    width: 100%;
-  }
+
   .filter-select {
     background: var(--bg);
     border: 1px solid var(--border);
