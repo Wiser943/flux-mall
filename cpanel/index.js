@@ -227,8 +227,8 @@ async function uploadToImgBB(file, statusEl) {
 window.showModal = (cfg) => {
   const old = document.getElementById(cfg.id);
   if (old) old.remove();
-        if (window.navigator?.vibrate) window.navigator.vibrate(100);
-
+  if (window.navigator?.vibrate) window.navigator.vibrate(100);
+  
   const overlay = document.createElement('div');
   overlay.id = cfg.id;
   overlay.className = 'modal-overlay';
@@ -295,48 +295,68 @@ sideLinks.forEach(item => {
   });
 });
 
-const menuBar = document.querySelector('.content nav .bx.bx-menu');
+const menuBar = document.querySelectorAll('.menu-bar');
 const sideBar = document.querySelector('.sidebar');
 
 if (menuBar && sideBar) {
-  menuBar.addEventListener('click', () => sideBar.classList.toggle('close'));
+  menuBar.forEach((btn) => {
+    btn.addEventListener('click', () => sideBar.classList.toggle('close'));
+    
+  })
 }
 
-const searchBtn = document.querySelector('.content nav form .form-input button');
-const searchBtnIcon = document.querySelector('.content nav form .form-input button .bx');
-const searchForm = document.querySelector('.content nav form');
+// 1. Initial Check on Page Load
+const handleSidebarResponsive = () => {
+  if (window.innerWidth >= 768) {
+    sideBar?.classList.remove('close'); // Always open on laptops
+  } else {
+    sideBar?.classList.add('close');    // Always closed on mobile initially
+  }
+};
 
-if (searchBtn) {
-  searchBtn.addEventListener('click', function(e) {
-    if (window.innerWidth < 576) {
-      e.preventDefault();
-      searchForm.classList.toggle('show');
-      if (searchForm.classList.contains('show')) {
-        searchBtnIcon.classList.replace('bx-search', 'bx-x');
-      } else {
-        searchBtnIcon.classList.replace('bx-x', 'bx-search');
-      }
+// Run on load
+handleSidebarResponsive();
+
+// 2. Handle the Window Resize
+window.addEventListener('resize', handleSidebarResponsive);
+
+// 3. Handle Sidebar Interaction (Mobile Only)
+if (sideBar) {
+  sideBar.addEventListener('click', (e) => {
+    if (window.innerWidth < 768) {
+      sideBar.classList.remove('close');
+      e.stopPropagation(); // Prevents the 'click outside' logic from firing immediately
     }
   });
 }
 
-window.addEventListener('resize', () => {
-  if (window.innerWidth < 768) sideBar?.classList.add('close');
-  else sideBar?.classList.remove('close');
-  if (window.innerWidth > 576) {
-    searchBtnIcon?.classList.replace('bx-x', 'bx-search');
-    searchForm?.classList.remove('show');
+// 4. Close when clicking anywhere else (Mobile Only)
+document.addEventListener('click', (e) => {
+  if (window.innerWidth < 768) {
+    // If click is NOT on sidebar and NOT on the toggle button, close it
+    if (!sideBar.contains(e.target) && !toggler.contains(e.target)) {
+      sideBar.classList.add('close');
+    }
   }
 });
 
-// Theme toggle (header checkbox)
+// Theme toggle (header button)
 const toggler = document.getElementById('theme-toggle');
+
 if (toggler) {
-  toggler.addEventListener('change', function() {
-    if (this.checked) { document.body.classList.add('dark');
-      setTheme('dark'); }
-    else { document.body.classList.remove('dark');
-      setTheme('light'); }
+  toggler.addEventListener('click', function() {
+    // Toggle the dark class on the body
+    const isDark = document.body.classList.toggle('dark');
+    
+    if (isDark) {
+      setTheme('dark');
+      // Update icon to "Sun" so user knows clicking it leads back to light mode
+      this.innerHTML = '<i class="ri-sun-line"></i>';
+    } else {
+      setTheme('light');
+      // Update icon to "Moon" for dark mode
+      this.innerHTML = '<i class="ri-moon-line"></i>';
+    }
   });
 }
 
@@ -524,10 +544,14 @@ async function loadAnalytics() {
       <tr><td>Declined</td><td></td><td>${s.dCount}</td><td>--</td></tr>`;
   }
   
-  if (pieChart) { pieChart.data.datasets[0].data = [s.sCount, s.pCount, s.dCount];
-    pieChart.update(); }
-  if (barChart) { barChart.data.datasets[0].data = [s.successV, s.withdrawSuccessV];
-    barChart.update(); }
+  if (pieChart) {
+    pieChart.data.datasets[0].data = [s.sCount, s.pCount, s.dCount];
+    pieChart.update();
+  }
+  if (barChart) {
+    barChart.data.datasets[0].data = [s.successV, s.withdrawSuccessV];
+    barChart.update();
+  }
   
   allData = data.deposits;
   renderDeposits(allData);
@@ -560,8 +584,10 @@ function renderDeposits(data) {
 window.approveDeposit = async (id, userId, amount) => {
   if (!confirm(`Approve ₦${Number(amount).toLocaleString()} deposit?`)) return;
   const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) { showToast('Deposit approved and user credited!', 'success');
-    loadAnalytics(); }
+  if (data?.success) {
+    showToast('Deposit approved and user credited!', 'success');
+    loadAnalytics();
+  }
   else alert(data?.error || 'Error approving deposit.');
 };
 
@@ -683,8 +709,10 @@ async function renderApiUsers() {
 window.toggleBanStatus = async (uid, isBanned) => {
   const newStatus = isBanned ? 'Banned' : 'Active';
   const data = await api(`/api/admin/users/${uid}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
-  if (!data?.success) { alert('Error updating ban status.');
-    renderApiUsers(); }
+  if (!data?.success) {
+    alert('Error updating ban status.');
+    renderApiUsers();
+  }
 };
 
 window.filterUsers = () => {
@@ -837,8 +865,10 @@ function handleSearch(q) {
 
 function clearSearch() {
   const si = document.getElementById('searchInput');
-  if (si) { si.value = '';
-    document.getElementById('searchClear')?.classList.remove('vis'); }
+  if (si) {
+    si.value = '';
+    document.getElementById('searchClear')?.classList.remove('vis');
+  }
   applyFilters();
 }
 
@@ -874,8 +904,10 @@ function applyFilters() {
 
 function sortBy(col) {
   if (sortCol === col) sortDir *= -1;
-  else { sortCol = col;
-    sortDir = -1; }
+  else {
+    sortCol = col;
+    sortDir = -1;
+  }
   document.querySelectorAll('#userTable thead th').forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
   filtered.sort((a, b) => {
     let va = a[col],
@@ -1057,9 +1089,11 @@ function updateBulkBar() {
   if (cnt) cnt.textContent = `${selected.size} selected`;
 }
 
-function clearSelection() { selected.clear();
+function clearSelection() {
+  selected.clear();
   updateBulkBar();
-  renderTable(); }
+  renderTable();
+}
 
 // ── Detail Pane ────────────────────────────────────────────
 function openDetail(id) {
@@ -1068,8 +1102,10 @@ function openDetail(id) {
   activeUserId = id;
   
   const dp = document.getElementById('detailPane');
-  if (dp) { dp.classList.remove('hidden');
-    dp.classList.add('mobile-open'); }
+  if (dp) {
+    dp.classList.remove('hidden');
+    dp.classList.add('mobile-open');
+  }
   
   const dpBody = document.getElementById('dpBody');
   if (!dpBody) return;
@@ -1111,8 +1147,10 @@ function openDetail(id) {
 function closeDetail() {
   activeUserId = null;
   const dp = document.getElementById('detailPane');
-  if (dp) { dp.classList.add('hidden');
-    dp.classList.remove('mobile-open'); }
+  if (dp) {
+    dp.classList.add('hidden');
+    dp.classList.remove('mobile-open');
+  }
   renderTable();
 }
 
@@ -1141,20 +1179,20 @@ function openAddUser() {
 }
 
 function submitAddUser() {
-  const fn    = document.getElementById('m-fname')?.value.trim();
-  const ln    = document.getElementById('m-lname')?.value.trim();
+  const fn = document.getElementById('m-fname')?.value.trim();
+  const ln = document.getElementById('m-lname')?.value.trim();
   const email = document.getElementById('m-email')?.value.trim();
-  const pass  = document.getElementById('m-pass')?.value;
+  const pass = document.getElementById('m-pass')?.value;
   if (!fn || !ln || !email || !pass) { showToast('Please fill all required fields', 'error'); return; }
-
+  
   api('/api/admin/create-user', {
     method: 'POST',
     body: JSON.stringify({
-      username: `${fn}${ln}`.toLowerCase().replace(/\s+/g,''),
+      username: `${fn}${ln}`.toLowerCase().replace(/\s+/g, ''),
       email,
       password: pass,
-      role:     'user',
-      initBal:  parseInt(document.getElementById('m-balance')?.value) || 0
+      role: 'user',
+      initBal: parseInt(document.getElementById('m-balance')?.value) || 0
     })
   }).then(data => {
     if (data?.success) {
@@ -1203,15 +1241,15 @@ function openEditModal(id) {
 function submitEdit(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-
-  const name   = document.getElementById('e-name')?.value.trim()  || u.name;
-  const email  = document.getElementById('e-email')?.value.trim() || u.email;
-  const phone  = document.getElementById('e-phone')?.value.trim() || u.phone;
+  
+  const name = document.getElementById('e-name')?.value.trim() || u.name;
+  const email = document.getElementById('e-email')?.value.trim() || u.email;
+  const phone = document.getElementById('e-phone')?.value.trim() || u.phone;
   const status = document.getElementById('e-status')?.value;
   const active = document.getElementById('e-active')?.value === '1';
-
+  
   const apiStatus = status === 'banned' ? 'Banned' : 'Active';
-
+  
   api(`/api/admin/users/${id}`, {
     method: 'PUT',
     body: JSON.stringify({
@@ -1223,9 +1261,9 @@ function submitEdit(id) {
     })
   }).then(data => {
     if (data?.success) {
-      u.name   = name;
-      u.email  = email;
-      u.phone  = phone;
+      u.name = name;
+      u.email = email;
+      u.phone = phone;
       u.status = status;
       u.active = active;
       closeModal();
@@ -1264,12 +1302,12 @@ function submitBalance(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   const type = document.getElementById('c-type')?.value;
-  const amt  = parseInt(document.getElementById('c-amount')?.value) || 0;
+  const amt = parseInt(document.getElementById('c-amount')?.value) || 0;
   if (amt <= 0 && type !== 'set') { showToast('Enter a valid amount', 'error'); return; }
-
+  
   // Map UI type to API action
   const action = type === 'credit' ? 'credit' : type === 'debit' ? 'debit' : 'set';
-
+  
   api('/api/admin/users/adjust-balance', {
     method: 'POST',
     body: JSON.stringify({ userId: id, amount: amt, action })
@@ -1277,7 +1315,7 @@ function submitBalance(id) {
     if (data?.success) {
       u.balance = data.newBalance ?? (
         type === 'credit' ? u.balance + amt :
-        type === 'debit'  ? Math.max(0, u.balance - amt) :
+        type === 'debit' ? Math.max(0, u.balance - amt) :
         amt
       );
       closeModal();
@@ -1321,13 +1359,13 @@ function submitMessage(id) {
   if (!u) return;
   const body = document.getElementById('msg-body')?.value.trim();
   if (!body) { showToast('Message cannot be empty', 'error'); return; }
-
+  
   api(`/api/admin/users/${id}/notify`, {
     method: 'POST',
     body: JSON.stringify({
-      title:   document.getElementById('msg-title')?.value.trim() || 'Admin Message',
+      title: document.getElementById('msg-title')?.value.trim() || 'Admin Message',
       message: body,
-      type:    document.getElementById('msg-type')?.value || 'info'
+      type: document.getElementById('msg-type')?.value || 'info'
     })
   }).then(data => {
     if (data?.success) {
@@ -1360,8 +1398,8 @@ function submitBan(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   const newStatus = u.status === 'banned' ? 'Active' : 'Banned';
-  const reason    = document.getElementById('ban-reason')?.value || '';
-
+  const reason = document.getElementById('ban-reason')?.value || '';
+  
   api(`/api/admin/users/${id}`, {
     method: 'PUT',
     body: JSON.stringify({ status: newStatus, banReason: reason })
@@ -1413,11 +1451,12 @@ function submitDelete(id) {
     }
   });
 }
+
 function toggleVerify(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   const newVerified = u.status !== 'verified';
-
+  
   api(`/api/admin/users/${id}`, {
     method: 'PUT',
     body: JSON.stringify({ emailVerified: newVerified })
@@ -1453,7 +1492,7 @@ function submitResetPass(id) {
   const p2 = document.getElementById('rp-pass2')?.value;
   if (!p1 || p1.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
   if (p1 !== p2) { showToast('Passwords do not match', 'error'); return; }
-
+  
   api(`/api/admin/users/${id}/reset-password`, {
     method: 'POST',
     body: JSON.stringify({ newPassword: p1 })
@@ -1519,7 +1558,7 @@ function submitBulkDelete() {
     showToast('Type DELETE to confirm', 'error');
     return;
   }
-  const ids   = [...selected];
+  const ids = [...selected];
   const count = ids.length;
   Promise.all(
     ids.map(id => api(`/api/admin/users/${id}`, { method: 'DELETE' }))
@@ -1610,7 +1649,7 @@ async function loadSettings() {
       fillSettings({
         ...s.config,
         maintenance: s.maintenance,
-        features:    s.features,
+        features: s.features,
       });
     }
   } catch (err) {
@@ -1647,23 +1686,23 @@ function fillSettings(data) {
     setVal('refL2', data.referralPercents[1]);
     setVal('refL3', data.referralPercents[2]);
   }
-
+  
   // Restore deposit amounts if API has them
   if (Array.isArray(data.depositAmounts) && data.depositAmounts.length) {
     depositAmounts.length = 0;
     data.depositAmounts.forEach(a => depositAmounts.push(a));
     renderTags('depositTags', depositAmounts);
   }
-
+  
   // Restore feature flag toggles
   if (data.features) {
     const toggleMap = {
-      deposits:    'tgl-deposits',
+      deposits: 'tgl-deposits',
       withdrawals: 'tgl-withdrawals',
-      shares:      'tgl-shares',
-      referral:    'tgl-referral',
-      spin:        'tgl-spin',
-      register:    'tgl-register',
+      shares: 'tgl-shares',
+      referral: 'tgl-referral',
+      spin: 'tgl-spin',
+      register: 'tgl-register',
     };
     Object.entries(toggleMap).forEach(([key, elId]) => {
       const el = document.getElementById(elId);
@@ -1797,49 +1836,51 @@ function initChangeTracking() {
 }
 
 window.addEventListener('beforeunload', (e) => {
-  if (unsavedChanges > 0) { e.preventDefault();
-    e.returnValue = ''; }
+  if (unsavedChanges > 0) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
 });
 
 // ── Save all settings ──────────────────────────────────────
 async function saveAllSettings() {
   const g = (id) => document.getElementById(id)?.value;
-
+  
   // Build the config payload matching your backend schema
   const configPayload = {
-    siteName:           g('siteName')      || g('siteNameInput'),
-    tagline:            g('siteTagline'),
-    siteAbout:          g('siteDesc')      || g('descText'),
-    whatsappLink:       g('whatsappLink')  || g('waLink'),
-    telegramLink:       g('telegramLink')  || g('tgLink'),
+    siteName: g('siteName') || g('siteNameInput'),
+    tagline: g('siteTagline'),
+    siteAbout: g('siteDesc') || g('descText'),
+    whatsappLink: g('whatsappLink') || g('waLink'),
+    telegramLink: g('telegramLink') || g('tgLink'),
     dailyCheckInAmount: Number(g('checkinBonus') || g('signinAmt') || 0),
-    referralPercents:   [g('refL1')||g('ref1'), g('refL2')||g('ref2'), g('refL3')||g('ref3')].map(Number),
-    minDeposit:         Number(g('minDeposit')  || 0),
-    maxDeposit:         Number(g('maxDeposit')  || 0),
-    minWithdraw:        Number(g('minWithdraw') || 0),
-    withdrawFee:        Number(g('withdrawFee') || 0),
-    withdrawStart:      g('withdrawStart'),
-    withdrawEnd:        g('withdrawEnd'),
-    adminEmail:         g('adminEmail'),
-    maintMsg:           g('maintMsg'),
-    gateway:            g('payGateway'),
-    environment:        g('payEnv'),
+    referralPercents: [g('refL1') || g('ref1'), g('refL2') || g('ref2'), g('refL3') || g('ref3')].map(Number),
+    minDeposit: Number(g('minDeposit') || 0),
+    maxDeposit: Number(g('maxDeposit') || 0),
+    minWithdraw: Number(g('minWithdraw') || 0),
+    withdrawFee: Number(g('withdrawFee') || 0),
+    withdrawStart: g('withdrawStart'),
+    withdrawEnd: g('withdrawEnd'),
+    adminEmail: g('adminEmail'),
+    maintMsg: g('maintMsg'),
+    gateway: g('payGateway'),
+    environment: g('payEnv'),
     ...settingsState
   };
-
+  
   // Animate buttons immediately so it feels responsive
   document.querySelectorAll('.btn-save, .btn-save-now').forEach(btn => {
     btn._orig = btn.innerHTML;
     btn.innerHTML = '<i class="ri-loader-4-line"></i> Saving...';
     btn.disabled = true;
   });
-
+  
   try {
     const result = await api('/api/admin/settings/config', {
       method: 'PUT',
       body: JSON.stringify(configPayload)
     });
-
+    
     if (result?.success || result?.message) {
       document.querySelectorAll('.btn-save, .btn-save-now').forEach(btn => {
         btn.innerHTML = '<i class="ri-check-line"></i> Saved!';
@@ -1941,9 +1982,11 @@ function handleSettingsSearch(query) {
 
 function clearSettingsSearch() {
   const input = document.getElementById('settingsSearch');
-  if (input) { input.value = '';
+  if (input) {
+    input.value = '';
     handleSettingsSearch('');
-    input.focus(); }
+    input.focus();
+  }
   document.querySelectorAll('.section-title-text').forEach(el => { el.innerHTML = el.textContent; });
 }
 
@@ -2049,8 +2092,10 @@ async function testApiConnection() {
 
 function openUtil(section) { showToast(`Opening ${section} manager...`, 'info'); }
 
-function saveBrandAssets() { showToast('Brand assets saved', 'success');
-  markChanged(); }
+function saveBrandAssets() {
+  showToast('Brand assets saved', 'success');
+  markChanged();
+}
 
 function checkUpdates() {
   showToast('Checking for updates...', 'info');
@@ -2104,7 +2149,7 @@ function handleOverlayClick(e) {
 // ══════════════════════════════════════════════════════════
 
 function setTheme(mode) {
-  const html = document.documentElement;
+  const html = document.body;
   if (mode === 'auto') {
     mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
@@ -2125,44 +2170,6 @@ function loadThemeSettings() {
   if (toggler) toggler.checked = saved === 'dark';
 }
 
-function toggleTheme() {
-  const curr = document.documentElement.getAttribute('data-theme') || 'dark';
-  setTheme(curr === 'dark' ? 'light' : 'dark');
-}
-
-window.applyPreset = (mode, primary, secondary) => {
-  const s = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
-  s('themeMode', mode);
-  s('primaryColor', primary);
-  s('secondaryColor', secondary);
-  saveThemeConfig();
-};
-
-window.saveThemeConfig = async (e) => {
-  if (e) e.preventDefault();
-  const btn = document.querySelector('#themeForm button');
-  if (btn) { btn.disabled = true;
-    btn.innerText = 'Publishing...'; }
-  try {
-    await api('/api/admin/settings/config', {
-      method: 'PUT',
-      body: JSON.stringify({
-        theme: {
-          mode: document.getElementById('themeMode')?.value,
-          primary: document.getElementById('primaryColor')?.value,
-          secondary: document.getElementById('secondaryColor')?.value
-        }
-      })
-    });
-    alert('✅ Theme Updated! Users will see it immediately.');
-  } catch (err) {
-    alert('Failed to update theme. Check console for details.');
-  } finally {
-    if (btn) { btn.disabled = false;
-      btn.innerText = 'Save Theme'; }
-  }
-};
-
 
 // ══════════════════════════════════════════════════════════
 //  SECTION 12 — SETTINGS FORM SUBMISSIONS (old panels)
@@ -2179,8 +2186,10 @@ if (rulesForm) {
   rulesForm.onsubmit = async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('button');
-    if (btn) { btn.disabled = true;
-      btn.innerText = 'Saving...'; }
+    if (btn) {
+      btn.disabled = true;
+      btn.innerText = 'Saving...';
+    }
     try {
       const newConfig = {
         siteName: document.getElementById('siteNameInput')?.value,
@@ -2200,8 +2209,10 @@ if (rulesForm) {
     } catch (err) {
       alert('Error updating config. Check your connection.');
     } finally {
-      if (btn) { btn.disabled = false;
-        btn.innerText = 'Save Config'; }
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'Save Config';
+      }
     }
   };
 }
@@ -2444,9 +2455,9 @@ async function initChatPage() {
 async function loadChatSessionsIntoList() {
   const list = document.getElementById('chatList');
   if (!list) return;
-
+  
   const data = await api('/api/admin/chat/sessions');
-
+  
   if (!data?.success) {
     // API failed — only show mock if nothing rendered yet
     if (!window._chatSessions?.length) {
@@ -2455,45 +2466,45 @@ async function loadChatSessionsIntoList() {
     }
     return;
   }
-
+  
   const sessions = data.sessions || [];
-
+  
   const mapped = sessions.map((s, i) => ({
-    id:        s._id,          // id === sessionId — openChat checks sessionId directly
+    id: s._id, // id === sessionId — openChat checks sessionId directly
     sessionId: s._id,
-    name:      s.username || 'Unknown User',
-    initials:  (s.username || 'U').substring(0, 2).toUpperCase(),
-    email:     s.userEmail || '',
-    online:    s.status !== 'ended',
-    unread:    s.unreadAdmin || 0,
-    pinned:    s.pinned  || false,
-    muted:     s.muted   || false,
-    status:    s.status === 'ended' ? 'resolved' : 'open',
-    balance:   s.userId?.ib         || 0,
-    shares:    s.userId?.shares      || 0,
-    deposits:  s.userId?.transCount  || 0,
-    referrals: s.userId?.refPoints   || 0,
-    lastMsg:   s.lastMessage   || 'No messages yet',
-    lastTime:  s.lastMessageAt
-      ? new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : '',
-    color:    COLORS[i % COLORS.length],
+    name: s.username || 'Unknown User',
+    initials: (s.username || 'U').substring(0, 2).toUpperCase(),
+    email: s.userEmail || '',
+    online: s.status !== 'ended',
+    unread: s.unreadAdmin || 0,
+    pinned: s.pinned || false,
+    muted: s.muted || false,
+    status: s.status === 'ended' ? 'resolved' : 'open',
+    balance: s.userId?.ib || 0,
+    shares: s.userId?.shares || 0,
+    deposits: s.userId?.transCount || 0,
+    referrals: s.userId?.refPoints || 0,
+    lastMsg: s.lastMessage || 'No messages yet',
+    lastTime: s.lastMessageAt ?
+      new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) :
+      '',
+    color: COLORS[i % COLORS.length],
     userData: s.userId,
   }));
-
+  
   // Badge counts
-  const openCount     = mapped.filter(u => u.status === 'open').length;
-  const unreadCount   = mapped.reduce((a, u) => a + u.unread, 0);
+  const openCount = mapped.filter(u => u.status === 'open').length;
+  const unreadCount = mapped.reduce((a, u) => a + u.unread, 0);
   const resolvedCount = mapped.filter(u => u.status === 'resolved').length;
   const setEl = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  setEl('stat-open',     openCount);
-  setEl('stat-unread',   unreadCount);
+  setEl('stat-open', openCount);
+  setEl('stat-unread', unreadCount);
   setEl('stat-resolved', resolvedCount);
-  setEl('badge-all',     mapped.length);
-  setEl('badge-unread',  unreadCount);
-
+  setEl('badge-all', mapped.length);
+  setEl('badge-unread', unreadCount);
+  
   window._chatSessions = mapped;
-
+  
   const q = document.getElementById('chatSearch')?.value.trim().toLowerCase() || '';
   handleChatSearch(q);
 }
@@ -2548,11 +2559,11 @@ function renderChatList(users, query = '') {
 
 function openChat(userId) {
   chatActiveUserId = userId;
-
+  
   // Prefer real API sessions; fall back to mock
   const sessions = window._chatSessions || [];
   const realSession = sessions.find(u => u.id === userId);
-
+  
   // If this came from the API, always open the real session
   if (realSession && realSession.sessionId) {
     openAdminChatSession(
@@ -2563,48 +2574,51 @@ function openChat(userId) {
     );
     return;
   }
-
+  
   // ── Mock fallback (for demo / offline) ──────────────────
   const user = CHAT_USERS.find(u => u.id === userId);
   if (!user) return;
   user.unread = 0;
-
+  
   document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
   const ci = document.getElementById(`ci-${userId}`);
   if (ci) {
     ci.classList.remove('unread');
     ci.classList.add('active');
     const badge = ci.querySelector('.unread-badge');
-    if (badge) { badge.textContent = '0'; badge.style.display = 'none'; }
+    if (badge) { badge.textContent = '0';
+      badge.style.display = 'none'; }
   }
-
+  
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   const hdrAvatar = document.getElementById('hdrAvatar');
-  if (hdrAvatar) { hdrAvatar.textContent = user.initials; hdrAvatar.style.color = user.color; }
+  if (hdrAvatar) { hdrAvatar.textContent = user.initials;
+    hdrAvatar.style.color = user.color; }
   set('hdrName', user.name);
-
+  
   const statusEl = document.getElementById('hdrStatus');
-  const dotEl    = document.getElementById('hdrOnlineDot');
+  const dotEl = document.getElementById('hdrOnlineDot');
   if (statusEl) {
     statusEl.textContent = user.online ? 'Online' : 'Offline';
-    statusEl.className   = `chat-header-status${user.online ? ' online' : ''}`;
+    statusEl.className = `chat-header-status${user.online ? ' online' : ''}`;
   }
   dotEl?.classList.toggle('visible', user.online);
-
+  
   const uipAvatar = document.getElementById('uipAvatar');
-  if (uipAvatar) { uipAvatar.textContent = user.initials; uipAvatar.style.color = user.color; }
-  set('uipName',      user.name);
-  set('uipEmail',     user.email);
-  set('uipBalance',   user.balance);
-  set('uipShares',    user.shares);
-  set('uipDeposits',  user.deposits);
+  if (uipAvatar) { uipAvatar.textContent = user.initials;
+    uipAvatar.style.color = user.color; }
+  set('uipName', user.name);
+  set('uipEmail', user.email);
+  set('uipBalance', user.balance);
+  set('uipShares', user.shares);
+  set('uipDeposits', user.deposits);
   set('uipReferrals', user.referrals);
-
+  
   document.getElementById('sessionEndedBar')?.classList.toggle('visible', user.status === 'resolved');
-  document.getElementById('chatEmpty').style.display    = 'none';
+  document.getElementById('chatEmpty').style.display = 'none';
   document.getElementById('chatWindow').classList.add('active');
   document.getElementById('chatMain').classList.add('mobile-open');
-
+  
   renderMessages(userId);
 }
 
@@ -2654,8 +2668,10 @@ function sendMessage() {
   msgs.push(newMsg);
   
   const user = CHAT_USERS.find(u => u.id === chatActiveUserId);
-  if (user) { user.lastMsg = text;
-    user.lastTime = nowTime(); }
+  if (user) {
+    user.lastMsg = text;
+    user.lastTime = nowTime();
+  }
   
   if (input) input.value = '';
   const msgInput = document.getElementById('msgInput');
@@ -2669,8 +2685,10 @@ function sendMessage() {
 }
 
 function handleInputKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault();
-    sendMessage(); }
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
 }
 
 function autoResize(el) {
@@ -2685,21 +2703,21 @@ function closeMobileChat() {
 }
 
 function handleChatSearch(query) {
-  const q        = query.trim().toLowerCase();
+  const q = query.trim().toLowerCase();
   const clearBtn = document.getElementById('searchClearBtn');
   clearBtn?.classList.toggle('visible', q.length > 0);
-
+  
   // Use real API sessions if available, else mock
   let users = window._chatSessions?.length ? window._chatSessions : CHAT_USERS;
-
+  
   if (q) {
     users = users.filter(u =>
-      u.name.toLowerCase().includes(q)    ||
+      u.name.toLowerCase().includes(q) ||
       u.lastMsg.toLowerCase().includes(q) ||
       (u.email || '').toLowerCase().includes(q)
     );
   }
-
+  
   users = applyChatFilter(users);
   renderChatList(users, q);
 }
@@ -2803,9 +2821,11 @@ function ctxAction(action) {
       if (chatActiveUserId && ctxMsgId) {
         const msgs = CHAT_MESSAGES[chatActiveUserId];
         const idx = msgs.findIndex(m => m.id === ctxMsgId);
-        if (idx > -1) { msgs.splice(idx, 1);
+        if (idx > -1) {
+          msgs.splice(idx, 1);
           renderMessages(chatActiveUserId);
-          showToast('Message deleted', 'info'); }
+          showToast('Message deleted', 'info');
+        }
       }
       break;
   }
@@ -2840,8 +2860,10 @@ function closeQuickReplies() {
 
 function useQuickReply(text) {
   const input = document.getElementById('msgInput');
-  if (input) { input.value = text;
-    autoResize(input); }
+  if (input) {
+    input.value = text;
+    autoResize(input);
+  }
   closeQuickReplies();
   input?.focus();
 }
@@ -2893,8 +2915,10 @@ function simulateTyping() {
     const responses = ['Thank you for your help!', 'Ok I will wait then', 'Is there anything else I should do?', 'My issue has been resolved 🙏', 'Please when will it be done?'];
     const text = responses[Math.floor(Math.random() * responses.length)];
     CHAT_MESSAGES[chatActiveUserId].push({ id: Date.now(), from: 'user', text, time: nowTime(), status: 'delivered' });
-    if (user) { user.lastMsg = text;
-      user.lastTime = nowTime(); }
+    if (user) {
+      user.lastMsg = text;
+      user.lastTime = nowTime();
+    }
     renderMessages(chatActiveUserId);
     handleChatSearch(document.getElementById('chatSearch')?.value || '');
   }, 2500);
@@ -2907,8 +2931,10 @@ function resolveSession() {
   user.status = 'resolved';
   document.getElementById('sessionEndedBar')?.classList.add('visible');
   const ia = document.getElementById('inputArea');
-  if (ia) { ia.style.opacity = '0.5';
-    ia.style.pointerEvents = 'none'; }
+  if (ia) {
+    ia.style.opacity = '0.5';
+    ia.style.pointerEvents = 'none';
+  }
   showToast(`Session with ${user.name} resolved`, 'success');
   handleChatSearch(document.getElementById('chatSearch')?.value || '');
 }
@@ -2920,8 +2946,10 @@ function reopenSession() {
   user.status = 'open';
   document.getElementById('sessionEndedBar')?.classList.remove('visible');
   const ia = document.getElementById('inputArea');
-  if (ia) { ia.style.opacity = '';
-    ia.style.pointerEvents = ''; }
+  if (ia) {
+    ia.style.opacity = '';
+    ia.style.pointerEvents = '';
+  }
   showToast('Session reopened', 'info');
 }
 
@@ -2952,18 +2980,26 @@ window.executeChatCtx = function(userId, actionIdx) {
   const user = CHAT_USERS.find(u => u.id === userId);
   if (!menu || !user) return;
   const actions = [
-    () => { user.pinned = !user.pinned;
+    () => {
+      user.pinned = !user.pinned;
       handleChatSearch('');
-      showToast(user.pinned ? 'Chat pinned' : 'Chat unpinned', 'info'); },
-    () => { user.muted = !user.muted;
+      showToast(user.pinned ? 'Chat pinned' : 'Chat unpinned', 'info');
+    },
+    () => {
+      user.muted = !user.muted;
       handleChatSearch('');
-      showToast(user.muted ? 'Chat muted' : 'Chat unmuted', 'info'); },
-    () => { user.unread = 1;
+      showToast(user.muted ? 'Chat muted' : 'Chat unmuted', 'info');
+    },
+    () => {
+      user.unread = 1;
       handleChatSearch('');
-      showToast('Marked as unread', 'info'); },
-    () => { user.status = 'resolved';
+      showToast('Marked as unread', 'info');
+    },
+    () => {
+      user.status = 'resolved';
       handleChatSearch('');
-      showToast('Resolved', 'success'); },
+      showToast('Resolved', 'success');
+    },
   ];
   actions[actionIdx]?.();
   menu.classList.remove('visible');
@@ -3056,8 +3092,10 @@ window.loadAdminChatSessions = async function() {
   
   const totalUnread = data.sessions.reduce((a, s) => a + (s.unreadAdmin || 0), 0);
   const badge = document.getElementById('adminChatBadge');
-  if (badge) { badge.textContent = totalUnread;
-    badge.style.display = totalUnread > 0 ? 'flex' : 'none'; }
+  if (badge) {
+    badge.textContent = totalUnread;
+    badge.style.display = totalUnread > 0 ? 'flex' : 'none';
+  }
 };
 
 window.openAdminChatSession = async function(sessionId, username, status, userData) {
@@ -3201,8 +3239,12 @@ function buildAdminMsgBubble(msg, logo) {
 }
 
 let adminLongPressTimer = null;
-window.adminShowEmojiBar = (e, barId) => { e.preventDefault();
-  adminHideAllEmojiBars(); const b = document.getElementById(barId); if (b) b.style.display = 'flex'; };
+window.adminShowEmojiBar = (e, barId) => {
+  e.preventDefault();
+  adminHideAllEmojiBars();
+  const b = document.getElementById(barId);
+  if (b) b.style.display = 'flex';
+};
 window.adminHideEmojiBar = (barId) => { const b = document.getElementById(barId); if (b) b.style.display = 'none'; };
 window.adminHandleTouchStart = (e, barId) => { adminLongPressTimer = setTimeout(() => adminShowEmojiBar(e, barId), 500); };
 window.adminHandleTouchEnd = () => clearTimeout(adminLongPressTimer);
@@ -3244,8 +3286,10 @@ window.adminStartEdit = (msgId) => {
   adminReplyingTo = null;
   adminEditingMsgId = msgId;
   const input = document.getElementById('adminChatInput');
-  if (input) { input.value = msg.content;
-    input.focus(); }
+  if (input) {
+    input.value = msg.content;
+    input.focus();
+  }
   const bar = document.getElementById('adminReplyBar');
   if (bar) bar.style.display = 'flex';
   const rs = document.getElementById('adminReplyBarSender');
@@ -3268,8 +3312,10 @@ window.sendAdminMessage = async () => {
   
   if (adminEditingMsgId) {
     const data = await api(`/api/admin/chat/message/${adminEditingMsgId}`, { method: 'PUT', body: JSON.stringify({ content: text }) });
-    if (data?.success) { cancelAdminReply();
-      await loadAdminMessages(activeSessionId); }
+    if (data?.success) {
+      cancelAdminReply();
+      await loadAdminMessages(activeSessionId);
+    }
     else alert(data?.error || 'Failed to edit.');
     return;
   }
@@ -3432,8 +3478,10 @@ function sendBrowserNotif(username, message) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (document.visibilityState === 'visible') return;
   const notif = new Notification(`💬 ${username}`, { body: message, icon: adminSiteLogo || '/favicon.ico', tag: 'flux-chat', requireInteraction: true });
-  notif.onclick = () => { window.focus();
-    notif.close(); };
+  notif.onclick = () => {
+    window.focus();
+    notif.close();
+  };
 }
 
 let lastKnownUnread = 0;
@@ -3441,8 +3489,10 @@ setInterval(async () => {
   const data = await api('/api/admin/chat/unread');
   const badge = document.getElementById('adminChatBadge');
   if (data?.unread > 0) {
-    if (badge) { badge.textContent = data.unread;
-      badge.style.display = 'flex'; }
+    if (badge) {
+      badge.textContent = data.unread;
+      badge.style.display = 'flex';
+    }
     if (data.unread > lastKnownUnread) {
       if (adminSoundEnabled) playAdminChatSound();
       const sessions = await api('/api/admin/chat/sessions');
@@ -3492,8 +3542,10 @@ window.saveChatSettings = async () => {
     officeHours: { enabled: gc('cs_officeHoursEnabled'), open: gv('cs_open'), close: gv('cs_close'), offlineMsg: gv('cs_offlineMsg') }
   };
   const data = await api('/api/admin/chat/settings', { method: 'PUT', body: JSON.stringify(body) });
-  if (data?.success) { adminSoundEnabled = body.sound;
-    showToast('Chat settings saved!', 'success'); }
+  if (data?.success) {
+    adminSoundEnabled = body.sound;
+    showToast('Chat settings saved!', 'success');
+  }
   else alert(data?.error || 'Error saving settings.');
 };
 
@@ -3548,9 +3600,11 @@ function startStatusTicker(sessionId, sessionStatus, userStatus) {
   states[0]();
   statusTickerTimer = setInterval(() => {
     el.style.opacity = '0';
-    setTimeout(() => { idx = (idx + 1) % states.length;
+    setTimeout(() => {
+      idx = (idx + 1) % states.length;
       states[idx]();
-      el.style.opacity = '1'; }, 300);
+      el.style.opacity = '1';
+    }, 300);
   }, 3500);
 }
 
@@ -3591,8 +3645,10 @@ window.searchChatMessages = (query) => {
       }
     });
   });
-  if (resultsEl) { resultsEl.textContent = matchCount > 0 ? `${matchCount} result${matchCount>1?'s':''} found` : 'No results found';
-    resultsEl.style.color = matchCount > 0 ? '#10ac84' : '#e74c3c'; }
+  if (resultsEl) {
+    resultsEl.textContent = matchCount > 0 ? `${matchCount} result${matchCount>1?'s':''} found` : 'No results found';
+    resultsEl.style.color = matchCount > 0 ? '#10ac84' : '#e74c3c';
+  }
   if (firstMatch) firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
 
@@ -3657,14 +3713,19 @@ document.addEventListener('keydown', (e) => {
   // / = focus settings search
   if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
     const si = document.getElementById('settingsSearch');
-    if (si) { e.preventDefault();
-      si.focus(); }
+    if (si) {
+      e.preventDefault();
+      si.focus();
+    }
   }
   if (e.key === 'Escape') {
     // Settings search
     const si = document.getElementById('settingsSearch');
-    if (document.activeElement === si) { clearSettingsSearch();
-      si.blur(); return; }
+    if (document.activeElement === si) {
+      clearSettingsSearch();
+      si.blur();
+      return;
+    }
     // Confirm modal
     closeConfirm();
     // Ctx menus
