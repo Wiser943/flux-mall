@@ -3,8 +3,9 @@
    VARIABLES
 ══════════════════════════════════════ */
 
-:root,[data-theme="light"] {
-   --light: #f6f6f9;
+:root,
+[data-theme="light"] {
+    --light: #f6f6f9;
     --light-primary: #CFE8FF;
     --grey: #eee;
     --dark-grey: #AAAAAA;
@@ -14,17 +15,17 @@
     --light-warning: #FFF2C6;
     --success: #388E3C;
     --light-success: #BBF7D0;
-
- --green: #2E7D52;
-  --green-light: #4CAF7D;
-  --green-dark: #1B4D32;
-  --yellow: #f59e0b;
-  --blue: #3b82f6;
-  --radius: 14px;
-  --radius-sm: 9px;
-  --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-  
-      --bg: #f0f5f2;
+    
+    --green: #2E7D52;
+    --green-light: #4CAF7D;
+    --green-dark: #1B4D32;
+    --yellow: #f59e0b;
+    --blue: #3b82f6;
+    --radius: 14px;
+    --radius-sm: 9px;
+    --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --bg: #f0f5f2;
     --surface: #ffffff;
     --card: #ffffff;
     --card-2: #f7faf8;
@@ -39,8 +40,9 @@
     --badge-bg: rgba(46, 125, 82, 0.08);
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.07);
 }
+
 [data-theme="dark"],
-body.dark{
+body.dark {
     --bg: #0b1410;
     --surface: #101e18;
     --card: #132018;
@@ -56,7 +58,6 @@ body.dark{
     --badge-bg: rgba(76, 175, 125, 0.1);
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
     --dark: var(--text)
-
 }
 
 body.dark {
@@ -86,7 +87,8 @@ li {
 
 html,
 body {
-    overflow-x: hidden;background:var(--bg)
+    overflow-x: hidden;
+    background: var(--bg)
 }
 
 .sidebar {
@@ -94,7 +96,7 @@ body {
     position: fixed;
     left: 0;
     background: var(--card);
-    width: 220px;
+    width: 200px;
     height: 100%;
     z-index: 2000;
     overflow-x: hidden;
@@ -256,59 +258,22 @@ body {
     color: var(--text);
 }
 
-.content nav form {
-    max-width: 400px;
-    width: 100%;
-    margin-right: auto;
-}
 
-.content nav form .form-input {
+.content nav .last,
+.content nav .last div {
     display: flex;
     align-items: center;
-    height: 36px;
-}
-
-.content nav form .form-input input {
-    flex-grow: 1;
-    padding: 0 16px;
-    height: 100%;
-    border: none;
-    background: var(--grey);
-    border-radius: 36px 0 0 36px;
-    outline: none;
-    width: 100%;
-    color: var(--text);
-}
-
-.content nav form .form-input button {
-    width: 80px;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: var(--blue);
-    color: var(--light);
-    font-size: 18px;
-    border: none;
-    outline: none;
-    border-radius: 0 36px 36px 0;
-    cursor: pointer;
-}
-
-.content nav form~.last {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    gap: 30px;
 }
 
 .content nav .notif {
-    font-size: 20px;
+    font-size: 24px;
     position: relative;
 }
 
 .content nav .notif .count {
     position: absolute;
-    top: -6px;
+    top: -2px;
     right: -6px;
     width: 20px;
     height: 20px;
@@ -332,28 +297,11 @@ body {
 
 .content nav .theme-toggle {
     display: block;
-    min-width: 50px;
-    height: 25px;
     background: var(--grey);
     cursor: pointer;
     position: relative;
+    padding: 8px 12px;
     border-radius: 25px;
-}
-
-.content nav .theme-toggle::before {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    bottom: 2px;
-    width: calc(25px - 4px);
-    background: var(--blue);
-    border-radius: 50%;
-    transition: all 0.3s ease;
-}
-
-.content nav #theme-toggle:checked+.theme-toggle::before {
-    left: calc(100% - (25px - 4px) - 2px);
 }
 
 .content main {
@@ -691,6 +639,25 @@ body {
 
 
 @media screen and (max-width: 768px) {
+    .content nav .bx.bx-menu {
+        display: none;
+    }
+    
+    .content nav .last {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        align-items: center;
+    }.content nav .last div {
+    gap:8px
+}
+.content nav .profile img {
+    width: 28px;
+    height: 28px;
+    object-fit: cover;
+    border-radius: 50%;
+}
+    
     .sidebar {
         width: 100%;
         background: var(--card);
@@ -728,13 +695,15 @@ body {
         overflow: hidden;
         justify-content: flex-start;
         margin: 0 0 20px 20px;
-        border: 2px solid #aaa;padding: 0;
+        border: 2px solid #aaa;
+        padding: 0;
     }
     
     .sidebar.close .logo:not(.logo-name) {
         display: flex;
         margin: 0;
-        justify-content: flex-start;left: 0;
+        justify-content: flex-start;
+        left: 0;
     }
     
     .sidebar.close~.content,
