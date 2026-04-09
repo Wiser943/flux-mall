@@ -15,7 +15,8 @@ let originalTitle = document.title;
 
 // ── User Management Table ──────────────────────────────────
 const COLORS = ['#4CAF7D', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899',
-  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
+  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac'
+];
 
 const PER_PAGE = 10;
 
@@ -242,9 +243,6 @@ window.showModal = (cfg) => {
 };
 
 // ── Slide-up modal (settings/users confirm) ────────────────
-
-
-
 function openSlideModal(html) {
   document.getElementById('modalContent').innerHTML = html;
   document.getElementById('modalOverlay').classList.add('vis');
@@ -290,9 +288,9 @@ const handleSidebarResponsive = () => {
   if (window.innerWidth >= 768) {
     sideBar?.classList.remove('close'); // Always open on laptops
   } else {
-   // sideBar?.classList.add('close');    // Always closed on mobile initially
-   sideBar?.classList.remove('close'); // Always open on laptops
-
+    // sideBar?.classList.add('close');    // Always closed on mobile initially
+    sideBar?.classList.remove('close'); // Always open on laptops
+    
   }
 };
 
@@ -1633,6 +1631,7 @@ function fillSettings(data) {
     if (mt) mt.checked = !!data.maintenance.enabled;
   }
 }
+
 function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -2412,8 +2411,7 @@ async function loadChatSessionsIntoList() {
     referrals: s.userId?.refPoints || 0,
     lastMsg: s.lastMessage || 'No messages yet',
     lastTime: s.lastMessageAt ?
-      new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) :
-      '',
+      new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
     color: COLORS[i % COLORS.length],
     userData: s.userId,
   }));
@@ -2512,14 +2510,18 @@ function openChat(userId) {
     ci.classList.remove('unread');
     ci.classList.add('active');
     const badge = ci.querySelector('.unread-badge');
-    if (badge) { badge.textContent = '0';
-      badge.style.display = 'none'; }
+    if (badge) {
+      badge.textContent = '0';
+      badge.style.display = 'none';
+    }
   }
   
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   const hdrAvatar = document.getElementById('hdrAvatar');
-  if (hdrAvatar) { hdrAvatar.textContent = user.initials;
-    hdrAvatar.style.color = user.color; }
+  if (hdrAvatar) {
+    hdrAvatar.textContent = user.initials;
+    hdrAvatar.style.color = user.color;
+  }
   set('hdrName', user.name);
   
   const statusEl = document.getElementById('hdrStatus');
@@ -2531,8 +2533,10 @@ function openChat(userId) {
   dotEl?.classList.toggle('visible', user.online);
   
   const uipAvatar = document.getElementById('uipAvatar');
-  if (uipAvatar) { uipAvatar.textContent = user.initials;
-    uipAvatar.style.color = user.color; }
+  if (uipAvatar) {
+    uipAvatar.textContent = user.initials;
+    uipAvatar.style.color = user.color;
+  }
   set('uipName', user.name);
   set('uipEmail', user.email);
   set('uipBalance', user.balance);
@@ -3672,22 +3676,27 @@ document.addEventListener('keydown', (e) => {
 //  SECTION 16 — STARTUP
 // ══════════════════════════════════════════════════════════
 // ── STATE ──────────────────────────────────────────────────
-let _deposits    = [];
+let _deposits = [];
 let _withdrawals = [];
-let _activity    = [];
+let _activity = [];
 
-let _dFiltered = [], _wFiltered = [], _aFiltered = [];
+let _dFiltered = [],
+  _wFiltered = [],
+  _aFiltered = [];
 
-let dPage = 1, wPage = 1, aPage = 1;
+let dPage = 1,
+  wPage = 1,
+  aPage = 1;
 
 // ── AVATAR COLOR MAP ───────────────────────────────────────
 
 function avatarColor(str) {
   let h = 0;
-  for (let i = 0; i < (str||'').length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+  for (let i = 0; i < (str || '').length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
   return COLORS[Math.abs(h) % COLORS.length];
 }
-function initials(str) { return (str || '?').slice(0,2).toUpperCase(); }
+
+function initials(str) { return (str || '?').slice(0, 2).toUpperCase(); }
 
 
 // Init on DOM ready
@@ -3719,30 +3728,30 @@ async function loadDeposits() {
   setLoading('depositTableBody', 6);
   const data = await api('/api/admin/deposits');
   if (!data?.success) { setError('depositTableBody', 6, 'Failed to load deposits'); return; }
-  _deposits  = data.deposits || [];
+  _deposits = data.deposits || [];
   _dFiltered = [..._deposits];
   updateDepositStats();
   renderDepositsPage();
 }
 
 function updateDepositStats() {
-  const total    = _deposits.length;
+  const total = _deposits.length;
   const approved = _deposits.filter(d => d.status === 'success').length;
-  const pending  = _deposits.filter(d => d.status === 'pending').length;
+  const pending = _deposits.filter(d => d.status === 'pending').length;
   const withdrawCount = _withdrawals.length;
-
-  setText('statTotalDeposits',    total);
+  
+  setText('statTotalDeposits', total);
   setText('statApprovedDeposits', approved);
-  setText('statPendingDeposits',  pending);
+  setText('statPendingDeposits', pending);
   setText('statTotalWithdrawals', withdrawCount);
-  setText('tcDeposits',           total);
+  setText('tcDeposits', total);
 }
 
 function filterDeposits(term) {
   term = term.toLowerCase();
   _dFiltered = _deposits.filter(d => {
     const user = d.userId?.username || d.userId?._id || d.userId || '';
-    const ref  = d.refCode || '';
+    const ref = d.refCode || '';
     return user.toString().toLowerCase().includes(term) || ref.toLowerCase().includes(term);
   });
   dPage = 1;
@@ -3758,17 +3767,18 @@ function filterDepositStatus(status) {
 function renderDepositsPage() {
   const tbody = document.getElementById('depositTableBody');
   if (!tbody) return;
-  if (!_dFiltered.length) { setEmpty('depositTableBody', 6, 'No deposits found'); hidePagination('deposit'); return; }
-
+  if (!_dFiltered.length) { setEmpty('depositTableBody', 6, 'No deposits found');
+    hidePagination('deposit'); return; }
+  
   const slice = paginate(_dFiltered, dPage, PER_PAGE);
   tbody.innerHTML = slice.map(i => {
-    const date     = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : 'Now';
-    const userId   = i.userId?._id || i.userId || '';
-    const userName = i.userId?.username || userId.toString().substring(0,8);
-    const ref      = (i.refCode || '').substring(0, 10);
-    const fex      = Number(i.amount);
-    const naira    = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-
+    const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Now';
+    const userId = i.userId?._id || i.userId || '';
+    const userName = i.userId?.username || userId.toString().substring(0, 8);
+    const ref = (i.refCode || '').substring(0, 10);
+    const fex = Number(i.amount);
+    const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+    
     return `<tr>
       <td>
         <div class="user-chip">
@@ -3807,8 +3817,9 @@ function renderDepositsPage() {
       </td>
     </tr>`;
   }).join('');
-
-  renderPagination('deposit', _dFiltered.length, dPage, (p) => { dPage = p; renderDepositsPage(); });
+  
+  renderPagination('deposit', _dFiltered.length, dPage, (p) => { dPage = p;
+    renderDepositsPage(); });
 }
 
 window.approveDeposit = async (id, userId, amount, username) => {
@@ -3825,7 +3836,8 @@ window.approveDeposit = async (id, userId, amount, username) => {
 window.declineDeposit = async (id) => {
   if (!confirm('Decline this deposit?')) return;
   const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) { showToast('Deposit declined.', 'warning'); loadDeposits(); }
+  if (data?.success) { showToast('Deposit declined.', 'warning');
+    loadDeposits(); }
   else showToast(data?.error || 'Error.', 'error');
 };
 
@@ -3837,15 +3849,13 @@ window.deleteDeposit = async (id) => {
 };
 
 window.viewDepositDetail = (i) => {
-  const userName = i.userId?.username || i.userId?.toString().substring(0,8) || '—';
-  const fex   = Number(i.amount);
+  const userName = i.userId?.username || i.userId?.toString().substring(0, 8) || '—';
+  const fex = Number(i.amount);
   const naira = (fex * 0.7).toLocaleString();
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
+  showModal({
+    id: 'detailModal',
+    title: `<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>`,
+    content: `
     <div class="modal-body">
       <div class="modal-row">
         <div class="info-card">
@@ -3883,12 +3893,14 @@ window.viewDepositDetail = (i) => {
           <div class="val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</div>
         </div>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      ${i.status === 'pending' ? `<button class="btn btn-success" onclick="approveDeposit('${i._id}','','${i.amount}','user');closeModal()"><i class="ri-check-line"></i> Approve</button>` : ''}
-    </div>
-  `);
+    </div>`,
+    
+    buttons: [
+      { text: 'Delete User', class: 'btn-danger', onclick: `deleteUser('${uid}')` },
+      { text: 'Close', class: 'btn-sec', onclick: `document.getElementById('detailModal').remove()` }
+    ]
+  });
+  /*${i.status === 'pending' ? `<button class="btn btn-success" onclick="approveDeposit('${i._id}','','${i.amount}','user');closeModal()"><i class="ri-check-line"></i> Approve</button>` : ''}*/
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -3898,9 +3910,9 @@ async function loadWithdrawals() {
   setLoading('withdrawTableBody', 7);
   const data = await api('/api/admin/withdrawals');
   if (!data?.success) { setError('withdrawTableBody', 7, 'Failed to load withdrawals'); return; }
-  _withdrawals  = data.withdrawals || [];
-  _wFiltered    = [..._withdrawals];
-  setText('tcWithdrawals',        _withdrawals.length);
+  _withdrawals = data.withdrawals || [];
+  _wFiltered = [..._withdrawals];
+  setText('tcWithdrawals', _withdrawals.length);
   setText('statTotalWithdrawals', _withdrawals.length);
   renderWithdrawalsPage();
 }
@@ -3909,7 +3921,7 @@ function filterWithdrawals(term) {
   term = term.toLowerCase();
   _wFiltered = _withdrawals.filter(w => {
     const user = w.username || w.userId?.toString() || '';
-    const acc  = w.bankDetails?.accountNumber || '';
+    const acc = w.bankDetails?.accountNumber || '';
     const bank = w.bankDetails?.bankName || '';
     return user.toLowerCase().includes(term) || acc.includes(term) || bank.toLowerCase().includes(term);
   });
@@ -3926,16 +3938,17 @@ function filterWithdrawalStatus(status) {
 function renderWithdrawalsPage() {
   const tbody = document.getElementById('withdrawTableBody');
   if (!tbody) return;
-  if (!_wFiltered.length) { setEmpty('withdrawTableBody', 7, 'No withdrawals found'); hidePagination('withdraw'); return; }
-
+  if (!_wFiltered.length) { setEmpty('withdrawTableBody', 7, 'No withdrawals found');
+    hidePagination('withdraw'); return; }
+  
   const slice = paginate(_wFiltered, wPage, PER_PAGE);
   tbody.innerHTML = slice.map(w => {
-    const date     = w.createdAt ? new Date(w.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
-    const userName = w.username  || w.userId?.toString().substring(0,8) || '—';
-    const fex      = Number(w.amount);
-    const net      = Number(w.netAmount || (fex * 0.7));
-    const rate     = w.fexRate || 0.7;
-
+    const date = w.createdAt ? new Date(w.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    const userName = w.username || w.userId?.toString().substring(0, 8) || '—';
+    const fex = Number(w.amount);
+    const net = Number(w.netAmount || (fex * 0.7));
+    const rate = w.fexRate || 0.7;
+    
     return `<tr>
       <td>
         <div class="user-chip">
@@ -3983,21 +3996,24 @@ function renderWithdrawalsPage() {
       </td>
     </tr>`;
   }).join('');
-
-  renderPagination('withdraw', _wFiltered.length, wPage, (p) => { wPage = p; renderWithdrawalsPage(); });
+  
+  renderPagination('withdraw', _wFiltered.length, wPage, (p) => { wPage = p;
+    renderWithdrawalsPage(); });
 }
 
 window.approveWithdrawal = async (id, username, net) => {
   if (!confirm(`Confirm payment of ₦${Number(net).toLocaleString()} to ${username}?`)) return;
   const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) { showToast('✅ Withdrawal marked as paid!', 'success'); loadWithdrawals(); }
+  if (data?.success) { showToast('✅ Withdrawal marked as paid!', 'success');
+    loadWithdrawals(); }
   else showToast(data?.error || 'Error.', 'error');
 };
 
 window.declineWithdrawal = async (id) => {
   if (!confirm('Decline and refund user?')) return;
   const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) { showToast('Withdrawal declined — user refunded.', 'warning'); loadWithdrawals(); }
+  if (data?.success) { showToast('Withdrawal declined — user refunded.', 'warning');
+    loadWithdrawals(); }
   else showToast(data?.error || 'Error.', 'error');
 };
 
@@ -4009,8 +4025,8 @@ window.deleteWithdrawal = async (id) => {
 };
 
 window.viewWithdrawalDetail = (w) => {
-  const fex  = Number(w.amount);
-  const net  = Number(w.netAmount || fex * 0.7);
+  const fex = Number(w.amount);
+  const net = Number(w.netAmount || fex * 0.7);
   const rate = w.fexRate || 0.7;
   showModal(`
     <div class="modal-handle"></div>
@@ -4086,7 +4102,7 @@ async function loadActivity() {
   // Falls back to analytics deposits if endpoint unavailable
   const data = await api('/api/admin/activity');
   if (!data?.success) { setError('activityTableBody', 5, 'Activity log unavailable'); return; }
-  _activity  = data.activity || data.logs || [];
+  _activity = data.activity || data.logs || [];
   _aFiltered = [..._activity];
   setText('tcActivity', _activity.length);
   renderActivityPage();
@@ -4112,26 +4128,27 @@ function filterActivityType(type) {
 function renderActivityPage() {
   const tbody = document.getElementById('activityTableBody');
   if (!tbody) return;
-  if (!_aFiltered.length) { setEmpty('activityTableBody', 5, 'No activity logs found'); hidePagination('activity'); return; }
-
+  if (!_aFiltered.length) { setEmpty('activityTableBody', 5, 'No activity logs found');
+    hidePagination('activity'); return; }
+  
   const typeIcon = {
-    'Deposit':    { icon: 'ri-arrow-down-circle-line', color: 'var(--primary)' },
-    'Withdrawal': { icon: 'ri-arrow-up-circle-line',   color: 'var(--danger)'  },
-    'Check-in':   { icon: 'ri-gift-line',              color: 'var(--success)' },
-    'Shares':     { icon: 'ri-stock-line',             color: 'var(--warning)' },
-    'share':      { icon: 'ri-stock-line',             color: 'var(--warning)' },
-    'Won spin':   { icon: 'ri-trophy-line',            color: 'var(--success)' },
-    'Spin Loss':  { icon: 'ri-medal-line',             color: 'var(--text3)'   },
+    'Deposit': { icon: 'ri-arrow-down-circle-line', color: 'var(--primary)' },
+    'Withdrawal': { icon: 'ri-arrow-up-circle-line', color: 'var(--danger)' },
+    'Check-in': { icon: 'ri-gift-line', color: 'var(--success)' },
+    'Shares': { icon: 'ri-stock-line', color: 'var(--warning)' },
+    'share': { icon: 'ri-stock-line', color: 'var(--warning)' },
+    'Won spin': { icon: 'ri-trophy-line', color: 'var(--success)' },
+    'Spin Loss': { icon: 'ri-medal-line', color: 'var(--text3)' },
   };
-
+  
   const slice = paginate(_aFiltered, aPage, PER_PAGE);
   tbody.innerHTML = slice.map(a => {
-    const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+    const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
     const userName = a.userId?.username || a.username || '—';
     const ti = typeIcon[a.type] || { icon: 'ri-exchange-line', color: 'var(--text3)' };
     const fex = parseFloat(a.amount) || 0;
     const isCredit = !['Withdrawal', 'Spin Loss'].includes(a.type);
-
+    
     return `<tr>
       <td>
         <div class="user-chip">
@@ -4154,8 +4171,9 @@ function renderActivityPage() {
       <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
     </tr>`;
   }).join('');
-
-  renderPagination('activity', _aFiltered.length, aPage, (p) => { aPage = p; renderActivityPage(); });
+  
+  renderPagination('activity', _aFiltered.length, aPage, (p) => { aPage = p;
+    renderActivityPage(); });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4164,10 +4182,12 @@ function renderActivityPage() {
 function exportAllCSV() {
   // Determine which tab is active
   const active = document.querySelector('.tab-panel.active')?.id;
-  let rows = [], headers = [], name = '';
-
+  let rows = [],
+    headers = [],
+    name = '';
+  
   if (active === 'panel-deposits') {
-    headers = ['Date','User','Amount FEX','Ref','Status','Method'];
+    headers = ['Date', 'User', 'Amount FEX', 'Ref', 'Status', 'Method'];
     rows = _dFiltered.map(d => [
       d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '',
       d.userId?.username || d.userId || '',
@@ -4175,7 +4195,7 @@ function exportAllCSV() {
     ]);
     name = 'deposits';
   } else if (active === 'panel-withdrawals') {
-    headers = ['Date','User','FEX','Naira','Bank','Account','Status'];
+    headers = ['Date', 'User', 'FEX', 'Naira', 'Bank', 'Account', 'Status'];
     rows = _wFiltered.map(w => [
       w.createdAt ? new Date(w.createdAt).toLocaleDateString() : '',
       w.username || '',
@@ -4185,7 +4205,7 @@ function exportAllCSV() {
     ]);
     name = 'withdrawals';
   } else {
-    headers = ['Date','User','Type','Amount FEX','Description'];
+    headers = ['Date', 'User', 'Type', 'Amount FEX', 'Description'];
     rows = _aFiltered.map(a => [
       a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',
       a.userId?.username || '',
@@ -4193,11 +4213,11 @@ function exportAllCSV() {
     ]);
     name = 'activity';
   }
-
-  const csv  = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type:'text/csv' });
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
+  
+  const csv = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
   a.download = `fluxmall_${name}_${Date.now()}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
@@ -4209,40 +4229,42 @@ function exportAllCSV() {
 // ═══════════════════════════════════════════════════════════
 function statusBadge(s) {
   const map = {
-    success:  'success', approved: 'success',
-    pending:  'pending',
-    declined: 'declined', failed: 'declined'
+    success: 'success',
+    approved: 'success',
+    pending: 'pending',
+    declined: 'declined',
+    failed: 'declined'
   };
   const cls = map[s] || 'pending';
-  const dot = { success:'🟢', pending:'🟡', declined:'🔴' }[cls] || '⚪';
+  const dot = { success: '🟢', pending: '🟡', declined: '🔴' } [cls] || '⚪';
   return `<span class="badge ${cls}">${dot} ${(s||'pending').charAt(0).toUpperCase() + (s||'pending').slice(1)}</span>`;
 }
 
 function paginate(arr, page, per) {
-  const start = (page-1)*per;
-  return arr.slice(start, start+per);
+  const start = (page - 1) * per;
+  return arr.slice(start, start + per);
 }
 
 function renderPagination(prefix, total, page, onPage) {
   const totalPages = Math.ceil(total / PER_PAGE);
-  const start = (page-1)*PER_PAGE + 1;
-  const end   = Math.min(page*PER_PAGE, total);
-  const wrap  = document.getElementById(prefix+'Pagination');
-  const info  = document.getElementById(prefix+'PageInfo');
-  const btns  = document.getElementById(prefix+'PageBtns');
+  const start = (page - 1) * PER_PAGE + 1;
+  const end = Math.min(page * PER_PAGE, total);
+  const wrap = document.getElementById(prefix + 'Pagination');
+  const info = document.getElementById(prefix + 'PageInfo');
+  const btns = document.getElementById(prefix + 'PageBtns');
   if (!wrap) return;
-
+  
   if (totalPages <= 1) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
   if (info) info.textContent = `${start}–${end} of ${total}`;
-
+  
   // Build page buttons
   const range = [];
   let s = Math.max(1, page - 2);
   let e = Math.min(totalPages, s + 4);
-  if (e-s < 4) s = Math.max(1, e-4);
+  if (e - s < 4) s = Math.max(1, e - 4);
   for (let i = s; i <= e; i++) range.push(i);
-
+  
   btns.innerHTML = `
     <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
     ${range.map(p => `<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
@@ -4250,7 +4272,7 @@ function renderPagination(prefix, total, page, onPage) {
 }
 
 function hidePagination(prefix) {
-  const wrap = document.getElementById(prefix+'Pagination');
+  const wrap = document.getElementById(prefix + 'Pagination');
   if (wrap) wrap.style.display = 'none';
 }
 
@@ -4275,8 +4297,9 @@ function setText(id, val) {
 }
 
 // ── MODAL ──────────────────────────────────────────────────
+/*
 function showModal(html) {
-  closeModal();
+ // closeModal();
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = '_txnModalOverlay';
@@ -4284,6 +4307,7 @@ function showModal(html) {
   overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
   document.body.appendChild(overlay);
 }
+
 /*
 function closeModal() {
   document.getElementById('_txnModalOverlay')?.remove();
@@ -4291,7 +4315,7 @@ function closeModal() {
 */
 // ── TOAST ──────────────────────────────────────────────────
 let _toastWrap = null;
-const toast=showToast;
+const toast = showToast;
 
 function showToast(msg, type = 'success') {
   if (!_toastWrap) {
@@ -4310,7 +4334,9 @@ function showToast(msg, type = 'success') {
   `;
   t.textContent = msg;
   _toastWrap.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+  setTimeout(() => { t.style.opacity = '0';
+    t.style.transition = 'opacity 0.3s';
+    setTimeout(() => t.remove(), 300); }, 3000);
 }
 
 
