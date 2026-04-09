@@ -15,8 +15,8 @@ let originalTitle = document.title;
 
 // ── User Management Table ──────────────────────────────────
 const COLORS = ['#4CAF7D', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899',
-  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1'
-];
+  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
+
 const PER_PAGE = 10;
 
 let UM_USERS = []; // user management list (from API)
@@ -3699,7 +3699,7 @@ let _dFiltered = [], _wFiltered = [], _aFiltered = [];
 let dPage = 1, wPage = 1, aPage = 1;
 
 // ── AVATAR COLOR MAP ───────────────────────────────────────
-const COLORS = ['#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
+
 function avatarColor(str) {
   let h = 0;
   for (let i = 0; i < (str||'').length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
