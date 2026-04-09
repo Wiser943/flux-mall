@@ -366,7 +366,7 @@ const allPages = document.querySelectorAll('.page');
 
 function switchPageByHash() {
   const hash = window.location.hash || '#dashboard';
-  checkAdminSession()
+  //checkAdminSession()
   const targetId = hash.substring(1);
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -1137,8 +1137,6 @@ function openDetail(id) {
     <button class="dp-action" onclick="openEditModal('${u.id}')"><i class="ri-edit-line"></i> Edit User Details</button>
     <button class="dp-action" onclick="openCreditModal('${u.id}')"><i class="ri-wallet-3-line"></i> Credit / Debit Balance</button>
     <button class="dp-action" onclick="sendMessageModal('${u.id}')"><i class="ri-message-3-line"></i> Send Message</button>
-    <button class="dp-action" onclick="toggleVerify('${u.id}')"><i class="ri-shield-check-line"></i> ${u.status==='verified'?'Revoke Verification':'Verify Account'}</button>
-    <button class="dp-action" onclick="resetPassword('${u.id}')"><i class="ri-lock-password-line"></i> Reset Password</button>
     <button class="dp-action danger" onclick="confirmBan('${u.id}')"><i class="ri-forbid-line"></i> ${u.status==='banned'?'Unban User':'Ban User'}</button>
     <button class="dp-action danger" onclick="confirmDelete('${u.id}')"><i class="ri-delete-bin-line"></i> Delete Account</button>`;
   
@@ -1453,69 +1451,9 @@ function submitDelete(id) {
   });
 }
 
-function toggleVerify(id) {
-  const u = UM_USERS.find(x => x.id === id);
-  if (!u) return;
-  const newVerified = u.status !== 'verified';
-  
-  api(`/api/admin/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ emailVerified: newVerified })
-  }).then(data => {
-    if (data?.success) {
-      u.status = newVerified ? 'verified' : 'unverified';
-      updateUMStats();
-      applyFilters();
-      if (activeUserId === id) openDetail(id);
-      showToast(`${u.name} ${u.status === 'verified' ? 'verified' : 'unverified'}`, 'success');
-    } else {
-      showToast(data?.error || 'Failed to update verification.', 'error');
-    }
-  });
-}
 
-function resetPassword(id) {
-  const u = UM_USERS.find(x => x.id === id);
-  if (!u) return;
-  openModal(`
-    <div class="modal-title">Reset Password</div>
-    <div class="modal-sub">Set a new password for <strong>${u.name}</strong></div>
-    <div class="form-group"><label class="form-label">New Password</label><input class="form-input" id="rp-pass" type="password" placeholder="Min 8 characters"></div>
-    <div class="form-group"><label class="form-label">Confirm Password</label><input class="form-input" id="rp-pass2" type="password" placeholder="Repeat password"></div>
-    <div class="modal-btns">
-      <button class="modal-btn-primary" onclick="submitResetPass('${id}')">Set Password</button>
-      <button class="modal-btn-secondary" onclick="closeModal();showToast('Reset link sent to ${u.email}','info');">Send Reset Link</button>
-    </div>`);
-}
-
-function submitResetPass(id) {
-  const p1 = document.getElementById('rp-pass')?.value;
-  const p2 = document.getElementById('rp-pass2')?.value;
-  if (!p1 || p1.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
-  if (p1 !== p2) { showToast('Passwords do not match', 'error'); return; }
-  
-  api(`/api/admin/users/${id}/reset-password`, {
-    method: 'POST',
-    body: JSON.stringify({ newPassword: p1 })
-  }).then(data => {
-    if (data?.success) {
-      closeModal();
-      showToast('Password reset successfully', 'success');
-    } else {
-      showToast(data?.error || 'Failed to reset password.', 'error');
-    }
-  });
-}
 
 // ── Bulk Actions ───────────────────────────────────────────
-function bulkVerify() {
-  selected.forEach(id => { const u = UM_USERS.find(x => x.id === id); if (u) u.status = 'verified'; });
-  clearSelection();
-  updateUMStats();
-  applyFilters();
-  showToast('Selected users verified', 'success');
-}
-
 function bulkBan() {
   openModal(`
     <div class="modal-title">Ban ${selected.size} Users?</div>
@@ -1613,9 +1551,7 @@ function ctxAct(action) {
     edit: () => openEditModal(ctxUserId),
     credit: () => openCreditModal(ctxUserId),
     debit: () => openCreditModal(ctxUserId),
-    verify: () => toggleVerify(ctxUserId),
     message: () => sendMessageModal(ctxUserId),
-    reset: () => resetPassword(ctxUserId),
     ban: () => confirmBan(ctxUserId),
     delete: () => confirmDelete(ctxUserId),
   };
@@ -1715,6 +1651,13 @@ function fillSettings(data) {
     if (mt) mt.checked = !!data.maintenance.enabled;
   }
 }
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
 
 async function loadApiKeys() {
   const data = await api('/api/admin/settings/apikeys');
@@ -3758,4 +3701,4 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
