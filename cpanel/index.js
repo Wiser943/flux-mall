@@ -4302,11 +4302,11 @@ function showModal(html) {
   overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
   document.body.appendChild(overlay);
 }
-
+/*
 function closeModal() {
   document.getElementById('_txnModalOverlay')?.remove();
 }
-
+*/
 // ── TOAST ──────────────────────────────────────────────────
 let _toastWrap = null;
 function showToast(msg, type = 'success') {
