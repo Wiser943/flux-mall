@@ -3767,8 +3767,11 @@ function filterDepositStatus(status) {
 function renderDepositsPage() {
   const tbody = document.getElementById('depositTableBody');
   if (!tbody) return;
-  if (!_dFiltered.length) { setEmpty('depositTableBody', 6, 'No deposits found');
-    hidePagination('deposit'); return; }
+  if (!_dFiltered.length) {
+    setEmpty('depositTableBody', 6, 'No deposits found');
+    hidePagination('deposit');
+    return;
+  }
   
   const slice = paginate(_dFiltered, dPage, PER_PAGE);
   tbody.innerHTML = slice.map(i => {
@@ -3818,8 +3821,10 @@ function renderDepositsPage() {
     </tr>`;
   }).join('');
   
-  renderPagination('deposit', _dFiltered.length, dPage, (p) => { dPage = p;
-    renderDepositsPage(); });
+  renderPagination('deposit', _dFiltered.length, dPage, (p) => {
+    dPage = p;
+    renderDepositsPage();
+  });
 }
 
 window.approveDeposit = async (id, userId, amount, username) => {
@@ -3836,8 +3841,10 @@ window.approveDeposit = async (id, userId, amount, username) => {
 window.declineDeposit = async (id) => {
   if (!confirm('Decline this deposit?')) return;
   const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) { showToast('Deposit declined.', 'warning');
-    loadDeposits(); }
+  if (data?.success) {
+    showToast('Deposit declined.', 'warning');
+    loadDeposits();
+  }
   else showToast(data?.error || 'Error.', 'error');
 };
 
@@ -3896,7 +3903,7 @@ window.viewDepositDetail = (i) => {
     </div>`,
     
     buttons: [
-      { text: 'Delete User', class: 'btn-danger', onclick: `deleteUser('${uid}')` },
+      { text: 'Delete User', class: 'btn-danger', onclick: `document.getElementById('detailModal').remove()` },
       { text: 'Close', class: 'btn-sec', onclick: `document.getElementById('detailModal').remove()` }
     ]
   });
@@ -3938,8 +3945,11 @@ function filterWithdrawalStatus(status) {
 function renderWithdrawalsPage() {
   const tbody = document.getElementById('withdrawTableBody');
   if (!tbody) return;
-  if (!_wFiltered.length) { setEmpty('withdrawTableBody', 7, 'No withdrawals found');
-    hidePagination('withdraw'); return; }
+  if (!_wFiltered.length) {
+    setEmpty('withdrawTableBody', 7, 'No withdrawals found');
+    hidePagination('withdraw');
+    return;
+  }
   
   const slice = paginate(_wFiltered, wPage, PER_PAGE);
   tbody.innerHTML = slice.map(w => {
@@ -3997,23 +4007,29 @@ function renderWithdrawalsPage() {
     </tr>`;
   }).join('');
   
-  renderPagination('withdraw', _wFiltered.length, wPage, (p) => { wPage = p;
-    renderWithdrawalsPage(); });
+  renderPagination('withdraw', _wFiltered.length, wPage, (p) => {
+    wPage = p;
+    renderWithdrawalsPage();
+  });
 }
 
 window.approveWithdrawal = async (id, username, net) => {
   if (!confirm(`Confirm payment of ₦${Number(net).toLocaleString()} to ${username}?`)) return;
   const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) { showToast('✅ Withdrawal marked as paid!', 'success');
-    loadWithdrawals(); }
+  if (data?.success) {
+    showToast('✅ Withdrawal marked as paid!', 'success');
+    loadWithdrawals();
+  }
   else showToast(data?.error || 'Error.', 'error');
 };
 
 window.declineWithdrawal = async (id) => {
   if (!confirm('Decline and refund user?')) return;
   const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) { showToast('Withdrawal declined — user refunded.', 'warning');
-    loadWithdrawals(); }
+  if (data?.success) {
+    showToast('Withdrawal declined — user refunded.', 'warning');
+    loadWithdrawals();
+  }
   else showToast(data?.error || 'Error.', 'error');
 };
 
@@ -4128,8 +4144,11 @@ function filterActivityType(type) {
 function renderActivityPage() {
   const tbody = document.getElementById('activityTableBody');
   if (!tbody) return;
-  if (!_aFiltered.length) { setEmpty('activityTableBody', 5, 'No activity logs found');
-    hidePagination('activity'); return; }
+  if (!_aFiltered.length) {
+    setEmpty('activityTableBody', 5, 'No activity logs found');
+    hidePagination('activity');
+    return;
+  }
   
   const typeIcon = {
     'Deposit': { icon: 'ri-arrow-down-circle-line', color: 'var(--primary)' },
@@ -4172,8 +4191,10 @@ function renderActivityPage() {
     </tr>`;
   }).join('');
   
-  renderPagination('activity', _aFiltered.length, aPage, (p) => { aPage = p;
-    renderActivityPage(); });
+  renderPagination('activity', _aFiltered.length, aPage, (p) => {
+    aPage = p;
+    renderActivityPage();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4334,9 +4355,11 @@ function showToast(msg, type = 'success') {
   `;
   t.textContent = msg;
   _toastWrap.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0';
+  setTimeout(() => {
+    t.style.opacity = '0';
     t.style.transition = 'opacity 0.3s';
-    setTimeout(() => t.remove(), 300); }, 3000);
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
 }
 
 
@@ -4344,4 +4367,4 @@ function showToast(msg, type = 'success') {
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
