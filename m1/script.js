@@ -65,9 +65,11 @@ async function init() {
         img.onerror = () => img.style.display = 'none';
       });
       let fav = document.querySelector("link[rel='icon']");
-      if (!fav) { fav = document.createElement('link');
+      if (!fav) {
+        fav = document.createElement('link');
         fav.rel = 'icon';
-        document.head.appendChild(fav); }
+        document.head.appendChild(fav);
+      }
       fav.href = config.siteLogo;
     }
     
@@ -82,8 +84,10 @@ async function init() {
     
     window.paymentConfig = payment;
     
-    if (wheel?.prizes?.length) { prizes = wheel.prizes;
-      drawWheel(); }
+    if (wheel?.prizes?.length) {
+      prizes = wheel.prizes;
+      drawWheel();
+    }
   }
   
   // ── Load live FEX rate from server ──────────────────────
@@ -248,8 +252,7 @@ function applyTxnFilters() {
   const status = document.getElementById('txnStatusFilter').value;
   const search = document.getElementById('txnSearch').value.trim().toLowerCase();
   const type = document.getElementById('txnTypeFilter').value;
-  let rows = type === 'all' ?
-    [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
+  let rows = type === 'all' ? [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
     (txnCache[type] || []);
   if (status !== 'all') rows = rows.filter(r => (r.status || '').toLowerCase() === status);
   if (search) rows = rows.filter(r => JSON.stringify(r).toLowerCase().includes(search));
@@ -328,8 +331,10 @@ function renderPagination() {
     b.className = 'btn btn-ghost btn-sm';
     b.style.cssText = p === txnPage ? 'background:var(--accent);color:#fff;min-width:32px;' : 'min-width:32px;';
     b.textContent = p;
-    b.onclick = () => { txnPage = p;
-      renderTxnTable(); };
+    b.onclick = () => {
+      txnPage = p;
+      renderTxnTable();
+    };
     btnsEl.appendChild(b);
   });
   document.getElementById('txnPagination').style.display = totalPages > 1 ? 'flex' : 'none';
@@ -352,8 +357,7 @@ function changeTxnPage(dir) {
 
 function renderSummaryPills() {
   const type = document.getElementById('txnTypeFilter').value;
-  const source = type === 'all' ?
-    [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
+  const source = type === 'all' ? [...(txnCache.deposit || []), ...(txnCache.withdrawal || []), ...(txnCache.activity || [])] :
     (txnCache[type] || []);
   // Summary pill elements are commented out in HTML — kept here for easy re-enable
   void source;
@@ -746,9 +750,11 @@ async function initBankSync() {
   const saveBtn = document.getElementById('saveBtn');
   if (isMasterLocked && u.bankDetails?.accountNumber) {
     ['bankName', 'accNumber', 'accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
-    if (saveBtn) { saveBtn.disabled = true;
+    if (saveBtn) {
+      saveBtn.disabled = true;
       saveBtn.innerText = 'Contact support';
-      saveBtn.style.display = 'none'; }
+      saveBtn.style.display = 'none';
+    }
     const msg = document.getElementById('status-msg');
     if (msg) msg.innerText = 'This feature is currently unavailable';
   }
@@ -1569,8 +1575,10 @@ window.startEdit = (msgId) => {
   if (!msg) return;
   editingMsgId = msgId;
   const input = document.getElementById('chatInput');
-  if (input) { input.value = msg.content;
-    input.focus(); }
+  if (input) {
+    input.value = msg.content;
+    input.focus();
+  }
 };
 
 // ─── DELETE ───────────────────────────────────────────────
@@ -1595,8 +1603,10 @@ window.sendChatMessage = async () => {
   }
   
   const body = { type: 'text', content };
-  if (replyingTo) { body.replyTo = replyingTo;
-    cancelReply(); }
+  if (replyingTo) {
+    body.replyTo = replyingTo;
+    cancelReply();
+  }
   
   const data = await api('/api/user/chat/send', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
@@ -1629,8 +1639,10 @@ window.handleChatImageUpload = async (input) => {
   const result = await res.json();
   if (!result.success) return showAlert('Upload failed.', 'error', 'ri-close-line', 'Error');
   const body = { type: 'image', imageUrl: result.data.url, content: '📷 Image' };
-  if (replyingTo) { body.replyTo = replyingTo;
-    cancelReply(); }
+  if (replyingTo) {
+    body.replyTo = replyingTo;
+    cancelReply();
+  }
   const data = await api('/api/user/chat/send', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
     chatAllMessages.push(data.message);
@@ -1714,20 +1726,14 @@ async function pollChatUnread() {
   }
   setTimeout(pollChatUnread, 10000);
 }
-function switchMainTab(tab) {
-  const subTabs = document.getElementById('sub-tabs-container');
-  // Toggle active classes on buttons
-  document.querySelectorAll('.main-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  if (tab === 'active') {
-    subTabs.style.display = 'none';
-    // Logic to show user's current active investments
-  } else {
-    subTabs.style.display = 'flex';
-    // Logic to show market investments
-  }
+
+function switchMainTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(name).classList.add('active');
 }
+
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(pollChatUnread, 3000);
 });
