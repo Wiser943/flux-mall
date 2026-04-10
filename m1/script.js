@@ -897,27 +897,28 @@ if (confirmBtn) {
 
 // ─── SHARES ───────────────────────────────────────────────
 async function loadShares() {
-  const container = document.getElementById('shares-container');
+  const container = document.getElementById('investment-grid');
   if (!container) return;
   const data = await api('/api/user/shares');
   if (!data?.success) return;
   container.innerHTML = '';
   data.shares.forEach(s => {
     container.innerHTML += `
-      <div class="action-card block" style="padding:0;overflow:hidden">
-        <div class="share-img-wrapper">
-          <img src="${s.img}" alt="${s.name}">
-          <div class="duration-badge">${s.duration} Days</div>
-        </div>
-        <div class="share-details">
-          <h3>${s.name}</h3>
-          <div class="stats-row">
-            <div class="stat-item" style="text-align:left"><span>Price</span><b>🪙${s.price.toLocaleString()} FEX</b></div>
-            <div class="stat-item" style="text-align:right"><span>Daily Pay</span><b style="color:#10ac84;">🪙${s.dailyIncome.toLocaleString()} FEX</b></div>
-          </div>
-          <button class="buy-btn" onclick="buyShare('${s._id}',${s.price},'${s.name}',${s.dailyIncome},${s.duration})">Invest Now</button>
-        </div>
-      </div>`;
+              <div class="invest-card" data-category="real-estate">
+            <div class="image-placeholder">
+              <i class="ri-image-line"></i>
+                        <img src="${s.img}" alt="${s.name}">
+            </div>
+            <div class="card-details">
+              <h3>${s.name}</h3>
+              <p class="plan-info">Return: ${s.dailyIncome * s.duration} after ${s.duration} days</p>
+              <div class="price-row">
+                <span class="price">🪙${s.price.toLocaleString()} FEX</span>
+              </div>
+              <button class="btn-invest" onclick="buyShare('${s._id}',${s.price},'${s.name}',${s.dailyIncome},${s.duration})">Invest</button>
+            </div>
+            <div class="custom-tooltip">View full plan details</div>
+          </div>`;
   });
 }
 
