@@ -2102,8 +2102,11 @@
     justify-content: center;
     font-size: 2rem;
     color: #bbb;
+  overflow:hidden;
   }
-  
+  .image-placeholder img{
+    object-fit: cover;
+  }
   .card-details {
     padding: 15px;
   }
