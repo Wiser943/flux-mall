@@ -2065,8 +2065,8 @@
   /* GRID SYSTEM */
   .investment-grid {
     display: grid;
-    gap: 15px;
-    padding: 20px;
+    gap: 10px;
+    padding: 20px 2px;width: 100%;
   }
   
   /* Mobile: 2 columns */
