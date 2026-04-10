@@ -372,8 +372,11 @@ window.addEventListener('hashchange', switchPageByHash);
 // ══════════════════════════════════════════════════════════
 
 async function checkAdminSession() {
-  const res = await fetch('/api/admin/me', { credentials: 'include' });
-  if (res.ok) {
+  const res  = await fetch('/api/admin/me', { credentials: 'include' });
+  const data = await res.json().catch(() => null);
+  if (res.ok && data) {
+    const adminName = data.user?.username || data.user?.email || data.username || data.email || 'Admin';
+    console.log(`%c[FluxMall] 👋 Logged in as: ${adminName}`, 'color:#4318ff;font-weight:700;font-size:14px;');
     initDashboard();
   } else {
     window.location.hash = '#login';
@@ -392,8 +395,9 @@ window.handleAdminLogin = async (e) => {
     method: 'POST',
     body: JSON.stringify({ email, password: pass })
   });
-  
-  if (data?.success) {
+if (data?.success) {
+    const adminName = data.user?.username || data.user?.email || data.username || data.email || 'Admin';
+    console.log(`%c[FluxMall] ✅ Admin login: ${adminName}`, 'color:#05cd99;font-weight:700;font-size:14px;');
     window.location.hash = '#dashboard';
     initDashboard();
   } else {
@@ -4367,4 +4371,4 @@ function showToast(msg, type = 'success') {
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
