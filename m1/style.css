@@ -2004,9 +2004,6 @@
     /* Matches the 'Done' button in your image */
     --bg-light: #f8f9fa;
     --card-bg: #ffffff;
-    --text-main: #1a1a1a;
-    --text-muted: #717171;
-    --border: #ececec;
   }
   
   .investment-header {
@@ -2107,6 +2104,14 @@
   .image-placeholder img{
     object-fit: cover;
   }
+  .tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
+}
+
   .card-details {
     padding: 15px;
   }
@@ -2141,24 +2146,3 @@
     cursor: pointer;
   }
   
-  /* Zaddy's Tooltip Requirement */
-  .invest-card:hover .custom-tooltip {
-    visibility: visible;
-    opacity: 1;
-  }
-  
-  .custom-tooltip {
-    visibility: hidden;
-    opacity: 0;
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    white-space: nowrap;
-    transition: 0.2s;
-  }
