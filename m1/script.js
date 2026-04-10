@@ -1714,7 +1714,20 @@ async function pollChatUnread() {
   }
   setTimeout(pollChatUnread, 10000);
 }
-
+function switchMainTab(tab) {
+  const subTabs = document.getElementById('sub-tabs-container');
+  // Toggle active classes on buttons
+  document.querySelectorAll('.main-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  if (tab === 'active') {
+    subTabs.style.display = 'none';
+    // Logic to show user's current active investments
+  } else {
+    subTabs.style.display = 'flex';
+    // Logic to show market investments
+  }
+}
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(pollChatUnread, 3000);
 });
