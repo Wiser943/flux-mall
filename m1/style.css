@@ -1987,3 +1987,106 @@
     justify-content: space-between;
     align-items: center;
   }
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+      :root {
+    --primary-green: #2d7a4d; /* Matches the 'Done' button in your image */
+    --bg-light: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-main: #1a1a1a;
+    --text-muted: #717171;
+    --border: #ececec;
+}
+
+.investment-header { padding: 20px 0; text-align: center; }
+
+.main-tabs {
+    display: inline-flex;
+    background: var(--bg-light);
+    padding: 5px;
+    border-radius: 50px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    border: none; padding: 10px 25px;
+    border-radius: 50px; cursor: pointer;
+    background: transparent; color: var(--text-muted);
+    font-weight: 600; transition: 0.3s;
+}
+
+.tab-btn.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+.sub-tabs { display: flex; gap: 10px; overflow-x: auto; padding: 10px; justify-content: center; }
+
+.sub-tab {
+    white-space: nowrap; border: 1px solid var(--border);
+    padding: 8px 18px; border-radius: 20px;
+    background: transparent; color: var(--text-muted); cursor: pointer;
+}
+
+.sub-tab.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+
+/* GRID SYSTEM */
+.investment-grid {
+    display: grid;
+    gap: 15px;
+    padding: 20px;
+}
+
+/* Mobile: 2 columns */
+@media (max-width: 767px) {
+    .investment-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 768px) {
+    .investment-grid { grid-template-columns: repeat(3, 1fr); max-width: 1200px; margin: 0 auto; }
+}
+
+/* CARD STYLING */
+.invest-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+}
+
+.image-placeholder {
+    height: 120px; background: #e0e0e0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; color: #bbb;
+}
+
+.card-details { padding: 15px; }
+.card-details h3 { margin: 0 0 5px; font-size: 1rem; color: var(--text-main); }
+.plan-info { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; }
+.price { font-weight: 700; color: var(--text-main); display: block; margin-bottom: 15px; }
+
+.btn-invest {
+    width: 100%; padding: 12px;
+    background: var(--primary-green); color: white;
+    border: none; border-radius: 12px;
+    font-weight: 600; cursor: pointer;
+}
+
+/* Zaddy's Tooltip Requirement */
+.invest-card:hover .custom-tooltip { visibility: visible; opacity: 1; }
+.custom-tooltip {
+    visibility: hidden; opacity: 0;
+    position: absolute; bottom: 100%; left: 50%;
+    transform: translateX(-50%); background: #333;
+    color: #fff; padding: 5px 10px; border-radius: 4px;
+    font-size: 11px; white-space: nowrap; transition: 0.2s;
+}
