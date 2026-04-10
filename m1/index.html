@@ -622,8 +622,10 @@
         
         <div class="investment-header">
           <div class="main-tabs">
-            <button class="tab-btn active" onclick="switchMainTab('invest')">Investment</button>
-            <button class="tab-btn" onclick="switchMainTab('active')">Active Investment</button>
+            <button class="tab-btn active" onclick="switchMainTab('investment,this)">Investment</button>
+            
+            <button class="tab-btn" onclick="switchMainTab('aInvestment',this)">
+              Active Investment</button>
           </div>
           
           <div id="sub-tabs-container" class="sub-tabs">
@@ -633,8 +635,67 @@
             <button class="sub-tab" onclick="filterCategory('machines')">Machines</button>
           </div>
         </div>
+        <section id="investment" class="tab-panel active">
+          <div id="investment-grid" class="investment-grid"></div>
+        </section>
         
-        <div id="investment-grid" class="investment-grid"></div>
+        <section id="aInvestment" class="tab-panel">
+                  <div style="display:flex;flex-direction:column;gap:12px;" id="myInvestmentsContainer">
+          <div class="card" style="border-left:3px solid var(--green);">
+            <div class="flex-between mb-4">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Growth Plan — 3 Months</div>
+                <div class="text-xs mt-4">Started: May 14, 2025 · Matures: Aug 14, 2025</div>
+              </div>
+              <span class="badge success">Active</span>
+            </div>
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <div class="text-xs mb-4">Principal</div>
+                <div style="font-weight:700;">₦20,000</div>
+              </div>
+              <div>
+                <div class="text-xs mb-4">Return Rate</div>
+                <div style="font-weight:700;color:var(--green);">15% ROI</div>
+              </div>
+            </div>
+            <div class="flex-between mb-4 text-sm">
+              <span>Progress</span><span>32 of 90 days</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill green" style="width:36%"></div>
+            </div>
+          </div>
+          
+          <div class="card" style="border-left:3px solid var(--blue);">
+            <div class="flex-between mb-4">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Stable Plan — 1 Month</div>
+                <div class="text-xs mt-4">Started: Jun 1, 2025 · Matures: Jul 1, 2025</div>
+              </div>
+              <span class="badge info">Active</span>
+            </div>
+            <div class="form-row" style="margin-bottom:12px;">
+              <div>
+                <div class="text-xs mb-4">Principal</div>
+                <div style="font-weight:700;">₦12,000</div>
+              </div>
+              <div>
+                <div class="text-xs mb-4">Return Rate</div>
+                <div style="font-weight:700;color:var(--blue);">8% ROI</div>
+              </div>
+            </div>
+            <div class="flex-between mb-4 text-sm">
+              <span>Progress</span><span>14 of 30 days</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill purple" style="width:47%"></div>
+            </div>
+          </div>
+        </div>
+
+        </section>
+        
         
         
         
@@ -728,59 +789,6 @@
         </div>
         
         <div class="section-title mb-4" style="font-size:16px;">Active Plans</div>
-        <div style="display:flex;flex-direction:column;gap:12px;" id="myInvestmentsContainer">
-          <div class="card" style="border-left:3px solid var(--green);">
-            <div class="flex-between mb-4">
-              <div>
-                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Growth Plan — 3 Months</div>
-                <div class="text-xs mt-4">Started: May 14, 2025 · Matures: Aug 14, 2025</div>
-              </div>
-              <span class="badge success">Active</span>
-            </div>
-            <div class="form-row" style="margin-bottom:12px;">
-              <div>
-                <div class="text-xs mb-4">Principal</div>
-                <div style="font-weight:700;">₦20,000</div>
-              </div>
-              <div>
-                <div class="text-xs mb-4">Return Rate</div>
-                <div style="font-weight:700;color:var(--green);">15% ROI</div>
-              </div>
-            </div>
-            <div class="flex-between mb-4 text-sm">
-              <span>Progress</span><span>32 of 90 days</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill green" style="width:36%"></div>
-            </div>
-          </div>
-          
-          <div class="card" style="border-left:3px solid var(--blue);">
-            <div class="flex-between mb-4">
-              <div>
-                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Stable Plan — 1 Month</div>
-                <div class="text-xs mt-4">Started: Jun 1, 2025 · Matures: Jul 1, 2025</div>
-              </div>
-              <span class="badge info">Active</span>
-            </div>
-            <div class="form-row" style="margin-bottom:12px;">
-              <div>
-                <div class="text-xs mb-4">Principal</div>
-                <div style="font-weight:700;">₦12,000</div>
-              </div>
-              <div>
-                <div class="text-xs mb-4">Return Rate</div>
-                <div style="font-weight:700;color:var(--blue);">8% ROI</div>
-              </div>
-            </div>
-            <div class="flex-between mb-4 text-sm">
-              <span>Progress</span><span>14 of 30 days</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill purple" style="width:47%"></div>
-            </div>
-          </div>
-        </div>
       </div>
       
       <!-- DEPOSIT PAGE -->
