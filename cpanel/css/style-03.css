@@ -1,5 +1,5 @@
 
-
+/*
 [data-theme="dark"] {
   --bg: #0b1410;
   --sidebar-bg: #0d1a13;
@@ -386,7 +386,7 @@ mark.hl {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0;
+
 }
 .sf-stat {
   text-align: center;
@@ -1030,12 +1030,12 @@ mark.hl {
   position: fixed;
   top: 16px; left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 8000;
   display: flex;
   flex-direction: column;
   gap: 6px;
   pointer-events: none;
-  min-width: min(90vw, 300px);
+  min-width: min(90vw, 300px);display: none;
 }
 .toast-item {
   display: flex; align-items: center; gap: 8px;
