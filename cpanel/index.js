@@ -4371,4 +4371,4 @@ function showToast(msg, type = 'success') {
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
