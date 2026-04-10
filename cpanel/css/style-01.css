@@ -2,6 +2,111 @@
 /* ══════════════════════════════════════
    VARIABLES
 ══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   VARIABLES
+══════════════════════════════════════ *
+:root {
+  --green: #2E7D52;
+  --gl: #4CAF7D;
+  --gd: #1B4D32;
+  --yellow: #f59e0b;
+  --danger: #ef4444;
+  --blue: #3b82f6;
+  --purple: #8b5cf6;
+  --teal: #14b8a6;
+  --r: 14px;
+  --rsm: 9px;
+  --ease: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #0b1410;
+  --surface: #101e18;
+  --card: #132018;
+  --card2: #0f1c15;
+  --border: #1a2e20;
+  --text: #e4f4eb;
+  --sub: #5a8068;
+  --muted: #3a5244;
+  --input: #0d1a13;
+  --accent: var(--gl);
+  --shadow: 0 4px 24px rgba(0, 0, 0, .5);
+  --row-hover: rgba(76, 175, 125, .05);
+  --row-selected: rgba(76, 175, 125, .1);
+  --header-bg: #0d1a13;
+}
+
+[data-theme="light"] {
+  --bg: #f0f5f2;
+  --surface: #fff;
+  --card: #fff;
+  --card2: #f7faf8;
+  --border: #dde8e2;
+  --text: #0f2018;
+  --sub: #4a7060;
+  --muted: #9ab8aa;
+  --input: #f4f9f6;
+  --accent: #2E7D52;
+  --shadow: 0 4px 24px rgba(0, 0, 0, .08);
+  --row-hover: rgba(46, 125, 82, .04);
+  --row-selected: rgba(46, 125, 82, .08);
+  --header-bg: #fff;
+}
+
+*/
+/* ══════════════════════════════════════
+   RESET
+══════════════════════════════════════ */
+/*
+[data-theme="dark"] {
+  --bg: #0b1410;
+  --sidebar-bg: #0d1a13;
+  --chat-bg: #0a1510;
+  --surface: #101e18;
+  --card: #132018;
+  --border: #1a2e20;
+  --text: #e4f4eb;
+  --text-sub: #5a8068;
+  --text-muted: #3a5244;
+  --input-bg: #0d1a13;
+  --msg-out: #1a4030;
+  --msg-out-border: #1e4d38;
+  --msg-in: #132018;
+  --msg-in-border: #1a2e20;
+  --bubble-tail-out: #1a4030;
+  --bubble-tail-in: #132018;
+  --accent: var(--green-light);
+  --online: #22c55e;
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+  --header-bg: #0d1a13;
+}
+
+[data-theme="light"] {
+  --bg: #f0f5f2;
+  --sidebar-bg: #ffffff;
+  --chat-bg: #edf5f0;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --border: #dde8e2;
+  --text: #0f2018;
+  --text-sub: #4a7060;
+  --text-muted: #9ab8aa;
+  --input-bg: #f4f9f6;
+  --msg-out: #d1f0e0;
+  --msg-out-border: #b8e8cc;
+  --msg-in: #ffffff;
+  --msg-in-border: #e4ede8;
+  --bubble-tail-out: #d1f0e0;
+  --bubble-tail-in: #ffffff;
+  --accent: #2E7D52;
+  --online: #22c55e;
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
+  --header-bg: #ffffff;
+}
+
+/* ══════════════════════════════════════
+   RESET
+══════════════════════════════════════ */
 
 :root,
 [data-theme="light"] {
@@ -62,7 +167,9 @@ body.dark {
     
 }
 
-* {
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -75,6 +182,7 @@ body.dark {
 
 a {
     text-decoration: none;
+    color: inherit;
 }
 
 li {
@@ -84,7 +192,45 @@ li {
 html,
 body {
     overflow-x: hidden;
-    background: var(--bg)
+    background: var(--bg);
+    scroll-behavior: smooth;
+    color: var(--text);
+    transition: background var(--transition), color var(--transition);
+    font-family: 'DM Sans', sans-serif;
+    /*min-height: 100vh;*/
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+    background: none;
+}
+
+input,
+select,
+textarea {
+    font-family: inherit;
+    outline: none;
+}
+
+
+/* ── LAYOUT ────────────────────────────────────────────── 
+*/
+
+.page {
+    display: none;
+    animation: fadeIn 0.3s ease;
+    padding-bottom: 70px;
+}
+
+.content {
+    position: relative;
+    margin-bottom: 100px !important;
+}
+
+.page.active {
+    display: block;
 }
 
 .sidebar {
@@ -553,17 +699,6 @@ body {
     margin-bottom: 0;
 }
 
-
-
-
-
-
-
-
-
-
-
-
 .login-container {
     width: 100%;
     padding: 40px;
@@ -706,10 +841,12 @@ body {
         left: 0;
     }
     
+    .pagination,
     .chat-list-footer {
         position: fixed;
         bottom: 54px;
         width: 100%;
+        z-index: 10;
     }
 }
 
@@ -747,6 +884,12 @@ body {
 
 
 
+
+
+
+
+
+
 :root {
     --primary: #4318ff;
     --primary-soft: rgba(67, 24, 255, 0.10);
@@ -773,35 +916,22 @@ body {
 
 
 
-/* ── LAYOUT ────────────────────────────────────────────── 
-*/
-
-.page {
-    display: none;
-    animation: fadeIn 0.3s ease;padding-bottom: 70px;
-}
-.content {
-    position: relative;
-    margin-bottom: 100px !important;
-}
-
-.page.active {
-    display: block;
-}
 
 /* ── PAGE HEADER ───────────────────────────────────────── */
 .page-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 22px;
     gap: 12px;
     flex-wrap: wrap;
+    padding: 0 10px;
+    ;
+    margin: 0 10px;
 }
 
-.page-header h1 {
-    font-size: 20px;
-    font-weight: 800;
+.page-header div h1 {
+    font-weight: 700;
+    font-size: 22px;
     color: var(--text1);
 }
 
@@ -816,6 +946,7 @@ body {
     gap: 8px;
     flex-wrap: wrap;
 }
+
 
 /* ── STAT STRIP ────────────────────────────────────────── */
 .stat-strip {
@@ -974,7 +1105,7 @@ table {
 }
 
 thead th {
-    padding: 10px 14px;
+    padding: 10px 12px;
     text-align: left;
     font-size: 10px;
     font-weight: 700;
@@ -1000,7 +1131,7 @@ tbody tr:hover {
 }
 
 tbody td {
-    padding: 11px 14px;
+    padding: 10px 12px;
     vertical-align: middle;
 }
 
