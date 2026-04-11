@@ -2092,11 +2092,12 @@
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    color: #bbb;
+    color: #bbb;width:100%;
   overflow:hidden;
   }
   .image-placeholder img{
     object-fit: cover;
+    height: 100%;width:100%;
   }
   .tab-panel {
     display: none;
