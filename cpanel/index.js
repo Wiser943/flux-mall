@@ -375,7 +375,7 @@ async function checkAdminSession() {
   const res  = await fetch('/api/admin/me', { credentials: 'include' });
   const data = await res.json().catch(() => null);
   if (res.ok && data) {
-    const adminName = data.user?.username || data.user?.email || data.username || data.email || 'Admin';
+    const adminName = data.user?.username || data.user?.email || data.username || data.email;
     console.log(`%c[FluxMall] 👋 Logged in as: ${adminName}`, 'color:#4318ff;font-weight:700;font-size:14px;');
     initDashboard();
   } else {
