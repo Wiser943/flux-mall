@@ -888,13 +888,13 @@ function displayAmounts(amounts) {
   amountListDiv.innerHTML = '';
   amounts.forEach((amt, index) => {
     const card = document.createElement('div');
-    card.className = 'amt-btn';
+    card.className = 'qa-btn';
     const fexEquiv = parseFloat((amt / FEX_RATE).toFixed(2));
     if (index === 0) { card.classList.add('active'); if (confirmInput) confirmInput.value = amt.toFixed(2); }
     card.innerHTML = `₦${amt.toLocaleString()} <small style="display:block;font-size:0.7em;opacity:0.7;">🪙 ${fexEquiv.toLocaleString()} FEX</small>`;
     card.onclick = () => {
       if (confirmInput) confirmInput.value = amt.toFixed(2);
-      document.querySelectorAll('.amt-btn').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.qa-btn').forEach(c => c.classList.remove('active'));
       card.classList.add('active');
     };
     amountListDiv.appendChild(card);
