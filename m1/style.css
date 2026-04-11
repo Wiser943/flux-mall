@@ -1999,13 +1999,7 @@
   
   
   
-  :root {
-    --primary-green: #2d7a4d;
-    /* Matches the 'Done' button in your image */
-    --bg-light: #f8f9fa;
-    --card-bg: #ffffff;
-  }
-  
+
   .investment-header {
     padding: 20px 0;
     text-align: center;
@@ -2013,7 +2007,7 @@
   
   .main-tabs {
     display: inline-flex;
-    background: var(--bg-light);
+    background: var(--modal-bg);
     padding: 5px;
     border-radius: 50px;
     margin-bottom: 20px;
@@ -2031,8 +2025,8 @@
   }
   
   .tab-btn.active {
-    background: var(--card-bg);
-    color: var(--text-main);
+    background: var(--gold);
+    color: #fff;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   }
   
@@ -2049,14 +2043,14 @@
     padding: 8px 18px;
     border-radius: 20px;
     background: transparent;
-    color: var(--text-muted);
-    cursor: pointer;
+    color: var(--text);
+    cursor: pointer;border: none;
   }
   
   .sub-tab.active {
-    background: var(--primary-green);
+    background: var(--gold);
     color: white;
-    border-color: var(--primary-green);
+    border-color: var(--gold);
   }
   
   /* GRID SYSTEM */
@@ -2085,7 +2079,7 @@
   
   /* CARD STYLING */
   .invest-card {
-    background: var(--card-bg);
+    background: var(--modal-bg);
     border-radius: 16px;
     overflow: hidden;
     position: relative;
