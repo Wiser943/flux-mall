@@ -1763,7 +1763,6 @@ window.addEventListener('DOMContentLoaded', () => {
 // FEX Coin system integrated — balances stored & shown in FEX
 // ============================================================
 
-let currentUserData = null;
 let globalConfig = { minWithdraw: 2000, withdrawFee: 0 };
 let FEX_RATE = 0.7; // 1 FEX = ₦0.7 — overwritten by server on init
 
