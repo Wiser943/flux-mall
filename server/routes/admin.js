@@ -43,7 +43,7 @@ router.post('/logout', (req, res) => {
 
 // ─── GET /api/admin/me ────────────────────────────────────
 router.get('/me', requireAdmin, (req, res) => {
-  res.json({ success: true, admin: req.user });
+res.json({ success: true, message: 'Admin login successful.', user: { username: user.username, email: user.email, _id: user._id } });
 });
 
 // ─── GET /api/admin/analytics ─────────────────────────────
