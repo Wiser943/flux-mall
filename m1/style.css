@@ -2009,8 +2009,8 @@
     display: inline-flex;
     background: var(--modal-bg);
     padding: 5px;
-    border-radius: 50px;
-    margin-bottom: 20px;
+    border-radius: 50px;    margin-bottom: 4px;
+
   }
   
   .tab-btn {
