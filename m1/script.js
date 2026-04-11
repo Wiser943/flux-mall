@@ -923,7 +923,6 @@ async function loadShares() {
               </div>
               <button class="btn-invest" onclick="buyShare('${s._id}',${s.price},'${s.name}',${s.dailyIncome},${s.duration})">Invest</button>
             </div>
-            <div class="custom-tooltip">View full plan details</div>
           </div>`;
   });
 }
