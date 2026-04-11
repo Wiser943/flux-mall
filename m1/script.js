@@ -459,7 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 1200);
 });
 
-//initiateDeposit(4000)
 // ─── DEPOSIT INITIATION ───────────────────────────────────
 window.initiateDeposit = async function(amount) {
   /*
@@ -875,7 +874,7 @@ window.handleSave = async () => {
 
 // ─── DEPOSIT AMOUNTS ─────────────────────────────────────
 const amountListDiv = document.getElementById('amountGrid');
-const confirmInput = document.getElementById('customAmount');
+const confirmInput = document.getElementById('depositAmount');
 const confirmBtn = document.getElementById('rechargeBtn');
 
 async function fetchAmounts() {
