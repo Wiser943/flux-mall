@@ -254,7 +254,7 @@
         </div>
         <div class="card">
           <div class="flex-between mb-4">
-            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Spending Activity</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Activity</div>
             <div class="tabs" style="margin-bottom:0;">
               <div class="tab active" onclick="switchTab(this); renderActivityChart('7D')">7D</div>
               <div class="tab" onclick="switchTab(this); renderActivityChart('30D')">30D</div>
@@ -635,7 +635,7 @@
               Running</button>
           </div>
           
-          <div id="sub-tabs-container" class="sub-tabs">
+          <div id="sub-tabs-container" class="sub-tabs" style="display:none">
             <button class="sub-tab active" onclick="filterCategory('real-estate')">Real Estate</button>
             <button class="sub-tab" onclick="filterCategory('agriculture')">Agriculture</button>
             <button class="sub-tab" onclick="filterCategory('machines')">Machines</button>
@@ -643,7 +643,19 @@
         </div>
         
         <section id="investment" class="tab-panel active">
-          <div id="investment-grid" class="investment-grid"></div>
+          <div id="investment-grid" class="investment-grid">     <div class="invest-card" data-category="real-estate">
+       <div class="image-placeholder">
+         <img src="/m1/Screenshot_20260402_205747.jpg" alt="${s.name}">
+       </div>
+       <div class="card-details">
+         <h3>${s.name}</h3>
+         <p class="plan-info">Return: ${s.dailyIncome * s.duration} after ${s.duration} days</p>
+         <div class="price-row">
+           <span class="price">🪙${s.price.toLocaleString()} FEX</span>
+         </div>
+         <button class="btn-invest" onclick="buyShare('${s._id}',${s.price},'${s.name}',${s.dailyIncome},${s.duration})">Invest</button>
+       </div>
+     </div></div>
         </section>
         
         <section id="aInvestment" class="tab-panel">
