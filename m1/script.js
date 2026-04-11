@@ -912,7 +912,6 @@ async function loadShares() {
     container.innerHTML += `
               <div class="invest-card" data-category="real-estate">
             <div class="image-placeholder">
-              <i class="ri-image-line"></i>
                         <img src="${s.img}" alt="${s.name}">
             </div>
             <div class="card-details">
