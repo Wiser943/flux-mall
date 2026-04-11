@@ -165,7 +165,7 @@ async function loadWithdrawals() {
     list.innerHTML += `
       <div class="history-item">
         <div class="tx-details">
-          <span class="tx-amount">🪙 ${Number(d.amount).toLocaleString()} FEX</span>
+          <span class="tx-amount">🪙 ${Number(d.amount).toLocaleString()}</span>
           <span class="tx-date">${nairaStr} · ${dateStr}</span>
         </div>
         <span class="badge ${badgeClass}">${d.status}</span>
@@ -586,7 +586,7 @@ window.payWithKorapay = async (amount, _key) => {
           ₦${Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
         </strong>
         <div style="font-size:12px;color:var(--text3);margin-top:4px;margin-bottom:18px;">
-          🪙 ${fexToCredit.toLocaleString()} FEX will be credited after payment confirms
+          🪙 ${fexToCredit.toLocaleString()} will be credited after payment confirms
         </div>
 
         <div class="bank-details">
@@ -686,35 +686,43 @@ window.handleWithdrawalSubmit = async () => {
   const fee = parseFloat(((naira * globalConfig.withdrawFee) / 100).toFixed(2));
   const net = parseFloat((naira - fee).toFixed(2));
   
-  if (!confirm(
-      `Withdraw: 🪙${fexAmount.toLocaleString()} FEX\n` +
-      `Rate: 1 FEX = ₦${fexRate}\n` +
-      `Naira Value: ₦${naira.toLocaleString()}\n` +
-      `Fee (${globalConfig.withdrawFee}%): ₦${fee.toLocaleString()}\n` +
-      `You receive: ₦${net.toLocaleString()}\n\nConfirm?`
-    )) return;
-  
-  btn.disabled = true;
-  btn.innerText = 'Processing...';
-  try {
-    const data = await api('/api/user/withdraw', {
-      method: 'POST',
-      body: JSON.stringify({ fexAmount })
-    });
-    if (data?.success) {
-      showAlert(data.message || '✅ Withdrawal submitted!', 'info', 'ri-check-line', 'Success');
-      document.getElementById('withdrawAmount').value = '';
-      loadWithdrawals();
-      refreshBalance();
-    } else {
-      showAlert(data?.error || 'Error submitting withdrawal.', 'error', 'ri-close-line', 'Error');
-    }
-  } catch (err) {
-    showAlert('Something went wrong.', 'warning', 'ri-close-line', 'Error');
-  } finally {
-    btn.disabled = false;
-    btn.innerText = 'Confirm Withdrawal';
-  }
+  showConfirm({
+    title: 'Confirm Withdrawal',
+    message: 'Please review your withdrawal details below.',
+    detail: `
+      <div class="detail-row"><span>Amount:</span><strong>🪙${fexAmount.toLocaleString()} FEX</strong></div>
+      <div class="detail-row"><span>Rate:</span><strong>1 FEX = ₦${fexRate}</strong></div>
+      <div class="detail-row"><span>Naira Value:</span><strong>₦${naira.toLocaleString()}</strong></div>
+      <div class="detail-row"><span>Fee (${globalConfig.withdrawFee}%):</span><strong>₦${fee.toLocaleString()}</strong></div>
+      <div class="detail-row"><span>You receive:</span><strong>₦${net.toLocaleString()}</strong></div>
+    `,
+    yesText: 'Confirm',
+    noText: 'Cancel',
+    onConfirm: async function() {
+      btn.disabled = true;
+      btn.innerText = 'Processing...';
+      try {
+        const data = await api('/api/user/withdraw', {
+          method: 'POST',
+          body: JSON.stringify({ fexAmount })
+        });
+        if (data?.success) {
+          showAlert(data.message || '✅ Withdrawal submitted!', 'info', 'ri-check-line', 'Success');
+          document.getElementById('withdrawAmount').value = '';
+          loadWithdrawals();
+          refreshBalance();
+        } else {
+          showAlert(data?.error || 'Error submitting withdrawal.', 'error', 'ri-close-line', 'Error');
+        }
+      } catch (err) {
+        showAlert('Something went wrong.', 'warning', 'ri-close-line', 'Error');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Confirm Withdrawal';
+      }
+    },
+    onCancel: function() {}
+  });
 };
 
 window.updateWithdrawPreview = () => {
@@ -929,19 +937,27 @@ async function loadShares() {
 window.buyShare = async (id, price, name, daily, dur) => {
   if (currentUserData.ib < price)
     return showAlert('Insufficient FEX Balance! Try depositing.', 'warning', 'ri-close-line', 'Insufficient Balance');
-  if (!confirm(`Buy ${name} for 🪙${price.toLocaleString()} FEX?`)) return;
-  const data = await api('/api/user/buy-share', {
-    method: 'POST',
-    body: JSON.stringify({ shareId: id, name, price, dailyIncome: daily, duration: dur })
+  showConfirm({
+    title: 'Confirm Investment',
+    message: `Buy ${name} for 🪙${price.toLocaleString()} FEX?`,
+    yesText: 'Buy',
+    noText: 'Cancel',
+    onConfirm: async function() {
+      const data = await api('/api/user/buy-share', {
+        method: 'POST',
+        body: JSON.stringify({ shareId: id, name, price, dailyIncome: daily, duration: dur })
+      });
+      if (data?.success) {
+        showAlert('🎁 Bonus: 2 Free Spins earned!', 'success', 'ri-close-line', 'Bonus Earned');
+        showAlert('Investment Active!', 'info', 'ri-check-line', 'Investment Active');
+        refreshBalance();
+        loadMyInvestments();
+      } else {
+        showAlert(data?.error || 'Error buying share.', 'error', 'ri-close-line', 'Error');
+      }
+    },
+    onCancel: function() {}
   });
-  if (data?.success) {
-    showAlert('🎁 Bonus: 2 Free Spins earned!', 'success', 'ri-close-line', 'Bonus Earned');
-    showAlert('Investment Active!', 'info', 'ri-check-line', 'Investment Active');
-    refreshBalance();
-    loadMyInvestments();
-  } else {
-    showAlert(data?.error || 'Error buying share.', 'error', 'ri-close-line', 'Error');
-  }
 };
 
 // ─── MY INVESTMENTS ───────────────────────────────────────
@@ -1581,9 +1597,17 @@ window.startEdit = (msgId) => {
 
 // ─── DELETE ───────────────────────────────────────────────
 window.deleteMsg = async (msgId) => {
-  if (!confirm('Delete this message?')) return;
-  const data = await api(`/api/user/chat/message/${msgId}`, { method: 'DELETE' });
-  if (data?.success) await loadChatMessages();
+  showConfirm({
+    title: 'Delete Message',
+    message: 'Delete this message?',
+    yesText: 'Delete',
+    noText: 'Cancel',
+    onConfirm: async function() {
+      const data = await api(`/api/user/chat/message/${msgId}`, { method: 'DELETE' });
+      if (data?.success) await loadChatMessages();
+    },
+    onCancel: function() {}
+  });
 };
 
 // ─── SEND MESSAGE ─────────────────────────────────────────
