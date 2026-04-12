@@ -859,7 +859,27 @@
         </div>
         
         <div class="grid-2 mb-6">
-          <span id="refLink"></span>
+          <span id="refLink">
+              <div class="referral-block card">
+    <h3>Invite Your Friends</h3>
+    <p>Earn from refering friends!</p>
+    <div class="ref-input-row">
+      <input type="text" value="${refId}"  readonly>
+      <button onclick="copyCode('${refId}')" class="copy-btn"><i class="ri-file-copy-line"></i>copy</button>
+    </div>
+    <label>Link</label>
+    <div class="ref-input-row">
+      <input type="text" value="${link}" readonly>
+      
+      <button onclick="copyCode('${link}')" class="copy-btn"><i class="ri-file-copy-line"></i>copy</button>
+    </div>
+    
+    <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
+      <button class="btn btn-primary" onclick="copyCode('${link}')"><i class="ri-share-line"></i> Share</button>
+      <button class="btn btn-outline" onclick="window.open('https://wa.me/?text=${encodeURIComponent(link)}','_blank')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
+    </div>
+  </div>
+          </span>
           <!-- How it works -->
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">How It Works</div>
