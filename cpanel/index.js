@@ -4369,6 +4369,647 @@ function showToast(msg, type = 'success') {
 
 
 
+// ── STATE ──────────────────────────────────────────────────
+let _shares      = [];   // share catalog
+let _investments = [];   // all purchased shares across all users
+let _invFiltered = [];
+const INV_PER_PAGE = 15;
+let invPage = 1;
+
+const AVATAR_COLORS = ['#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
+function avatarColor(str){ let h=0; for(let i=0;i<(str||'').length;i++) h=str.charCodeAt(i)+((h<<5)-h); return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length]; }
+function initials(s){ return (s||'?').slice(0,2).toUpperCase(); }
+
+// ── API ─────────────────────────────────────────────────────
+async function api(path, opts={}) {
+  try {
+    const res = await fetch(path, {
+      credentials:'include',
+      headers:{ 'Content-Type':'application/json', ...opts.headers },
+      ...opts
+    });
+    return res.json();
+  } catch(e) { console.error('[API]',e); return null; }
+}
+
+// ── TAB SWITCH ──────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+// ── INIT ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadShares();
+  loadInvestments();
+});
+
+async function refreshAll() {
+  loadShares();
+  loadInvestments();
+  showToast('Refreshed ✓','success');
+}
+
+// ═══════════════════════════════════════════════════════════
+// SHARE CATALOG
+// ═══════════════════════════════════════════════════════════
+async function loadShares() {
+  document.getElementById('sharesGrid').innerHTML =
+    `<div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading…</p></div>`;
+
+  const data = await api('/api/admin/shares');
+  _shares = data?.shares || [];
+  setText('statTotalShares', _shares.length);
+  setText('tcCatalog', _shares.length);
+  renderCatalog(_shares);
+}
+
+let _catalogFiltered = [];
+let _catalogSort = 'price-asc';
+
+function filterCatalog(term) {
+  term = term.toLowerCase();
+  _catalogFiltered = _shares.filter(s => s.name.toLowerCase().includes(term));
+  applyCatalogSort();
+}
+
+function sortCatalog(val) {
+  _catalogSort = val;
+  applyCatalogSort();
+}
+
+function applyCatalogSort() {
+  const arr = _catalogFiltered.length ? _catalogFiltered : [..._shares];
+  arr.sort((a,b) => {
+    if (_catalogSort === 'price-asc')     return a.price - b.price;
+    if (_catalogSort === 'price-desc')    return b.price - a.price;
+    if (_catalogSort === 'duration-asc')  return a.duration - b.duration;
+    if (_catalogSort === 'name-asc')      return a.name.localeCompare(b.name);
+    return 0;
+  });
+  renderCatalog(arr);
+}
+
+function renderCatalog(shares) {
+  const grid = document.getElementById('sharesGrid');
+  if (!shares.length) {
+    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">
+      <i class="ri-stack-line"></i><p>No share packages yet. Click <strong>+ New Share</strong> to create one.</p>
+    </div>`;
+    return;
+  }
+
+  // Count how many users bought each share
+  const buyCount = {};
+  _investments.forEach(inv => {
+    const key = inv.shareName;
+    buyCount[key] = (buyCount[key]||0) + 1;
+  });
+
+  grid.innerHTML = shares.map(s => {
+    const buyers = buyCount[s.name] || 0;
+    const roi    = s.duration > 0 ? ((s.dailyIncome * s.duration / s.price)*100).toFixed(1) : '0';
+    const imgHtml = s.img
+      ? `<img src="${s.img}" alt="${s.name}" onerror="this.parentElement.innerHTML='📦'">`
+      : '📦';
+
+    return `
+    <div class="share-card">
+      <div class="share-img">${imgHtml}</div>
+      <div class="share-body">
+        <div class="duration-pill"><i class="ri-calendar-line"></i> ${s.duration} Days</div>
+        <div class="share-name">${s.name}</div>
+        <div class="share-stats">
+          <div class="share-stat">
+            <label>Price</label>
+            <span class="blue">🪙${Number(s.price).toLocaleString()}</span>
+          </div>
+          <div class="share-stat">
+            <label>Daily Income</label>
+            <span class="green">🪙${Number(s.dailyIncome).toLocaleString()}</span>
+          </div>
+          <div class="share-stat">
+            <label>Total ROI</label>
+            <span>${roi}%</span>
+          </div>
+          <div class="share-stat">
+            <label>Buyers</label>
+            <span>${buyers} user${buyers!==1?'s':''}</span>
+          </div>
+        </div>
+        <div class="share-actions">
+          <button class="btn btn-warning btn-sm" style="flex:1" onclick="openEditShareModal('${s._id}')">
+            <i class="ri-edit-line"></i> Edit
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteShare('${s._id}','${s.name}')">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// USER INVESTMENTS (Purchased Shares)
+// ═══════════════════════════════════════════════════════════
+async function loadInvestments() {
+  setLoading('investmentsTableBody', 7);
+  // Uses the admin purchased-shares endpoint
+  const data = await api('/api/admin/purchased-shares');
+  _investments = data?.investments || data?.purchasedShares || [];
+  _invFiltered = [..._investments];
+
+  // Update stats
+  const active  = _investments.filter(i => !isExpired(i)).length;
+  const expired = _investments.filter(i =>  isExpired(i)).length;
+  const totalFex = _investments.reduce((s,i) => s + Number(i.pricePaid||0), 0);
+
+  setText('statActiveInvestments', active);
+  setText('statExpired', expired);
+  setText('statTotalInvested', '🪙'+totalFex.toLocaleString());
+  setText('tcInvestments', _investments.length);
+
+  renderInvestmentsPage();
+  // Re-render catalog to update buyer counts
+  renderCatalog(_shares);
+}
+
+function isExpired(inv) {
+  if (!inv.purchaseDate) return false;
+  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
+  return daysPassed >= (inv.duration || 0);
+}
+
+function daysLeft(inv) {
+  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
+  return Math.max(0, (inv.duration||0) - daysPassed);
+}
+
+function progressPct(inv) {
+  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
+  return Math.min(100, Math.round((daysPassed / (inv.duration||1)) * 100));
+}
+
+function filterInvestments(term) {
+  term = term.toLowerCase();
+  const statusSel = document.querySelector('#panel-investments .filter-select')?.value || 'all';
+  applyInvestmentFilters(term, statusSel);
+}
+
+function filterInvestmentStatus(status) {
+  const term = document.querySelector('#panel-investments .search-box input')?.value.toLowerCase() || '';
+  applyInvestmentFilters(term, status);
+}
+
+function applyInvestmentFilters(term, status) {
+  _invFiltered = _investments.filter(inv => {
+    const name   = (inv.userId?.username || inv.username || '').toLowerCase();
+    const share  = (inv.shareName || '').toLowerCase();
+    const matchQ = !term || name.includes(term) || share.includes(term);
+    const matchS = status === 'all' || (status === 'active' ? !isExpired(inv) : isExpired(inv));
+    return matchQ && matchS;
+  });
+  invPage = 1;
+  renderInvestmentsPage();
+}
+
+function renderInvestmentsPage() {
+  const tbody = document.getElementById('investmentsTableBody');
+  if (!_invFiltered.length) { setEmpty('investmentsTableBody',7,'No investments found'); hidePagination('invest'); return; }
+
+  const slice = paginate(_invFiltered, invPage, INV_PER_PAGE);
+  tbody.innerHTML = slice.map(inv => {
+    const username = inv.userId?.username || inv.username || '—';
+    const email    = inv.userId?.email    || '—';
+    const pct      = progressPct(inv);
+    const left     = daysLeft(inv);
+    const expired  = isExpired(inv);
+    const date     = inv.purchaseDate
+      ? new Date(inv.purchaseDate).toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})
+      : '—';
+    const earned   = Math.floor((inv.duration - left) * (inv.dailyIncome||0));
+
+    return `<tr>
+      <td>
+        <div class="user-chip">
+          <div class="avatar" style="background:${avatarColor(username)}">${initials(username)}</div>
+          <div>
+            <div class="username">${username}</div>
+            <div class="user-sub">${email}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="font-weight:700;font-size:13px;">${inv.shareName || '—'}</div>
+        <div style="font-size:11px;color:var(--text3);">🪙${Number(inv.pricePaid||0).toLocaleString()} paid</div>
+      </td>
+      <td style="min-width:120px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:3px;">
+          <span>${pct}%</span>
+          <span>${expired ? 'Done' : left+' days left'}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill ${expired?'':'green'}" style="width:${pct}%;background:${expired?'var(--text3)':'var(--success)'}"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">🪙${earned.toLocaleString()} earned</div>
+      </td>
+      <td>
+        <div style="font-weight:700;color:var(--success);font-size:13px;">🪙${Number(inv.dailyIncome||0).toLocaleString()}/day</div>
+        <div style="font-size:11px;color:var(--text3);">${inv.duration} days total</div>
+      </td>
+      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
+      <td>
+        ${expired
+          ? `<span class="badge expired">⬛ Expired</span>`
+          : `<span class="badge active">🟢 Active</span>`}
+      </td>
+      <td>
+        <div class="action-group">
+          <button class="btn btn-ghost btn-sm" onclick="viewInvestmentDetail(${JSON.stringify(inv).replace(/"/g,'&quot;')})">
+            <i class="ri-eye-line"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteInvestment('${inv._id}','${username}')">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  renderPagination('invest', _invFiltered.length, invPage, (p)=>{ invPage=p; renderInvestmentsPage(); });
+}
+
+// ═══════════════════════════════════════════════════════════
+// CRUD — SHARES
+// ═══════════════════════════════════════════════════════════
+function openAddShareModal() {
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-add-circle-line" style="color:var(--primary)"></i> New Share Package</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Package Name</label>
+        <input id="ms_name" placeholder="e.g. Gold Pack">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (FEX)</label>
+          <input type="number" id="ms_price" placeholder="5000" min="1">
+        </div>
+        <div class="form-group">
+          <label>Duration (Days)</label>
+          <input type="number" id="ms_duration" placeholder="30" min="1">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Daily Income (FEX)</label>
+        <input type="number" id="ms_daily" placeholder="200" min="1">
+      </div>
+      <div class="form-group">
+        <label>Share Image</label>
+        <input type="file" id="ms_imgFile" accept="image/*" style="padding:8px;border:1.5px solid var(--border);border-radius:10px;width:100%;font-size:13px;cursor:pointer;">
+        <div id="ms_imgStatus" style="font-size:12px;color:var(--primary);margin-top:4px;"></div>
+        <input type="hidden" id="ms_imgUrl">
+      </div>
+      <div id="ms_roiPreview" style="background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);display:none;">
+        💡 <span id="ms_roiText"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddShare()"><i class="ri-check-line"></i> Create Share</button>
+    </div>
+  `);
+
+  // Live ROI preview
+  ['ms_price','ms_daily','ms_duration'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateRoiPreview);
+  });
+}
+
+function updateRoiPreview() {
+  const price = Number(document.getElementById('ms_price')?.value)||0;
+  const daily = Number(document.getElementById('ms_daily')?.value)||0;
+  const dur   = Number(document.getElementById('ms_duration')?.value)||0;
+  const prev  = document.getElementById('ms_roiPreview');
+  const text  = document.getElementById('ms_roiText');
+  if (price && daily && dur) {
+    const total = daily * dur;
+    const roi   = ((total / price)*100).toFixed(1);
+    text.textContent = `Total return: 🪙${total.toLocaleString()} FEX (${roi}% ROI over ${dur} days)`;
+    prev.style.display = 'block';
+  } else {
+    prev.style.display = 'none';
+  }
+}
+
+async function submitAddShare() {
+  const g   = id => document.getElementById(id)?.value;
+  const name = g('ms_name')?.trim();
+  const price    = Number(g('ms_price'));
+  const daily    = Number(g('ms_daily'));
+  const duration = Number(g('ms_duration'));
+  if (!name || !price || !daily || !duration) { showToast('Please fill all fields','error'); return; }
+
+  let imgUrl = g('ms_imgUrl');
+  const fileInput = document.getElementById('ms_imgFile');
+  if (fileInput?.files[0]) {
+    const statusEl = document.getElementById('ms_imgStatus');
+    imgUrl = await uploadToImgBB(fileInput.files[0], statusEl);
+    if (!imgUrl) return;
+  }
+
+  const res = await api('/api/admin/shares', {
+    method:'POST',
+    body: JSON.stringify({ name, price, dailyIncome: daily, duration, img: imgUrl||'' })
+  });
+
+  if (res?.success) {
+    showToast(`✅ "${name}" share created!`,'success');
+    closeModal();
+    loadShares();
+  } else {
+    showToast(res?.error || 'Error creating share','error');
+  }
+}
+
+function openEditShareModal(id) {
+  const s = _shares.find(x => x._id === id);
+  if (!s) return;
+
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-edit-line" style="color:var(--warning)"></i> Edit Share Package</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Package Name</label>
+        <input id="es_name" value="${s.name}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (FEX)</label>
+          <input type="number" id="es_price" value="${s.price}">
+        </div>
+        <div class="form-group">
+          <label>Duration (Days)</label>
+          <input type="number" id="es_duration" value="${s.duration}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Daily Income (FEX)</label>
+        <input type="number" id="es_daily" value="${s.dailyIncome}">
+      </div>
+      <div class="form-group">
+        <label>Image URL (optional)</label>
+        <input id="es_img" value="${s.img||''}" placeholder="https://...">
+      </div>
+      ${s.img ? `<img src="${s.img}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-warning" onclick="submitEditShare('${id}')"><i class="ri-save-line"></i> Save Changes</button>
+    </div>
+  `);
+}
+
+async function submitEditShare(id) {
+  const g = id => document.getElementById(id)?.value;
+  const payload = {
+    name:        g('es_name')?.trim(),
+    price:       Number(g('es_price')),
+    dailyIncome: Number(g('es_daily')),
+    duration:    Number(g('es_duration')),
+    img:         g('es_img')?.trim() || '',
+  };
+  if (!payload.name || !payload.price) { showToast('Name and price required','error'); return; }
+
+  const res = await api(`/api/admin/shares/${id}`, {
+    method:'PUT',
+    body: JSON.stringify(payload)
+  });
+
+  if (res?.success) {
+    showToast('Share updated!','success');
+    closeModal();
+    loadShares();
+  } else {
+    showToast(res?.error||'Error updating share','error');
+  }
+}
+
+async function deleteShare(id, name) {
+  if (!confirm(`Delete "${name}"? Users who already bought it keep their investment.`)) return;
+  const res = await api(`/api/admin/shares/${id}`, { method:'DELETE' });
+  if (res?.success) {
+    showToast(`"${name}" deleted`,'warning');
+    loadShares();
+  } else {
+    showToast(res?.error||'Error deleting share','error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// CRUD — PURCHASED SHARES (User Investments)
+// ═══════════════════════════════════════════════════════════
+function viewInvestmentDetail(inv) {
+  const username = inv.userId?.username || inv.username || '—';
+  const pct  = progressPct(inv);
+  const left = daysLeft(inv);
+  const earned = Math.floor(((inv.duration||0) - left) * (inv.dailyIncome||0));
+
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-user-star-line" style="color:var(--primary)"></i> Investment Detail</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:10px;">
+        <div class="avatar" style="width:40px;height:40px;font-size:14px;background:${avatarColor(username)}">${initials(username)}</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">${username}</div>
+          <div style="font-size:12px;color:var(--text3);">${inv.userId?.email||'—'}</div>
+        </div>
+        <div style="margin-left:auto;">${isExpired(inv)?'<span class="badge expired">Expired</span>':'<span class="badge active">🟢 Active</span>'}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Package</div>
+          <div style="font-weight:700;">${inv.shareName||'—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Price Paid</div>
+          <div style="font-weight:700;">🪙${Number(inv.pricePaid||0).toLocaleString()} FEX</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Daily Income</div>
+          <div style="font-weight:700;color:var(--success);">🪙${Number(inv.dailyIncome||0).toLocaleString()}/day</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Earned So Far</div>
+          <div style="font-weight:700;color:var(--primary);">🪙${earned.toLocaleString()} FEX</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Days Left</div>
+          <div style="font-weight:700;">${isExpired(inv) ? 'Completed' : left+' of '+inv.duration}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Purchased</div>
+          <div style="font-weight:700;font-size:12px;">${inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text2);">Progress — ${pct}%</div>
+      <div class="progress-bar" style="height:8px;">
+        <div class="progress-fill" style="width:${pct}%;background:${isExpired(inv)?'var(--text3)':'var(--success)'}"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      <button class="btn btn-danger" onclick="deleteInvestment('${inv._id}','${username}');closeModal()">
+        <i class="ri-delete-bin-line"></i> Remove Investment
+      </button>
+    </div>
+  `);
+}
+
+async function deleteInvestment(id, username) {
+  if (!confirm(`Remove ${username}'s investment? This cannot be undone.`)) return;
+  const res = await api(`/api/admin/purchased-shares/${id}`, { method:'DELETE' });
+  if (res?.success) {
+    showToast(`Investment removed for ${username}`,'warning');
+    loadInvestments();
+  } else {
+    showToast(res?.error||'Error removing investment','error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// IMGBB UPLOAD (reuses your existing function if available)
+// ═══════════════════════════════════════════════════════════
+async function uploadToImgBB(file, statusEl) {
+  if (statusEl) statusEl.innerHTML = '<i class="ri-loader-line"></i> Uploading image...';
+  try {
+    const settingsData = await api('/api/admin/settings/apikeys');
+    const imgbbKey = settingsData?.apikeys?.imgbb;
+    if (!imgbbKey) {
+      if (statusEl) statusEl.innerHTML = '';
+      showToast('ImgBB API key not set in Settings','error');
+      return null;
+    }
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
+    const result = await res.json();
+    if (result.success) {
+      if (statusEl) statusEl.innerHTML = '✅ Image uploaded';
+      return result.data.url;
+    } else {
+      if (statusEl) statusEl.innerHTML = '';
+      showToast('ImgBB upload failed','error');
+      return null;
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = '';
+    showToast('Upload error: '+err.message,'error');
+    return null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════
+function paginate(arr, page, per) {
+  return arr.slice((page-1)*per, page*per);
+}
+
+function renderPagination(prefix, total, page, onPage) {
+  const totalPages = Math.ceil(total/INV_PER_PAGE);
+  const wrap = document.getElementById(prefix+'Pagination');
+  const info = document.getElementById(prefix+'PageInfo');
+  const btns = document.getElementById(prefix+'PageBtns');
+  if (!wrap) return;
+  if (totalPages <= 1) { wrap.style.display='none'; return; }
+  wrap.style.display = 'flex';
+  const start = (page-1)*INV_PER_PAGE+1;
+  const end   = Math.min(page*INV_PER_PAGE, total);
+  if (info) info.textContent = `${start}–${end} of ${total}`;
+
+  const range = [];
+  let s = Math.max(1,page-2), e = Math.min(totalPages,s+4);
+  if (e-s<4) s = Math.max(1,e-4);
+  for (let i=s;i<=e;i++) range.push(i);
+
+  btns.innerHTML = `
+    <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
+    ${range.map(p=>`<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
+    <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
+}
+
+function hidePagination(prefix) {
+  const el = document.getElementById(prefix+'Pagination');
+  if (el) el.style.display = 'none';
+}
+
+function setLoading(tbodyId, cols) {
+  const el = document.getElementById(tbodyId);
+  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>`;
+}
+
+function setEmpty(tbodyId, cols, msg) {
+  const el = document.getElementById(tbodyId);
+  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-inbox-line"></i><p>${msg}</p></div></td></tr>`;
+}
+
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+// ── MODAL ──────────────────────────────────────────────────
+function showModal(html) {
+  closeModal();
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.id = '__modalOverlay';
+  overlay.onclick = e => { if (e.target===overlay) closeModal(); };
+  overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
+  document.body.appendChild(overlay);
+}/*
+function closeModal() {
+  document.getElementById('__modalOverlay')?.remove();
+}
+*/
+// ── TOAST ──────────────────────────────────────────────────
+let _tw = null;
+function showToast(msg, type='success') {
+  if (!_tw) {
+    _tw = document.createElement('div');
+    _tw.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
+    document.body.appendChild(_tw);
+  }
+  const colors = { success:'#05cd99', warning:'#f6ad55', error:'#ee5d50' };
+  const t = document.createElement('div');
+  t.style.cssText = `background:${colors[type]||'#4318ff'};color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);animation:toastIn 0.2s ease;`;
+  t.textContent = msg;
+  _tw.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
+}
+const s2 = document.createElement('style');
+s2.textContent = '@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';
+document.head.appendChild(s2);
+
+
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
