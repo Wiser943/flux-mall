@@ -71,7 +71,7 @@
       <li><a class="nav-item" href="#users"><i class='bx bx-group'></i><span>User Management</span></a></li>
       <li><a class="nav-item" href="#settings"><i class='bx bx-cog'></i><span>Settings</span></a></li>
     </div>
-    <ul class="side-menu" style="display: none;">
+    <ul class="side-menu">
       <li onclick="adminLogout()">
         <a href="#" class="logout">
           <i class='bx bx-log-out-circle'></i>
@@ -90,11 +90,11 @@
       <p>Secure Biometric Access Required</p>
       <form onsubmit="handleAdminLogin(event)">
         <div class="input-group">
-          <label>Master Email</label>
+          <label>Email</label>
           <input type="email" id="adminEmail" required placeholder="admin@yoursite.com">
         </div>
         <div class="input-group">
-          <label>Master Password</label>
+          <label>Password</label>
           <input type="password" id="adminPass" required placeholder="••••••••">
         </div>
         
@@ -121,7 +121,7 @@
             <img src="../img/logo.png">
           </a>
           <small><b>Admin</b></small>
-          <span style="color: red;"><i class="ri-logout-box-r-line"></i></span>
+          <span class="mlogout" onclick="adminLogout()" style="color: red;"><i class="ri-logout-box-r-line"></i></span>
         </div>
       </div>
     </nav>
