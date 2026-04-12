@@ -3,472 +3,265 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Transactions — Flux Mall Admin</title>
+<title>Shares & Investments — Flux Mall Admin</title>
 <link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
 <style>
-  /* ── FLUX MALL DESIGN TOKENS ───────────────────────────── */
-  :root {
-    --primary:      #4318ff;
-    --primary-soft: rgba(67,24,255,0.10);
-    --accent:       #868cff;
-    --success:      #05cd99;
-    --success-soft: rgba(5,205,153,0.12);
-    --danger:       #ee5d50;
-    --danger-soft:  rgba(238,93,80,0.12);
-    --warning:      #f6ad55;
-    --warning-soft: rgba(246,173,85,0.12);
-    --blue:         #4299e1;
-    --blue-soft:    rgba(66,153,225,0.12);
-    --bg:           #f4f7fe;
-    --card:         #ffffff;
-    --border:       #e0e5f2;
-    --text1:        #1b2559;
-    --text2:        #4a5568;
-    --text3:        #a3adc2;
-    --shadow:       0 4px 24px rgba(67,24,255,0.08);
-    --shadow-sm:    0 2px 8px rgba(0,0,0,0.06);
-    --radius:       16px;
-    --radius-sm:    10px;
-  }
+/* ── FLUX MALL TOKENS ──────────────────────────────────────── */
+:root {
+  --primary:      #4318ff;
+  --primary-soft: rgba(67,24,255,0.10);
+  --accent:       #868cff;
+  --success:      #05cd99;
+  --success-soft: rgba(5,205,153,0.12);
+  --danger:       #ee5d50;
+  --danger-soft:  rgba(238,93,80,0.12);
+  --warning:      #f6ad55;
+  --warning-soft: rgba(246,173,85,0.12);
+  --bg:           #f4f7fe;
+  --card:         #ffffff;
+  --border:       #e0e5f2;
+  --text1:        #1b2559;
+  --text2:        #4a5568;
+  --text3:        #a3adc2;
+  --shadow:       0 4px 24px rgba(67,24,255,0.08);
+  --shadow-sm:    0 2px 8px rgba(0,0,0,0.06);
+  --radius:       16px;
+  --radius-sm:    10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans','Segoe UI',sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── PAGE ──────────────────────────────────────────────────── */
+.page { max-width: 1000px; margin: 0 auto; padding: 20px 16px 80px; }
 
-  body {
-    font-family: 'DM Sans', 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text1);
-    min-height: 100vh;
-  }
+/* ── HEADER ────────────────────────────────────────────────── */
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
+.page-header h1 { font-size:20px; font-weight:800; color:var(--text1); }
+.page-header .sub { font-size:12px; color:var(--text3); margin-top:2px; }
+.header-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
-  /* ── LAYOUT ────────────────────────────────────────────── */
-  .page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 20px 16px 80px;
-  }
+/* ── STAT STRIP ────────────────────────────────────────────── */
+.stat-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
+.stat-card { background:var(--card); border-radius:var(--radius-sm); padding:14px; box-shadow:var(--shadow-sm); border:1px solid var(--border); position:relative; overflow:hidden; }
+.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:3px 3px 0 0; }
+.stat-card.blue::before  { background:var(--primary); }
+.stat-card.green::before { background:var(--success); }
+.stat-card.orange::before{ background:var(--warning); }
+.stat-card.red::before   { background:var(--danger); }
+.stat-val   { font-size:18px; font-weight:800; color:var(--text1); line-height:1.1; margin-bottom:4px; }
+.stat-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); }
+.stat-icon  { position:absolute; top:12px; right:12px; font-size:22px; opacity:0.15; }
 
-  /* ── PAGE HEADER ───────────────────────────────────────── */
-  .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 22px;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .page-header h1 {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--text1);
-    letter-spacing: -0.3px;
-  }
-  .page-header .subtitle {
-    font-size: 12px;
-    color: var(--text3);
-    margin-top: 2px;
-  }
-  .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+/* ── TABS ──────────────────────────────────────────────────── */
+.tabs-wrap { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; }
+.tabs-header { display:flex; border-bottom:1px solid var(--border); background:var(--bg); padding:6px 6px 0; gap:4px; }
+.tab-btn { flex:1; padding:10px 6px; border:none; background:transparent; font-size:13px; font-weight:600; color:var(--text3); cursor:pointer; border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s; }
+.tab-btn.active { background:var(--card); color:var(--primary); box-shadow:0 -2px 0 var(--primary) inset; }
+.tab-count { background:var(--primary-soft); color:var(--primary); font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px; }
+.tab-btn.active .tab-count { background:var(--primary); color:#fff; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
 
-  /* ── STAT STRIP ────────────────────────────────────────── */
-  .stat-strip {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .stat-card {
-    background: var(--card);
-    border-radius: var(--radius-sm);
-    padding: 14px 14px 12px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-  }
-  .stat-card.blue::before  { background: var(--primary); }
-  .stat-card.green::before { background: var(--success); }
-  .stat-card.orange::before{ background: var(--warning); }
-  .stat-card.red::before   { background: var(--danger); }
-  .stat-val {
-    font-size: 18px;
-    font-weight: 800;
-    color: var(--text1);
-    line-height: 1.1;
-    margin-bottom: 4px;
-  }
-  .stat-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text3);
-  }
-  .stat-icon {
-    position: absolute;
-    top: 12px; right: 12px;
-    font-size: 20px;
-    opacity: 0.18;
-  }
+/* ── TOOLBAR ───────────────────────────────────────────────── */
+.toolbar { display:flex; align-items:center; gap:8px; padding:14px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+.search-box { flex:1; min-width:160px; display:flex; align-items:center; gap:8px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 12px; }
+.search-box i { color:var(--text3); font-size:15px; }
+.search-box input { border:none; background:transparent; font-size:13px; color:var(--text1); outline:none; width:100%; }
+.filter-select { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12px; color:var(--text2); outline:none; cursor:pointer; }
 
-  /* ── TABS ──────────────────────────────────────────────── */
-  .tabs-wrap {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .tabs-header {
-    display: flex;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-    padding: 6px 6px 0;
-    gap: 4px;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 10px 6px;
-    border: none;
-    background: transparent;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text3);
-    cursor: pointer;
-    border-radius: 10px 10px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    transition: all 0.18s;
-    position: relative;
-  }
-  .tab-btn.active {
-    background: var(--card);
-    color: var(--primary);
-    box-shadow: 0 -2px 0 var(--primary) inset;
-  }
-  .tab-btn .tab-count {
-    background: var(--primary-soft);
-    color: var(--primary);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 20px;
-    min-width: 20px;
-    text-align: center;
-  }
-  .tab-btn.active .tab-count { background: var(--primary); color: #fff; }
+/* ── SHARE CATALOG GRID ────────────────────────────────────── */
+.shares-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; padding:16px; }
+.share-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-sm); transition:transform 0.15s, box-shadow 0.15s; }
+.share-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+.share-img { width:100%; height:120px; object-fit:cover; background:linear-gradient(135deg,var(--primary-soft),rgba(134,140,255,0.15)); display:flex; align-items:center; justify-content:center; font-size:40px; }
+.share-img img { width:100%; height:100%; object-fit:cover; }
+.share-body { padding:12px 14px; }
+.share-name { font-size:14px; font-weight:800; color:var(--text1); margin-bottom:8px; }
+.share-stats { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px; }
+.share-stat { background:var(--bg); border-radius:8px; padding:6px 8px; }
+.share-stat label { font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:2px; }
+.share-stat span { font-size:13px; font-weight:700; color:var(--text1); }
+.share-stat span.green { color:var(--success); }
+.share-stat span.blue  { color:var(--primary); }
+.share-actions { display:flex; gap:6px; }
+.duration-pill { display:inline-flex; align-items:center; gap:4px; background:var(--primary-soft); color:var(--primary); border-radius:20px; padding:3px 9px; font-size:11px; font-weight:700; margin-bottom:8px; }
 
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+/* ── TABLE ─────────────────────────────────────────────────── */
+.table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead th { padding:10px 14px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); border-bottom:1px solid var(--border); white-space:nowrap; background:var(--bg); }
+tbody tr { border-bottom:1px solid var(--border); transition:background 0.12s; }
+tbody tr:last-child { border-bottom:none; }
+tbody tr:hover { background:rgba(67,24,255,0.02); }
+tbody td { padding:11px 14px; vertical-align:middle; }
 
-  /* ── TOOLBAR ───────────────────────────────────────────── */
-  .toolbar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .search-box {
-    flex: 1;
-    min-width: 160px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 12px;
-  }
-  .search-box i { color: var(--text3); font-size: 15px; }
-  .search-box input {
-    border: none;
-    background: transparent;
-    font-size: 13px;
-    color: var(--text1);
-    outline: none;
-    width: 100%;
-  }
-  .filter-select {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 10px;
-    font-size: 12px;
-    color: var(--text2);
-    outline: none;
-    cursor: pointer;
-  }
+/* ── BADGES ────────────────────────────────────────────────── */
+.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; }
+.badge.success { background:var(--success-soft); color:var(--success); }
+.badge.active  { background:var(--success-soft); color:var(--success); }
+.badge.pending { background:var(--warning-soft); color:var(--warning); }
+.badge.expired { background:rgba(0,0,0,0.06); color:var(--text3); }
+.badge.blue    { background:var(--primary-soft); color:var(--primary); }
 
-  /* ── TABLE ─────────────────────────────────────────────── */
-  .table-wrap { overflow-x: auto; }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-  thead th {
-    padding: 10px 14px;
-    text-align: left;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text3);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    background: var(--bg);
-  }
-  tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.12s;
-  }
-  tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: rgba(67,24,255,0.02); }
-  tbody td {
-    padding: 11px 14px;
-    vertical-align: middle;
-  }
+/* ── BUTTONS ───────────────────────────────────────────────── */
+.btn { display:inline-flex; align-items:center; gap:5px; padding:7px 13px; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:#3410d9; }
+.btn-success { background:var(--success-soft); color:var(--success); }
+.btn-success:hover { background:var(--success); color:#fff; }
+.btn-danger  { background:var(--danger-soft); color:var(--danger); }
+.btn-danger:hover  { background:var(--danger); color:#fff; }
+.btn-ghost   { background:transparent; color:var(--text3); border:1px solid var(--border); }
+.btn-ghost:hover   { background:var(--bg); color:var(--text2); }
+.btn-warning { background:var(--warning-soft); color:var(--warning); }
+.btn-warning:hover { background:var(--warning); color:#fff; }
+.btn-sm { padding:5px 9px; font-size:11px; }
+.action-group { display:flex; gap:5px; align-items:center; }
 
-  /* ── BADGES ────────────────────────────────────────────── */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.2px;
-  }
-  .badge.success, .badge.approved { background: var(--success-soft); color: var(--success); }
-  .badge.pending                  { background: var(--warning-soft); color: var(--warning); }
-  .badge.declined, .badge.failed  { background: var(--danger-soft);  color: var(--danger); }
-  .badge.blue                     { background: var(--blue-soft);    color: var(--blue); }
+/* ── USER CHIP ─────────────────────────────────────────────── */
+.user-chip { display:flex; align-items:center; gap:8px; }
+.avatar { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#fff; flex-shrink:0; }
+.username { font-size:12px; font-weight:600; color:var(--text1); }
+.user-sub { font-size:10px; color:var(--text3); }
 
-  /* ── ACTION BUTTONS ────────────────────────────────────── */
-  .btn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 13px; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
-  .btn-primary   { background: var(--primary); color: #fff; }
-  .btn-primary:hover { background: #3410d9; }
-  .btn-success   { background: var(--success-soft); color: var(--success); }
-  .btn-success:hover { background: var(--success); color: #fff; }
-  .btn-danger    { background: var(--danger-soft); color: var(--danger); }
-  .btn-danger:hover  { background: var(--danger); color: #fff; }
-  .btn-ghost     { background: transparent; color: var(--text3); border: 1px solid var(--border); }
-  .btn-ghost:hover   { background: var(--bg); color: var(--text2); }
-  .btn-sm { padding: 5px 9px; font-size: 11px; }
-  .action-group { display: flex; gap: 5px; align-items: center; }
+/* ── PROGRESS ──────────────────────────────────────────────── */
+.progress-bar { height:5px; background:var(--border); border-radius:4px; overflow:hidden; margin-top:4px; }
+.progress-fill { height:100%; border-radius:4px; background:var(--primary); transition:width 0.3s; }
+.progress-fill.green { background:var(--success); }
 
-  /* ── EMPTY / LOADING STATES ────────────────────────────── */
-  .state-box {
-    text-align: center;
-    padding: 50px 20px;
-    color: var(--text3);
-  }
-  .state-box i { font-size: 36px; opacity: 0.4; display: block; margin-bottom: 10px; }
-  .state-box p { font-size: 13px; }
-  .spinner {
-    width: 28px; height: 28px;
-    border: 3px solid var(--border);
-    border-top-color: var(--primary);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    margin: 0 auto 10px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── EMPTY / LOADING ───────────────────────────────────────── */
+.state-box { text-align:center; padding:50px 20px; color:var(--text3); }
+.state-box i { font-size:36px; opacity:0.4; display:block; margin-bottom:10px; }
+.state-box p { font-size:13px; }
+.spinner { width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 10px; }
+@keyframes spin { to { transform:rotate(360deg); } }
 
-  /* ── MODAL ─────────────────────────────────────────────── */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(17,24,39,0.55);
-    backdrop-filter: blur(4px);
-    display: flex; align-items: flex-end; justify-content: center;
-    z-index: 999;
-    animation: fadeIn 0.18s ease;
-  }
-  @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-  .modal-sheet {
-    background: var(--card);
-    border-radius: 20px 20px 0 0;
-    width: 100%; max-width: 560px;
-    padding: 0 0 32px;
-    animation: slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1);
-    max-height: 92vh;
-    overflow-y: auto;
-  }
-  @keyframes slideUp { from { transform: translateY(60px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-  .modal-handle {
-    width: 40px; height: 4px;
-    background: var(--border);
-    border-radius: 4px;
-    margin: 12px auto 0;
-  }
-  .modal-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 20px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .modal-head h3 { font-size: 15px; font-weight: 700; color: var(--text1); }
-  .modal-close { background: none; border: none; font-size: 20px; color: var(--text3); cursor: pointer; padding: 4px; }
-  .modal-body { padding: 18px 20px; }
-  .modal-row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .modal-row label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 4px; display: block; }
-  .modal-row .val { font-size: 14px; font-weight: 600; color: var(--text1); }
-  .info-card { background: var(--bg); border-radius: 10px; padding: 12px 14px; flex: 1; }
-  .modal-footer { display: flex; gap: 8px; padding: 0 20px; }
-  .modal-footer .btn { flex: 1; justify-content: center; }
+/* ── MODAL ─────────────────────────────────────────────────── */
+.modal-overlay { position:fixed; inset:0; background:rgba(17,24,39,0.6); backdrop-filter:blur(4px); display:flex; align-items:flex-end; justify-content:center; z-index:9999; animation:fadeIn 0.18s ease; }
+@keyframes fadeIn { from{opacity:0}to{opacity:1} }
+.modal-sheet { background:var(--card); border-radius:20px 20px 0 0; width:100%; max-width:520px; padding:0 0 32px; animation:slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1); max-height:92vh; overflow-y:auto; }
+@keyframes slideUp { from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1} }
+.modal-handle { width:40px; height:4px; background:var(--border); border-radius:4px; margin:12px auto 0; }
+.modal-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; border-bottom:1px solid var(--border); }
+.modal-head h3 { font-size:15px; font-weight:700; }
+.modal-close { background:none; border:none; font-size:20px; color:var(--text3); cursor:pointer; }
+.modal-body { padding:18px 20px; }
+.form-group { margin-bottom:14px; }
+.form-group label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); margin-bottom:6px; }
+.form-group input, .form-group select, .form-group textarea {
+  width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px;
+  font-size:13px; color:var(--text1); background:var(--bg); outline:none; transition:border 0.15s;
+}
+.form-group input:focus, .form-group select:focus { border-color:var(--primary); background:#fff; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.modal-footer { display:flex; gap:8px; padding:0 20px; }
+.modal-footer .btn { flex:1; justify-content:center; }
 
-  /* ── USER AVATAR CHIP ──────────────────────────────────── */
-  .user-chip { display: flex; align-items: center; gap: 7px; }
-  .avatar {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800; color: #fff;
-    flex-shrink: 0;
-  }
-  .username { font-size: 12px; font-weight: 600; color: var(--text1); }
-  .user-id  { font-size: 10px; color: var(--text3); font-family: monospace; }
+/* ── PAGINATION ────────────────────────────────────────────── */
+.pagination { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid var(--border); font-size:12px; color:var(--text3); flex-wrap:wrap; gap:8px; }
+.page-btns { display:flex; gap:4px; }
+.page-btns button { width:28px; height:28px; border:1px solid var(--border); border-radius:6px; background:var(--card); font-size:12px; cursor:pointer; color:var(--text2); font-weight:600; transition:all 0.12s; }
+.page-btns button.active,.page-btns button:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
+.page-btns button:disabled { opacity:0.4; pointer-events:none; }
 
-  /* ── AMOUNT CELL ───────────────────────────────────────── */
-  .amt-fex   { font-size: 13px; font-weight: 700; color: var(--text1); }
-  .amt-naira { font-size: 11px; color: var(--text3); margin-top: 1px; }
-
-  /* ── PAGINATION ────────────────────────────────────────── */
-  .pagination {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px;
-    border-top: 1px solid var(--border);
-    font-size: 12px;
-    color: var(--text3);
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .page-btns { display: flex; gap: 4px; }
-  .page-btns button {
-    width: 28px; height: 28px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--card);
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--text2);
-    font-weight: 600;
-    transition: all 0.12s;
-  }
-  .page-btns button.active,
-  .page-btns button:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
-  .page-btns button:disabled { opacity: 0.4; pointer-events: none; }
-
-  /* ── BANK DETAIL ROW ───────────────────────────────────── */
-  .bank-tag {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: var(--primary-soft);
-    color: var(--primary);
-    border-radius: 6px;
-    padding: 3px 8px;
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  /* ── RESPONSIVE ────────────────────────────────────────── */
-  @media (max-width: 600px) {
-    .stat-strip { grid-template-columns: repeat(2, 1fr); }
-    .stat-val { font-size: 15px; }
-    thead th:nth-child(3),
-    thead th:nth-child(4),
-    tbody td:nth-child(3),
-    tbody td:nth-child(4) { display: none; }
-    .page-header h1 { font-size: 17px; }
-  }
-  @media (max-width: 400px) {
-    .tab-btn span { display: none; }
-  }
+/* ── RESPONSIVE ────────────────────────────────────────────── */
+@media(max-width:600px){
+  .stat-strip { grid-template-columns:repeat(2,1fr); }
+  .shares-grid { grid-template-columns:1fr; }
+  thead th:nth-child(4),tbody td:nth-child(4),
+  thead th:nth-child(5),tbody td:nth-child(5) { display:none; }
+}
+@media(max-width:400px){
+  .tab-btn span { display:none; }
+}
 </style>
 </head>
 <body>
-
 <div class="page">
 
-  <!-- ── PAGE HEADER ───────────────────────────────────── -->
+  <!-- ── PAGE HEADER ──────────────────────────────────────── -->
   <div class="page-header">
     <div>
-      <h1><i class="ri-exchange-funds-line" style="color:var(--primary);margin-right:6px;"></i>Transactions</h1>
-      <div class="subtitle">Deposits · Withdrawals · Activity log</div>
+      <h1><i class="ri-stock-line" style="color:var(--primary);margin-right:6px;"></i>Shares & Investments</h1>
+      <div class="sub">Manage share catalog · Track user investments</div>
     </div>
     <div class="header-actions">
       <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
-      <button class="btn btn-primary btn-sm" onclick="exportAllCSV()"><i class="ri-download-2-line"></i> Export</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddShareModal()"><i class="ri-add-line"></i> New Share</button>
     </div>
   </div>
 
-  <!-- ── STAT STRIP ────────────────────────────────────── -->
+  <!-- ── STAT STRIP ──────────────────────────────────────── -->
   <div class="stat-strip">
     <div class="stat-card blue">
-      <div class="stat-val" id="statTotalDeposits">—</div>
-      <div class="stat-label">Total Deposits</div>
-      <i class="ri-arrow-down-circle-line stat-icon"></i>
+      <div class="stat-val" id="statTotalShares">—</div>
+      <div class="stat-label">Share Packages</div>
+      <i class="ri-stack-line stat-icon"></i>
     </div>
     <div class="stat-card green">
-      <div class="stat-val" id="statApprovedDeposits">—</div>
-      <div class="stat-label">Approved</div>
-      <i class="ri-checkbox-circle-line stat-icon"></i>
+      <div class="stat-val" id="statActiveInvestments">—</div>
+      <div class="stat-label">Active Investments</div>
+      <i class="ri-line-chart-line stat-icon"></i>
     </div>
     <div class="stat-card orange">
-      <div class="stat-val" id="statPendingDeposits">—</div>
-      <div class="stat-label">Pending</div>
-      <i class="ri-time-line stat-icon"></i>
+      <div class="stat-val" id="statTotalInvested">—</div>
+      <div class="stat-label">Total Invested (FEX)</div>
+      <i class="ri-coin-line stat-icon"></i>
     </div>
     <div class="stat-card red">
-      <div class="stat-val" id="statTotalWithdrawals">—</div>
-      <div class="stat-label">Withdrawals</div>
-      <i class="ri-arrow-up-circle-line stat-icon"></i>
+      <div class="stat-val" id="statExpired">—</div>
+      <div class="stat-label">Expired</div>
+      <i class="ri-time-line stat-icon"></i>
     </div>
   </div>
 
-  <!-- ── TABS CONTAINER ────────────────────────────────── -->
+  <!-- ── TABS ─────────────────────────────────────────────── -->
   <div class="tabs-wrap">
-
-    <!-- Tab Buttons -->
     <div class="tabs-header">
-      <button class="tab-btn active" onclick="switchTab('deposits',this)">
-        <i class="ri-arrow-down-circle-line"></i>
-        <span>Deposits</span>
-        <span class="tab-count" id="tcDeposits">0</span>
+      <button class="tab-btn active" onclick="switchTab('catalog',this)">
+        <i class="ri-layout-grid-line"></i><span>Share Catalog</span>
+        <span class="tab-count" id="tcCatalog">0</span>
       </button>
-      <button class="tab-btn" onclick="switchTab('withdrawals',this)">
-        <i class="ri-arrow-up-circle-line"></i>
-        <span>Withdrawals</span>
-        <span class="tab-count" id="tcWithdrawals">0</span>
-      </button>
-      <button class="tab-btn" onclick="switchTab('activity',this)">
-        <i class="ri-list-check"></i>
-        <span>Activity</span>
-        <span class="tab-count" id="tcActivity">0</span>
+      <button class="tab-btn" onclick="switchTab('investments',this)">
+        <i class="ri-user-star-line"></i><span>User Investments</span>
+        <span class="tab-count" id="tcInvestments">0</span>
       </button>
     </div>
 
-    <!-- ══ DEPOSITS TAB ══════════════════════════════════ -->
-    <div class="tab-panel active" id="panel-deposits">
+    <!-- ══ CATALOG TAB ═════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-catalog">
       <div class="toolbar">
         <div class="search-box">
           <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search user, ref…" oninput="filterDeposits(this.value)">
+          <input type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
         </div>
-        <select class="filter-select" onchange="filterDepositStatus(this.value)">
+        <select class="filter-select" onchange="sortCatalog(this.value)">
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="duration-asc">Duration: Short → Long</option>
+          <option value="name-asc">Name: A → Z</option>
+        </select>
+      </div>
+
+      <!-- Share cards grid -->
+      <div id="sharesGrid" class="shares-grid">
+        <div class="state-box" style="grid-column:1/-1">
+          <div class="spinner"></div><p>Loading shares…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ INVESTMENTS TAB ══════════════════════════════════ -->
+    <div class="tab-panel" id="panel-investments">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
+        </div>
+        <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
           <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="success">Approved</option>
-          <option value="declined">Declined</option>
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
         </select>
       </div>
 
@@ -477,710 +270,625 @@
           <thead>
             <tr>
               <th>User</th>
-              <th>Amount</th>
-              <th>Reference</th>
-              <th>Date</th>
+              <th>Share Package</th>
+              <th>Progress</th>
+              <th>Daily Income</th>
+              <th>Purchased</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
-          <tbody id="depositTableBody">
-            <tr><td colspan="6"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="depositPagination" style="display:none;">
-        <span id="depositPageInfo"></span>
-        <div class="page-btns" id="depositPageBtns"></div>
-      </div>
-    </div>
-
-    <!-- ══ WITHDRAWALS TAB ════════════════════════════════ -->
-    <div class="tab-panel" id="panel-withdrawals">
-      <div class="toolbar">
-        <div class="search-box">
-          <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search user, account…" oninput="filterWithdrawals(this.value)">
-        </div>
-        <select class="filter-select" onchange="filterWithdrawalStatus(this.value)">
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="success">Paid</option>
-          <option value="declined">Declined</option>
-        </select>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Amount (FEX)</th>
-              <th>Naira Value</th>
-              <th>Bank Details</th>
-              <th>Date</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="withdrawTableBody">
+          <tbody id="investmentsTableBody">
             <tr><td colspan="7"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
           </tbody>
         </table>
       </div>
-      <div class="pagination" id="withdrawPagination" style="display:none;">
-        <span id="withdrawPageInfo"></span>
-        <div class="page-btns" id="withdrawPageBtns"></div>
-      </div>
-    </div>
-
-    <!-- ══ ACTIVITY TAB ═══════════════════════════════════ -->
-    <div class="tab-panel" id="panel-activity">
-      <div class="toolbar">
-        <div class="search-box">
-          <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search description, type…" oninput="filterActivity(this.value)">
-        </div>
-        <select class="filter-select" onchange="filterActivityType(this.value)">
-          <option value="all">All Types</option>
-          <option value="Deposit">Deposit</option>
-          <option value="Withdrawal">Withdrawal</option>
-          <option value="Check-in">Check-in</option>
-          <option value="Shares">Investment</option>
-          <option value="Won spin">Spin Win</option>
-        </select>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Description</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody id="activityTableBody">
-            <tr><td colspan="5"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="activityPagination" style="display:none;">
-        <span id="activityPageInfo"></span>
-        <div class="page-btns" id="activityPageBtns"></div>
+      <div class="pagination" id="investPagination" style="display:none;">
+        <span id="investPageInfo"></span>
+        <div class="page-btns" id="investPageBtns"></div>
       </div>
     </div>
 
   </div><!-- /tabs-wrap -->
 </div><!-- /page -->
 
-<!-- ── DETAIL MODAL (shared) ─────────────────────────── -->
-<div id="txnModal" style="display:none;"></div>
+<!-- ── MODAL MOUNT ──────────────────────────────────────── -->
+<div id="__modal"></div>
 
+<!-- ══════════════════════════════════════════════════════════
+     SCRIPT
+═══════════════════════════════════════════════════════════ -->
 <script>
-// ═══════════════════════════════════════════════════════════
-// FLUX MALL — Admin Transactions Page
-// APIs: /api/admin/deposits  /api/admin/withdrawals
-//       /api/admin/activity  (GET all users activity)
-// ═══════════════════════════════════════════════════════════
-
 // ── STATE ──────────────────────────────────────────────────
-let _deposits    = [];
-let _withdrawals = [];
-let _activity    = [];
+let _shares      = [];   // share catalog
+let _investments = [];   // all purchased shares across all users
+let _invFiltered = [];
+const INV_PER_PAGE = 15;
+let invPage = 1;
 
-let _dFiltered = [], _wFiltered = [], _aFiltered = [];
+const AVATAR_COLORS = ['#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
+function avatarColor(str){ let h=0; for(let i=0;i<(str||'').length;i++) h=str.charCodeAt(i)+((h<<5)-h); return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length]; }
+function initials(s){ return (s||'?').slice(0,2).toUpperCase(); }
 
-const PER_PAGE = 15;
-let dPage = 1, wPage = 1, aPage = 1;
-
-// ── AVATAR COLOR MAP ───────────────────────────────────────
-const COLORS = ['#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
-function avatarColor(str) {
-  let h = 0;
-  for (let i = 0; i < (str||'').length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
-  return COLORS[Math.abs(h) % COLORS.length];
-}
-function initials(str) { return (str || '?').slice(0,2).toUpperCase(); }
-
-// ── API HELPER ─────────────────────────────────────────────
-async function api(path, opts = {}) {
+// ── API ─────────────────────────────────────────────────────
+async function api(path, opts={}) {
   try {
     const res = await fetch(path, {
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json', ...opts.headers },
+      credentials:'include',
+      headers:{ 'Content-Type':'application/json', ...opts.headers },
       ...opts
     });
     return res.json();
-  } catch (e) {
-    console.error('[API]', e);
-    return null;
-  }
+  } catch(e) { console.error('[API]',e); return null; }
 }
 
-// ── TAB SWITCH ─────────────────────────────────────────────
+// ── TAB SWITCH ──────────────────────────────────────────────
 function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('panel-' + name).classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
 }
 
-// ── INIT ───────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  loadDeposits();
-  loadWithdrawals();
-  loadActivity();
+// ── INIT ────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>{
+  loadShares();
+  loadInvestments();
 });
 
 async function refreshAll() {
-  loadDeposits();
-  loadWithdrawals();
-  loadActivity();
+  loadShares();
+  loadInvestments();
+  showToast('Refreshed ✓','success');
 }
 
 // ═══════════════════════════════════════════════════════════
-// DEPOSITS
+// SHARE CATALOG
 // ═══════════════════════════════════════════════════════════
-async function loadDeposits() {
-  setLoading('depositTableBody', 6);
-  const data = await api('/api/admin/deposits');
-  if (!data?.success) { setError('depositTableBody', 6, 'Failed to load deposits'); return; }
-  _deposits  = data.deposits || [];
-  _dFiltered = [..._deposits];
-  updateDepositStats();
-  renderDepositsPage();
+async function loadShares() {
+  document.getElementById('sharesGrid').innerHTML =
+    `<div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading…</p></div>`;
+
+  const data = await api('/api/admin/shares');
+  _shares = data?.shares || [];
+  setText('statTotalShares', _shares.length);
+  setText('tcCatalog', _shares.length);
+  renderCatalog(_shares);
 }
 
-function updateDepositStats() {
-  const total    = _deposits.length;
-  const approved = _deposits.filter(d => d.status === 'success').length;
-  const pending  = _deposits.filter(d => d.status === 'pending').length;
-  const withdrawCount = _withdrawals.length;
+let _catalogFiltered = [];
+let _catalogSort = 'price-asc';
 
-  setText('statTotalDeposits',    total);
-  setText('statApprovedDeposits', approved);
-  setText('statPendingDeposits',  pending);
-  setText('statTotalWithdrawals', withdrawCount);
-  setText('tcDeposits',           total);
-}
-
-function filterDeposits(term) {
+function filterCatalog(term) {
   term = term.toLowerCase();
-  _dFiltered = _deposits.filter(d => {
-    const user = d.userId?.username || d.userId?._id || d.userId || '';
-    const ref  = d.refCode || '';
-    return user.toString().toLowerCase().includes(term) || ref.toLowerCase().includes(term);
+  _catalogFiltered = _shares.filter(s => s.name.toLowerCase().includes(term));
+  applyCatalogSort();
+}
+
+function sortCatalog(val) {
+  _catalogSort = val;
+  applyCatalogSort();
+}
+
+function applyCatalogSort() {
+  const arr = _catalogFiltered.length ? _catalogFiltered : [..._shares];
+  arr.sort((a,b) => {
+    if (_catalogSort === 'price-asc')     return a.price - b.price;
+    if (_catalogSort === 'price-desc')    return b.price - a.price;
+    if (_catalogSort === 'duration-asc')  return a.duration - b.duration;
+    if (_catalogSort === 'name-asc')      return a.name.localeCompare(b.name);
+    return 0;
   });
-  dPage = 1;
-  renderDepositsPage();
+  renderCatalog(arr);
 }
 
-function filterDepositStatus(status) {
-  _dFiltered = status === 'all' ? [..._deposits] : _deposits.filter(d => d.status === status);
-  dPage = 1;
-  renderDepositsPage();
-}
-
-function renderDepositsPage() {
-  const tbody = document.getElementById('depositTableBody');
-  if (!tbody) return;
-  if (!_dFiltered.length) { setEmpty('depositTableBody', 6, 'No deposits found'); hidePagination('deposit'); return; }
-
-  const slice = paginate(_dFiltered, dPage, PER_PAGE);
-  tbody.innerHTML = slice.map(i => {
-    const date     = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : 'Now';
-    const userId   = i.userId?._id || i.userId || '';
-    const userName = i.userId?.username || userId.toString().substring(0,8);
-    const ref      = (i.refCode || '').substring(0, 10);
-    const fex      = Number(i.amount);
-    const naira    = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-
-    return `<tr>
-      <td>
-        <div class="user-chip">
-          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
-          <div>
-            <div class="username">${userName}</div>
-            <div class="user-id">${userId.toString().substring(0,8)}…</div>
-          </div>
-        </div>
-      </td>
-      <td>
-        <div class="amt-fex">🪙 ${fex.toLocaleString()} FEX</div>
-        <div class="amt-naira">≈ ₦${naira}</div>
-      </td>
-      <td><code style="font-size:11px;color:var(--text3);">${ref}…</code></td>
-      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
-      <td>${statusBadge(i.status)}</td>
-      <td>
-        <div class="action-group">
-          ${i.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
-              <i class="ri-check-line"></i> Approve
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="declineDeposit('${i._id}')">
-              <i class="ri-close-line"></i>
-            </button>
-          ` : `
-            <button class="btn btn-ghost btn-sm" onclick="viewDepositDetail(${JSON.stringify(i).replace(/"/g,'&quot;')})">
-              <i class="ri-eye-line"></i>
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="deleteDeposit('${i._id}')">
-              <i class="ri-delete-bin-line"></i>
-            </button>
-          `}
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  renderPagination('deposit', _dFiltered.length, dPage, (p) => { dPage = p; renderDepositsPage(); });
-}
-
-window.approveDeposit = async (id, userId, amount, username) => {
-  if (!confirm(`Approve 🪙${Number(amount).toLocaleString()} FEX deposit from ${username}?`)) return;
-  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) {
-    showToast('✅ Deposit approved — user credited!', 'success');
-    loadDeposits();
-  } else {
-    showToast(data?.error || 'Error approving deposit.', 'error');
+function renderCatalog(shares) {
+  const grid = document.getElementById('sharesGrid');
+  if (!shares.length) {
+    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">
+      <i class="ri-stack-line"></i><p>No share packages yet. Click <strong>+ New Share</strong> to create one.</p>
+    </div>`;
+    return;
   }
-};
 
-window.declineDeposit = async (id) => {
-  if (!confirm('Decline this deposit?')) return;
-  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) { showToast('Deposit declined.', 'warning'); loadDeposits(); }
-  else showToast(data?.error || 'Error.', 'error');
-};
-
-window.deleteDeposit = async (id) => {
-  if (!confirm('Delete this deposit record permanently?')) return;
-  await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
-  showToast('Record deleted.', 'warning');
-  loadDeposits();
-};
-
-window.viewDepositDetail = (i) => {
-  const userName = i.userId?.username || i.userId?.toString().substring(0,8) || '—';
-  const fex   = Number(i.amount);
-  const naira = (fex * 0.7).toLocaleString();
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-row">
-        <div class="info-card">
-          <label>User</label>
-          <div class="val">${userName}</div>
-        </div>
-        <div class="info-card">
-          <label>Status</label>
-          <div class="val">${statusBadge(i.status)}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>Amount (FEX)</label>
-          <div class="val">🪙 ${fex.toLocaleString()}</div>
-        </div>
-        <div class="info-card">
-          <label>Naira Equiv.</label>
-          <div class="val">₦${naira}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card" style="flex:1">
-          <label>Reference</label>
-          <div class="val" style="font-family:monospace;font-size:12px;">${i.refCode || '—'}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>Method</label>
-          <div class="val">${i.method || 'Bank Transfer'}</div>
-        </div>
-        <div class="info-card">
-          <label>Date</label>
-          <div class="val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      ${i.status === 'pending' ? `<button class="btn btn-success" onclick="approveDeposit('${i._id}','','${i.amount}','user');closeModal()"><i class="ri-check-line"></i> Approve</button>` : ''}
-    </div>
-  `);
-};
-
-// ═══════════════════════════════════════════════════════════
-// WITHDRAWALS
-// ═══════════════════════════════════════════════════════════
-async function loadWithdrawals() {
-  setLoading('withdrawTableBody', 7);
-  const data = await api('/api/admin/withdrawals');
-  if (!data?.success) { setError('withdrawTableBody', 7, 'Failed to load withdrawals'); return; }
-  _withdrawals  = data.withdrawals || [];
-  _wFiltered    = [..._withdrawals];
-  setText('tcWithdrawals',        _withdrawals.length);
-  setText('statTotalWithdrawals', _withdrawals.length);
-  renderWithdrawalsPage();
-}
-
-function filterWithdrawals(term) {
-  term = term.toLowerCase();
-  _wFiltered = _withdrawals.filter(w => {
-    const user = w.username || w.userId?.toString() || '';
-    const acc  = w.bankDetails?.accountNumber || '';
-    const bank = w.bankDetails?.bankName || '';
-    return user.toLowerCase().includes(term) || acc.includes(term) || bank.toLowerCase().includes(term);
+  // Count how many users bought each share
+  const buyCount = {};
+  _investments.forEach(inv => {
+    const key = inv.shareName;
+    buyCount[key] = (buyCount[key]||0) + 1;
   });
-  wPage = 1;
-  renderWithdrawalsPage();
+
+  grid.innerHTML = shares.map(s => {
+    const buyers = buyCount[s.name] || 0;
+    const roi    = s.duration > 0 ? ((s.dailyIncome * s.duration / s.price)*100).toFixed(1) : '0';
+    const imgHtml = s.img
+      ? `<img src="${s.img}" alt="${s.name}" onerror="this.parentElement.innerHTML='📦'">`
+      : '📦';
+
+    return `
+    <div class="share-card">
+      <div class="share-img">${imgHtml}</div>
+      <div class="share-body">
+        <div class="duration-pill"><i class="ri-calendar-line"></i> ${s.duration} Days</div>
+        <div class="share-name">${s.name}</div>
+        <div class="share-stats">
+          <div class="share-stat">
+            <label>Price</label>
+            <span class="blue">🪙${Number(s.price).toLocaleString()}</span>
+          </div>
+          <div class="share-stat">
+            <label>Daily Income</label>
+            <span class="green">🪙${Number(s.dailyIncome).toLocaleString()}</span>
+          </div>
+          <div class="share-stat">
+            <label>Total ROI</label>
+            <span>${roi}%</span>
+          </div>
+          <div class="share-stat">
+            <label>Buyers</label>
+            <span>${buyers} user${buyers!==1?'s':''}</span>
+          </div>
+        </div>
+        <div class="share-actions">
+          <button class="btn btn-warning btn-sm" style="flex:1" onclick="openEditShareModal('${s._id}')">
+            <i class="ri-edit-line"></i> Edit
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteShare('${s._id}','${s.name}')">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-function filterWithdrawalStatus(status) {
-  _wFiltered = status === 'all' ? [..._withdrawals] : _withdrawals.filter(w => w.status === status);
-  wPage = 1;
-  renderWithdrawalsPage();
+// ═══════════════════════════════════════════════════════════
+// USER INVESTMENTS (Purchased Shares)
+// ═══════════════════════════════════════════════════════════
+async function loadInvestments() {
+  setLoading('investmentsTableBody', 7);
+  // Uses the admin purchased-shares endpoint
+  const data = await api('/api/admin/purchased-shares');
+  _investments = data?.investments || data?.purchasedShares || [];
+  _invFiltered = [..._investments];
+
+  // Update stats
+  const active  = _investments.filter(i => !isExpired(i)).length;
+  const expired = _investments.filter(i =>  isExpired(i)).length;
+  const totalFex = _investments.reduce((s,i) => s + Number(i.pricePaid||0), 0);
+
+  setText('statActiveInvestments', active);
+  setText('statExpired', expired);
+  setText('statTotalInvested', '🪙'+totalFex.toLocaleString());
+  setText('tcInvestments', _investments.length);
+
+  renderInvestmentsPage();
+  // Re-render catalog to update buyer counts
+  renderCatalog(_shares);
 }
 
-function renderWithdrawalsPage() {
-  const tbody = document.getElementById('withdrawTableBody');
-  if (!tbody) return;
-  if (!_wFiltered.length) { setEmpty('withdrawTableBody', 7, 'No withdrawals found'); hidePagination('withdraw'); return; }
+function isExpired(inv) {
+  if (!inv.purchaseDate) return false;
+  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
+  return daysPassed >= (inv.duration || 0);
+}
 
-  const slice = paginate(_wFiltered, wPage, PER_PAGE);
-  tbody.innerHTML = slice.map(w => {
-    const date     = w.createdAt ? new Date(w.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
-    const userName = w.username  || w.userId?.toString().substring(0,8) || '—';
-    const fex      = Number(w.amount);
-    const net      = Number(w.netAmount || (fex * 0.7));
-    const rate     = w.fexRate || 0.7;
+function daysLeft(inv) {
+  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
+  return Math.max(0, (inv.duration||0) - daysPassed);
+}
+
+function progressPct(inv) {
+  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
+  return Math.min(100, Math.round((daysPassed / (inv.duration||1)) * 100));
+}
+
+function filterInvestments(term) {
+  term = term.toLowerCase();
+  const statusSel = document.querySelector('#panel-investments .filter-select')?.value || 'all';
+  applyInvestmentFilters(term, statusSel);
+}
+
+function filterInvestmentStatus(status) {
+  const term = document.querySelector('#panel-investments .search-box input')?.value.toLowerCase() || '';
+  applyInvestmentFilters(term, status);
+}
+
+function applyInvestmentFilters(term, status) {
+  _invFiltered = _investments.filter(inv => {
+    const name   = (inv.userId?.username || inv.username || '').toLowerCase();
+    const share  = (inv.shareName || '').toLowerCase();
+    const matchQ = !term || name.includes(term) || share.includes(term);
+    const matchS = status === 'all' || (status === 'active' ? !isExpired(inv) : isExpired(inv));
+    return matchQ && matchS;
+  });
+  invPage = 1;
+  renderInvestmentsPage();
+}
+
+function renderInvestmentsPage() {
+  const tbody = document.getElementById('investmentsTableBody');
+  if (!_invFiltered.length) { setEmpty('investmentsTableBody',7,'No investments found'); hidePagination('invest'); return; }
+
+  const slice = paginate(_invFiltered, invPage, INV_PER_PAGE);
+  tbody.innerHTML = slice.map(inv => {
+    const username = inv.userId?.username || inv.username || '—';
+    const email    = inv.userId?.email    || '—';
+    const pct      = progressPct(inv);
+    const left     = daysLeft(inv);
+    const expired  = isExpired(inv);
+    const date     = inv.purchaseDate
+      ? new Date(inv.purchaseDate).toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})
+      : '—';
+    const earned   = Math.floor((inv.duration - left) * (inv.dailyIncome||0));
 
     return `<tr>
       <td>
         <div class="user-chip">
-          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
+          <div class="avatar" style="background:${avatarColor(username)}">${initials(username)}</div>
           <div>
-            <div class="username">${userName}</div>
+            <div class="username">${username}</div>
+            <div class="user-sub">${email}</div>
           </div>
         </div>
       </td>
       <td>
-        <div class="amt-fex">🪙 ${fex.toLocaleString()} FEX</div>
-        <div class="amt-naira">@ ₦${rate}/FEX</div>
+        <div style="font-weight:700;font-size:13px;">${inv.shareName || '—'}</div>
+        <div style="font-size:11px;color:var(--text3);">🪙${Number(inv.pricePaid||0).toLocaleString()} paid</div>
       </td>
-      <td>
-        <div class="amt-fex">₦${net.toLocaleString()}</div>
-        ${w.fee ? `<div class="amt-naira">fee: ₦${Number(w.fee).toLocaleString()}</div>` : ''}
-      </td>
-      <td>
-        <div class="bank-tag">
-          <i class="ri-bank-line"></i>
-          ${w.bankDetails?.bankName || '—'}
+      <td style="min-width:120px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:3px;">
+          <span>${pct}%</span>
+          <span>${expired ? 'Done' : left+' days left'}</span>
         </div>
-        <div class="amt-naira" style="margin-top:3px;">${w.bankDetails?.accountNumber || '—'} · ${w.bankDetails?.accountName || ''}</div>
+        <div class="progress-bar">
+          <div class="progress-fill ${expired?'':'green'}" style="width:${pct}%;background:${expired?'var(--text3)':'var(--success)'}"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px;">🪙${earned.toLocaleString()} earned</div>
+      </td>
+      <td>
+        <div style="font-weight:700;color:var(--success);font-size:13px;">🪙${Number(inv.dailyIncome||0).toLocaleString()}/day</div>
+        <div style="font-size:11px;color:var(--text3);">${inv.duration} days total</div>
       </td>
       <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
-      <td>${statusBadge(w.status)}</td>
+      <td>
+        ${expired
+          ? `<span class="badge expired">⬛ Expired</span>`
+          : `<span class="badge active">🟢 Active</span>`}
+      </td>
       <td>
         <div class="action-group">
-          ${w.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w._id}','${userName}','${net}')">
-              <i class="ri-money-dollar-circle-line"></i> Pay
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="declineWithdrawal('${w._id}')">
-              <i class="ri-close-line"></i>
-            </button>
-          ` : `
-            <button class="btn btn-ghost btn-sm" onclick="viewWithdrawalDetail(${JSON.stringify(w).replace(/"/g,'&quot;')})">
-              <i class="ri-eye-line"></i>
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="deleteWithdrawal('${w._id}')">
-              <i class="ri-delete-bin-line"></i>
-            </button>
-          `}
+          <button class="btn btn-ghost btn-sm" onclick="viewInvestmentDetail(${JSON.stringify(inv).replace(/"/g,'&quot;')})">
+            <i class="ri-eye-line"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteInvestment('${inv._id}','${username}')">
+            <i class="ri-delete-bin-line"></i>
+          </button>
         </div>
       </td>
     </tr>`;
   }).join('');
 
-  renderPagination('withdraw', _wFiltered.length, wPage, (p) => { wPage = p; renderWithdrawalsPage(); });
+  renderPagination('invest', _invFiltered.length, invPage, (p)=>{ invPage=p; renderInvestmentsPage(); });
 }
 
-window.approveWithdrawal = async (id, username, net) => {
-  if (!confirm(`Confirm payment of ₦${Number(net).toLocaleString()} to ${username}?`)) return;
-  const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) { showToast('✅ Withdrawal marked as paid!', 'success'); loadWithdrawals(); }
-  else showToast(data?.error || 'Error.', 'error');
-};
-
-window.declineWithdrawal = async (id) => {
-  if (!confirm('Decline and refund user?')) return;
-  const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) { showToast('Withdrawal declined — user refunded.', 'warning'); loadWithdrawals(); }
-  else showToast(data?.error || 'Error.', 'error');
-};
-
-window.deleteWithdrawal = async (id) => {
-  if (!confirm('Delete this withdrawal record?')) return;
-  await api(`/api/admin/withdrawals/${id}`, { method: 'DELETE' });
-  showToast('Record deleted.', 'warning');
-  loadWithdrawals();
-};
-
-window.viewWithdrawalDetail = (w) => {
-  const fex  = Number(w.amount);
-  const net  = Number(w.netAmount || fex * 0.7);
-  const rate = w.fexRate || 0.7;
+// ═══════════════════════════════════════════════════════════
+// CRUD — SHARES
+// ═══════════════════════════════════════════════════════════
+function openAddShareModal() {
   showModal(`
     <div class="modal-handle"></div>
     <div class="modal-head">
-      <h3><i class="ri-arrow-up-circle-line" style="color:var(--danger)"></i> Withdrawal Detail</h3>
+      <h3><i class="ri-add-circle-line" style="color:var(--primary)"></i> New Share Package</h3>
       <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
     </div>
     <div class="modal-body">
-      <div class="modal-row">
-        <div class="info-card">
-          <label>User</label>
-          <div class="val">${w.username || '—'}</div>
+      <div class="form-group">
+        <label>Package Name</label>
+        <input id="ms_name" placeholder="e.g. Gold Pack">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (FEX)</label>
+          <input type="number" id="ms_price" placeholder="5000" min="1">
         </div>
-        <div class="info-card">
-          <label>Status</label>
-          <div class="val">${statusBadge(w.status)}</div>
+        <div class="form-group">
+          <label>Duration (Days)</label>
+          <input type="number" id="ms_duration" placeholder="30" min="1">
         </div>
       </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>FEX Amount</label>
-          <div class="val">🪙 ${fex.toLocaleString()}</div>
-        </div>
-        <div class="info-card">
-          <label>Naira Payout</label>
-          <div class="val">₦${net.toLocaleString()}</div>
-        </div>
+      <div class="form-group">
+        <label>Daily Income (FEX)</label>
+        <input type="number" id="ms_daily" placeholder="200" min="1">
       </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>Rate</label>
-          <div class="val">₦${rate}/FEX</div>
-        </div>
-        <div class="info-card">
-          <label>Fee</label>
-          <div class="val">₦${Number(w.fee || 0).toLocaleString()}</div>
-        </div>
+      <div class="form-group">
+        <label>Share Image</label>
+        <input type="file" id="ms_imgFile" accept="image/*" style="padding:8px;border:1.5px solid var(--border);border-radius:10px;width:100%;font-size:13px;cursor:pointer;">
+        <div id="ms_imgStatus" style="font-size:12px;color:var(--primary);margin-top:4px;"></div>
+        <input type="hidden" id="ms_imgUrl">
       </div>
-      <div class="modal-row">
-        <div class="info-card" style="flex:1">
-          <label>Bank</label>
-          <div class="val">${w.bankDetails?.bankName || '—'}</div>
-        </div>
-        <div class="info-card" style="flex:1">
-          <label>Account</label>
-          <div class="val" style="font-family:monospace">${w.bankDetails?.accountNumber || '—'}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card" style="flex:1">
-          <label>Account Name</label>
-          <div class="val">${w.bankDetails?.accountName || '—'}</div>
-        </div>
-        <div class="info-card">
-          <label>Date</label>
-          <div class="val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</div>
-        </div>
+      <div id="ms_roiPreview" style="background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);display:none;">
+        💡 <span id="ms_roiText"></span>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      ${w.status === 'pending' ? `<button class="btn btn-success" onclick="approveWithdrawal('${w._id}','${w.username}','${net}');closeModal()"><i class="ri-check-line"></i> Mark Paid</button>` : ''}
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddShare()"><i class="ri-check-line"></i> Create Share</button>
     </div>
   `);
-};
 
-// ═══════════════════════════════════════════════════════════
-// ACTIVITY
-// ═══════════════════════════════════════════════════════════
-async function loadActivity() {
-  setLoading('activityTableBody', 5);
-  // /api/admin/activity — returns all users activity logs
-  // Falls back to analytics deposits if endpoint unavailable
-  const data = await api('/api/admin/activity');
-  if (!data?.success) { setError('activityTableBody', 5, 'Activity log unavailable'); return; }
-  _activity  = data.activity || data.logs || [];
-  _aFiltered = [..._activity];
-  setText('tcActivity', _activity.length);
-  renderActivityPage();
+  // Live ROI preview
+  ['ms_price','ms_daily','ms_duration'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateRoiPreview);
+  });
 }
 
-function filterActivity(term) {
-  term = term.toLowerCase();
-  _aFiltered = _activity.filter(a =>
-    (a.desc || '').toLowerCase().includes(term) ||
-    (a.type || '').toLowerCase().includes(term) ||
-    (a.userId?.username || '').toLowerCase().includes(term)
-  );
-  aPage = 1;
-  renderActivityPage();
+function updateRoiPreview() {
+  const price = Number(document.getElementById('ms_price')?.value)||0;
+  const daily = Number(document.getElementById('ms_daily')?.value)||0;
+  const dur   = Number(document.getElementById('ms_duration')?.value)||0;
+  const prev  = document.getElementById('ms_roiPreview');
+  const text  = document.getElementById('ms_roiText');
+  if (price && daily && dur) {
+    const total = daily * dur;
+    const roi   = ((total / price)*100).toFixed(1);
+    text.textContent = `Total return: 🪙${total.toLocaleString()} FEX (${roi}% ROI over ${dur} days)`;
+    prev.style.display = 'block';
+  } else {
+    prev.style.display = 'none';
+  }
 }
 
-function filterActivityType(type) {
-  _aFiltered = type === 'all' ? [..._activity] : _activity.filter(a => a.type === type);
-  aPage = 1;
-  renderActivityPage();
+async function submitAddShare() {
+  const g   = id => document.getElementById(id)?.value;
+  const name = g('ms_name')?.trim();
+  const price    = Number(g('ms_price'));
+  const daily    = Number(g('ms_daily'));
+  const duration = Number(g('ms_duration'));
+  if (!name || !price || !daily || !duration) { showToast('Please fill all fields','error'); return; }
+
+  let imgUrl = g('ms_imgUrl');
+  const fileInput = document.getElementById('ms_imgFile');
+  if (fileInput?.files[0]) {
+    const statusEl = document.getElementById('ms_imgStatus');
+    imgUrl = await uploadToImgBB(fileInput.files[0], statusEl);
+    if (!imgUrl) return;
+  }
+
+  const res = await api('/api/admin/shares', {
+    method:'POST',
+    body: JSON.stringify({ name, price, dailyIncome: daily, duration, img: imgUrl||'' })
+  });
+
+  if (res?.success) {
+    showToast(`✅ "${name}" share created!`,'success');
+    closeModal();
+    loadShares();
+  } else {
+    showToast(res?.error || 'Error creating share','error');
+  }
 }
 
-function renderActivityPage() {
-  const tbody = document.getElementById('activityTableBody');
-  if (!tbody) return;
-  if (!_aFiltered.length) { setEmpty('activityTableBody', 5, 'No activity logs found'); hidePagination('activity'); return; }
+function openEditShareModal(id) {
+  const s = _shares.find(x => x._id === id);
+  if (!s) return;
 
-  const typeIcon = {
-    'Deposit':    { icon: 'ri-arrow-down-circle-line', color: 'var(--primary)' },
-    'Withdrawal': { icon: 'ri-arrow-up-circle-line',   color: 'var(--danger)'  },
-    'Check-in':   { icon: 'ri-gift-line',              color: 'var(--success)' },
-    'Shares':     { icon: 'ri-stock-line',             color: 'var(--warning)' },
-    'share':      { icon: 'ri-stock-line',             color: 'var(--warning)' },
-    'Won spin':   { icon: 'ri-trophy-line',            color: 'var(--success)' },
-    'Spin Loss':  { icon: 'ri-medal-line',             color: 'var(--text3)'   },
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-edit-line" style="color:var(--warning)"></i> Edit Share Package</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Package Name</label>
+        <input id="es_name" value="${s.name}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price (FEX)</label>
+          <input type="number" id="es_price" value="${s.price}">
+        </div>
+        <div class="form-group">
+          <label>Duration (Days)</label>
+          <input type="number" id="es_duration" value="${s.duration}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Daily Income (FEX)</label>
+        <input type="number" id="es_daily" value="${s.dailyIncome}">
+      </div>
+      <div class="form-group">
+        <label>Image URL (optional)</label>
+        <input id="es_img" value="${s.img||''}" placeholder="https://...">
+      </div>
+      ${s.img ? `<img src="${s.img}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-warning" onclick="submitEditShare('${id}')"><i class="ri-save-line"></i> Save Changes</button>
+    </div>
+  `);
+}
+
+async function submitEditShare(id) {
+  const g = id => document.getElementById(id)?.value;
+  const payload = {
+    name:        g('es_name')?.trim(),
+    price:       Number(g('es_price')),
+    dailyIncome: Number(g('es_daily')),
+    duration:    Number(g('es_duration')),
+    img:         g('es_img')?.trim() || '',
   };
+  if (!payload.name || !payload.price) { showToast('Name and price required','error'); return; }
 
-  const slice = paginate(_aFiltered, aPage, PER_PAGE);
-  tbody.innerHTML = slice.map(a => {
-    const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
-    const userName = a.userId?.username || a.username || '—';
-    const ti = typeIcon[a.type] || { icon: 'ri-exchange-line', color: 'var(--text3)' };
-    const fex = parseFloat(a.amount) || 0;
-    const isCredit = !['Withdrawal', 'Spin Loss'].includes(a.type);
+  const res = await api(`/api/admin/shares/${id}`, {
+    method:'PUT',
+    body: JSON.stringify(payload)
+  });
 
-    return `<tr>
-      <td>
-        <div class="user-chip">
-          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
-          <div class="username">${userName}</div>
-        </div>
-      </td>
-      <td>
-        <span class="badge blue" style="gap:4px;">
-          <i class="${ti.icon}" style="color:${ti.color}"></i>
-          ${a.type || '—'}
-        </span>
-      </td>
-      <td>
-        <div class="amt-fex" style="color:${isCredit ? 'var(--success)' : 'var(--danger)'}">
-          ${isCredit ? '+' : '-'}🪙 ${fex.toLocaleString()} FEX
-        </div>
-      </td>
-      <td style="font-size:12px;color:var(--text2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.desc || '—'}</td>
-      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
-    </tr>`;
-  }).join('');
+  if (res?.success) {
+    showToast('Share updated!','success');
+    closeModal();
+    loadShares();
+  } else {
+    showToast(res?.error||'Error updating share','error');
+  }
+}
 
-  renderPagination('activity', _aFiltered.length, aPage, (p) => { aPage = p; renderActivityPage(); });
+async function deleteShare(id, name) {
+  if (!confirm(`Delete "${name}"? Users who already bought it keep their investment.`)) return;
+  const res = await api(`/api/admin/shares/${id}`, { method:'DELETE' });
+  if (res?.success) {
+    showToast(`"${name}" deleted`,'warning');
+    loadShares();
+  } else {
+    showToast(res?.error||'Error deleting share','error');
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
-// EXPORT CSV
+// CRUD — PURCHASED SHARES (User Investments)
 // ═══════════════════════════════════════════════════════════
-function exportAllCSV() {
-  // Determine which tab is active
-  const active = document.querySelector('.tab-panel.active')?.id;
-  let rows = [], headers = [], name = '';
+function viewInvestmentDetail(inv) {
+  const username = inv.userId?.username || inv.username || '—';
+  const pct  = progressPct(inv);
+  const left = daysLeft(inv);
+  const earned = Math.floor(((inv.duration||0) - left) * (inv.dailyIncome||0));
 
-  if (active === 'panel-deposits') {
-    headers = ['Date','User','Amount FEX','Ref','Status','Method'];
-    rows = _dFiltered.map(d => [
-      d.createdAt ? new Date(d.createdAt).toLocaleDateString() : '',
-      d.userId?.username || d.userId || '',
-      d.amount, d.refCode, d.status, d.method || 'Bank Transfer'
-    ]);
-    name = 'deposits';
-  } else if (active === 'panel-withdrawals') {
-    headers = ['Date','User','FEX','Naira','Bank','Account','Status'];
-    rows = _wFiltered.map(w => [
-      w.createdAt ? new Date(w.createdAt).toLocaleDateString() : '',
-      w.username || '',
-      w.amount, w.netAmount,
-      w.bankDetails?.bankName || '', w.bankDetails?.accountNumber || '',
-      w.status
-    ]);
-    name = 'withdrawals';
+  showModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-user-star-line" style="color:var(--primary)"></i> Investment Detail</h3>
+      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:10px;">
+        <div class="avatar" style="width:40px;height:40px;font-size:14px;background:${avatarColor(username)}">${initials(username)}</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">${username}</div>
+          <div style="font-size:12px;color:var(--text3);">${inv.userId?.email||'—'}</div>
+        </div>
+        <div style="margin-left:auto;">${isExpired(inv)?'<span class="badge expired">Expired</span>':'<span class="badge active">🟢 Active</span>'}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Package</div>
+          <div style="font-weight:700;">${inv.shareName||'—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Price Paid</div>
+          <div style="font-weight:700;">🪙${Number(inv.pricePaid||0).toLocaleString()} FEX</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Daily Income</div>
+          <div style="font-weight:700;color:var(--success);">🪙${Number(inv.dailyIncome||0).toLocaleString()}/day</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Earned So Far</div>
+          <div style="font-weight:700;color:var(--primary);">🪙${earned.toLocaleString()} FEX</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Days Left</div>
+          <div style="font-weight:700;">${isExpired(inv) ? 'Completed' : left+' of '+inv.duration}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Purchased</div>
+          <div style="font-weight:700;font-size:12px;">${inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text2);">Progress — ${pct}%</div>
+      <div class="progress-bar" style="height:8px;">
+        <div class="progress-fill" style="width:${pct}%;background:${isExpired(inv)?'var(--text3)':'var(--success)'}"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      <button class="btn btn-danger" onclick="deleteInvestment('${inv._id}','${username}');closeModal()">
+        <i class="ri-delete-bin-line"></i> Remove Investment
+      </button>
+    </div>
+  `);
+}
+
+async function deleteInvestment(id, username) {
+  if (!confirm(`Remove ${username}'s investment? This cannot be undone.`)) return;
+  const res = await api(`/api/admin/purchased-shares/${id}`, { method:'DELETE' });
+  if (res?.success) {
+    showToast(`Investment removed for ${username}`,'warning');
+    loadInvestments();
   } else {
-    headers = ['Date','User','Type','Amount FEX','Description'];
-    rows = _aFiltered.map(a => [
-      a.createdAt ? new Date(a.createdAt).toLocaleDateString() : '',
-      a.userId?.username || '',
-      a.type, a.amount, a.desc
-    ]);
-    name = 'activity';
+    showToast(res?.error||'Error removing investment','error');
   }
+}
 
-  const csv  = [headers, ...rows].map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob = new Blob([csv], { type:'text/csv' });
-  const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  a.download = `fluxmall_${name}_${Date.now()}.csv`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-  showToast('CSV exported ✓', 'success');
+// ═══════════════════════════════════════════════════════════
+// IMGBB UPLOAD (reuses your existing function if available)
+// ═══════════════════════════════════════════════════════════
+async function uploadToImgBB(file, statusEl) {
+  if (statusEl) statusEl.innerHTML = '<i class="ri-loader-line"></i> Uploading image...';
+  try {
+    const settingsData = await api('/api/admin/settings/apikeys');
+    const imgbbKey = settingsData?.apikeys?.imgbb;
+    if (!imgbbKey) {
+      if (statusEl) statusEl.innerHTML = '';
+      showToast('ImgBB API key not set in Settings','error');
+      return null;
+    }
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
+    const result = await res.json();
+    if (result.success) {
+      if (statusEl) statusEl.innerHTML = '✅ Image uploaded';
+      return result.data.url;
+    } else {
+      if (statusEl) statusEl.innerHTML = '';
+      showToast('ImgBB upload failed','error');
+      return null;
+    }
+  } catch (err) {
+    if (statusEl) statusEl.innerHTML = '';
+    showToast('Upload error: '+err.message,'error');
+    return null;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
 // UI HELPERS
 // ═══════════════════════════════════════════════════════════
-function statusBadge(s) {
-  const map = {
-    success:  'success', approved: 'success',
-    pending:  'pending',
-    declined: 'declined', failed: 'declined'
-  };
-  const cls = map[s] || 'pending';
-  const dot = { success:'🟢', pending:'🟡', declined:'🔴' }[cls] || '⚪';
-  return `<span class="badge ${cls}">${dot} ${(s||'pending').charAt(0).toUpperCase() + (s||'pending').slice(1)}</span>`;
-}
-
 function paginate(arr, page, per) {
-  const start = (page-1)*per;
-  return arr.slice(start, start+per);
+  return arr.slice((page-1)*per, page*per);
 }
 
 function renderPagination(prefix, total, page, onPage) {
-  const totalPages = Math.ceil(total / PER_PAGE);
-  const start = (page-1)*PER_PAGE + 1;
-  const end   = Math.min(page*PER_PAGE, total);
-  const wrap  = document.getElementById(prefix+'Pagination');
-  const info  = document.getElementById(prefix+'PageInfo');
-  const btns  = document.getElementById(prefix+'PageBtns');
+  const totalPages = Math.ceil(total/INV_PER_PAGE);
+  const wrap = document.getElementById(prefix+'Pagination');
+  const info = document.getElementById(prefix+'PageInfo');
+  const btns = document.getElementById(prefix+'PageBtns');
   if (!wrap) return;
-
-  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
+  if (totalPages <= 1) { wrap.style.display='none'; return; }
   wrap.style.display = 'flex';
+  const start = (page-1)*INV_PER_PAGE+1;
+  const end   = Math.min(page*INV_PER_PAGE, total);
   if (info) info.textContent = `${start}–${end} of ${total}`;
 
-  // Build page buttons
   const range = [];
-  let s = Math.max(1, page - 2);
-  let e = Math.min(totalPages, s + 4);
-  if (e-s < 4) s = Math.max(1, e-4);
-  for (let i = s; i <= e; i++) range.push(i);
+  let s = Math.max(1,page-2), e = Math.min(totalPages,s+4);
+  if (e-s<4) s = Math.max(1,e-4);
+  for (let i=s;i<=e;i++) range.push(i);
 
   btns.innerHTML = `
     <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
-    ${range.map(p => `<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
+    ${range.map(p=>`<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
     <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
 }
 
 function hidePagination(prefix) {
-  const wrap = document.getElementById(prefix+'Pagination');
-  if (wrap) wrap.style.display = 'none';
+  const el = document.getElementById(prefix+'Pagination');
+  if (el) el.style.display = 'none';
 }
 
 function setLoading(tbodyId, cols) {
@@ -1193,11 +901,6 @@ function setEmpty(tbodyId, cols, msg) {
   if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-inbox-line"></i><p>${msg}</p></div></td></tr>`;
 }
 
-function setError(tbodyId, cols, msg) {
-  const el = document.getElementById(tbodyId);
-  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-error-warning-line" style="color:var(--danger)"></i><p>${msg}</p></div></td></tr>`;
-}
-
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
@@ -1208,41 +911,33 @@ function showModal(html) {
   closeModal();
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
-  overlay.id = '_txnModalOverlay';
-  overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
+  overlay.id = '__modalOverlay';
+  overlay.onclick = e => { if (e.target===overlay) closeModal(); };
   overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
   document.body.appendChild(overlay);
 }
-
 function closeModal() {
-  document.getElementById('_txnModalOverlay')?.remove();
+  document.getElementById('__modalOverlay')?.remove();
 }
 
 // ── TOAST ──────────────────────────────────────────────────
-let _toastWrap = null;
-function showToast(msg, type = 'success') {
-  if (!_toastWrap) {
-    _toastWrap = document.createElement('div');
-    _toastWrap.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
-    document.body.appendChild(_toastWrap);
+let _tw = null;
+function showToast(msg, type='success') {
+  if (!_tw) {
+    _tw = document.createElement('div');
+    _tw.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
+    document.body.appendChild(_tw);
   }
-  const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
+  const colors = { success:'#05cd99', warning:'#f6ad55', error:'#ee5d50' };
   const t = document.createElement('div');
-  t.style.cssText = `
-    background:${colors[type]||'#4318ff'};color:#fff;
-    padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;
-    box-shadow:0 4px 16px rgba(0,0,0,0.15);
-    animation:toastIn 0.22s ease;
-    pointer-events:auto;
-  `;
+  t.style.cssText = `background:${colors[type]||'#4318ff'};color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);animation:toastIn 0.2s ease;`;
   t.textContent = msg;
-  _toastWrap.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+  _tw.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
 }
-
-const style = document.createElement('style');
-style.textContent = `@keyframes toastIn { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }`;
-document.head.appendChild(style);
+const s2 = document.createElement('style');
+s2.textContent = '@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';
+document.head.appendChild(s2);
 </script>
 </body>
 </html>
