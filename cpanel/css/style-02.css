@@ -40,7 +40,7 @@
 .icon-btn {
   width: 34px;
   height: 34px;
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,7 +180,7 @@
   padding: 8px 12px;
   background: var(--input-bg);
   border: 1px solid var(--border);
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: .82rem;
   cursor: pointer;
@@ -201,7 +201,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   font-size: .8rem;
   font-weight: 600;
   transition: all var(--ease);
@@ -652,7 +652,7 @@ tbody tr:hover .row-actions {
 .dp-stat {
   background: var(--input-bg);
   border: 1px solid var(--border);
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   padding: 10px 8px;
   text-align: center;
 }
@@ -712,7 +712,7 @@ tbody tr:hover .row-actions {
   align-items: center;
   gap: 10px;
   padding: 9px 12px;
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--input-bg);
   color: var(--sub);
@@ -754,7 +754,7 @@ tbody tr:hover .row-actions {
   padding: 7px 10px;
   background: var(--input-bg);
   border: 1px solid var(--border);
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: .82rem;
   transition: border-color var(--ease);
@@ -780,7 +780,7 @@ tbody tr:hover .row-actions {
   padding: 10px 12px;
   background: var(--input-bg);
   border: 1px solid var(--border);
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: .875rem;
   transition: border-color var(--ease), box-shadow var(--ease);
@@ -860,7 +860,7 @@ select.form-input {
 .user-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--r);
+  border-radius: var(--radius);
   padding: 14px;
   margin-bottom: 8px;
   cursor: pointer;
@@ -957,7 +957,7 @@ select.form-input {
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
   background: var(--input-bg);
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   padding: 8px;
   margin-bottom: 10px;
 }
@@ -996,7 +996,7 @@ select.form-input {
   justify-content: center;
   gap: 5px;
   padding: 7px 4px;
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--input-bg);
   color: var(--sub);
@@ -1165,7 +1165,7 @@ select.form-input {
   position: fixed;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: var(--rsm);
+  border-radius: var(--radius-sm);
   padding: 6px 0;
   min-width: 180px;
   box-shadow: var(--shadow);
