@@ -2182,7 +2182,7 @@
     background: var(--card2);
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
-    font-size: 1rem;
+    font-size: .8rem;
     overflow: ellipsis;
   }
   
