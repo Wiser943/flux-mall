@@ -456,6 +456,132 @@
       </div><!-- /tabs-wrap -->
     </main><!-- /page -->
     
+    <main class="page" id="shares">
+
+
+
+
+  <!-- ── PAGE HEADER ──────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1><i class="ri-stock-line" style="color:var(--primary);margin-right:6px;"></i>Shares & Investments</h1>
+      <div class="sub">Manage share catalog · Track user investments</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="openAddShareModal()"><i class="ri-add-line"></i> New Share</button>
+    </div>
+  </div>
+
+  <!-- ── STAT STRIP ──────────────────────────────────────── -->
+  <div class="stat-strip">
+    <div class="stat-card blue">
+      <div class="stat-val" id="statTotalShares">—</div>
+      <div class="stat-label">Share Packages</div>
+      <i class="ri-stack-line stat-icon"></i>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-val" id="statActiveInvestments">—</div>
+      <div class="stat-label">Active Investments</div>
+      <i class="ri-line-chart-line stat-icon"></i>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-val" id="statTotalInvested">—</div>
+      <div class="stat-label">Total Invested (FEX)</div>
+      <i class="ri-coin-line stat-icon"></i>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-val" id="statExpired">—</div>
+      <div class="stat-label">Expired</div>
+      <i class="ri-time-line stat-icon"></i>
+    </div>
+  </div>
+
+  <!-- ── TABS ─────────────────────────────────────────────── -->
+  <div class="tabs-wrap">
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab('catalog',this)">
+        <i class="ri-layout-grid-line"></i><span>Share Catalog</span>
+        <span class="tab-count" id="tcCatalog">0</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('investments',this)">
+        <i class="ri-user-star-line"></i><span>User Investments</span>
+        <span class="tab-count" id="tcInvestments">0</span>
+      </button>
+    </div>
+
+    <!-- ══ CATALOG TAB ═════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-catalog">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
+        </div>
+        <select class="filter-select" onchange="sortCatalog(this.value)">
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="duration-asc">Duration: Short → Long</option>
+          <option value="name-asc">Name: A → Z</option>
+        </select>
+      </div>
+
+      <!-- Share cards grid -->
+      <div id="sharesGrid" class="shares-grid">
+        <div class="state-box" style="grid-column:1/-1">
+          <div class="spinner"></div><p>Loading shares…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ INVESTMENTS TAB ══════════════════════════════════ -->
+    <div class="tab-panel" id="panel-investments">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
+        </div>
+        <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Share Package</th>
+              <th>Progress</th>
+              <th>Daily Income</th>
+              <th>Purchased</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="investmentsTableBody">
+            <tr><td colspan="7"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="investPagination" style="display:none;">
+        <span id="investPageInfo"></span>
+        <div class="page-btns" id="investPageBtns"></div>
+      </div>
+    </div>
+
+  </div><!-- /tabs-wrap -->
+
+
+<!-- ── MODAL MOUNT ──────────────────────────────────────── -->
+<div id="__modal"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCRIPT
+═══════════════════════════════════════════════════════════ -->
+
+    </main>
     
     <main class="page" id="chats">
       <!-- ════════════════ SIDEBAR ════════════════ -->
@@ -1355,9 +1481,9 @@
                   <div class="util-title">Active Shares</div>
                   <div class="util-sub">View all active investment shares</div>
                 </div>
-                <button class="btn-util" onclick="openUtil('shares')">
+                <a href="#shares" class="btn-util" onclick="openUtil('shares')">
                   <i class="ri-external-link-line"></i> Manage
-                </button>
+                </a>
               </div>
               
               <div class="util-row">
