@@ -265,7 +265,7 @@ textarea {
 .content nav {
     height: 56px;
     background: var(--card);
-    padding: 0 20px 0 18px;
+    padding: 0 4px 0 16px;
     display: flex;
     align-items: center;
     grid-gap: 24px;
@@ -846,7 +846,7 @@ textarea {
 
 /* ── TABLE ─────────────────────────────────────────────── */
 .table-wrap {
-    overflow-x: auto;padding-bottom: 20px;margin-bottom: 20px;
+    overflow-x: auto;padding-bottom: 20px;margin-bottom: 20px;background:blue
 }
 
 table {
