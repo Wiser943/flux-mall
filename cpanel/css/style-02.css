@@ -178,7 +178,7 @@
 
 .filter-select {
   padding: 8px 12px;
-  background: var(--input);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--rsm);
   color: var(--text);
@@ -552,7 +552,7 @@ tbody tr:hover .row-actions {
   height: 30px;
   border-radius: 7px;
   border: 1px solid var(--border);
-  background: var(--input);
+  background: var(--input-bg);
   color: var(--sub);
   font-size: .82rem;
   display: flex;
@@ -650,7 +650,7 @@ tbody tr:hover .row-actions {
 }
 
 .dp-stat {
-  background: var(--input);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--rsm);
   padding: 10px 8px;
@@ -714,7 +714,7 @@ tbody tr:hover .row-actions {
   padding: 9px 12px;
   border-radius: var(--rsm);
   border: 1px solid var(--border);
-  background: var(--input);
+  background: var(--input-bg);
   color: var(--sub);
   font-size: .8rem;
   font-weight: 500;
@@ -752,7 +752,7 @@ tbody tr:hover .row-actions {
 .dp-edit-input {
   width: 100%;
   padding: 7px 10px;
-  background: var(--input);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--rsm);
   color: var(--text);
@@ -778,7 +778,7 @@ tbody tr:hover .row-actions {
 .form-input {
   width: 100%;
   padding: 10px 12px;
-  background: var(--input);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--rsm);
   color: var(--text);
@@ -956,7 +956,7 @@ select.form-input {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  background: var(--input);
+  background: var(--input-bg);
   border-radius: var(--rsm);
   padding: 8px;
   margin-bottom: 10px;
@@ -998,7 +998,7 @@ select.form-input {
   padding: 7px 4px;
   border-radius: var(--rsm);
   border: 1px solid var(--border);
-  background: var(--input);
+  background: var(--input-bg);
   color: var(--sub);
   font-size: .72rem;
   font-weight: 600;
@@ -1048,7 +1048,7 @@ select.form-input {
   padding: 5px 14px;
   border-radius: 20px;
   border: 1px solid var(--border);
-  background: var(--input);
+  background: var(--input-bg);
   color: var(--muted);
   font-size: .75rem;
   font-weight: 600;
