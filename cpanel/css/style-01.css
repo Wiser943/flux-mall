@@ -534,7 +534,8 @@ textarea {
     .mlogout{
         display: flex;
     }
-    
+    .tabs-wrap {overflow: auto;padding-bottom: 40px;
+}
     .content nav .profile img {
         width: 28px;
         height: 28px;
@@ -846,7 +847,7 @@ textarea {
 
 /* ── TABLE ─────────────────────────────────────────────── */
 .table-wrap {
-    overflow-x: auto;padding-bottom: 20px;margin-bottom: 20px;background:blue
+    overflow-x: auto;
 }
 
 table {
