@@ -3797,7 +3797,7 @@ function renderDepositsPage() {
         </div>
       </td>
       <td>
-        <div class="amt-fex">🪙 ${fex.toLocaleString()} FEX</div>
+        <div class="amt-fex">🪙 ${fex.toLocaleString()}</div>
         <div class="amt-naira">≈ ₦${naira}</div>
       </td>
       <td><code style="font-size:11px;color:var(--text3);">${ref}…</code></td>
@@ -3832,7 +3832,7 @@ function renderDepositsPage() {
 }
 
 window.approveDeposit = async (id, userId, amount, username) => {
-  if (!confirm(`Approve 🪙${Number(amount).toLocaleString()} FEX deposit from ${username}?`)) return;
+  if (!confirm(`Approve 🪙${Number(amount).toLocaleString()} deposit from ${username}?`)) return;
   const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
   if (data?.success) {
     showToast('✅ Deposit approved — user credited!', 'success');
