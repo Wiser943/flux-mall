@@ -1272,76 +1272,76 @@ select.form-input {
 
 
 
-#analytics .status {
+#dashboard .status {
   padding: 5px;
 }
 
-#analytics .status .header {
+#dashboard .status .header {
   display: flex;
   align-items: center;
   width: 100%;
   margin-bottom: 20px;
 }
 
-#analytics .status .header h4 {
+#dashboard .status .header h4 {
   color: #f1f3f2;
   font-weight: 500;
 }
 
-#analytics .status .header h4#big {
+#dashboard .status .header h4#big {
   flex: 3;
 }
 
-#analytics .status .header h4#small {
+#dashboard .status .header h4#small {
   flex: 1;
   padding-left: 90px;
 }
 
-#analytics .status .items-list {
+#dashboard .status .items-list {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-#analytics .status .items-list .item {
+#dashboard .status .items-list .item {
   background: #e0f2fe;
   width: 25%;
   padding: 20px;
   border-radius: 18px;
 }
 
-#analytics .status .items-list .item:nth-child(2) {
+#dashboard .status .items-list .item:nth-child(2) {
   background: #fffbeb;
 }
 
-#analytics .status .items-list .item:nth-child(3) {
+#dashboard .status .items-list .item:nth-child(3) {
   background: #bfdbfe;
 }
 
-#analytics .status .items-list .item:nth-child(4) {
+#dashboard .status .items-list .item:nth-child(4) {
   background: #031224;
   padding: 10px;
 }
 
-#analytics .status .items-list .item .info {
+#dashboard .status .items-list .item .info {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 40px;
 }
 
-#analytics .status .items-list .item .info h5 {
+#dashboard .status .items-list .item .info h5 {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 10px;
 }
 
-#analytics .status .items-list .item .info p {
+#dashboard .status .items-list .item .info p {
   font-size: 12px;
   font-weight: 500;
 }
 
-#analytics .status .items-list .item .info>i {
+#dashboard .status .items-list .item .info>i {
   font-size: 20px;
   padding: 10px;
   background: #031224;
@@ -1349,21 +1349,21 @@ select.form-input {
   border-radius: 50%;
 }
 
-#analytics .status .items-list .item .progress {
+#dashboard .status .items-list .item .progress {
   position: relative;
   height: 10px;
   background: #b7c0cd;
   border-radius: 10px;
 }
 
-#analytics .status .items-list .item .progress .bar {
+#dashboard .status .items-list .item .progress .bar {
   width: 92%;
   height: 10px;
   background: #031224;
   border-radius: 10px;
 }
 
-#analytics .status .items-list .item .progress::before {
+#dashboard .status .items-list .item .progress::before {
   content: "92%";
   position: absolute;
   top: -40px;
@@ -1372,31 +1372,31 @@ select.form-input {
   font-weight: 600;
 }
 
-#analytics .status .items-list .item:nth-child(2) .progress {
+#dashboard .status .items-list .item:nth-child(2) .progress {
   background: #d6d3d1;
 }
 
-#analytics .status .items-list .item:nth-child(2) .progress .bar {
+#dashboard .status .items-list .item:nth-child(2) .progress .bar {
   width: 65%;
 }
 
-#analytics .status .items-list .item:nth-child(2) .progress::before {
+#dashboard .status .items-list .item:nth-child(2) .progress::before {
   content: "65%";
 }
 
 
-#analytics .status .items-list .item:nth-child(3) .progress {
+#dashboard .status .items-list .item:nth-child(3) .progress {
   background: #94a3b8;
 }
 
-#analytics .status .items-list .item:nth-child(3) .progress .bar {
+#dashboard .status .items-list .item:nth-child(3) .progress .bar {
   width: 80%;
 }
 
-#analytics .status .items-list .item:nth-child(3) .progress::before {
+#dashboard .status .items-list .item:nth-child(3) .progress::before {
   content: "80%";
 }
 
-#analytics .status .items-list .item .info h5 {
+#dashboard .status .items-list .item .info h5 {
   font-size: 15px;
 }
