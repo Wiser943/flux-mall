@@ -2062,36 +2062,6 @@
     width: 100%;
   }
   
-  /* Mobile: 2 columns */
-  @media (max-width: 767px) {
-    .investment-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .invest-card {
-      max-height: 340px;
-    }
-      #ref-link .card {
-    padding: auto 2px;
-  }
-  
-  #ref-link .card .ref-code-box {
-    overflow: hidden;
-    max-width: 280px;
-  }
-  
-  #ref-link .card .ref-code-box .ref-code,
-  #ref-link .card .ref-code-box div {
-    font-size: smaller;
-    text-overflow: ellipsis;
-  }
-  
-  #ref-link .card .ref-code-box button {
-    position: absolute;
-    left: 270px;
-  }
-  }
-  
   /* Desktop: 3 columns */
   @media (min-width: 768px) {
     .investment-grid {
@@ -2167,4 +2137,35 @@
     border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
+  }
+
+  /* Mobile: 2 columns */
+  @media (max-width: 767px) {
+    .investment-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .invest-card {
+      max-height: 340px;
+    }
+    
+    #ref-link .card {
+      padding: auto 2px;
+    }
+    
+    #ref-link .card .ref-code-box {
+      overflow: hidden;
+      max-width: 280px;
+    }
+    
+    #ref-link .card .ref-code-box .ref-code,
+    #ref-link .card .ref-code-box div {
+      font-size: smaller;
+      text-overflow: ellipsis;
+    }
+    
+    #ref-link .card .ref-code-box button {
+      position: absolute;
+      left: 270px;
+    }
   }
