@@ -120,8 +120,8 @@
           <a href="#" class="profile">
             <img src="../img/logo.png">
           </a>
-          <small><b>Admin</b></small>
-          <span class="mlogout" onclick="adminLogout()" style="color: red;"><i class="ri-logout-box-r-line"></i></span>
+          <small><b>Admin</b></small>|
+          <span class="mlogout" style="border: 1px solid red; color: red;border-radius: 16px;padding: 4px 7px;display: flex;gap:3px" onclick="adminLogout()"><i class="ri-logout-box-r-line"></i><small>Logout</small></span>
         </div>
       </div>
     </nav>
@@ -1472,7 +1472,6 @@
               </button>
             </div>
           </div>
-          
         </div>
         
       </div><!-- /page-wrap -->
@@ -1506,7 +1505,7 @@
       badge.style.color = isManual ? '#f6ad55' : '#05cd99';
       
       // Active pill
-      const activeStyle = 'border-color:#4318ff;background:rgba(67,24,255,0.08);color:#4318ff;';
+      const activeStyle = 'border-color:green;background:rgba(67,24,255,0.08);color:green;';
       const inactiveStyle = 'border-color:var(--border,#e0e5f2);background:var(--bg,#f4f7fe);color:var(--text2,#4a5568);';
       manual.style.cssText += isManual ? activeStyle : inactiveStyle;
       kora.style.cssText += isManual ? inactiveStyle : activeStyle;
