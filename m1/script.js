@@ -499,8 +499,7 @@ window.initiateDeposit = async function(amount) {
         </div>
         <div class="detail-row"><span>Name:</span><strong>${accName}</strong></div>
         <hr style="border:0;border-top:1px solid #e2e8f0;margin:15px 0;">
-        <div style="text-align:center;cursor:pointer" onclick="copyCode('m
-        ${refCode}')">
+        <div style="text-align:center;cursor:pointer" onclick="copyCode('${refCode}')">
           <span style="font-size:0.75rem;color:#666;text-transform:uppercase;font-weight:bold;">Use this Reference as Narration</span>
           <span class="ref-box" id="modalRef">${refCode}</span>
       `,
@@ -657,6 +656,11 @@ window.confirmKorapayDeposit = async (reference, fexAmount) => {
     showAlert(data?.error || 'Error recording deposit.', 'error', 'ri-close-line', 'Error');
   }
 };
+
+function addNewBank() {
+  
+}
+
 
 // ─── WITHDRAWAL ───────────────────────────────────────────
 window.handleWithdrawalSubmit = async () => {
@@ -1073,24 +1077,26 @@ function generateReferralLink() {
   const refId = currentUserData.uid || currentUserData._id;
   const link = `${window.location.origin}/m2/index.html?ref=${refId}#signup-page`;
   document.getElementById('refLink').innerHTML = `
-    <div class="card">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referral Code</div>
-      <div class="ref-code-box">
-        <div class="ref-code">${refId}</div>
-        <button class="copy-btn" onclick="copyCode('${refId}')"><i class="ri-file-copy-line"></i> Copy</button>
+            <div class="referral-block card">
+      <h3>Invite Your Friends</h3>
+      <p>Earn from refering friends!</p>
+      <div class="ref-input-row">
+        <input type="text" value="${refId}" class="refLink" readonly>
+        <button onclick="copyCode('${refId}')" class="copy-btn"><i class="ri-file-copy-line"></i></button>
       </div>
-      <div style="margin-top:16px;">
-        <label>Referral Link</label>
-        <div class="ref-code-box">
-          <div style="font-size:13px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${link}</div>
-          <button class="copy-btn" onclick="copyCode('${link}')"><i class="ri-file-copy-line"></i> Copy</button>
-        </div>
-      </div>
-      <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
-        <button class="btn btn-primary" onclick="copyCode('${link}')"><i class="ri-share-line"></i> Share</button>
-        <button class="btn btn-outline" onclick="window.open('https://wa.me/?text=${encodeURIComponent(link)}','_blank')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
-      </div>
-    </div>`;
+      
+         <div class="ref-input-row">
+     <input type="text" value="${link}" class="refLink" readonly>
+     
+     <button onclick="copyCode('${link}')" class="copy-btn"><i class="ri-file-copy-line"></i></button>
+   </div>
+      
+   <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
+     <button class="btn btn-primary" onclick="copyCode('${link}')"><i class="ri-share-line"></i> Share</button>
+     <button class="btn btn-outline" onclick="window.open('https://wa.me/?text=${encodeURIComponent(link)}','_blank')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
+   </div>
+</div>
+`;
 }
 
 // ─── SPIN WHEEL ───────────────────────────────────────────
