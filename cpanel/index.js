@@ -4345,7 +4345,7 @@ const toast = showToast;
 function showToast(msg, type = 'success') {
   if (!_toastWrap) {
     _toastWrap = document.createElement('div');
-    _toastWrap.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;height:40px;overflow:hidden;justify-content:flex-start'
+    _toastWrap.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;height:40px;overflow:hidden;justify-content:flex-start; width:max-content'
     document.body.appendChild(_toastWrap);
   }
   const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
@@ -4371,4 +4371,4 @@ function showToast(msg, type = 'success') {
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
