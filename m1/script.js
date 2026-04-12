@@ -1080,14 +1080,15 @@ function generateReferralLink() {
             <div class="referral-block card">
       <h3>Invite Your Friends</h3>
       <p>Earn from refering friends!</p>
+      <br>
+      <label>Referral code</label>
       <div class="ref-input-row">
-        <input type="text" value="${refId}" class="refLink" readonly>
+        <input type="text" value="${refId}" readonly>
         <button onclick="copyCode('${refId}')" class="copy-btn"><i class="ri-file-copy-line"></i></button>
       </div>
-      
+      <label>Referral link</label>
          <div class="ref-input-row">
-     <input type="text" value="${link}" class="refLink" readonly>
-     
+     <input type="text" value="${link}" readonly>
      <button onclick="copyCode('${link}')" class="copy-btn"><i class="ri-file-copy-line"></i></button>
    </div>
       
