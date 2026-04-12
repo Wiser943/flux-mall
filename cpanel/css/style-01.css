@@ -290,7 +290,9 @@ textarea {
 .content nav a {
     color: var(--text);
 }
-
+    .mlogout {
+        display: none;
+    }
 .content nav .bx.bx-menu {
     cursor: pointer;
     color: var(--text);
@@ -475,7 +477,7 @@ textarea {
 
 .login-container i {
     font-size: 50px;
-    color: #fff;
+    color:green;
     margin-top: 80px;
 }
 
@@ -507,7 +509,8 @@ textarea {
     font-size: 14px;
     outline: none;
     box-sizing: border-box;
-    transition: 0.3s;
+    transition: 0.3s;border: 1px solid green;
+
 }
 
 .login-container .input-group input:focus {
@@ -517,10 +520,6 @@ textarea {
 
 
 @media screen and (max-width: 768px) {
-    .content nav .bx.bx-menu {
-        display: none;
-    }
-    
     .content nav .last {
         display: flex;
         width: 100%;
@@ -530,6 +529,10 @@ textarea {
     
     .content nav .last div {
         gap: 8px
+    }
+    
+    .mlogout{
+        display: flex;
     }
     
     .content nav .profile img {
@@ -554,7 +557,8 @@ textarea {
         justify-content: flex-start;
         border-top: 2px solid var(--bg);
     }
-    
+    .content nav .bx.bx-menu,
+    .sidebar .side-menu:last-child,
     .sidebar .side-menu li a span,
     .sidebar.close .side-menu,
     .sidebar .logo,
