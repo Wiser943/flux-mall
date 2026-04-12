@@ -2178,25 +2178,11 @@
   
   .ref-input-row input {
     flex: 1;
-    padding: 10px 12px;
-    background: var(--input-bg);
+    padding: 8px 12px;
+    background: var(--card2);
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
-    font-size: .78rem;
-    color: var(--green);overflow: ellipsis;
+    font-size: 1rem;
+    overflow: ellipsis;
   }
-  
-  .copy-btn {
-    background: var(--gold);
-    padding: 0 14px;
-    border-radius: var(--radius-sm);
-    font-size: .75rem;
-    font-weight: 700;
-    transition: background var(--ease);
-  }
-  
-  .copy-btn:hover {
-    background: var(--green-mid);
-  }
-  
   
