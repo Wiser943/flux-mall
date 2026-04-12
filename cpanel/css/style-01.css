@@ -846,7 +846,7 @@ textarea {
 
 /* ── TABLE ─────────────────────────────────────────────── */
 .table-wrap {
-    overflow-x: auto;
+    overflow-x: auto;padding-bottom: 20px;margin-bottom: 20px;
 }
 
 table {
