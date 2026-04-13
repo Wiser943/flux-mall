@@ -297,6 +297,64 @@ router.post('/create-user', requireAdmin, async (req, res) => {
   }
 });
 
+
+// ─── GET /api/admin/activity ──────────────────────────────
+// All users activity logs, newest first
+router.get('/activity', requireAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, type, userId } = req.query;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    // Build filter — optional type and userId filters
+    const filter = {};
+    if (type)   filter.type   = type;
+    if (userId) filter.userId = userId;
+
+    const [activity, total] = await Promise.all([
+      Activity.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(Number(limit))
+        .populate('userId', 'username email'),
+      Activity.countDocuments(filter)
+    ]);
+
+    res.json({
+      success: true,
+      activity,
+      total,
+      page:  Number(page),
+      pages: Math.ceil(total / Number(limit))
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/admin/activity/:userId ─────────────────────
+// Single user's full activity history
+router.get('/activity/:userId', requireAdmin, async (req, res) => {
+  try {
+    const activity = await Activity.find({ userId: req.params.userId })
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, activity });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── DELETE /api/admin/activity/:id ──────────────────────
+// Delete a single activity log entry
+router.delete('/activity/:id', requireAdmin, async (req, res) => {
+  try {
+    await Activity.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── DELETE /api/admin/users/:id ─────────────────────────
 // Cascade deletes user + ALL related documents across collections
 router.delete('/users/:id', requireAdmin, async (req, res) => {
