@@ -920,6 +920,216 @@
     </main>
     
     <main class="page" id="settings">
+      
+      <!-- ── Maintenance Mode Dropdown ─────────────────────────── -->
+<div class="maint-dropdown-wrap">
+
+  <!-- The clickable header that opens/closes the dropdown -->
+  <div class="maint-header" onclick="toggleMaintDropdown()">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="maint-icon-wrap">
+        <i class="ri-tools-line"></i>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:14px;color:var(--text1,#1b2559);">
+          Maintenance Mode
+        </div>
+        <div style="font-size:12px;color:var(--text3,#a3adc2);" id="maintStatusText">
+          Checking...
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <!-- Live status pill -->
+      <span id="maintStatusPill" style="
+        font-size:11px;font-weight:700;padding:3px 10px;
+        border-radius:20px;background:var(--success-soft,rgba(5,205,153,0.12));
+        color:var(--success,#05cd99);
+      ">OFF</span>
+      <!-- Chevron arrow -->
+      <i class="ri-arrow-down-s-line" id="maintChevron"
+        style="font-size:18px;color:var(--text3);transition:transform 0.25s;"></i>
+    </div>
+  </div>
+
+  <!-- The dropdown body — hidden by default -->
+  <div class="maint-body" id="maintDropdownBody">
+
+    <div style="
+      background:var(--warning-soft,rgba(246,173,85,0.12));
+      border:1px solid rgba(246,173,85,0.3);
+      border-radius:10px;padding:10px 12px;
+      margin-bottom:14px;font-size:12px;
+      color:var(--text2,#4a5568);line-height:1.6;
+    ">
+      ⚠️ When ON, all users are immediately locked out.
+      Only admins can access the platform.
+    </div>
+
+    <!-- Toggle row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text1,#1b2559);">
+          Enable Maintenance Mode
+        </div>
+        <div style="font-size:11px;color:var(--text3,#a3adc2);margin-top:2px;">
+          Saves immediately on toggle
+        </div>
+      </div>
+
+      <!-- THE TOGGLE — id="maintenanceToggle" matches loadSettings() line 1561
+                        id="tgl-maintenance"   matches fillSettings()  line 1634
+           We use ONE checkbox and give it BOTH ids via a wrapper trick.
+           Actually we just use maintenanceToggle as the real input and
+           keep tgl-maintenance as a hidden mirror. -->
+      <label class="switch" style="flex-shrink:0;">
+        <input
+          type="checkbox"
+          id="maintenanceToggle"
+          onchange="onToggle('maintenance', this.checked); syncMaintUI(this.checked);"
+        >
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <!-- Hidden mirror input so tgl-maintenance id also resolves -->
+    <input type="hidden" id="tgl-maintenance">
+
+  </div>
+</div>
+
+<style>
+/* ── Dropdown wrapper ──────────────────────────────────────── */
+.maint-dropdown-wrap {
+  background: var(--card, #fff);
+  border: 1px solid var(--border, #e0e5f2);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  margin-bottom: 14px;
+}
+
+/* ── Clickable header ──────────────────────────────────────── */
+.maint-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.maint-header:hover {
+  background: var(--bg, #f4f7fe);
+}
+
+/* ── Icon box ──────────────────────────────────────────────── */
+.maint-icon-wrap {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--warning-soft, rgba(246,173,85,0.12));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  color: var(--warning, #f6ad55);
+}
+
+/* ── Dropdown body — collapsed by default ──────────────────── */
+.maint-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+  padding: 0 16px;
+  border-top: 0px solid var(--border, #e0e5f2);
+}
+.maint-body.open {
+  max-height: 300px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--border, #e0e5f2);
+}
+
+/* ── Chevron rotates when open ─────────────────────────────── */
+.maint-header.open #maintChevron {
+  transform: rotate(180deg);
+}
+
+/* ── Switch (reuse your existing .switch styles if present) ── */
+.switch { position:relative; display:inline-block; width:44px; height:24px; }
+.switch input { opacity:0; width:0; height:0; }
+.slider {
+  position:absolute; cursor:pointer; inset:0;
+  background:#ccc; border-radius:24px; transition:.3s;
+}
+.slider:before {
+  content:''; position:absolute;
+  width:18px; height:18px; left:3px; bottom:3px;
+  background:#fff; border-radius:50%; transition:.3s;
+}
+input:checked + .slider { background: var(--primary, #4318ff); }
+input:checked + .slider:before { transform: translateX(20px); }
+</style>
+
+<script>
+// ── Open / close the dropdown ─────────────────────────────────
+function toggleMaintDropdown() {
+  const body    = document.getElementById('maintDropdownBody');
+  const header  = body?.previousElementSibling;
+  const chevron = document.getElementById('maintChevron');
+  const isOpen  = body?.classList.contains('open');
+
+  body?.classList.toggle('open', !isOpen);
+  header?.classList.toggle('open', !isOpen);
+  if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+// ── Sync the pill + subtitle text whenever toggle changes ─────
+function syncMaintUI(isOn) {
+  const pill   = document.getElementById('maintStatusPill');
+  const text   = document.getElementById('maintStatusText');
+  const mirror = document.getElementById('tgl-maintenance');
+
+  // Keep the hidden mirror in sync so fillSettings() can find it
+  if (mirror) mirror.value = isOn ? 'true' : 'false';
+
+  if (pill) {
+    pill.textContent = isOn ? 'ON' : 'OFF';
+    pill.style.background = isOn
+      ? 'rgba(238,93,80,0.12)'   // red-soft when ON
+      : 'rgba(5,205,153,0.12)';  // green-soft when OFF
+    pill.style.color = isOn
+      ? '#ee5d50'   // danger
+      : '#05cd99';  // success
+  }
+
+  if (text) {
+    text.textContent = isOn
+      ? '🔴 Platform is in maintenance'
+      : '🟢 Platform is live';
+  }
+}
+
+// ── On page load — reflect current state from API ─────────────
+// This runs AFTER loadSettings() has set maintenanceToggle.checked
+// We use a MutationObserver to catch when loadSettings() sets the checkbox
+const _maintObs = new MutationObserver(() => {});
+document.addEventListener('DOMContentLoaded', () => {
+  // Poll briefly until the checkbox is set by loadSettings()
+  const poll = setInterval(() => {
+    const toggle = document.getElementById('maintenanceToggle');
+    if (!toggle) return;
+    // Once loadSettings() has run it will have set .checked
+    // We just sync the UI to match whatever state it is
+    syncMaintUI(toggle.checked);
+    clearInterval(poll);
+  }, 200);
+
+  // Fallback — stop polling after 5s regardless
+  setTimeout(() => clearInterval(poll), 5000);
+});
+</script>
+      
+      
+      
+      
       <div class="page-wrap">
         <!-- ── PAGE HEADER ── -->
         <div class="page-header">
@@ -1465,15 +1675,14 @@
               <i class="ri-arrow-down-s-line section-chevron"></i>
             </div>
             <div class="section-body">
-              
               <div class="util-row">
                 <div class="util-info">
                   <div class="util-title">Active Deposits</div>
                   <div class="util-sub">View and manage pending deposits</div>
                 </div>
-                <button class="btn-util" onclick="openUtil('deposits')">
+                <a href="#transactions" class="btn-util" onclick="openUtil('deposits')">
                   <i class="ri-external-link-line"></i> Manage
-                </button>
+                </a>
               </div>
               
               <div class="util-row">
@@ -1493,16 +1702,6 @@
                 </div>
                 <button class="btn-util" onclick="openUtil('users')">
                   <i class="ri-external-link-line"></i> Manage
-                </button>
-              </div>
-              
-              <div class="util-row">
-                <div class="util-info">
-                  <div class="util-title">Export Reports</div>
-                  <div class="util-sub">Download CSV of transactions</div>
-                </div>
-                <button class="btn-util" onclick="exportCSV()">
-                  <i class="ri-download-2-line"></i> Export
                 </button>
               </div>
               
