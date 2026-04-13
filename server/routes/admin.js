@@ -182,6 +182,29 @@ router.delete('/withdrawals/:id', requireAdmin, async (req, res) => {
   }
 });
 
+// GET all purchased shares (all users)
+router.get('/purchased-shares', requireAdmin, async (req, res) => {
+  try {
+    const investments = await PurchasedShare.find()
+      .sort({ createdAt: -1 })
+      .populate('userId', 'username email');
+    res.json({ success: true, investments });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE a specific purchased share by ID
+router.delete('/purchased-shares/:id', requireAdmin, async (req, res) => {
+  try {
+    await PurchasedShare.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ─── GET /api/admin/users ─────────────────────────────────
 router.get('/users', requireAdmin, async (req, res) => {
   try {
