@@ -1780,8 +1780,12 @@ document.addEventListener('DOMContentLoaded', () => {
     </main>
   </div>
   
-  <script src="index.js"></script>
+  <script src="index.j"></script>
+  
   <script>
+  document.getElementById('maintenanceToggle').onchange = async (e) => {
+  await api('/api/admin/settings/maintenance', { method: 'PUT', body: JSON.stringify({ enabled: e.target.checked }) });
+};
     // ── Payment mode quick-switcher ─────────────────────────────
     // Loads current mode on page load and highlights the active pill.
     // quickSetPaymentMode() saves instantly without opening the modal.
