@@ -1549,6 +1549,13 @@ document.addEventListener('click', e => {
 // ══════════════════════════════════════════════════════════
 //  SECTION 10 — SETTINGS
 // ══════════════════════════════════════════════════════════
+const mToggle = document.getElementById('tgl-maintenance');
+if (mToggle) {
+//  mToggle.checked = s.maintenance.enabled || false;
+  mToggle.onchange = async (e) => {
+    await api('/api/admin/settings/maintenance', { method: 'PUT', body: JSON.stringify({ enabled: e.target.checked }) });
+  };
+}
 
 async function loadSettings() {
   try {
@@ -5011,4 +5018,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
