@@ -1,943 +1,2681 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shares & Investments — Flux Mall Admin</title>
-<link href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css" rel="stylesheet">
-<style>
-/* ── FLUX MALL TOKENS ──────────────────────────────────────── */
-:root {
-  --primary:      #4318ff;
-  --primary-soft: rgba(67,24,255,0.10);
-  --accent:       #868cff;
-  --success:      #05cd99;
-  --success-soft: rgba(5,205,153,0.12);
-  --danger:       #ee5d50;
-  --danger-soft:  rgba(238,93,80,0.12);
-  --warning:      #f6ad55;
-  --warning-soft: rgba(246,173,85,0.12);
-  --bg:           #f4f7fe;
-  --card:         #ffffff;
-  --border:       #e0e5f2;
-  --text1:        #1b2559;
-  --text2:        #4a5568;
-  --text3:        #a3adc2;
-  --shadow:       0 4px 24px rgba(67,24,255,0.08);
-  --shadow-sm:    0 2px 8px rgba(0,0,0,0.06);
-  --radius:       16px;
-  --radius-sm:    10px;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans','Segoe UI',sans-serif; background: var(--bg); color: var(--text1); min-height: 100vh; }
-
-/* ── PAGE ──────────────────────────────────────────────────── */
-.page { max-width: 1000px; margin: 0 auto; padding: 20px 16px 80px; }
-
-/* ── HEADER ────────────────────────────────────────────────── */
-.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; gap:12px; flex-wrap:wrap; }
-.page-header h1 { font-size:20px; font-weight:800; color:var(--text1); }
-.page-header .sub { font-size:12px; color:var(--text3); margin-top:2px; }
-.header-actions { display:flex; gap:8px; flex-wrap:wrap; }
-
-/* ── STAT STRIP ────────────────────────────────────────────── */
-.stat-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:20px; }
-.stat-card { background:var(--card); border-radius:var(--radius-sm); padding:14px; box-shadow:var(--shadow-sm); border:1px solid var(--border); position:relative; overflow:hidden; }
-.stat-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:3px 3px 0 0; }
-.stat-card.blue::before  { background:var(--primary); }
-.stat-card.green::before { background:var(--success); }
-.stat-card.orange::before{ background:var(--warning); }
-.stat-card.red::before   { background:var(--danger); }
-.stat-val   { font-size:18px; font-weight:800; color:var(--text1); line-height:1.1; margin-bottom:4px; }
-.stat-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); }
-.stat-icon  { position:absolute; top:12px; right:12px; font-size:22px; opacity:0.15; }
-
-/* ── TABS ──────────────────────────────────────────────────── */
-.tabs-wrap { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; }
-.tabs-header { display:flex; border-bottom:1px solid var(--border); background:var(--bg); padding:6px 6px 0; gap:4px; }
-.tab-btn { flex:1; padding:10px 6px; border:none; background:transparent; font-size:13px; font-weight:600; color:var(--text3); cursor:pointer; border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.15s; }
-.tab-btn.active { background:var(--card); color:var(--primary); box-shadow:0 -2px 0 var(--primary) inset; }
-.tab-count { background:var(--primary-soft); color:var(--primary); font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px; }
-.tab-btn.active .tab-count { background:var(--primary); color:#fff; }
-.tab-panel { display:none; }
-.tab-panel.active { display:block; }
-
-/* ── TOOLBAR ───────────────────────────────────────────────── */
-.toolbar { display:flex; align-items:center; gap:8px; padding:14px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap; }
-.search-box { flex:1; min-width:160px; display:flex; align-items:center; gap:8px; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 12px; }
-.search-box i { color:var(--text3); font-size:15px; }
-.search-box input { border:none; background:transparent; font-size:13px; color:var(--text1); outline:none; width:100%; }
-.filter-select { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12px; color:var(--text2); outline:none; cursor:pointer; }
-
-/* ── SHARE CATALOG GRID ────────────────────────────────────── */
-.shares-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; padding:16px; }
-.share-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow-sm); transition:transform 0.15s, box-shadow 0.15s; }
-.share-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
-.share-img { width:100%; height:120px; object-fit:cover; background:linear-gradient(135deg,var(--primary-soft),rgba(134,140,255,0.15)); display:flex; align-items:center; justify-content:center; font-size:40px; }
-.share-img img { width:100%; height:100%; object-fit:cover; }
-.share-body { padding:12px 14px; }
-.share-name { font-size:14px; font-weight:800; color:var(--text1); margin-bottom:8px; }
-.share-stats { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:10px; }
-.share-stat { background:var(--bg); border-radius:8px; padding:6px 8px; }
-.share-stat label { font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:2px; }
-.share-stat span { font-size:13px; font-weight:700; color:var(--text1); }
-.share-stat span.green { color:var(--success); }
-.share-stat span.blue  { color:var(--primary); }
-.share-actions { display:flex; gap:6px; }
-.duration-pill { display:inline-flex; align-items:center; gap:4px; background:var(--primary-soft); color:var(--primary); border-radius:20px; padding:3px 9px; font-size:11px; font-weight:700; margin-bottom:8px; }
-
-/* ── TABLE ─────────────────────────────────────────────────── */
-.table-wrap { overflow-x:auto; }
-table { width:100%; border-collapse:collapse; font-size:13px; }
-thead th { padding:10px 14px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); border-bottom:1px solid var(--border); white-space:nowrap; background:var(--bg); }
-tbody tr { border-bottom:1px solid var(--border); transition:background 0.12s; }
-tbody tr:last-child { border-bottom:none; }
-tbody tr:hover { background:rgba(67,24,255,0.02); }
-tbody td { padding:11px 14px; vertical-align:middle; }
-
-/* ── BADGES ────────────────────────────────────────────────── */
-.badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700; }
-.badge.success { background:var(--success-soft); color:var(--success); }
-.badge.active  { background:var(--success-soft); color:var(--success); }
-.badge.pending { background:var(--warning-soft); color:var(--warning); }
-.badge.expired { background:rgba(0,0,0,0.06); color:var(--text3); }
-.badge.blue    { background:var(--primary-soft); color:var(--primary); }
-
-/* ── BUTTONS ───────────────────────────────────────────────── */
-.btn { display:inline-flex; align-items:center; gap:5px; padding:7px 13px; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s; }
-.btn-primary { background:var(--primary); color:#fff; }
-.btn-primary:hover { background:#3410d9; }
-.btn-success { background:var(--success-soft); color:var(--success); }
-.btn-success:hover { background:var(--success); color:#fff; }
-.btn-danger  { background:var(--danger-soft); color:var(--danger); }
-.btn-danger:hover  { background:var(--danger); color:#fff; }
-.btn-ghost   { background:transparent; color:var(--text3); border:1px solid var(--border); }
-.btn-ghost:hover   { background:var(--bg); color:var(--text2); }
-.btn-warning { background:var(--warning-soft); color:var(--warning); }
-.btn-warning:hover { background:var(--warning); color:#fff; }
-.btn-sm { padding:5px 9px; font-size:11px; }
-.action-group { display:flex; gap:5px; align-items:center; }
-
-/* ── USER CHIP ─────────────────────────────────────────────── */
-.user-chip { display:flex; align-items:center; gap:8px; }
-.avatar { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#fff; flex-shrink:0; }
-.username { font-size:12px; font-weight:600; color:var(--text1); }
-.user-sub { font-size:10px; color:var(--text3); }
-
-/* ── PROGRESS ──────────────────────────────────────────────── */
-.progress-bar { height:5px; background:var(--border); border-radius:4px; overflow:hidden; margin-top:4px; }
-.progress-fill { height:100%; border-radius:4px; background:var(--primary); transition:width 0.3s; }
-.progress-fill.green { background:var(--success); }
-
-/* ── EMPTY / LOADING ───────────────────────────────────────── */
-.state-box { text-align:center; padding:50px 20px; color:var(--text3); }
-.state-box i { font-size:36px; opacity:0.4; display:block; margin-bottom:10px; }
-.state-box p { font-size:13px; }
-.spinner { width:26px; height:26px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto 10px; }
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* ── MODAL ─────────────────────────────────────────────────── */
-.modal-overlay { position:fixed; inset:0; background:rgba(17,24,39,0.6); backdrop-filter:blur(4px); display:flex; align-items:flex-end; justify-content:center; z-index:9999; animation:fadeIn 0.18s ease; }
-@keyframes fadeIn { from{opacity:0}to{opacity:1} }
-.modal-sheet { background:var(--card); border-radius:20px 20px 0 0; width:100%; max-width:520px; padding:0 0 32px; animation:slideUp 0.22s cubic-bezier(0.34,1.56,0.64,1); max-height:92vh; overflow-y:auto; }
-@keyframes slideUp { from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1} }
-.modal-handle { width:40px; height:4px; background:var(--border); border-radius:4px; margin:12px auto 0; }
-.modal-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 12px; border-bottom:1px solid var(--border); }
-.modal-head h3 { font-size:15px; font-weight:700; }
-.modal-close { background:none; border:none; font-size:20px; color:var(--text3); cursor:pointer; }
-.modal-body { padding:18px 20px; }
-.form-group { margin-bottom:14px; }
-.form-group label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); margin-bottom:6px; }
-.form-group input, .form-group select, .form-group textarea {
-  width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px;
-  font-size:13px; color:var(--text1); background:var(--bg); outline:none; transition:border 0.15s;
-}
-.form-group input:focus, .form-group select:focus { border-color:var(--primary); background:#fff; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.modal-footer { display:flex; gap:8px; padding:0 20px; }
-.modal-footer .btn { flex:1; justify-content:center; }
-
-/* ── PAGINATION ────────────────────────────────────────────── */
-.pagination { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; border-top:1px solid var(--border); font-size:12px; color:var(--text3); flex-wrap:wrap; gap:8px; }
-.page-btns { display:flex; gap:4px; }
-.page-btns button { width:28px; height:28px; border:1px solid var(--border); border-radius:6px; background:var(--card); font-size:12px; cursor:pointer; color:var(--text2); font-weight:600; transition:all 0.12s; }
-.page-btns button.active,.page-btns button:hover { background:var(--primary); color:#fff; border-color:var(--primary); }
-.page-btns button:disabled { opacity:0.4; pointer-events:none; }
-
-/* ── RESPONSIVE ────────────────────────────────────────────── */
-@media(max-width:600px){
-  .stat-strip { grid-template-columns:repeat(2,1fr); }
-  .shares-grid { grid-template-columns:1fr; }
-  thead th:nth-child(4),tbody td:nth-child(4),
-  thead th:nth-child(5),tbody td:nth-child(5) { display:none; }
-}
-@media(max-width:400px){
-  .tab-btn span { display:none; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Exhibit Admin cpanel</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4318ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Flux Mall">
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Space+Grotesk:wght@500..700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    
+    
 </head>
+
 <body>
-<div class="page">
-
-  <!-- ── PAGE HEADER ──────────────────────────────────────── -->
-  <div class="page-header">
-    <div>
-      <h1><i class="ri-stock-line" style="color:var(--primary);margin-right:6px;"></i>Shares & Investments</h1>
-      <div class="sub">Manage share catalog · Track user investments</div>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
-      <button class="btn btn-primary btn-sm" onclick="openAddShareModal()"><i class="ri-add-line"></i> New Share</button>
-    </div>
-  </div>
-
-  <!-- ── STAT STRIP ──────────────────────────────────────── -->
-  <div class="stat-strip">
-    <div class="stat-card blue">
-      <div class="stat-val" id="statTotalShares">—</div>
-      <div class="stat-label">Share Packages</div>
-      <i class="ri-stack-line stat-icon"></i>
-    </div>
-    <div class="stat-card green">
-      <div class="stat-val" id="statActiveInvestments">—</div>
-      <div class="stat-label">Active Investments</div>
-      <i class="ri-line-chart-line stat-icon"></i>
-    </div>
-    <div class="stat-card orange">
-      <div class="stat-val" id="statTotalInvested">—</div>
-      <div class="stat-label">Total Invested (FEX)</div>
-      <i class="ri-coin-line stat-icon"></i>
-    </div>
-    <div class="stat-card red">
-      <div class="stat-val" id="statExpired">—</div>
-      <div class="stat-label">Expired</div>
-      <i class="ri-time-line stat-icon"></i>
-    </div>
-  </div>
-
-  <!-- ── TABS ─────────────────────────────────────────────── -->
-  <div class="tabs-wrap">
-    <div class="tabs-header">
-      <button class="tab-btn active" onclick="switchTab('catalog',this)">
-        <i class="ri-layout-grid-line"></i><span>Share Catalog</span>
-        <span class="tab-count" id="tcCatalog">0</span>
-      </button>
-      <button class="tab-btn" onclick="switchTab('investments',this)">
-        <i class="ri-user-star-line"></i><span>User Investments</span>
-        <span class="tab-count" id="tcInvestments">0</span>
-      </button>
-    </div>
-
-    <!-- ══ CATALOG TAB ═════════════════════════════════════ -->
-    <div class="tab-panel active" id="panel-catalog">
-      <div class="toolbar">
-        <div class="search-box">
-          <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
+    <div class="admin-wrapper">
+        <aside class="sidebar">
+            <div class="logo">CPANEL</div>
+            <nav>
+                <a class="nav-item active" href="#analytics">
+                    <i class="ri-bubble-chart-line"></i> <span>Analytics</span>
+                </a>
+                <a class="nav-item" href="#deposits">
+                    <i class="ri-coins-fill"></i> <span>Transactions</span>
+                </a>
+                <a class="nav-item" href="#users">
+                    <i class="ri-p2p-line"></i> <span>Management</span>
+                </a>
+                <a class="nav-item" href="#chats">
+                    <i class="ri-message-3-line"></i>
+                    <span id="adminChatBadge" style="display:none;background:#e74c3c;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;align-items:center;justify-content:center;font-weight:700;margin-left:-2px;">0</span>
+                    <span>Live chats</span>
+                </a>
+                <a class="nav-item" href="#settings">
+                    <i class="ri-settings-line"></i> <span>Settings</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <div class="login-container tab-content" id="login"><br /><br />
+            <div style="margin: 0 auto; max-width: 400px;">
+                <div class="bio-icon">
+                    <i class="ri-fingerprint-line"></i>
+                </div>
+                <h2>Admin Portal</h2>
+                <p>Secure Biometric Access Required</p>
+                <form onsubmit="handleAdminLogin(event)">
+                    <div class="input-group">
+                        <label>Master Email</label>
+                        <input type="email" id="adminEmail" required placeholder="admin@yoursite.com">
+                    </div>
+                    <div class="input-group">
+                        <label>Master Password</label>
+                        <input type="password" id="adminPass" required placeholder="••••••••">
+                    </div>
+                    
+                    <button type="submit" id="loginBtn">Verify Identity</button>
+                </form>
+            </div>
         </div>
-        <select class="filter-select" onchange="sortCatalog(this.value)">
-          <option value="price-asc">Price: Low → High</option>
-          <option value="price-desc">Price: High → Low</option>
-          <option value="duration-asc">Duration: Short → Long</option>
-          <option value="name-asc">Name: A → Z</option>
-        </select>
-      </div>
+        
+        
+        <main class="main-content">
+            <div class="theme-control">
+                <span class="theme-dot" onclick="setTheme('light', this)"><i class="ri-sun-line"></i></span>
+                <span class="theme-dot" onclick="setTheme('dark', this)"><i class="ri-moon-line"></i></span>
+                <span class="theme-dot" onclick="setTheme('blue', this)"><i class="ri-moon-clear-line"></i></span>
+            </div>
+            
+            <section id="analytics" class="tab-content active">
+                <div class="header-row">
+                    <button class="btn-export" onclick="exportCSV()">Export CSV <i class="ri-arrow-right-up-fill"></i></button>
+                    <h2>System Analytics</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"> <i class="ri-exchange-funds-line"></i>
+                        <h3>Total Success</h3>
+                        <p>
+                            <span id="statTotal" style="color:var(--success)">₦0.00</span>
+                        </p>
+                    </div>
+                    <div class="stat-card"> <i class="ri-exchange-line"></i>
+                        <h3>Pending Volume</h3>
+                        <p>
+                            <span id="statPending" style="color:#E65C08;">₦0.00</span>
+                        </p>
+                    </div>
+                    <div class="stat-card"> <i class="ri-group-line"></i>
+                        <h3>Active Users</h3>
+                        <p>
+                            <span id="statUsers">0</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3 style="margin-bottom: 20px;">Transaction Health</h3>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Money Flow (In vs Out)</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <h3 style="padding: 20px 10px 5px;">Summary by Status</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th></th>
+                                <th>Count</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyticsTableBody">
+                            <tr>
+                                <td colspan='6'>Syncing Database...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section id="deposits" class="tab-content">
+                <div class="header-row">
+                    <h2>Deposit Requests</h2>
+                    <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
+                        <div class="search-box">
+                            <i class="ri-search-line" style="font-size: 20px;margin:0 8px 0 10px;"></i>
+                            <input type="text" id="adminSearch" placeholder="User ID or Ref..." onkeyup="filterDeposits()">
+                        </div>
+                        <button class="btn-export" onclick="showTab('withdrawals-tab', this)">Withdrawals<i class="ri-arrow-right-up-fill"></i></button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>User</th>
+                                <th>Amount</th>
+                                <th>Ref</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="depositTableBody">
+                            <tr>
+                                <td colspan='6'>Syncing Database...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section id="withdrawals-tab" class="tab-content">
+                <div class="header-row">
+                    <h3>Withdrawal Requests</h3>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between;align-items: center;">
+                    <button class="btn-export" onclick="showTab('deposits-tab', this)">Deposits<i class="ri-arrow-right-down-fill"></i></button>
+                    <div class="btn-export" style="display:flex;align-items: center;gap:10px;font-size: 18px; padding: 0 10px 0 0;background:var(--card);color: var(--text-main)">
+                        <select id="wdSortOrder" onchange="changeWdSort()" style="background: var(--bg); color: var(--text-main); border:2px solid var(--border); padding: 8px 10px; border-radius: 8px; cursor: pointer;">
+                            <option value="createdAt-desc">Newest First</option>
+                            <option value="createdAt-asc">Oldest First</option>
+                            <option value="amount-desc">Highest Amount</option>
+                            <option value="amount-asc">Lowest Amount</option>
+                            <option value="status-asc">By Status (A-Z)</option>
+                        </select>
+                        <i class="ri-arrow-right-up-line" onclick="openWithdrawSettings()"></i>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="withdrawTable">
+                            <tr>
+                                <td colspan='6'>Nothing here to see.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            
+            <section id="users" class="tab-content">
+                <div class="header-row">
+                    <button class="btn-export" onclick="openCreateUserModal()">Create user<i class="ri-add-line"></i></button>
+                    <h2>User Management</h2>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Total Deposits</th>
+                                <th>Total Paid(₦)</th>
+                                <th>Disabled</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section id="settings" class="tab-content">
+                <div class="header-row">
+                    <h2>Settings</h2>
+                    <div style="display:flex; gap:10px;justify-content: center;align-items: center;">
+                        <div class="search-box">
+                            <button class="btn-export" onclick="resetBrandingSecure()" id="resetBrandingBtn">Reset
+                                default<i class="ri-arrow-right-up-fill"></i></button>
+                        </div>
+                        
+                        <div style="display: flex; font-size: 18pt;gap: 15px;cursor: pointer;">
+                            <i style="color:green;background: none;" onclick="openBindBankModal()" class="ri-visa-fill"></i>
+                            <i style="color:red;background: none;" onclick="adminLogout()" class="ri-logout-box-line"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings">
+                    <div>
+                        <div class="form-container">
+                            <form id="rulesForm" onsubmit="event.preventDefault(); saveConfig();">
+                                
+                                <section style="overflow: hidden;margin:6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
+                                    <h3 style="display: flex; justify-content: space-between; font-size: 14pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight: bold;">Branding</span>
+                                        <i class="ri-add-fill" onclick="document.getElementById('logoFileInput').click()"></i>
+                                    </h3>
+                                    
+                                    <input type="file" id="logoFileInput" accept="image/*" onchange="previewLogo(this)" hidden>
+                                    <div id="logoPreviewContainer" style="margin: 10px 0 18px 0;display: flex;  width: 100%;">
+                                        <img id="logoPreview" src="" style="border-radius: 45%;height: 80px; width: 80px;margin: 0 auto;">
+                                    </div>
+                                    
+                                    <div class="input-group">
+                                        <label>Site Name</label>
+                                        <input type="text" id="siteNameInput" placeholder="e.g. Flash Sales Pro" required>
+                                    </div>
+                                    <div class="input-group"><label>Site description</label><textarea rows="5" id="descText" required></textarea>
+                                    </div>
+                                </section>
+                                <details style="margin:6px 0;display:none;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
+                                    
+                                    <summary style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight: bold;">User Appearance</span>
+                                    </summary>
+                                    
+                                    <div style="margin-top: 15px;">
+                                        <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 10px;">
+                                            Quick
+                                            Presets (Click to Apply)</p>
+                                        
+                                        <div class="preset-grid">
+                                            
+                                            <div onclick="applyPreset('light', '#4318FF', '#6AD2FF')" class="preset-card" style="background: #f4f7fe; border: 1px solid #ddd;">
+                                                <div style="height: 20px; background: #4318FF; width: 100%;"></div>
+                                                <span>Classic Blue</span>
+                                            </div>
+                                            
+                                            <div onclick="applyPreset('dark', '#705df2', '#ff4757')" class="preset-card" style="background: #0b1437; color: white;">
+                                                <div style="height: 20px; background: #705df2; width: 100%;"></div>
+                                                <span>Midnight Pro</span>
+                                            </div>
+                                            
+                                            <div onclick="applyPreset('dark', '#FFD700', '#DAA520')" class="preset-card" style="background: #000000; color: #FFD700; border: 1px solid #333;">
+                                                <div style="height: 20px; background: #FFD700; width: 100%;"></div>
+                                                <span>Royal Gold</span>
+                                            </div>
+                                            
+                                            <div onclick="applyPreset('light', '#00b894', '#55efc4')" class="preset-card" style="background: #fff; border: 1px solid #ddd;">
+                                                <div style="height: 20px; background: #00b894; width: 100%;"></div>
+                                                <span>Forest Wealth</span>
+                                            </div>
+                                            
+                                            <div onclick="applyPreset('dark', '#ff6b6b', '#ff9f43')" class="preset-card" style="background: #2d3436; color: white;">
+                                                <div style="height: 20px; background: #ff6b6b; width: 100%;"></div>
+                                                <span>Sunset Fire</span>
+                                            </div>
+                                            
+                                            <div onclick="applyPreset('light', '#2d3436', '#636e72')" class="preset-card" style="background: #dfe6e9; border: 1px solid #ddd;">
+                                                <div style="height: 20px; background: #2d3436; width: 100%;"></div>
+                                                <span>Corporate</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <hr style="opacity: 0.2; margin: 15px 0;">
+                                        
+                                        <div style="display: flex; gap: 15px; margin-top: 10px;">
+                                            <div style="width: 80%;">
+                                                <label>Theme Mode</label>
+                                                <select id="themeMode" onchange="saveThemeConfig()">
+                                                    <option value="light">☀️ Light Mode</option>
+                                                    <option value="dark">🌙 Dark Mode</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label style="font-size:12px;">Primary</label><br>
+                                                <input type="color" id="primaryColor" onchange="saveThemeConfig()" style="width: 40px; height:40px; border: none; cursor: pointer;border-radius: 50%;">
+                                            </div>
+                                            <div>
+                                                <label style="font-size:12px;">Secondary</label><br>
+                                                <input type="color" id="secondaryColor" onchange="saveThemeConfig()" style="width: 40px; height: 40px;border-radius: 50%; border: none; cursor: pointer;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </details>
+                                
+                                <details style="margin:6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
+                                    
+                                    <summary style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight: bold;">Social Links</span>
+                                    </summary>
+                                    
+                                    <div class="input-group"><label>WhatsApp Link</label><input type="url" id="waLink" required>
+                                    </div>
+                                    <div class="input-group"><label>Telegram Link</label><input type="url" id="tgLink" required>
+                                    </div>
+                                </details>
+                                
+                                <details style="margin: 6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
+                                    
+                                    <summary style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight: bold;">Points Allocation</span>
+                                    </summary>
+                                    <div style="display:flex; gap:10px;flex-wrap: nowrap;">
+                                        <span class="input-group"><label>Inital User Balance</label><input type="number" id="initBal" required></span>
+                                        <span class="input-group"><label>Sign in commission</label>
+                                            <input type="number" id="signinAmt">
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="input-group" style="display:block;gap: 4px;"><br><label>Wheel
+                                            values</label>
+                                        <div id="prizeInputsContainer" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                            <div class="prize-slot">
+                                                <label>Slot 1 (₦)</label>
+                                                <input type="number" class="prize-input" data-label="₦50" data-color="#6200ea" value="50" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                            </div>
+                                            <div class="prize-slot">
+                                                <label>Slot 2 (₦)</label>
+                                                <input type="number" class="prize-input" data-label="Try Again" data-color="#333" value="0" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                            </div>
+                                            <div class="prize-slot">
+                                                <label>Slot 3 (₦)</label>
+                                                <input type="number" class="prize-input" data-label="₦200" data-color="#00c851" value="200" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                            </div>
+                                            <div class="prize-slot">
+                                                <label>Slot 4 (₦)</label>
+                                                <input type="number" class="prize-input" data-label="Empty" data-color="#555" value="0" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                            </div>
+                                            <div class="prize-slot">
+                                                <label>Slot 5 (₦)</label>
+                                                <input type="number" class="prize-input" data-label="₦500" data-color="#ff9800" value="500" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                            </div>
+                                            <div class="prize-slot">
+                                                <label>Slot 6 (₦)</label>
+                                                <input type="number" class="prize-input" data-label="Better Luck" data-color="#333" value="0" style="width:100%; padding:8px; border-radius:8px; border:1px solid #ddd;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="input-group" style="display:block;gap: 4px;"><br>
+                                        <label>Referral Bonus</label>
+                                        <div id="prizeInputsContainer" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                                            <div class="prize-slot"><label>Level 1 (₦)</label><input type="number" id="ref1" placeholder="1st %">
+                                            </div>
+                                            <div class="prize-slot"> <label>Level 2 (₦)</label><input type="number" id="ref2" placeholder="2nd%">
+                                            </div>
+                                            <div class="prize-slot"> <label>Level 3 (₦)</label><input type="number" id="ref3" placeholder="3rd %">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </details>
+                                <br />
+                                
+                                
+                                <details style="margin:6px 0;background-color:var(--bg);padding:8px 15px;border-radius:12px;">
+                                    <summary style="display:flex;justify-content:space-between;font-size:12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight:bold;">🖼️ Site Logo</span>
+                                    </summary>
+                                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+                                        <img id="logoPreview" src="" alt="Logo Preview" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--primary);background:#eee;" onerror="this.style.display='none'">
+                                        <div>
+                                            <label style="display:block;margin-bottom:6px;font-size:12px;">Upload via ImgBB</label>
+                                            <input type="file" accept="image/*" onchange="previewLogo(this)" style="font-size:12px;padding:4px;border-radius:6px;border:1px solid #ddd;width:100%">
+                                            <span id="logoUploadStatus" style="font-size:11px;color:var(--primary);margin-top:4px;display:block;"></span>
+                                        </div>
+                                    </div>
+                                </details>
+                                
+                                <details style="margin:6px 0;background-color:var(--bg);padding:8px 15px;border-radius:12px;">
+                                    <summary style="display:flex;justify-content:space-between;font-size:12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight:bold;">🔑 API Keys</span>
+                                    </summary>
+                                    <p style="font-size:11px;opacity:0.6;margin-bottom:12px;">Stored securely in DB. Synced across all devices.</p>
+                                    <div class="input-group">
+                                        <label>ImgBB API Key <a href="https://api.imgbb.com" target="_blank" style="font-size:10px;color:var(--primary)">(get free key)</a></label>
+                                        <input type="text" id="imgbbKeyInput" placeholder="Your ImgBB API key">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Korapay Public Key</label>
+                                        <input type="text" id="koraPublicKeyInput" placeholder="pk_live_...">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>Korapay Secret Key</label>
+                                        <input type="password" id="koraSecretKeyInput" placeholder="sk_live_...">
+                                    </div>
+                                    <button type="button" onclick="saveApiKeys()" class="btn-submit" style="width:100%;margin-top:8px;">Save API Keys</button>
+                                </details>
+                                
+                                <button type="submit" class="btn-submit">Configure</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div>
+                            <div class="form-container">
+                                <h3>Utilities</h3>
+                                <br />
+                                <details id="activePresetsContainer" style="margin: 6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
+                                    <summary style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight: bold;">Active Deposits</span><i onclick="openAddDepositAmtModal()" class="ri-add-fill"></i>
+                                    </summary>
+                                    
+                                    <div id="presetsList" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px;">
+                                    </div>
+                                </details>
+                                
+                                <details style="margin: 6px 0;background-color: var(--bg);padding: 8px 0;border-radius: 12px;">
+                                    
+                                    <summary style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 10px;">
+                                        <span style="font-weight: bold;">Active Shares</span>
+                                        <i onclick="openSharesModal()" class="ri-add-fill"></i>
+                                    </summary>
+                                    
+                                    <div class="table-container">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th></th>
+                                                    <th>Price</th>
+                                                    <th>Daily</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="shareListTable">
+                                                <tr>
+                                                    <td colspan='6'>Syncing Database...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
+                                
+                            </div>
+                        </div>
+                        
+                        <br>
+                        <div>
+                            <div class="form-container">
+                                <h3> Maintenance</h3>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <p style="font-size:0.75rem; opacity:0.7; margin-top:10px;">Lock users due to
+                                        changes or
+                                        upgrades in site.</p>
+                                    
+                                    <label class="switch">
+                                        <input type="checkbox" id="maintenanceToggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="form-container" style="border:1px solid var(--danger);">
+                                <h3> Future kit upgrade</h3>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <p style="font-size:0.75rem; opacity:0.7; margin-top:10px;">Get support kits
+                                        from
+                                        developer for future upgrades.</p>
+                                    
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            
+            <!-- ══ CHAT TAB ═══════════════════════════════════════ -->
+            <section id="chats" class="tab-content">
+                <div class="header-row">
+                    <h2>Live Chats</h2>
+                    <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
+                        <div class="search-box"></div>
+                        <div style="display:flex;font-size:18pt;gap:15px;cursor:pointer;">
+                            <i style="color:green;background:none;" onclick="openCreateNewsModal()" class="ri-megaphone-line"></i>
+                            <i style="color:green;background:none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
+                            <i style="color:green;background:none;" onclick="openChatModal()" class="ri-draggable"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <style>
+                    /* ── Chat responsive layout ───────────────────── */
+                    #chatLayout {
+                        display: flex;
+                        height: calc(100vh - 150px);
+                        border: 1px solid var(--primary);
+                        border-radius: 12px;
+                        overflow: hidden;
+                        position: relative;
+                    }
+                    
+                    #chatSessionList {
+                        width: 300px;
+                        min-width: 260px;
+                        border-right: 1px solid var(--border, #e0e5f2);
+                        overflow-y: auto;
+                        flex-shrink: 0;
+                        transition: transform 0.25s ease;
+                    }
+                    
+                    #chatWindow {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        min-width: 0;
+                    }
+                    
+                    /* Mobile: stack panels, session list slides out */
+                    @media (max-width: 700px) {
+                        #chatLayout {
+                            height: calc(100vh - 180px);
+                            border-radius: 8px;
+                        }
+                        
+                        #chatSessionList {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            bottom: 0;
+                            width: 100%;
+                            min-width: unset;
+                            z-index: 10;
+                            border-right: none;
+                            transform: translateX(0);
+                        }
+                        
+                        #chatSessionList.slide-out {
+                            transform: translateX(-100%);
+                            pointer-events: none;
+                        }
+                        
+                        #chatWindow {
+                            width: 100%;
+                        }
+                        
+                        /* Back button — only visible on mobile */
+                        #chatBackBtn {
+                            display: flex !important;
+                        }
+                        
+                        /* Hide block label text on mobile, show only icon */
+                        #adminBlockLabel {
+                            display: none;
+                        }
+                        
+                        #adminBlockBtn {
+                            padding: 6px 8px;
+                        }
+                        
+                        /* Tighten header actions on mobile */
+                        #adminChatHeader {
+                            padding: 10px 7px;
+                            gap: 6px;
+                        }
+                        
+                        #adminChatHeader .action-btns {
+                            gap: 0;
+                        }
+                    }
+                </style>
+                
+                <div id="chatLayout" class="table-container">
+                    
+                    <!-- Session List -->
+                    <div id="chatSessionList">
+                        <div id="chatSessionItems">
+                            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Window -->
+                    <div id="chatWindow">
+                        
+                        <!-- Empty state -->
+                        <div id="chatWindowEmpty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;">
+                            <div style="font-size:48px;margin-bottom:12px;">💬</div>
+                            <div style="font-size:15px;">Select a chat to open</div>
+                        </div>
+                        
+                        <!-- Active chat -->
+                        <div id="chatWindowActive" style="display:none;flex-direction:column;height:100%;">
+                            
+                            <!-- ── Chat Header ─────────────────────────────── -->
+                            <div id="adminChatHeader" style="padding:10px 8px;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
+                                
+                                <!-- Back button — mobile only -->
+                                <button id="chatBackBtn" onclick="closeChatOnMobile()" title="Back to chats" style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;flex-shrink:0;">
+                                    <i class="ri-arrow-left-line" style="font-size:20px;"></i>
+                                </button>
+                                
+                                <!-- Avatar — clickable → user profile -->
+                                <img id="adminChatUserLogo" src="" title="View profile" onclick="openChatUserProfile()" style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;cursor:pointer;border:2px solid var(--primary);flex-shrink:0;">
+                                
+                                <!-- Name + ticker -->
+                                <div style="flex:1;min-width:0;cursor:pointer;" onclick="openChatUserProfile()">
+                                    <div id="adminChatUsername" style="font-weight:700;font-size:14px;color:var(--text-main);line-height:1.3;"></div>
+                                    <div id="adminChatSessionStatus" style="font-size:10px;color:#aaa;transition:opacity 0.4s;line-height:1.3;"></div>
+                                </div>
+                                
+                                <!-- Action icon buttons -->
+                                <div style="display:flex;align-items:center;gap:2px;">
+                                    
+                                    <!-- Block / Unblock -->
+                                    <button id="adminBlockBtn" onclick="toggleBlockFromChat()" title="Block user" style="display:flex;align-items:center;gap:4px;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:600;background:#fdecea;color:#e74c3c;">
+                                        <i class="ri-forbid-line" style="font-size:15px;"></i>
+                                        <span id="adminBlockLabel">Block</span>
+                                    </button>
+                                    
+                                    <!-- Search -->
+                                    <button onclick="toggleChatSearch()" title="Search messages" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--text-muted,#aaa);cursor:pointer;">
+                                        <i class="ri-search-line" style="font-size:18px;"></i>
+                                    </button>
+                                    
+                                    <!-- End session -->
+                                    <button onclick="endAdminChatSession()" style="display:none;" title="End session" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
+                                        <i class="ri-stop-circle-line" style="font-size:18px;"></i>
+                                    </button>
+                                    
+                                    <!-- Delete chat -->
+                                    <button onclick="deleteAdminChatSession()" title="Delete chat" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
+                                        <i class="ri-delete-bin-line" style="font-size:18px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- ── Search Bar ───────────────────────────────── -->
+                            <div id="chatSearchBar" style="display:none;padding:8px 14px;background:var(--bg-color,#f4f7fe);border-bottom:1px solid var(--border,#e0e5f2);">
+                                <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg,#fff);border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:0 14px;">
+                                    <i class="ri-search-line" style="color:#aaa;font-size:16px;flex-shrink:0;"></i>
+                                    <input type="text" id="chatSearchInput" placeholder="Search messages..." oninput="searchChatMessages(this.value)" style="flex:1;border:none;outline:none;padding:8px 0;font-size:13px;background:transparent;">
+                                    <i class="ri-close-line" onclick="toggleChatSearch()" style="color:#aaa;font-size:18px;cursor:pointer;flex-shrink:0;"></i>
+                                </div>
+                                <div id="chatSearchResults" style="margin-top:5px;font-size:12px;padding-left:4px;"></div>
+                            </div>
+                            
+                            <!-- ── Messages ─────────────────────────────────── -->
+                            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:4px;"></div>
+                            
+                            <!-- ── Typing Indicator ─────────────────────────── -->
+                            <div id="adminTypingIndicator" style="display:none;padding:6px 16px;align-items:center;gap:8px;background:var(--bg-color,#f4f7fe);">
+                                <i class="ri-more-line" style="color:#aaa;font-size:16px;"></i>
+                                <span style="font-size:12px;color:#aaa;">User is typing</span>
+                                <span style="display:flex;gap:3px;align-items:center;">
+                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0s;display:inline-block;"></span>
+                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.2s;display:inline-block;"></span>
+                                    <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.4s;display:inline-block;"></span>
+                                </span>
+                            </div>
+                            
+                            <!-- ── Reply / Edit Bar ─────────────────────────── -->
+                            <div id="adminReplyBar" style="display:none;padding:8px 14px;background:var(--card-bg,#fff);border-top:2px solid var(--primary);flex-direction:row;align-items:center;gap:10px;">
+                                <i class="ri-reply-line" style="color:var(--primary);font-size:18px;flex-shrink:0;"></i>
+                                <div style="flex:1;min-width:0;">
+                                    <div id="adminReplyBarSender" style="font-size:11px;font-weight:700;color:var(--primary);"></div>
+                                    <div id="adminReplyBarText" style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+                                </div>
+                                <button onclick="cancelAdminReply()" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,0.06);cursor:pointer;flex-shrink:0;">
+                                    <i class="ri-close-line" style="font-size:15px;color:#888;"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- ── Polar Question Input ─────────────────────── -->
+                            <div id="polarInputArea" style="display:none;padding:10px 8px;background:#fffde7;border-top:2px solid #f1c40f;">
+                                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                                    <i class="ri-questionnaire-line" style="color:#f39c12;font-size:16px;"></i>
+                                    <span style="font-size:12px;color:#888;font-weight:600;">Polar Question — user answers Yes or No</span>
+                                </div>
+                                <div style="display:flex;gap:8px;">
+                                    <input type="text" id="polarQuestionInput" placeholder="e.g. Did you complete the transfer?" style="flex:1;padding:8px 12px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;outline:none;">
+                                    <button onclick="sendAdminPolar()" style="display:flex;align-items:center;gap:5px;background:#f1c40f;color:#333;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;">
+                                        <i class="ri-send-plane-line" style="font-size:14px;"></i> Send
+                                    </button>
+                                    <button onclick="togglePolarInput()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#eee;border:none;border-radius:8px;cursor:pointer;">
+                                        <i class="ri-close-line" style="font-size:17px;color:#666;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- ── Input Bar ────────────────────────────────── -->
+                            <div id="adminChatInputBar" style="padding:10px 14px;border-top:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:8px;">
+                                <label for="adminImgInput" title="Send image" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;cursor:pointer;color:var(--text-muted,#aaa);flex-shrink:0;transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted,#aaa)'">
+                                    <i class="ri-image-2-line" style="font-size:20px;"></i>
+                                    <input type="file" id="adminImgInput" accept="image/*" style="display:none;" onchange="sendAdminImage(this)">
+                                </label>
+                                <!-- Polar question -->
+                                <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send polar question" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;">
+                                    <i class="ri-questionnaire-line" style="font-size:18px;"></i>
+                                </button>
+                                
+                                <input type="text" id="adminChatInput" placeholder="Type a reply..." maxlength="500" style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 15px;font-size:14px;outline:none;;color:var(--text-main);" onkeydown="onAdminInputKeydown(event)">
+                                <button onclick="sendAdminMessage()" title="Send" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:none;border-radius:50%;background:var(--primary,#4318ff);cursor:pointer;flex-shrink:0;">
+                                    <i class="ri-send-plane-fill" style="color:#fff;font-size:17px;"></i>
+                                </button>
+                            </div>
+                            
+                            <style>
+                                @keyframes typingDot {
 
-      <!-- Share cards grid -->
-      <div id="sharesGrid" class="shares-grid">
-        <div class="state-box" style="grid-column:1/-1">
-          <div class="spinner"></div><p>Loading shares…</p>
-        </div>
-      </div>
+                                    0%,
+                                    60%,
+                                    100% {
+                                        transform: translateY(0)
+                                    }
+                                    
+                                    30% {
+                                        transform: translateY(-5px)
+                                    }
+                                }
+                                
+                                #adminChatHeader button:hover {
+                                    opacity: 0.8;
+                                }
+                            </style>
+                        </div>
+                        
+                    </div>
+                    
+                </div>
+            </section>
+            
+        </main>
     </div>
+    
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+            });
+        }
+        eruda.init();
 
-    <!-- ══ INVESTMENTS TAB ══════════════════════════════════ -->
-    <div class="tab-panel" id="panel-investments">
-      <div class="toolbar">
-        <div class="search-box">
-          <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
-        </div>
-        <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="expired">Expired</option>
-        </select>
-      </div>
+// ============================================================
+// FLUX MALL - Admin Panel Script (No Firebase)
+// All operations via REST API to Node.js/MongoDB backend
+// ============================================================
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Share Package</th>
-              <th>Progress</th>
-              <th>Daily Income</th>
-              <th>Purchased</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="investmentsTableBody">
-            <tr><td colspan="7"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="investPagination" style="display:none;">
-        <span id="investPageInfo"></span>
-        <div class="page-btns" id="investPageBtns"></div>
-      </div>
-    </div>
+let allData = [];
+let allUsers = [];
+let flashInterval = null;
+let originalTitle = document.title;
 
-  </div><!-- /tabs-wrap -->
-</div><!-- /page -->
-
-<!-- ── MODAL MOUNT ──────────────────────────────────────── -->
-<div id="__modal"></div>
-
-<!-- ══════════════════════════════════════════════════════════
-     SCRIPT
-═══════════════════════════════════════════════════════════ -->
-<script>
-// ── STATE ──────────────────────────────────────────────────
-let _shares      = [];   // share catalog
-let _investments = [];   // all purchased shares across all users
-let _invFiltered = [];
-const INV_PER_PAGE = 15;
-let invPage = 1;
-
-const AVATAR_COLORS = ['#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
-function avatarColor(str){ let h=0; for(let i=0;i<(str||'').length;i++) h=str.charCodeAt(i)+((h<<5)-h); return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length]; }
-function initials(s){ return (s||'?').slice(0,2).toUpperCase(); }
-
-// ── API ─────────────────────────────────────────────────────
-async function api(path, opts={}) {
-  try {
-    const res = await fetch(path, {
-      credentials:'include',
-      headers:{ 'Content-Type':'application/json', ...opts.headers },
-      ...opts
-    });
-    return res.json();
-  } catch(e) { console.error('[API]',e); return null; }
-}
-
-// ── TAB SWITCH ──────────────────────────────────────────────
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('panel-'+name).classList.add('active');
-}
-
-// ── INIT ────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', ()=>{
-  loadShares();
-  loadInvestments();
-});
-
-async function refreshAll() {
-  loadShares();
-  loadInvestments();
-  showToast('Refreshed ✓','success');
-}
-
-// ═══════════════════════════════════════════════════════════
-// SHARE CATALOG
-// ═══════════════════════════════════════════════════════════
-async function loadShares() {
-  document.getElementById('sharesGrid').innerHTML =
-    `<div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading…</p></div>`;
-
-  const data = await api('/api/admin/shares');
-  _shares = data?.shares || [];
-  setText('statTotalShares', _shares.length);
-  setText('tcCatalog', _shares.length);
-  renderCatalog(_shares);
-}
-
-let _catalogFiltered = [];
-let _catalogSort = 'price-asc';
-
-function filterCatalog(term) {
-  term = term.toLowerCase();
-  _catalogFiltered = _shares.filter(s => s.name.toLowerCase().includes(term));
-  applyCatalogSort();
-}
-
-function sortCatalog(val) {
-  _catalogSort = val;
-  applyCatalogSort();
-}
-
-function applyCatalogSort() {
-  const arr = _catalogFiltered.length ? _catalogFiltered : [..._shares];
-  arr.sort((a,b) => {
-    if (_catalogSort === 'price-asc')     return a.price - b.price;
-    if (_catalogSort === 'price-desc')    return b.price - a.price;
-    if (_catalogSort === 'duration-asc')  return a.duration - b.duration;
-    if (_catalogSort === 'name-asc')      return a.name.localeCompare(b.name);
-    return 0;
+// ─── API HELPER ────────────────────────────────────────────
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+    ...options
   });
-  renderCatalog(arr);
+  /*if (res.status === 401) { window.location.href = '#login'; return null; }*/
+  return res.json();
 }
 
-function renderCatalog(shares) {
-  const grid = document.getElementById('sharesGrid');
-  if (!shares.length) {
-    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">
-      <i class="ri-stack-line"></i><p>No share packages yet. Click <strong>+ New Share</strong> to create one.</p>
-    </div>`;
-    return;
-  }
 
-  // Count how many users bought each share
-  const buyCount = {};
-  _investments.forEach(inv => {
-    const key = inv.shareName;
-    buyCount[key] = (buyCount[key]||0) + 1;
-  });
-
-  grid.innerHTML = shares.map(s => {
-    const buyers = buyCount[s.name] || 0;
-    const roi    = s.duration > 0 ? ((s.dailyIncome * s.duration / s.price)*100).toFixed(1) : '0';
-    const imgHtml = s.img
-      ? `<img src="${s.img}" alt="${s.name}" onerror="this.parentElement.innerHTML='📦'">`
-      : '📦';
-
-    return `
-    <div class="share-card">
-      <div class="share-img">${imgHtml}</div>
-      <div class="share-body">
-        <div class="duration-pill"><i class="ri-calendar-line"></i> ${s.duration} Days</div>
-        <div class="share-name">${s.name}</div>
-        <div class="share-stats">
-          <div class="share-stat">
-            <label>Price</label>
-            <span class="blue">🪙${Number(s.price).toLocaleString()}</span>
-          </div>
-          <div class="share-stat">
-            <label>Daily Income</label>
-            <span class="green">🪙${Number(s.dailyIncome).toLocaleString()}</span>
-          </div>
-          <div class="share-stat">
-            <label>Total ROI</label>
-            <span>${roi}%</span>
-          </div>
-          <div class="share-stat">
-            <label>Buyers</label>
-            <span>${buyers} user${buyers!==1?'s':''}</span>
-          </div>
-        </div>
-        <div class="share-actions">
-          <button class="btn btn-warning btn-sm" style="flex:1" onclick="openEditShareModal('${s._id}')">
-            <i class="ri-edit-line"></i> Edit
-          </button>
-          <button class="btn btn-danger btn-sm" onclick="deleteShare('${s._id}','${s.name}')">
-            <i class="ri-delete-bin-line"></i>
-          </button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-// ═══════════════════════════════════════════════════════════
-// USER INVESTMENTS (Purchased Shares)
-// ═══════════════════════════════════════════════════════════
-async function loadInvestments() {
-  setLoading('investmentsTableBody', 7);
-  // Uses the admin purchased-shares endpoint
-  const data = await api('/api/admin/purchased-shares');
-  _investments = data?.investments || data?.purchasedShares || [];
-  _invFiltered = [..._investments];
-
-  // Update stats
-  const active  = _investments.filter(i => !isExpired(i)).length;
-  const expired = _investments.filter(i =>  isExpired(i)).length;
-  const totalFex = _investments.reduce((s,i) => s + Number(i.pricePaid||0), 0);
-
-  setText('statActiveInvestments', active);
-  setText('statExpired', expired);
-  setText('statTotalInvested', '🪙'+totalFex.toLocaleString());
-  setText('tcInvestments', _investments.length);
-
-  renderInvestmentsPage();
-  // Re-render catalog to update buyer counts
-  renderCatalog(_shares);
-}
-
-function isExpired(inv) {
-  if (!inv.purchaseDate) return false;
-  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
-  return daysPassed >= (inv.duration || 0);
-}
-
-function daysLeft(inv) {
-  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
-  return Math.max(0, (inv.duration||0) - daysPassed);
-}
-
-function progressPct(inv) {
-  const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
-  return Math.min(100, Math.round((daysPassed / (inv.duration||1)) * 100));
-}
-
-function filterInvestments(term) {
-  term = term.toLowerCase();
-  const statusSel = document.querySelector('#panel-investments .filter-select')?.value || 'all';
-  applyInvestmentFilters(term, statusSel);
-}
-
-function filterInvestmentStatus(status) {
-  const term = document.querySelector('#panel-investments .search-box input')?.value.toLowerCase() || '';
-  applyInvestmentFilters(term, status);
-}
-
-function applyInvestmentFilters(term, status) {
-  _invFiltered = _investments.filter(inv => {
-    const name   = (inv.userId?.username || inv.username || '').toLowerCase();
-    const share  = (inv.shareName || '').toLowerCase();
-    const matchQ = !term || name.includes(term) || share.includes(term);
-    const matchS = status === 'all' || (status === 'active' ? !isExpired(inv) : isExpired(inv));
-    return matchQ && matchS;
-  });
-  invPage = 1;
-  renderInvestmentsPage();
-}
-
-function renderInvestmentsPage() {
-  const tbody = document.getElementById('investmentsTableBody');
-  if (!_invFiltered.length) { setEmpty('investmentsTableBody',7,'No investments found'); hidePagination('invest'); return; }
-
-  const slice = paginate(_invFiltered, invPage, INV_PER_PAGE);
-  tbody.innerHTML = slice.map(inv => {
-    const username = inv.userId?.username || inv.username || '—';
-    const email    = inv.userId?.email    || '—';
-    const pct      = progressPct(inv);
-    const left     = daysLeft(inv);
-    const expired  = isExpired(inv);
-    const date     = inv.purchaseDate
-      ? new Date(inv.purchaseDate).toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})
-      : '—';
-    const earned   = Math.floor((inv.duration - left) * (inv.dailyIncome||0));
-
-    return `<tr>
-      <td>
-        <div class="user-chip">
-          <div class="avatar" style="background:${avatarColor(username)}">${initials(username)}</div>
-          <div>
-            <div class="username">${username}</div>
-            <div class="user-sub">${email}</div>
-          </div>
-        </div>
-      </td>
-      <td>
-        <div style="font-weight:700;font-size:13px;">${inv.shareName || '—'}</div>
-        <div style="font-size:11px;color:var(--text3);">🪙${Number(inv.pricePaid||0).toLocaleString()} paid</div>
-      </td>
-      <td style="min-width:120px;">
-        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:3px;">
-          <span>${pct}%</span>
-          <span>${expired ? 'Done' : left+' days left'}</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill ${expired?'':'green'}" style="width:${pct}%;background:${expired?'var(--text3)':'var(--success)'}"></div>
-        </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:2px;">🪙${earned.toLocaleString()} earned</div>
-      </td>
-      <td>
-        <div style="font-weight:700;color:var(--success);font-size:13px;">🪙${Number(inv.dailyIncome||0).toLocaleString()}/day</div>
-        <div style="font-size:11px;color:var(--text3);">${inv.duration} days total</div>
-      </td>
-      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
-      <td>
-        ${expired
-          ? `<span class="badge expired">⬛ Expired</span>`
-          : `<span class="badge active">🟢 Active</span>`}
-      </td>
-      <td>
-        <div class="action-group">
-          <button class="btn btn-ghost btn-sm" onclick="viewInvestmentDetail(${JSON.stringify(inv).replace(/"/g,'&quot;')})">
-            <i class="ri-eye-line"></i>
-          </button>
-          <button class="btn btn-danger btn-sm" onclick="deleteInvestment('${inv._id}','${username}')">
-            <i class="ri-delete-bin-line"></i>
-          </button>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-
-  renderPagination('invest', _invFiltered.length, invPage, (p)=>{ invPage=p; renderInvestmentsPage(); });
-}
-
-// ═══════════════════════════════════════════════════════════
-// CRUD — SHARES
-// ═══════════════════════════════════════════════════════════
-function openAddShareModal() {
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-add-circle-line" style="color:var(--primary)"></i> New Share Package</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Package Name</label>
-        <input id="ms_name" placeholder="e.g. Gold Pack">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Price (FEX)</label>
-          <input type="number" id="ms_price" placeholder="5000" min="1">
-        </div>
-        <div class="form-group">
-          <label>Duration (Days)</label>
-          <input type="number" id="ms_duration" placeholder="30" min="1">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Daily Income (FEX)</label>
-        <input type="number" id="ms_daily" placeholder="200" min="1">
-      </div>
-      <div class="form-group">
-        <label>Share Image</label>
-        <input type="file" id="ms_imgFile" accept="image/*" style="padding:8px;border:1.5px solid var(--border);border-radius:10px;width:100%;font-size:13px;cursor:pointer;">
-        <div id="ms_imgStatus" style="font-size:12px;color:var(--primary);margin-top:4px;"></div>
-        <input type="hidden" id="ms_imgUrl">
-      </div>
-      <div id="ms_roiPreview" style="background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);display:none;">
-        💡 <span id="ms_roiText"></span>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitAddShare()"><i class="ri-check-line"></i> Create Share</button>
-    </div>
-  `);
-
-  // Live ROI preview
-  ['ms_price','ms_daily','ms_duration'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', updateRoiPreview);
-  });
-}
-
-function updateRoiPreview() {
-  const price = Number(document.getElementById('ms_price')?.value)||0;
-  const daily = Number(document.getElementById('ms_daily')?.value)||0;
-  const dur   = Number(document.getElementById('ms_duration')?.value)||0;
-  const prev  = document.getElementById('ms_roiPreview');
-  const text  = document.getElementById('ms_roiText');
-  if (price && daily && dur) {
-    const total = daily * dur;
-    const roi   = ((total / price)*100).toFixed(1);
-    text.textContent = `Total return: 🪙${total.toLocaleString()} FEX (${roi}% ROI over ${dur} days)`;
-    prev.style.display = 'block';
-  } else {
-    prev.style.display = 'none';
-  }
-}
-
-async function submitAddShare() {
-  const g   = id => document.getElementById(id)?.value;
-  const name = g('ms_name')?.trim();
-  const price    = Number(g('ms_price'));
-  const daily    = Number(g('ms_daily'));
-  const duration = Number(g('ms_duration'));
-  if (!name || !price || !daily || !duration) { showToast('Please fill all fields','error'); return; }
-
-  let imgUrl = g('ms_imgUrl');
-  const fileInput = document.getElementById('ms_imgFile');
-  if (fileInput?.files[0]) {
-    const statusEl = document.getElementById('ms_imgStatus');
-    imgUrl = await uploadToImgBB(fileInput.files[0], statusEl);
-    if (!imgUrl) return;
-  }
-
-  const res = await api('/api/admin/shares', {
-    method:'POST',
-    body: JSON.stringify({ name, price, dailyIncome: daily, duration, img: imgUrl||'' })
-  });
-
-  if (res?.success) {
-    showToast(`✅ "${name}" share created!`,'success');
-    closeModal();
-    loadShares();
-  } else {
-    showToast(res?.error || 'Error creating share','error');
-  }
-}
-
-function openEditShareModal(id) {
-  const s = _shares.find(x => x._id === id);
-  if (!s) return;
-
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-edit-line" style="color:var(--warning)"></i> Edit Share Package</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label>Package Name</label>
-        <input id="es_name" value="${s.name}">
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Price (FEX)</label>
-          <input type="number" id="es_price" value="${s.price}">
-        </div>
-        <div class="form-group">
-          <label>Duration (Days)</label>
-          <input type="number" id="es_duration" value="${s.duration}">
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Daily Income (FEX)</label>
-        <input type="number" id="es_daily" value="${s.dailyIncome}">
-      </div>
-      <div class="form-group">
-        <label>Image URL (optional)</label>
-        <input id="es_img" value="${s.img||''}" placeholder="https://...">
-      </div>
-      ${s.img ? `<img src="${s.img}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-warning" onclick="submitEditShare('${id}')"><i class="ri-save-line"></i> Save Changes</button>
-    </div>
-  `);
-}
-
-async function submitEditShare(id) {
-  const g = id => document.getElementById(id)?.value;
-  const payload = {
-    name:        g('es_name')?.trim(),
-    price:       Number(g('es_price')),
-    dailyIncome: Number(g('es_daily')),
-    duration:    Number(g('es_duration')),
-    img:         g('es_img')?.trim() || '',
-  };
-  if (!payload.name || !payload.price) { showToast('Name and price required','error'); return; }
-
-  const res = await api(`/api/admin/shares/${id}`, {
-    method:'PUT',
-    body: JSON.stringify(payload)
-  });
-
-  if (res?.success) {
-    showToast('Share updated!','success');
-    closeModal();
-    loadShares();
-  } else {
-    showToast(res?.error||'Error updating share','error');
-  }
-}
-
-async function deleteShare(id, name) {
-  if (!confirm(`Delete "${name}"? Users who already bought it keep their investment.`)) return;
-  const res = await api(`/api/admin/shares/${id}`, { method:'DELETE' });
-  if (res?.success) {
-    showToast(`"${name}" deleted`,'warning');
-    loadShares();
-  } else {
-    showToast(res?.error||'Error deleting share','error');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// CRUD — PURCHASED SHARES (User Investments)
-// ═══════════════════════════════════════════════════════════
-function viewInvestmentDetail(inv) {
-  const username = inv.userId?.username || inv.username || '—';
-  const pct  = progressPct(inv);
-  const left = daysLeft(inv);
-  const earned = Math.floor(((inv.duration||0) - left) * (inv.dailyIncome||0));
-
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-user-star-line" style="color:var(--primary)"></i> Investment Detail</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:10px;">
-        <div class="avatar" style="width:40px;height:40px;font-size:14px;background:${avatarColor(username)}">${initials(username)}</div>
-        <div>
-          <div style="font-weight:700;font-size:14px;">${username}</div>
-          <div style="font-size:12px;color:var(--text3);">${inv.userId?.email||'—'}</div>
-        </div>
-        <div style="margin-left:auto;">${isExpired(inv)?'<span class="badge expired">Expired</span>':'<span class="badge active">🟢 Active</span>'}</div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Package</div>
-          <div style="font-weight:700;">${inv.shareName||'—'}</div>
-        </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Price Paid</div>
-          <div style="font-weight:700;">🪙${Number(inv.pricePaid||0).toLocaleString()} FEX</div>
-        </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Daily Income</div>
-          <div style="font-weight:700;color:var(--success);">🪙${Number(inv.dailyIncome||0).toLocaleString()}/day</div>
-        </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Earned So Far</div>
-          <div style="font-weight:700;color:var(--primary);">🪙${earned.toLocaleString()} FEX</div>
-        </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Days Left</div>
-          <div style="font-weight:700;">${isExpired(inv) ? 'Completed' : left+' of '+inv.duration}</div>
-        </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Purchased</div>
-          <div style="font-weight:700;font-size:12px;">${inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
-        </div>
-      </div>
-
-      <div style="margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text2);">Progress — ${pct}%</div>
-      <div class="progress-bar" style="height:8px;">
-        <div class="progress-fill" style="width:${pct}%;background:${isExpired(inv)?'var(--text3)':'var(--success)'}"></div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      <button class="btn btn-danger" onclick="deleteInvestment('${inv._id}','${username}');closeModal()">
-        <i class="ri-delete-bin-line"></i> Remove Investment
-      </button>
-    </div>
-  `);
-}
-
-async function deleteInvestment(id, username) {
-  if (!confirm(`Remove ${username}'s investment? This cannot be undone.`)) return;
-  const res = await api(`/api/admin/purchased-shares/${id}`, { method:'DELETE' });
-  if (res?.success) {
-    showToast(`Investment removed for ${username}`,'warning');
-    loadInvestments();
-  } else {
-    showToast(res?.error||'Error removing investment','error');
-  }
-}
-
-// ═══════════════════════════════════════════════════════════
-// IMGBB UPLOAD (reuses your existing function if available)
-// ═══════════════════════════════════════════════════════════
+// ─── IMGBB UPLOAD UTILITY ─────────────────────────────────
+// Fetches API key from DB config, uploads image, returns URL
 async function uploadToImgBB(file, statusEl) {
-  if (statusEl) statusEl.innerHTML = '<i class="ri-loader-line"></i> Uploading image...';
+  if (statusEl) statusEl.innerHTML = '<i class="ri-loader-line"></i> Uploading...';
   try {
+    // Fetch imgbb key from settings/apikeys
     const settingsData = await api('/api/admin/settings/apikeys');
     const imgbbKey = settingsData?.apikeys?.imgbb;
     if (!imgbbKey) {
       if (statusEl) statusEl.innerHTML = '';
-      showToast('ImgBB API key not set in Settings','error');
+      alert('⚠️ ImgBB API key not set. Go to Settings → API Keys and save your ImgBB key first.');
       return null;
     }
     const formData = new FormData();
     formData.append('image', file);
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {
+      method: 'POST', body: formData
+    });
     const result = await res.json();
     if (result.success) {
-      if (statusEl) statusEl.innerHTML = '✅ Image uploaded';
+      if (statusEl) statusEl.innerHTML = '✅ Uploaded';
       return result.data.url;
     } else {
       if (statusEl) statusEl.innerHTML = '';
-      showToast('ImgBB upload failed','error');
+      alert('❌ ImgBB upload failed. Check your API key in Settings → API Keys.');
       return null;
     }
   } catch (err) {
     if (statusEl) statusEl.innerHTML = '';
-    showToast('Upload error: '+err.message,'error');
+    alert('❌ Upload error: ' + err.message);
     return null;
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// UI HELPERS
-// ═══════════════════════════════════════════════════════════
-function paginate(arr, page, per) {
-  return arr.slice((page-1)*per, page*per);
-}
+// ─── FLASH TITLE ─────────────────────────────────────────
+window.startFlash = (msg) => {
+  if (flashInterval) return;
+  flashInterval = setInterval(() => {
+    document.title = document.title === originalTitle ? `🔔 ${msg}` : originalTitle;
+  }, 800);
+};
+window.stopFlash = () => {
+  clearInterval(flashInterval);
+  flashInterval = null;
+  document.title = originalTitle;
+};
 
-function renderPagination(prefix, total, page, onPage) {
-  const totalPages = Math.ceil(total/INV_PER_PAGE);
-  const wrap = document.getElementById(prefix+'Pagination');
-  const info = document.getElementById(prefix+'PageInfo');
-  const btns = document.getElementById(prefix+'PageBtns');
-  if (!wrap) return;
-  if (totalPages <= 1) { wrap.style.display='none'; return; }
-  wrap.style.display = 'flex';
-  const start = (page-1)*INV_PER_PAGE+1;
-  const end   = Math.min(page*INV_PER_PAGE, total);
-  if (info) info.textContent = `${start}–${end} of ${total}`;
-
-  const range = [];
-  let s = Math.max(1,page-2), e = Math.min(totalPages,s+4);
-  if (e-s<4) s = Math.max(1,e-4);
-  for (let i=s;i<=e;i++) range.push(i);
-
-  btns.innerHTML = `
-    <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
-    ${range.map(p=>`<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
-    <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
-}
-
-function hidePagination(prefix) {
-  const el = document.getElementById(prefix+'Pagination');
-  if (el) el.style.display = 'none';
-}
-
-function setLoading(tbodyId, cols) {
-  const el = document.getElementById(tbodyId);
-  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>`;
-}
-
-function setEmpty(tbodyId, cols, msg) {
-  const el = document.getElementById(tbodyId);
-  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-inbox-line"></i><p>${msg}</p></div></td></tr>`;
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-// ── MODAL ──────────────────────────────────────────────────
-function showModal(html) {
-  closeModal();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = '__modalOverlay';
-  overlay.onclick = e => { if (e.target===overlay) closeModal(); };
-  overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
-  document.body.appendChild(overlay);
-}
-function closeModal() {
-  document.getElementById('__modalOverlay')?.remove();
-}
-
-// ── TOAST ──────────────────────────────────────────────────
-let _tw = null;
-function showToast(msg, type='success') {
-  if (!_tw) {
-    _tw = document.createElement('div');
-    _tw.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
-    document.body.appendChild(_tw);
+// ─── AUTH CHECK ───────────────────────────────────────────
+async function checkAdminSession() {
+  const data = await fetch('/api/admin/me', { credentials: 'include' });
+  if (data.ok) {
+//window.location.href = '#analytics';
+    initDashboard();
+  } else {
+//window.location.href = '#login';
   }
-  const colors = { success:'#05cd99', warning:'#f6ad55', error:'#ee5d50' };
-  const t = document.createElement('div');
-  t.style.cssText = `background:${colors[type]||'#4318ff'};color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);animation:toastIn 0.2s ease;`;
-  t.textContent = msg;
-  _tw.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
 }
-const s2 = document.createElement('style');
-s2.textContent = '@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';
-document.head.appendChild(s2);
-</script>
+
+// ─── ADMIN LOGIN ─────────────────────────────────────────
+window.handleAdminLogin = async (e) => {
+  e.preventDefault();
+  const email  = document.getElementById('adminEmail').value.trim();
+  const pass   = document.getElementById('adminPass').value;
+  const btn    = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerText = 'Verifying...';
+
+  const data = await api('/api/admin/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password: pass })
+  });
+
+  if (data?.success) {
+window.location.href = '#analytics';
+    initDashboard();
+  } else {
+    alert(data?.error || 'Login failed.');
+    btn.disabled = false;
+    btn.innerText = 'Verify Identity';
+  }
+};
+
+// ─── ADMIN LOGOUT ─────────────────────────────────────────
+window.adminLogout = async () => {
+  await api('/api/admin/logout', { method: 'POST' });
+window.location.href = '#login';
+};
+
+// ─── INIT DASHBOARD ───────────────────────────────────────
+async function initDashboard() {
+  setupCharts();
+  loadThemeSettings();
+  await loadAnalytics();
+  await renderUsers();
+  await loadWithdrawals();
+  await loadSettings();loadAdminChatSessions();
+  // Poll for updates every 30 seconds
+  setInterval(async () => {
+    await loadAnalytics();
+    await renderUsers();
+    await loadWithdrawals();
+  }, 30000);
+}
+
+// ─── CHARTS ───────────────────────────────────────────────
+let pieChart, barChart;
+function setupCharts() {
+  const pCtx = document.getElementById('pieChart')?.getContext('2d');
+  if (pCtx) {
+    pieChart = new Chart(pCtx, {
+      type: 'doughnut',
+      data: { labels: ['Success', 'Pending', 'Declined'], datasets: [{ data: [0,0,0], backgroundColor: ['#05cd99','#f6ad55','#ee5d50'] }] },
+      options: { plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+  const bCtx = document.getElementById('barChart')?.getContext('2d');
+  if (bCtx) {
+    barChart = new Chart(bCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Deposits', 'Withdrawals'],
+        datasets: [{ label: '₦ Value', data: [0,0], backgroundColor: ['#4318ff','#ee5d50'], borderRadius: 10 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+}
+
+// ─── ANALYTICS ────────────────────────────────────────────
+async function loadAnalytics() {
+  const data = await api('/api/admin/analytics');
+  if (!data?.success) return;
+  const s = data.stats;
+
+  document.getElementById('statTotal').innerText   = `₦${(s.successV || 0).toLocaleString()}`;
+  document.getElementById('statPending').innerText = `₦${(s.pendingV || 0).toLocaleString()}`;
+  document.getElementById('statUsers').innerText   = s.totalUsers || 0;
+
+  const tbody = document.getElementById('analyticsTableBody');
+  if (tbody) {
+    tbody.innerHTML = `
+      <tr><td>Successful</td><td></td><td>${s.sCount}</td><td>₦${(s.successV).toLocaleString()}</td></tr>
+      <tr><td>Pending</td><td></td><td>${s.pCount}</td><td>₦${(s.pendingV).toLocaleString()}</td></tr>
+      <tr><td>Declined</td><td></td><td>${s.dCount}</td><td>--</td></tr>`;
+  }
+
+  if (pieChart) { pieChart.data.datasets[0].data = [s.sCount, s.pCount, s.dCount]; pieChart.update(); }
+  if (barChart) { barChart.data.datasets[0].data = [s.successV, s.withdrawSuccessV]; barChart.update(); }
+
+  allData = data.deposits;
+  renderDeposits(allData);
+}
+
+// ─── DEPOSITS ────────────────────────────────────────────
+function renderDeposits(data) {
+  const tbody = document.getElementById('depositTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = data.map(i => {
+    const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString() : 'Now';
+    const userId = i.userId?._id || i.userId || '';
+    const userName = i.userId?.username || userId.substring(0,7) + '...';
+    return `
+      <tr>
+        <td>${date}</td>
+        <td><small>${userName}</small></td>
+        <td>₦${Number(i.amount).toLocaleString()}</td>
+        <td><code>${(i.refCode || '').substring(0, 8)}...</code></td>
+        <td><span class="status-badge ${i.status}">${i.status}</span></td>
+        <td>
+          ${i.status === 'pending' ? `
+            <button class="btn-action" style="background:var(--success)" onclick="approveDeposit('${i._id}','${userId}','${i.amount}')">✔</button>
+            <button class="btn-action" style="background:var(--danger)"  onclick="declineDeposit('${i._id}')">✖</button>
+          ` : `<button class="btn-action" style="color:var(--danger);background:transparent" onclick="deleteDeposit('${i._id}')">✖</button>`}
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+window.approveDeposit = async (id, userId, amount) => {
+  if (!confirm(`Approve ₦${Number(amount).toLocaleString()} deposit?`)) return;
+  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+  if (data?.success) { showModal({ id:'statusAlert', title:'Success', content:'<p>✅ Deposit approved and user credited!</p>', buttons:[{ text:'Close', class:'btn-sec', onclick:"document.getElementById('statusAlert').remove();" }] }); loadAnalytics(); }
+  else alert(data?.error || 'Error approving deposit.');
+};
+
+window.declineDeposit = async (id) => {
+  if (!confirm('Decline this deposit?')) return;
+  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+  if (data?.success) loadAnalytics();
+  else alert(data?.error || 'Error.');
+};
+
+window.deleteDeposit = async (id) => {
+  if (!confirm('Delete this deposit record?')) return;
+  await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
+  loadAnalytics();
+};
+
+window.filterDeposits = () => {
+  const term = document.getElementById('adminSearch').value.toLowerCase();
+  const filtered = allData.filter(i => {
+    const uid = (i.userId?._id || i.userId || '').toString().toLowerCase();
+    const ref = (i.refCode || '').toLowerCase();
+    return uid.includes(term) || ref.includes(term);
+  });
+  renderDeposits(filtered);
+};
+
+window.exportCSV = () => {
+  let csv = 'Date,User,Amount,Ref,Status\n';
+  allData.forEach(i => {
+    csv += `${new Date(i.createdAt).toLocaleDateString()},${i.userId?._id || i.userId},${i.amount},${i.refCode},${i.status}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'Report.csv'; a.click();
+};
+
+// ─── WITHDRAWALS ─────────────────────────────────────────
+async function loadWithdrawals() {
+  const data = await api('/api/admin/withdrawals');
+  if (!data?.success) return;
+  const tbody = document.getElementById('withdrawTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = data.withdrawals.map(w => `
+    <tr>
+      <td>${new Date(w.createdAt).toLocaleDateString()}</td>
+      <td>${w.username || w.userId?.toString().substring(0,7)}</td>
+      <td>₦${Number(w.amount).toLocaleString()}</td>
+      <td>₦${Number(w.netAmount).toLocaleString()}</td>
+      <td>${w.bankDetails?.bankName || '--'}</td>
+      <td>${w.bankDetails?.accountNumber || '--'}</td>
+      <td><span class="status-badge ${w.status}">${w.status}</span></td>
+      <td>
+        ${w.status === 'pending' ? `
+          <button class="btn-action" style="background:var(--success)" onclick="approveWithdrawal('${w._id}')">Pay</button>
+          <button class="btn-action" style="background:var(--danger)"  onclick="declineWithdrawal('${w._id}')">✖</button>
+        ` : `<button class="btn-action" style="color:var(--danger);background:transparent" onclick="deleteWithdrawal('${w._id}')">✖</button>`}
+      </td>
+    </tr>`).join('');
+}
+
+window.approveWithdrawal = async (id) => {
+  if (!confirm('Confirm payment sent?')) return;
+  await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+  loadWithdrawals();
+};
+window.declineWithdrawal = async (id) => {
+  if (!confirm('Decline and refund user?')) return;
+  await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+  loadWithdrawals();
+};
+window.deleteWithdrawal = async (id) => {
+  await api(`/api/admin/withdrawals/${id}`, { method: 'DELETE' });
+  loadWithdrawals();
+};
+
+// ─── USERS ────────────────────────────────────────────────
+async function renderUsers() {
+  const tbody = document.getElementById('userTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="5">Syncing Database...</td></tr>';
+  const data = await api('/api/admin/users');
+  if (!data?.success) return;
+  allUsers = data.users;
+  tbody.innerHTML = '';
+  data.users.forEach(u => {
+    const isBanned = u.status === 'Banned';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td onclick="viewUserDetails('${u._id}','${u.status}','${u.username}','${u.email}','${u.ib}','${u.emailVerified}','${u.createdAt}','${u.refPoints || 0}','${u.referrerId || ''}','')" style="cursor:pointer">
+        <code style="background:var(--bg);padding:4px 8px;border-radius:5px;">${u._id.substring(0,8)}... <i class="ri-pencil-line"></i></code>
+      </td>
+      <td style="font-size:0.85rem;color:var(--text-sub);">${u.transCount} Trans.</td>
+      <td style="font-weight:bold;color:var(--primary);">₦${(u.transTotal || 0).toLocaleString()}</td>
+      <td>
+        <label class="switch">
+          <input type="checkbox" ${isBanned ? 'checked' : ''} onchange="toggleBanStatus('${u._id}', this.checked)">
+          <span class="slider"></span>
+        </label>
+      </td>
+      <td onclick="copyAndMove('${u._id}')">
+        <i class="ri-arrow-right-up-fill" style="font-size:22px;cursor:pointer;color:var(--text-sub)"></i>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+window.toggleBanStatus = async (uid, isBanned) => {
+  const newStatus = isBanned ? 'Banned' : 'Active';
+  const data = await api(`/api/admin/users/${uid}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
+  if (!data?.success) { alert('Error updating ban status.'); renderUsers(); }
+};
+
+window.filterUsers = () => {
+  const term = document.getElementById('userSearch')?.value.toLowerCase() || '';
+  const filtered = allUsers.filter(u =>
+    u.username?.toLowerCase().includes(term) ||
+    u.email?.toLowerCase().includes(term) ||
+    u._id?.includes(term)
+  );
+  const tbody = document.getElementById('userTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  filtered.forEach(u => {
+    const isBanned = u.status === 'Banned';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><code>${u._id.substring(0,8)}...</code></td><td>${u.transCount} Trans.</td><td>₦${(u.transTotal||0).toLocaleString()}</td>
+      <td><label class="switch"><input type="checkbox" ${isBanned?'checked':''} onchange="toggleBanStatus('${u._id}',this.checked)"><span class="slider"></span></label></td>
+      <td><i class="ri-arrow-right-up-fill" style="font-size:22px;cursor:pointer"></i></td>`;
+    tbody.appendChild(tr);
+  });
+};
+
+window.viewUserDetails = async (uid, status, name, email, balance, verified, createdAt, refPoints, referrerId) => {
+  showModal({
+    id: 'userDetailModal',
+    title: `User: ${name}`,
+    content: `
+      <p><b>ID:</b> <code>${uid}</code></p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Balance:</b> ₦${Number(balance).toLocaleString()}</p>
+      <p><b>Status:</b> ${status}</p>
+      <p><b>Email Verified:</b> ${verified}</p>
+      <p><b>Ref Points:</b> ₦${refPoints}</p>
+      <p><b>Referrer:</b> ${referrerId || 'None'}</p>
+      <hr>
+      <div class="input-group">
+        <label>Adjust Balance</label>
+        <input type="number" id="crAmount" placeholder="Amount" min="0">
+      </div>
+      <input type="hidden" id="crUserId" value="${uid}">`,
+    buttons: [
+      { text: 'Credit',  class: 'btn-submit', onclick: `processAdjustment('credit')` },
+      { text: 'Debit',   class: 'btn-sec',    onclick: `processAdjustment('debit')` },
+      { text: 'Delete User', class: 'btn-danger', onclick: `deleteUser('${uid}')` },
+      { text: 'Close',   class: 'btn-sec',    onclick: `document.getElementById('userDetailModal').remove()` }
+    ]
+  });
+};
+
+window.processAdjustment = async (action) => {
+  const uid    = document.getElementById('crUserId').value.trim();
+  const amount = Number(document.getElementById('crAmount').value);
+  if (!uid || !amount) return alert('Please enter a User ID and Amount.');
+
+  const data = await api('/api/admin/users/adjust-balance', {
+    method: 'POST',
+    body: JSON.stringify({ userId: uid, amount, action })
+  });
+  if (data?.success) {
+    alert(`✅ ${action} of ₦${amount.toLocaleString()} successful! New balance: ₦${data.newBalance.toLocaleString()}`);
+    document.getElementById('userDetailModal')?.remove();
+    renderUsers();
+  } else {
+    alert(data?.error || 'Error processing adjustment.');
+  }
+};
+
+window.deleteUser = async (uid) => {
+  if (!confirm('⚠️ Permanently delete this user and all their data?')) return;
+  await api(`/api/admin/users/${uid}`, { method: 'DELETE' });
+  document.getElementById('userDetailModal')?.remove();
+  renderUsers();
+};
+
+window.copyAndMove = (uid) => {
+  navigator.clipboard.writeText(uid);
+  document.getElementById('crUserId').value = uid;
+  showTab('users-tab');
+};
+
+// ─── SETTINGS ─────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    // 1. Load keys and fetch data
+    await loadApiKeys();
+    const data = await api('/api/admin/settings');
+    
+    if (!data?.success) {
+      console.error("Failed to fetch settings:", data?.message);
+      return;
+    }
+
+    const s = data.settings;
+
+    // 2. Handle Maintenance Toggle (Isolated logic)
+    const mToggle = document.getElementById('maintenanceToggle');
+    if (mToggle && s.maintenance) {
+      mToggle.checked = s.maintenance.enabled || false;
+      
+      // Use an arrow function to preserve 'this' or use 'e.target'
+      mToggle.onchange = async (e) => {
+        await api('/api/admin/settings/maintenance', { 
+          method: 'PUT', 
+          body: JSON.stringify({ enabled: e.target.checked }) 
+        });
+      };
+    }
+    // 3. Populate all other form fields
+    if (s.config) {
+      fillSettings(s.config);
+    }
+
+  } catch (err) {
+    console.error("Error in loadSettings:", err);
+  }
+}
+
+function fillSettings(data) {
+    // Helper to safely set values only if the element exists
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val ?? ""; // Use nullish coalescing
+    };
+
+    // Main Config Fields
+    setVal('initBal', data.initBal);
+    setVal('descText', data.siteAbout);
+    setVal('waLink', data.whatsappLink);
+    setVal('tgLink', data.telegramLink);
+    setVal('siteNameInput', data.siteName);
+    setVal('signinAmt', data.dailyCheckInAmount);
+    
+    // Withdrawal Fields (Added these here for consistency)
+    setVal('minWithdraw', data.minWithdraw);
+    setVal('withdrawFee', data.withdrawFee);
+
+    // Logo Preview
+    const preview = document.getElementById('logoPreview');
+    if (preview) {
+        preview.src = data.siteLogo || "assets/img/placeholder-logo.png";
+    }
+
+    // Referral Logic (Mapping array to individual inputs)
+    if (Array.isArray(data.referralPercents)) {
+        setVal('ref1', data.referralPercents[0]);
+        setVal('ref2', data.referralPercents[1]);
+        setVal('ref3', data.referralPercents[2]);
+    }
+}
+
+// ─── LOAD API KEYS ────────────────────────────────────────
+async function loadApiKeys() {
+  const data = await api('/api/admin/settings/apikeys');
+  if (!data?.apikeys) return;
+  const k = data.apikeys;
+  const imgbbInput = document.getElementById('imgbbKeyInput');
+  const koraPublic = document.getElementById('koraPublicKeyInput');
+  const koraSec    = document.getElementById('koraSecretKeyInput');
+  if (imgbbInput) imgbbInput.value = k.imgbb || '';
+  if (koraPublic)  koraPublic.value  = k.korapay_public || '';
+  if (koraSec)     koraSec.value     = k.korapay_secret || '';
+}
+window.applyPreset = (mode, primary, secondary) => {
+	document.getElementById('themeMode').value = mode;
+	document.getElementById('primaryColor').value = primary;
+	document.getElementById('secondaryColor').value = secondary;
+	// Optional: Auto-save immediately for "Click & Go"
+	saveThemeConfig();
+	//	alert(`Selected: ${mode} mode with ${primary}`);
+};
+window.saveThemeConfig = async (e) => {
+    // If this is called from an 'onsubmit', we need to prevent refresh
+    if (e) e.preventDefault();
+    
+    const btn = document.querySelector('#themeForm button'); // Adjust selector as needed
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = "Publishing...";
+    }
+
+    try {
+        // We wrap them in a 'theme' object to match the original logic
+        const themeData = {
+            theme: {
+                mode: document.getElementById('themeMode').value,
+                primary: document.getElementById('primaryColor').value,
+                secondary: document.getElementById('secondaryColor').value
+            }
+        };
+   
+        // This keeps the structure consistent: config -> theme -> colors
+        await api('/api/admin/settings/config', { 
+            method: 'PUT', 
+            body: JSON.stringify(themeData) 
+        });
+
+        alert("✅ Theme Updated! Users will see it immediately.");
+    } catch (err) {
+        console.error("Theme Update Error:", err);
+        alert("Failed to update theme. Check console for details.");
+    } finally {
+       
+    }
+};
+/*
+window.saveConfig = async () => {
+  const fields = ['siteName','minWithdraw','withdrawFee','initBal'];
+  const value = {};
+  fields.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) value[f] = isNaN(el.value) ? el.value : Number(el.value);
+  });
+  // Theme
+  const primary   = document.getElementById('primaryColor')?.value;
+  const secondary = document.getElementById('secondaryColor')?.value;
+  const mode      = document.getElementById('themeMode')?.value;
+  if (primary || secondary || mode) value.theme = { primary, secondary, mode };
+
+  await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(value) });
+  alert('✅ Config saved!');
+};
+*/
+
+// 1. Listen for any invalid input inside the form
+document.getElementById('rulesForm').addEventListener('invalid', (e) => {
+    // 2. Find if the invalid input is inside a <details> tag
+    const details = e.target.closest('details');
+    
+    // 3. If it is, open it!
+    if (details) {
+        details.open = true;
+    }
+}, true); // The "true" here is important to catch the event as it happens
+
+	document.getElementById('rulesForm').onsubmit = async (e) => {
+    e.preventDefault();
+    
+    // 1. Grab elements and values
+    const btn = e.target.querySelector('button');
+    const siteName = document.getElementById('siteNameInput').value;
+    const desc = document.getElementById('descText').value;
+    const wa = document.getElementById('waLink').value;
+    const tg = document.getElementById('tgLink').value;
+    const initBal = document.getElementById('initBal').value; // Get value here
+    const fileInput = document.getElementById('logoFileInput');
+    const file = fileInput.files[0];
+
+    // 2. Visual Feedback: Disable button so they can't double-click
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+    try {
+        let logoUrl = null;
+
+        // (Your ImgBB logic can go here later when you're ready)
+
+        // 3. Create the Config Object
+        const newConfig = {
+            siteName: siteName,
+            siteAbout: desc,
+            whatsappLink: wa,
+            telegramLink: tg,
+            initBal: Number(initBal), // Ensure it's a number
+            dailyCheckInAmount: Number(document.getElementById('signinAmt').value),
+            referralPercents: [
+                Number(document.getElementById('ref1').value),
+                Number(document.getElementById('ref2').value),
+                Number(document.getElementById('ref3').value)
+            ],
+        };
+
+        // 4. Update via API (Fixed the typo here: newConfig)
+        await api('/api/admin/settings/config', { 
+            method: 'PUT', 
+            body: JSON.stringify(newConfig) 
+        });
+
+        // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ Branding updated! Logo and site name are now live.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        });
+
+    } catch (err) {
+        console.error("Update Error:", err);
+        alert("Error updating branding. Check your connection.");
+    } finally {
+        // 6. Re-enable the button
+        btn.disabled = false;
+        btn.innerText = "Save Config";
+    }
+};
+// ─── PAYMENT SETTINGS ─────────────────────────────────────
+window.openBindBankModal = async () => {
+  const data = await api('/api/admin/settings');
+  const p = data?.settings?.payment || {};
+  showModal({
+    id: 'createBankModal',
+    title: 'Payments Configuration',
+    content: `
+      <div class="input-group">
+        <label>Active Deposit Mode</label>
+        <select id="depositMode" onchange="togglePaymentFields()">
+          <option value="manual" ${p.mode==='manual'?'selected':''}>Manual Bank Transfer</option>
+          <option value="korapay" ${p.mode==='korapay'?'selected':''}>Korapay Automatic</option>
+        </select>
+      </div>
+      <div id="manualSettings">
+        <div class="input-group"><label>Bank Name</label><input type="text" id="adminBankName" value="${p.manual?.bankName||''}"></div>
+        <div class="input-group"><label>Account Number</label><input type="text" id="adminAccNum" value="${p.manual?.accountNumber||''}"></div>
+        <div class="input-group"><label>Account Name</label><input type="text" id="adminAccName" value="${p.manual?.accountName||''}"></div>
+      </div>
+      <div id="korapaySettings" style="display:none">
+        <div class="input-group"><label>Korapay Public Key</label><input type="text" id="koraPublicKey" value="${p.korapay?.publicKey||''}"></div>
+        <div class="input-group"><label>Secret Key</label><input type="password" id="koraSecretKey" value="${p.korapay?.secretKey||''}"></div>
+      </div>
+      <div style="display:flex;gap:20px;margin-top:10px;">
+        <label style="font-size:12px;">📢 Disable Users Bank Details Update</label>
+        <label class="switch">
+          <input type="checkbox" id="masterBankLockToggle" ${data?.settings?.config?.globalBankLock?'checked':''} onchange="toggleGlobalBankLock(this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>`,
+    buttons: [
+      { text: 'Cancel', class: 'btn-sec', onclick: "document.getElementById('createBankModal').remove()" },
+      { text: 'Configure', class: 'btn-submit', onclick: 'savePaymentSettings()' }
+    ]
+  });
+  togglePaymentFields();
+};
+
+window.togglePaymentFields = () => {
+  const mode = document.getElementById('depositMode')?.value;
+  document.getElementById('manualSettings').style.display  = mode === 'manual'  ? 'block' : 'none';
+  document.getElementById('korapaySettings').style.display = mode === 'korapay' ? 'block' : 'none';
+};
+
+window.savePaymentSettings = async () => {
+  const config = {
+    mode:    document.getElementById('depositMode').value,
+    manual:  { bankName: document.getElementById('adminBankName').value, accountNumber: document.getElementById('adminAccNum').value, accountName: document.getElementById('adminAccName').value },
+    korapay: { publicKey: document.getElementById('koraPublicKey').value, secretKey: document.getElementById('koraSecretKey').value }
+  };
+  await api('/api/admin/settings/payment', { method: 'PUT', body: JSON.stringify(config) });
+  alert('✅ Payment settings saved!');
+  document.getElementById('createBankModal')?.remove();
+};
+
+window.toggleGlobalBankLock = async (isChecked) => {
+  const data = await api('/api/admin/settings');
+  const config = data?.settings?.config || {};
+  config.globalBankLock = isChecked;
+  await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(config) });
+  alert(`🔒 Master Bank Lock is now ${isChecked ? 'ACTIVATED' : 'DEACTIVATED'}`);
+};
+
+  // Chat Settings Panel
+window.openChatModal = async () => {
+ 
+  showModal({
+    id: 'createChatModal', title: 'Chat settings',
+    content: `
+                    <div id="chatSettingsPanel">
+                        <div style="font-weight:700;font-size:14px;margin-bottom:16px;color:var(--primary);"></div>
+
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Chat Available</label>
+                            <label class="switch"><input type="checkbox" id="cs_available" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Sound Alerts</label>
+                            <label class="switch"><input type="checkbox" id="cs_sound" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Allow User Images</label>
+                            <label class="switch"><input type="checkbox" id="cs_allowImages" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <label style="font-size:13px;font-weight:600;">Require Email Verification</label>
+                            <label class="switch"><input type="checkbox" id="cs_requireVerified"><span class="slider"></span></label>
+                        </div>
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Auto-Reply Message</div>
+                        <textarea id="cs_autoReply" rows="3" placeholder="e.g. Thanks for reaching out! We'll reply shortly." style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;resize:vertical;"></textarea>
+
+       <details
+                                    style="margin:6px 0;background-color: var(--bg);padding: 8px 15px;border-radius: 12px;">
+
+                                    <summary style="display: flex; justify-content: space-between; font-size: 12pt;margin:8px 0 10px 0;">
+                                        <span style="font-weight: bold;">More settings</span>
+                                    </summary>
+
+                               <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Office Hours</div>
+                        <label class="switch" style="margin-bottom:8px;"><input type="checkbox" id="cs_officeHoursEnabled"><span class="slider"></span></label>
+                        <div style="display:flex;gap:8px;margin-top:8px;">
+                            <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Open (hr)</div><input type="number" id="cs_open" min="0" max="23" value="9" style="width:100%;padding:6px;border:1px solid var(--border,#e0e5f2);border-radius:6px;"></div>
+                            <div style="flex:1;"><div style="font-size:11px;color:#aaa;margin-bottom:4px;">Close (hr)</div><input type="number" id="cs_close" min="0" max="23" value="18" style="width:100%;padding:6px;border:1px solid var(--border,#e0e5f2);border-radius:6px;"></div>
+                        </div>
+                        <input type="text" id="cs_offlineMsg" placeholder="Offline message..." style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;margin-top:8px;">
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Auto-close Inactive (hours)</div>
+                        <input type="number" id="cs_autoClose" value="48" min="1" style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
+
+                        <div style="margin:14px 0 6px;font-size:13px;font-weight:600;">Message Char Limit</div>
+                        <input type="number" id="cs_charLimit" value="500" min="50" style="width:100%;padding:8px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;">
+                                </details>
+      </div>`,
+    buttons: [
+      { text: 'Cancel',   class: 'btn-sec',    onclick: "document.getElementById('createChatModal').remove()" },
+      { text: 'Save Settings', class: 'btn-submit',  onclick: 'saveChatSettings()' }
+    ]
+  });
+};
+
+// ─── ANNOUNCEMENT ─────────────────────────────────────────
+window.openCreateNewsModal = async () => {
+  const data = await api('/api/admin/settings');
+  const ann = data?.settings?.config?.announcement || {};
+  showModal({
+    id: 'createNewsModal', title: 'Make Announcement',
+    content: `
+      <div class="input-group" style="margin-top:15px;border-top:1px solid rgba(0,0,0,0.1);padding-top:10px;">
+        <textarea id="announcementText" placeholder="Enter news here..." style="width:100%;height:60px;border-radius:8px;padding:10px;margin-top:5px;">${ann.text||''}</textarea>
+        <div style="display:flex;gap:10px;">
+          <label>📢 Enable Global Announcement</label>
+          <label class="switch"><input type="checkbox" id="showAnnouncement" ${ann.active?'checked':''}><span class="slider"></span></label>
+        </div>
+      </div>`,
+    buttons: [
+      { text: 'Cancel',   class: 'btn-sec',    onclick: "document.getElementById('createNewsModal').remove()" },
+      { text: 'Announce', class: 'btn-submit',  onclick: 'saveAnnouncement()' }
+    ]
+  });
+};
+
+window.saveAnnouncement = async () => {
+  const data = await api('/api/admin/settings');
+  const config = data?.settings?.config || {};
+  config.announcement = {
+    text:   document.getElementById('announcementText').value,
+    active: document.getElementById('showAnnouncement').checked
+  };
+  await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(config) });
+  document.getElementById('createNewsModal')?.remove();
+};
+
+// ─── WHEEL PRIZES ─────────────────────────────────────────
+window.updateWheelPrizes = async () => {
+  const inputs = document.querySelectorAll('.prize-input');
+  const prizes = [];
+  inputs.forEach((input, i) => {
+    const val = Number(input.value);
+    const labels = ['Empty', 'Better Luck', 'Empty', 'Opps!', 'Next Time'];
+    prizes.push({ label: val > 0 ? '₦' + val.toLocaleString() : labels[i % labels.length], value: val, color: input.dataset.color });
+  });
+  await api('/api/admin/settings/wheel', { method: 'PUT', body: JSON.stringify({ prizes }) });
+  alert('✅ Wheel prizes updated!');
+};
+
+// ─── SHARES MANAGEMENT ────────────────────────────────────
+window.openSharesModal = async () => {
+  const data = await api('/api/admin/shares');
+  const shares = data?.shares || [];
+  showModal({
+    id: 'sharesModal', title: 'Manage Investment Shares',
+    content: `
+      <div id="sharesList">${shares.map(s => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid #eee;border-radius:8px;margin-bottom:8px;">
+          <span>${s.name} — ₦${s.price.toLocaleString()} | ₦${s.dailyIncome}/day | ${s.duration}days</span>
+          <button class="btn-action" style="background:var(--danger)" onclick="deleteShare('${s._id}')">✖</button>
+        </div>`).join('') || '<p style="color:gray">No shares yet.</p>'}</div>
+      <hr>
+      <h4>Add New Share</h4>
+      <div class="input-group"><label>Name</label><input id="newShareName" placeholder="e.g Gold Pack"></div>
+      <div class="input-group"><label>Price</label><input type="number" id="newSharePrice" placeholder="5000"></div>
+      <div class="input-group"><label>Daily Income</label><input type="number" id="newShareDaily" placeholder="200"></div>
+      <div class="input-group"><label>Duration (Days)</label><input type="number" id="newShareDuration" placeholder="30"></div>
+      <div class="input-group">
+        <label>Share Image</label>
+        <input type="file" id="newShareImgFile" accept="image/*" style="padding:6px;border-radius:8px;border:1px solid #ddd;width:100%">
+        <span id="shareImgStatus" style="font-size:12px;color:var(--primary)"></span>
+        <input type="hidden" id="newShareImg">
+      </div>`,
+    buttons: [
+      { text: 'Add Share', class: 'btn-submit', onclick: 'addShare()' },
+      { text: 'Close', class: 'btn-sec', onclick: "document.getElementById('sharesModal').remove()" }
+    ]
+  });
+};
+
+window.addShare = async () => {
+  const name     = document.getElementById('newShareName').value;
+  const price    = Number(document.getElementById('newSharePrice').value);
+  const daily    = Number(document.getElementById('newShareDaily').value);
+  const duration = Number(document.getElementById('newShareDuration').value);
+  if (!name || !price) return alert('Please fill all required fields.');
+
+  // Upload image to imgbb if file selected
+  let imgUrl = document.getElementById('newShareImg').value;
+  const fileInput = document.getElementById('newShareImgFile');
+  if (fileInput?.files[0]) {
+    const statusEl = document.getElementById('shareImgStatus');
+    imgUrl = await uploadToImgBB(fileInput.files[0], statusEl);
+    if (!imgUrl) return; // upload failed
+  }
+
+  const share = { name, price, dailyIncome: daily, duration, img: imgUrl || '' };
+  await api('/api/admin/shares', { method: 'POST', body: JSON.stringify(share) });
+  document.getElementById('sharesModal')?.remove();
+	 // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ Share added.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        });
+};
+
+window.deleteShare = async (id) => {
+  if (!confirm('Delete this share?')) return;
+  await api(`/api/admin/shares/${id}`, { method: 'DELETE' });
+  document.getElementById('sharesModal')?.remove();
+};
+
+// ─── CREATE USER ─────────────────────────────────────────
+window.openCreateUserModal = () => {
+  showModal({
+    id: 'createUserModal', title: 'Create New User',
+    content: `
+      <div class="input-group"><label>Username</label><input id="newUsername" placeholder="johndoe"></div>
+      <div class="input-group"><label>Email</label><input type="email" id="newEmail" placeholder="user@email.com"></div>
+      <div class="input-group"><label>Password</label><input type="password" id="newPassword" placeholder="min 6 chars"></div>
+      <div class="input-group"><label>Role</label>
+        <select id="newRole"><option value="user">User</option><option value="admin">Admin</option></select>
+      </div>`,
+    buttons: [
+      { text: 'Create', class: 'btn-submit', onclick: 'createUser()' },
+      { text: 'Cancel', class: 'btn-sec',    onclick: "document.getElementById('createUserModal').remove()" }
+    ]
+  });
+};
+
+window.createUser = async () => {
+  const body = {
+    username: document.getElementById('newUsername').value,
+    email:    document.getElementById('newEmail').value,
+    password: document.getElementById('newPassword').value,
+    role:     document.getElementById('newRole').value
+  };
+  const data = await api('/api/admin/create-user', { method: 'POST', body: JSON.stringify(body) });
+  if (data?.success) {
+	   // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ User created.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        });
+    document.getElementById('createUserModal')?.remove();
+    renderUsers();
+  } else {
+    alert(data?.error || 'Error creating user.');
+  }
+};
+
+// ─── THEME SETTINGS ───────────────────────────────────────
+function loadThemeSettings() {
+  const saved = localStorage.getItem('exempe-theme') || 'light';
+  setTheme(saved);
+}
+
+window.setTheme = (theme, el) => {
+  localStorage.setItem('exempe-theme', theme);
+  document.body.setAttribute('data-theme', theme);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+  if (el) el.classList.add('active');
+};
+
+// ─── TAB NAVIGATION ───────────────────────────────────────
+const navItems = document.querySelectorAll('.nav-item');
+      const allPages = document.querySelectorAll('.tab-content');
+
+      function switchPageByHash() {
+        const hash = window.location.hash || '#home';
+        const targetId = hash.substring(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          allPages.forEach(page => page.classList.remove('active'));
+          navItems.forEach(item => item.classList.remove('active'));
+          targetElement.classList.add('active');
+          navItems.forEach(item => {
+            if (item.getAttribute('href') === hash) item.classList.add('active');
+          });
+        }
+      }
+
+      window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
+      window.addEventListener('hashchange', switchPageByHash);
+
+
+/**
+ * @param {Object} cfg - Configuration object
+ * @param {string} cfg.id - Unique ID for the modal
+ * @param {string} cfg.title - Header text
+ * @param {string} cfg.content - The HTML body of the modal
+ * @param {Array} cfg.buttons - Array of button objects {text, class, onclick}
+ */
+window.showModal = (cfg) => {
+	// 1. Cleanup old versions
+	const old = document.getElementById(cfg.id);
+	if (old) old.remove();
+
+	// 2. Create Wrapper
+	const overlay = document.createElement('div');
+	overlay.id = cfg.id;
+	overlay.className = 'modal-overlay';
+	overlay.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); display: flex; align-items: center;
+        justify-content: center; z-index: 9999; backdrop-filter: blur(8px);
+        animation: fadeIn 0.3s ease;
+    `;
+
+	// 3. Generate Buttons HTML
+	const buttonsHTML = (cfg.buttons || []).map(btn => `
+        <button class="${btn.class || 'btn-submit'}" 
+                onclick="${btn.onclick}" 
+                style="${btn.style || ''}">${btn.text}</button>
+    `).join('');
+
+	// 4. Create Card
+	const card = document.createElement('div');
+	card.className = "modal-card";
+	card.style = `
+        background: var(--card); color: var(--text);max-width: ${cfg.width || '450px'};
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border); transform: scale(1);
+    `;
+	card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; font-size:1.4rem;">${cfg.title}</h3>
+            <span onclick="document.getElementById('${cfg.id}').remove()" style="cursor:pointer; opacity:0.5; font-size:1.5rem;">&times;</span>
+        </div>
+        <div class="modal-body" style="margin-bottom:25px;">${cfg.content}</div>
+        <div class="modal-footer" style="display:flex; gap:12px; justify-content:flex-end;">
+            ${buttonsHTML}
+        </div>
+    `;
+	overlay.appendChild(card);
+	document.body.appendChild(overlay);
+	// Close on click outside
+	overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+};
+
+
+// ─── LOGO UPLOAD VIA IMGBB ────────────────────────────────
+window.previewLogo = async (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  // Show local preview instantly
+  const reader = new FileReader();
+  reader.onload = e => { const p = document.getElementById('logoPreview'); if (p) p.src = e.target.result; };
+  reader.readAsDataURL(file);
+  // Upload to imgbb
+  const statusEl = document.getElementById('logoUploadStatus');
+  const url = await uploadToImgBB(file, statusEl);
+  if (!url) return;
+  // Save to config
+  const confData = await api('/api/admin/settings');
+  const config   = confData?.settings?.config || {};
+  config.siteLogo = url;
+  await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(config) });
+  const preview = document.getElementById('logoPreview');
+  if (preview) preview.src = url;
+  alert('✅ Logo uploaded and saved!');
+};
+
+// ─── SAVE API KEYS ────────────────────────────────────────
+window.saveApiKeys = async () => {
+  const imgbb          = document.getElementById('imgbbKeyInput')?.value.trim();
+  const korapay_public = document.getElementById('koraPublicKeyInput')?.value.trim();
+  const korapay_secret = document.getElementById('koraSecretKeyInput')?.value.trim();
+  const data = await api('/api/admin/settings/apikeys', {
+    method: 'PUT',
+    body: JSON.stringify({ imgbb, korapay_public, korapay_secret })
+  });
+  if (data?.success) alert('✅ API Keys saved!');
+  else alert(data?.error || 'Error saving API keys.');
+};
+
+// ─── INIT ─────────────────────────────────────────────────
+checkAdminSession();
+
+
+
+// ═══════════════════════════════════════════════════════════
+// ADMIN CHAT SYSTEM — Professional FB-style
+// ═══════════════════════════════════════════════════════════
+
+let activeSessionId      = null;
+let activeUserData       = null;   // full user object from session.userId
+let statusTickerTimer    = null;   // cycles status line in header
+let adminChatPollTimer   = null;
+let adminTypingPollTimer = null;
+let adminTypingTimer     = null;
+let adminLastMsgCount    = 0;
+let adminSoundEnabled    = true;
+let adminSiteLogo        = '';
+let adminChatSessionStatus = 'active';
+let adminAllMessages     = [];
+let adminReplyingTo      = null;
+let adminEditingMsgId    = null;
+const ADMIN_EMOJIS       = ['👍','❤️','😂','😮','😢','🔥'];
+
+// ─── GET SITE LOGO ────────────────────────────────────────
+async function getAdminSiteLogo() {
+  if (adminSiteLogo) return adminSiteLogo;
+  const data = await api('/api/admin/settings');
+  adminSiteLogo = data?.config?.siteLogo || '';
+  return adminSiteLogo;
+}
+
+// ─── AUDIO ────────────────────────────────────────────────
+function playAdminChatSound() {
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 660;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+// ─── LOAD SESSION LIST ────────────────────────────────────
+window.loadAdminChatSessions = async function() {
+  const container = document.getElementById('chatSessionItems');
+  if (!container) return;
+
+  const logo = await getAdminSiteLogo();
+  const data = await api('/api/admin/chat/sessions');
+  if (!data?.success) { container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;">Failed to load chats.</div>'; return; }
+
+  if (!data.sessions.length) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">No chats yet.</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  data.sessions.forEach(s => {
+    const isActive  = s._id === activeSessionId;
+    const hasUnread = s.unreadAdmin > 0;
+    const timeStr   = s.lastMessageAt ? new Date(s.lastMessageAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+    const ended     = s.status === 'ended';
+    const div = document.createElement('div');
+    div.style.cssText = `padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;background:${isActive?'rgba(67,24,255,0.06)':'transparent'};`;
+    div.onclick = () => openAdminChatSession(s._id, s.username, s.status, s.userId);
+    div.innerHTML = `
+      <img src="${logo}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#eee;border:2px solid ${ended?'#e74c3c':'#10ac84'};">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:700;font-size:13px;">${s.username}</span>
+          <span style="font-size:10px;color:#aaa;">${timeStr}</span>
+        </div>
+        <div style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">${s.lastMessage || 'No messages'}</div>
+      </div>
+      ${hasUnread ? `<span style="background:#e74c3c;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;">${s.unreadAdmin}</span>` : ''}
+      ${ended ? `<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 6px;font-size:10px;flex-shrink:0;">Ended</span>` : ''}`;
+    container.appendChild(div);
+  });
+
+  const totalUnread = data.sessions.reduce((a,s) => a + (s.unreadAdmin||0), 0);
+  const badge = document.getElementById('adminChatBadge');
+  if (badge) { badge.textContent = totalUnread; badge.style.display = totalUnread > 0 ? 'flex' : 'none'; }
+};
+
+// ─── OPEN SESSION ─────────────────────────────────────────
+window.openAdminChatSession = async function(sessionId, username, status, userData) {
+  activeSessionId = sessionId;
+  activeUserData  = userData || null;
+  adminChatSessionStatus = status || 'active';
+  adminAllMessages = [];
+  adminReplyingTo  = null;
+  adminEditingMsgId = null;
+
+  const logo = await getAdminSiteLogo();
+
+  document.getElementById('chatWindowEmpty').style.display = 'none';
+  const activeWin = document.getElementById('chatWindowActive');
+  activeWin.style.display = 'flex';
+
+  // Mobile: slide session list out
+  if (window.innerWidth <= 700) {
+    document.getElementById('chatSessionList')?.classList.add('slide-out');
+    const backBtn = document.getElementById('chatBackBtn');
+    if (backBtn) backBtn.style.display = 'flex';
+  }
+
+  document.getElementById('adminChatUsername').textContent = username;
+  document.getElementById('adminChatUserLogo').src = logo;
+
+  // Update block button state
+  updateBlockBtn(userData?.status);
+
+  // Start status ticker
+  startStatusTicker(sessionId, status, userData?.status);
+
+  const inputBar = document.getElementById('adminChatInputBar');
+  const polarBtn = document.getElementById('adminPolarBtn');
+  if (inputBar) inputBar.style.display = status === 'ended' ? 'none' : 'flex';
+  if (polarBtn) polarBtn.style.display = status === 'ended' ? 'none' : 'inline-block';
+
+  // Reset reply bar
+  cancelAdminReply();
+
+  await loadAdminMessages(sessionId);
+  startAdminChatPolling(sessionId);
+  startAdminTypingPoll(sessionId);
+  loadAdminChatSessions();
+};
+
+// ─── LOAD MESSAGES ────────────────────────────────────────
+async function loadAdminMessages(sessionId) {
+  const container = document.getElementById('adminChatMessages');
+  if (!container) return;
+
+  const data = await api(`/api/admin/chat/messages/${sessionId}`);
+  if (!data?.success) return;
+
+  adminAllMessages = data.messages;
+  container.innerHTML = '';
+
+  if (!data.messages.length) {
+    container.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">No messages yet.</div>';
+    adminLastMsgCount = 0;
+    return;
+  }
+
+  const logo = await getAdminSiteLogo();
+  let lastDate = '';
+  data.messages.forEach(msg => {
+    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+    if (dateStr !== lastDate) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'text-align:center;margin:12px 0;';
+      divider.innerHTML = `<span style="background:rgba(0,0,0,0.06);color:#aaa;border-radius:12px;padding:3px 12px;font-size:11px;">${dateStr}</span>`;
+      container.appendChild(divider);
+      lastDate = dateStr;
+    }
+    container.appendChild(buildAdminMsgBubble(msg, logo));
+  });
+  container.scrollTop = container.scrollHeight;
+  adminLastMsgCount = data.messages.length;
+  setTimeout(() => updateSeenLabel(data.messages), 100);
+}
+
+// ─── BUILD BUBBLE ─────────────────────────────────────────
+function buildAdminMsgBubble(msg, logo) {
+  const isMe    = msg.sender === 'admin';
+  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  const wrapper = document.createElement('div');
+  wrapper.dataset.msgId = msg._id;
+  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
+
+  // Reply quote
+  let replyHtml = '';
+  if (msg.replyTo?.msgId) {
+    replyHtml = `
+      <div style="background:rgba(0,0,0,0.06);border-left:3px solid #4318ff;border-radius:6px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:#888;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
+        <span style="font-weight:700;color:#4318ff;margin-right:6px;">${msg.replyTo.sender === 'admin' ? 'You' : 'User'}</span>${msg.replyTo.preview}
+      </div>`;
+  }
+
+  // Content
+  let bubbleContent = '';
+  if (msg.deleted) {
+    bubbleContent = `<span style="font-style:italic;opacity:0.6;font-size:13px;">🚫 This message was deleted</span>`;
+  } else if (msg.type === 'image' && msg.imageUrl) {
+    bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
+  } else if (msg.type === 'polar') {
+    const answered = msg.polarAnswer;
+    bubbleContent = `
+      <div style="font-size:13px;margin-bottom:6px;font-weight:600;">❓ ${msg.polarQuestion}</div>
+      ${answered
+        ? `<div style="padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.2);font-weight:700;color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered==='yes'?'✅ User answered: Yes':'❌ User answered: No'}</div>`
+        : '<div style="color:rgba(255,255,255,0.7);font-size:12px;">⏳ Awaiting answer...</div>'}`;
+  } else {
+    bubbleContent = `<span style="font-size:13px;line-height:1.5;word-break:break-word;">${msg.content}</span>`;
+  }
+
+  // Ticks for admin's own messages
+  let ticksHtml = '';
+  if (isMe && !msg.deleted) {
+    const tickColor = msg.read ? '#4fc3f7' : msg.delivered ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)';
+    ticksHtml = `<span style="font-size:11px;color:${tickColor};margin-left:4px;">${msg.read?'✓✓':msg.delivered?'✓✓':'✓'}</span>`;
+  }
+
+  const editedHtml = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.5;margin-left:4px;">edited</span>` : '';
+
+  // Reactions
+  const reactEntries = Object.entries(msg.reactions||{}).filter(([,v])=>v.length>0);
+  const reactionsHtml = reactEntries.length ? `
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
+      ${reactEntries.map(([emoji,users]) => `
+        <span onclick="adminToggleReaction('${msg._id}','${emoji}')" style="background:rgba(0,0,0,0.07);border-radius:12px;padding:2px 7px;font-size:12px;cursor:pointer;border:1px solid ${users.includes('admin')?'#4318ff':'transparent'};">
+          ${emoji} ${users.length}
+        </span>`).join('')}
+    </div>` : '';
+
+  // Emoji/action bar
+  const emojiBarId = `aebar-${msg._id}`;
+  const emojiBarHtml = msg.deleted ? '' : `
+    <div id="${emojiBarId}" style="display:none;position:absolute;${isMe?'right:0':'left:0'};bottom:calc(100% + 4px);background:#fff;border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);gap:6px;z-index:100;white-space:nowrap;">
+      ${ADMIN_EMOJIS.map(e => `<span onclick="adminToggleReaction('${msg._id}','${e}');adminHideEmojiBar('${emojiBarId}')" style="font-size:20px;cursor:pointer;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${e}</span>`).join('')}
+      <span onclick="adminStartReply('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Reply">↩️</span>
+      ${isMe && !msg.deleted ? `<span onclick="adminStartEdit('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Edit">✏️</span>
+      <span onclick="adminDeleteMsg('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Delete">🗑️</span>` : ''}
+    </div>`;
+
+  wrapper.innerHTML = `
+    ${emojiBarHtml}
+    <div>
+      <div class="admin-bubble" data-msg-id="${msg._id}"
+        style="max-width:72%;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
+        oncontextmenu="adminShowEmojiBar(event,'${emojiBarId}')"
+        ontouchstart="adminHandleTouchStart(event,'${emojiBarId}')"
+        ontouchend="adminHandleTouchEnd()"
+      >
+        ${replyHtml}${bubbleContent}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:3px;padding:0 38px;">
+      <span style="font-size:10px;color:#aaa;">${time}</span>${editedHtml}${ticksHtml}
+    </div>
+    ${reactionsHtml}`;
+
+  return wrapper;
+}
+
+// ─── EMOJI BAR ────────────────────────────────────────────
+let adminLongPressTimer = null;
+
+window.adminShowEmojiBar = function(e, barId) {
+  e.preventDefault();
+  adminHideAllEmojiBars();
+  const bar = document.getElementById(barId);
+  if (bar) bar.style.display = 'flex';
+};
+window.adminHideEmojiBar = function(barId) {
+  const bar = document.getElementById(barId); if (bar) bar.style.display = 'none';
+};
+function adminHideAllEmojiBars() {
+  document.querySelectorAll('[id^="aebar-"]').forEach(b => b.style.display = 'none');
+}
+window.adminHandleTouchStart = function(e, barId) {
+  adminLongPressTimer = setTimeout(() => adminShowEmojiBar(e, barId), 500);
+};
+window.adminHandleTouchEnd = function() { clearTimeout(adminLongPressTimer); };
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('[id^="aebar-"]') && !e.target.closest('.admin-bubble')) adminHideAllEmojiBars();
+});
+
+// ─── REACTIONS ────────────────────────────────────────────
+window.adminToggleReaction = async function(msgId, emoji) {
+  const data = await api('/api/admin/chat/react', { method:'POST', body: JSON.stringify({ msgId, emoji }) });
+  if (data?.success) await loadAdminMessages(activeSessionId);
+};
+
+// ─── REPLY ────────────────────────────────────────────────
+window.adminStartReply = function(msgId) {
+  const msg = adminAllMessages.find(m => m._id === msgId);
+  if (!msg) return;
+  adminEditingMsgId = null;
+  adminReplyingTo = {
+    msgId,
+    sender: msg.sender,
+    preview: msg.type === 'image' ? '📷 Image' : msg.content?.substring(0, 80) || ''
+  };
+  const bar = document.getElementById('adminReplyBar');
+  if (bar) bar.style.display = 'flex';
+  document.getElementById('adminReplyBarSender').textContent = msg.sender === 'admin' ? 'You' : 'User';
+  document.getElementById('adminReplyBarText').textContent = adminReplyingTo.preview;
+  document.getElementById('adminChatInput')?.focus();
+};
+
+window.cancelAdminReply = function() {
+  adminReplyingTo = null;
+  adminEditingMsgId = null;
+  const bar = document.getElementById('adminReplyBar');
+  if (bar) bar.style.display = 'none';
+  const input = document.getElementById('adminChatInput');
+  if (input) input.value = '';
+};
+
+// ─── EDIT ─────────────────────────────────────────────────
+window.adminStartEdit = function(msgId) {
+  const msg = adminAllMessages.find(m => m._id === msgId);
+  if (!msg || msg.deleted) return;
+  adminReplyingTo = null;
+  adminEditingMsgId = msgId;
+  const input = document.getElementById('adminChatInput');
+  if (input) { input.value = msg.content; input.focus(); }
+  const bar = document.getElementById('adminReplyBar');
+  if (bar) bar.style.display = 'flex';
+  document.getElementById('adminReplyBarSender').textContent = '✏️ Editing';
+  document.getElementById('adminReplyBarText').textContent = msg.content?.substring(0, 80);
+};
+
+// ─── DELETE ───────────────────────────────────────────────
+window.adminDeleteMsg = async function(msgId) {
+  if (!confirm('Delete this message?')) return;
+  const data = await api(`/api/admin/chat/message/${msgId}`, { method:'DELETE' });
+  if (data?.success) await loadAdminMessages(activeSessionId);
+};
+
+// ─── SEND ─────────────────────────────────────────────────
+window.sendAdminMessage = async function() {
+  if (adminChatSessionStatus === 'ended') return alert('Session ended.');
+  const input = document.getElementById('adminChatInput');
+  const text  = input?.value.trim();
+  if (!text || !activeSessionId) return;
+
+  // Handle edit
+  if (adminEditingMsgId) {
+    const data = await api(`/api/admin/chat/message/${adminEditingMsgId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content: text })
+    });
+    if (data?.success) { cancelAdminReply(); await loadAdminMessages(activeSessionId); }
+    else alert(data?.error || 'Failed to edit.');
+    return;
+  }
+
+  input.value = '';
+  const body = { sessionId: activeSessionId, content: text, type: 'text' };
+  if (adminReplyingTo) body.replyTo = adminReplyingTo;
+  cancelAdminReply();
+
+  const data = await api('/api/admin/chat/send', { method:'POST', body: JSON.stringify(body) });
+  if (data?.success) {
+    const logo = await getAdminSiteLogo();
+    adminAllMessages.push(data.message);
+    const container = document.getElementById('adminChatMessages');
+    const empty = container?.querySelector('[style*="No messages"]');
+    if (empty) empty.remove();
+    container?.appendChild(buildAdminMsgBubble(data.message, logo));
+    if (container) container.scrollTop = container.scrollHeight;
+    adminLastMsgCount++;
+  }
+};
+
+// Keydown for admin input
+window.onAdminInputKeydown = function(e) {
+  if (e.key === 'Enter') { sendAdminMessage(); return; }
+  clearTimeout(adminTypingTimer);
+  adminTypingTimer = setTimeout(() => {
+    if (activeSessionId) api('/api/admin/chat/typing', { method:'POST', body: JSON.stringify({ sessionId: activeSessionId }) });
+  }, 300);
+};
+
+// ─── SEND IMAGE ───────────────────────────────────────────
+window.sendAdminImage = async function(input) {
+  const file = input.files[0];
+  if (!file || !activeSessionId) return;
+  if (adminChatSessionStatus === 'ended') return alert('Session ended.');
+
+  const keysRes  = await api('/api/admin/settings/apikeys');
+  const imgbbKey = keysRes?.apikeys?.imgbb;
+  if (!imgbbKey) return alert('ImgBB key not set in Settings → API Keys.');
+
+  const formData = new FormData();
+  formData.append('image', file);
+  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
+  const result = await res.json();
+  if (!result.success) return alert('Image upload failed.');
+
+  const body = { sessionId: activeSessionId, type:'image', imageUrl: result.data.url, content:'📷 Image' };
+  if (adminReplyingTo) body.replyTo = adminReplyingTo;
+  cancelAdminReply();
+
+  const data = await api('/api/admin/chat/send', { method:'POST', body: JSON.stringify(body) });
+  if (data?.success) {
+    const logo = await getAdminSiteLogo();
+    adminAllMessages.push(data.message);
+    const container = document.getElementById('adminChatMessages');
+    container?.appendChild(buildAdminMsgBubble(data.message, logo));
+    if (container) container.scrollTop = container.scrollHeight;
+    adminLastMsgCount++;
+  }
+  input.value = '';
+};
+
+// ─── POLAR ────────────────────────────────────────────────
+window.togglePolarInput = function() {
+  const area = document.getElementById('polarInputArea');
+  if (area) area.style.display = area.style.display === 'none' ? 'block' : 'none';
+};
+
+window.sendAdminPolar = async function() {
+  const question = document.getElementById('polarQuestionInput')?.value.trim();
+  if (!question || !activeSessionId) return;
+
+  const data = await api('/api/admin/chat/send', {
+    method:'POST',
+    body: JSON.stringify({ sessionId: activeSessionId, type:'polar', polarQuestion: question, content:`❓ ${question}` })
+  });
+  if (data?.success) {
+    const logo = await getAdminSiteLogo();
+    adminAllMessages.push(data.message);
+    const container = document.getElementById('adminChatMessages');
+    container?.appendChild(buildAdminMsgBubble(data.message, logo));
+    if (container) container.scrollTop = container.scrollHeight;
+    document.getElementById('polarQuestionInput').value = '';
+    togglePolarInput();
+    adminLastMsgCount++;
+  }
+};
+
+// ─── END / DELETE SESSION ─────────────────────────────────
+window.endAdminChatSession = async function() {
+  if (!activeSessionId || !confirm('End this chat session?')) return;
+  const data = await api(`/api/admin/chat/session/${activeSessionId}/end`, { method:'PUT' });
+  if (data?.success) {
+    adminChatSessionStatus = 'ended';
+    document.getElementById('adminChatSessionStatus').textContent = '🔴 Session Ended';
+    const inputBar = document.getElementById('adminChatInputBar');
+    const polarBtn = document.getElementById('adminPolarBtn');
+    if (inputBar) inputBar.style.display = 'none';
+    if (polarBtn) polarBtn.style.display = 'none';
+    loadAdminChatSessions();
+  }
+};
+
+window.deleteAdminChatSession = async function() {
+  if (!activeSessionId || !confirm('Delete entire chat? Cannot be undone.')) return;
+  const data = await api(`/api/admin/chat/session/${activeSessionId}`, { method:'DELETE' });
+  if (data?.success) {
+    activeSessionId = null;
+    document.getElementById('chatWindowEmpty').style.display = 'flex';
+    document.getElementById('chatWindowActive').style.display = 'none';
+    stopAdminChatPolling();
+    loadAdminChatSessions();
+  }
+};
+
+// ─── TYPING POLL ──────────────────────────────────────────
+function startAdminTypingPoll(sessionId) {
+  if (adminTypingPollTimer) clearInterval(adminTypingPollTimer);
+  adminTypingPollTimer = setInterval(async () => {
+    if (!activeSessionId) return;
+    const data = await api(`/api/admin/chat/typing/${sessionId}`);
+    const el = document.getElementById('adminTypingIndicator');
+    if (el) el.style.display = data?.typing ? 'flex' : 'none';
+  }, 2000);
+}
+
+// ─── CHAT POLLING ─────────────────────────────────────────
+function startAdminChatPolling(sessionId) {
+  stopAdminChatPolling();
+  adminChatPollTimer = setInterval(async () => {
+    if (!activeSessionId) return;
+    const data = await api(`/api/admin/chat/messages/${sessionId}`);
+    if (!data?.success) return;
+
+    const hasChanges = data.messages.length !== adminLastMsgCount ||
+      JSON.stringify(data.messages.map(m=>m.reactions)) !== JSON.stringify(adminAllMessages.map(m=>m.reactions));
+
+    if (hasChanges) {
+      const newMsgs = data.messages.slice(adminLastMsgCount);
+      const hasUserMsg = newMsgs.some(m => m.sender === 'user');
+      const logo = await getAdminSiteLogo();
+      adminAllMessages = data.messages;
+
+      // Full re-render to catch edits/deletes/reactions
+      const container = document.getElementById('adminChatMessages');
+      if (container) {
+        container.innerHTML = '';
+        let lastDate = '';
+        data.messages.forEach(msg => {
+          const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+          if (dateStr !== lastDate) {
+            const divider = document.createElement('div');
+            divider.style.cssText = 'text-align:center;margin:12px 0;';
+            divider.innerHTML = `<span style="background:rgba(0,0,0,0.06);color:#aaa;border-radius:12px;padding:3px 12px;font-size:11px;">${dateStr}</span>`;
+            container.appendChild(divider);
+            lastDate = dateStr;
+          }
+          container.appendChild(buildAdminMsgBubble(msg, logo));
+        });
+        container.scrollTop = container.scrollHeight;
+      }
+
+      if (adminSoundEnabled && hasUserMsg) playAdminChatSound();
+      adminLastMsgCount = data.messages.length;
+      loadAdminChatSessions();
+      // Update seen labels
+      setTimeout(() => updateSeenLabel(data.messages), 100);
+    }
+  }, 4000);
+}
+
+function stopAdminChatPolling() {
+  if (adminChatPollTimer) clearInterval(adminChatPollTimer);
+}
+
+// ─── BROWSER NOTIFICATION ────────────────────────────────
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') await Notification.requestPermission();
+}
+requestNotifPermission();
+
+function sendBrowserNotif(username, message) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (document.visibilityState === 'visible') return;
+  const notif = new Notification(`💬 ${username}`, {
+    body: message, icon: adminSiteLogo || '/favicon.ico',
+    tag: 'flux-chat', requireInteraction: true
+  });
+  notif.onclick = () => { window.focus(); notif.close(); };
+}
+
+// ─── UNREAD BADGE POLLING ────────────────────────────────
+let lastKnownUnread = 0;
+
+setInterval(async () => {
+  const data  = await api('/api/admin/chat/unread');
+  const badge = document.getElementById('adminChatBadge');
+  if (data?.unread > 0) {
+    if (badge) { badge.textContent = data.unread; badge.style.display = 'flex'; }
+    if (data.unread > lastKnownUnread) {
+      if (adminSoundEnabled) playAdminChatSound();
+      const sessions = await api('/api/admin/chat/sessions');
+      if (sessions?.sessions?.length) {
+        const active = sessions.sessions
+          .filter(s => s.unreadAdmin > 0)
+          .sort((a,b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt))[0];
+        if (active) sendBrowserNotif(active.username, active.lastMessage || 'New message');
+      }
+    }
+    lastKnownUnread = data.unread;
+  } else {
+    if (badge) badge.style.display = 'none';
+    lastKnownUnread = 0;
+  }
+}, 15000);
+
+// ─── CHAT SETTINGS ────────────────────────────────────────
+async function loadChatSettings() {
+  const data = await api('/api/admin/chat/settings');
+  if (!data?.success) return;
+  const s = data.settings;
+  const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+  const setVal   = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setCheck('cs_available',          s.available !== false);
+  setCheck('cs_sound',              s.sound !== false);
+  setCheck('cs_allowImages',        s.allowImages !== false);
+  setCheck('cs_requireVerified',    !!s.requireVerified);
+  setCheck('cs_officeHoursEnabled', !!s.officeHours?.enabled);
+  setVal('cs_autoReply',  s.autoReply);
+  setVal('cs_open',       s.officeHours?.open  || 9);
+  setVal('cs_close',      s.officeHours?.close || 18);
+  setVal('cs_offlineMsg', s.officeHours?.offlineMsg);
+  setVal('cs_autoClose',  s.autoClose || 48);
+  setVal('cs_charLimit',  s.charLimit || 500);
+  adminSoundEnabled = s.sound !== false;
+}
+
+window.saveChatSettings = async function() {
+  const getCheck = id => document.getElementById(id)?.checked;
+  const getVal   = id => document.getElementById(id)?.value;
+  const body = {
+    available:       getCheck('cs_available'),
+    sound:           getCheck('cs_sound'),
+    allowImages:     getCheck('cs_allowImages'),
+    requireVerified: getCheck('cs_requireVerified'),
+    autoReply:       getVal('cs_autoReply'),
+    autoClose:       parseInt(getVal('cs_autoClose')) || 48,
+    charLimit:       parseInt(getVal('cs_charLimit')) || 500,
+    officeHours: {
+      enabled:    getCheck('cs_officeHoursEnabled'),
+      open:       getVal('cs_open'),
+      close:      getVal('cs_close'),
+      offlineMsg: getVal('cs_offlineMsg'),
+    }
+  };
+  const data = await api('/api/admin/chat/settings', { method:'PUT', body: JSON.stringify(body) });
+  if (data?.success) { adminSoundEnabled = body.sound;  // 5. Show Success Modal
+        showModal({
+            id: 'detailsPopup',
+            title: 'Configuration Alert',
+            content: `
+                <strong>Configuration successfully saved</strong>
+                <p>✅ Chat settings saved.</p>
+            `,
+            buttons: [{
+                text: 'Close',
+                class: 'btn-sec',
+                onclick: "document.getElementById('detailsPopup').remove()"
+            }]
+        }); }
+  else alert(data?.error || 'Error saving settings.');
+};
+
+loadChatSettings();
+
+
+// ═══════════════════════════════════════════════════════════
+// CHAT — NEW FEATURES
+// ═══════════════════════════════════════════════════════════
+
+// ─── 1. VIEW USER PROFILE FROM CHAT ──────────────────────
+window.openChatUserProfile = function() {
+  if (!activeUserData) return alert('User data not available.');
+  const u = activeUserData;
+  viewUserDetails(
+    u._id || u,
+    u.status || 'active',
+    u.username || 'Unknown',
+    u.email || '',
+    u.ib || 0,
+    u.emailVerified || false,
+    u.createdAt || '',
+    u.refPoints || 0,
+    u.referrerId || ''
+  );
+};
+
+// ─── 2. STATUS TICKER ─────────────────────────────────────
+// Cycles: status → session ID → status → ...
+function startStatusTicker(sessionId, sessionStatus, userStatus) {
+  if (statusTickerTimer) clearInterval(statusTickerTimer);
+
+  const el = document.getElementById('adminChatSessionStatus');
+  if (!el) return;
+
+  const shortId = sessionId ? sessionId.toString().slice(-8).toUpperCase() : '--------';
+
+  const isBlocked = userStatus === 'blocked';
+  const isEnded   = sessionStatus === 'ended';
+
+  const states = [
+    // State 1: user status
+    () => {
+      if (isEnded) {
+        el.innerHTML = `<span style="color:#e74c3c;display:flex;align-items:center;gap:4px;"><i class="ri-stop-circle-line"></i> Session Ended</span>`;
+      } else if (isBlocked) {
+        el.innerHTML = `<span style="color:#e74c3c;display:flex;align-items:center;gap:4px;"><i class="ri-forbid-line"></i> Offline — Blocked</span>`;
+      } else {
+        el.innerHTML = `<span style="color:#10ac84;display:flex;align-items:center;gap:4px;"><i class="ri-radio-button-line"></i> Online — Active</span>`;
+      }
+    },
+    // State 2: session ID
+    () => {
+      el.innerHTML = `<span style="color:#aaa;display:flex;align-items:center;gap:4px;"><i class="ri-fingerprint-line"></i> ID: <code style="font-size:10px;background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:4px;">${shortId}</code></span>`;
+    }
+  ];
+
+  let idx = 0;
+  states[0](); // show immediately
+
+  statusTickerTimer = setInterval(() => {
+    el.style.opacity = '0';
+    setTimeout(() => {
+      idx = (idx + 1) % states.length;
+      states[idx]();
+      el.style.opacity = '1';
+    }, 300);
+  }, 3500);
+}
+
+// ─── 3. BLOCK / UNBLOCK FROM CHAT ─────────────────────────
+function updateBlockBtn(userStatus) {
+  const btn   = document.getElementById('adminBlockBtn');
+  const label = document.getElementById('adminBlockLabel');
+  if (!btn) return;
+  const isBlocked = userStatus === 'blocked';
+  const icon = btn.querySelector('i');
+  if (icon) icon.className = isBlocked ? 'ri-shield-check-line' : 'ri-forbid-line';
+  if (label) label.textContent = isBlocked ? 'Unblock' : 'Block';
+  btn.style.background = isBlocked ? '#e8f8f1' : '#fdecea';
+  btn.style.color      = isBlocked ? '#10ac84' : '#e74c3c';
+  btn.title = isBlocked ? 'Unblock user' : 'Block user';
+}
+
+window.toggleBlockFromChat = async function() {
+  if (!activeSessionId) return;
+  const isBlocked = activeUserData?.status === 'blocked';
+  const action    = isBlocked ? 'unblock' : 'block';
+  if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} this user?`)) return;
+
+  const data = await api(`/api/admin/chat/session/${activeSessionId}/block`, {
+    method: 'PUT',
+    body: JSON.stringify({ block: !isBlocked })
+  });
+
+  if (data?.success) {
+    if (activeUserData) activeUserData.status = data.userStatus;
+    updateBlockBtn(data.userStatus);
+    // Restart ticker with updated status
+    startStatusTicker(activeSessionId, isBlocked ? 'active' : 'ended', data.userStatus);
+    // If blocked, hide input bar
+    if (!isBlocked) {
+      adminChatSessionStatus = 'ended';
+      document.getElementById('adminChatInputBar').style.display = 'none';
+      document.getElementById('adminPolarBtn').style.display = 'none';
+    } else {
+      adminChatSessionStatus = 'active';
+      document.getElementById('adminChatInputBar').style.display = 'flex';
+      document.getElementById('adminPolarBtn').style.display = 'inline-block';
+    }
+    loadAdminChatSessions();
+  } else {
+    alert(data?.error || 'Failed.');
+  }
+};
+
+// ─── 4. SEARCH MESSAGES ───────────────────────────────────
+window.toggleChatSearch = function() {
+  const bar = document.getElementById('chatSearchBar');
+  if (!bar) return;
+  const isVisible = bar.style.display !== 'none';
+  bar.style.display = isVisible ? 'none' : 'block';
+  if (!isVisible) document.getElementById('chatSearchInput')?.focus();
+  else {
+    document.getElementById('chatSearchInput').value = '';
+    document.getElementById('chatSearchResults').textContent = '';
+    // Remove all highlights
+    document.querySelectorAll('.search-highlight').forEach(el => {
+      el.outerHTML = el.textContent;
+    });
+  }
+};
+
+window.searchChatMessages = function(query) {
+  const resultsEl = document.getElementById('chatSearchResults');
+  // Remove previous highlights
+  document.querySelectorAll('.search-highlight').forEach(el => {
+    const text = document.createTextNode(el.textContent);
+    el.parentNode.replaceChild(text, el);
+  });
+
+  if (!query.trim()) { if (resultsEl) resultsEl.textContent = ''; return; }
+
+  const q = query.toLowerCase();
+  const bubbles = document.querySelectorAll('#adminChatMessages .admin-bubble');
+  let matchCount = 0;
+  let firstMatch = null;
+
+  bubbles.forEach(bubble => {
+    const spans = bubble.querySelectorAll('span');
+    spans.forEach(span => {
+      if (span.children.length > 0) return; // skip non-text spans
+      const text = span.textContent;
+      if (text.toLowerCase().includes(q)) {
+        matchCount++;
+        // Highlight the match
+        const highlighted = text.replace(
+          new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'),
+          '<mark class="search-highlight" style="background:#fff176;border-radius:3px;padding:0 2px;">$1</mark>'
+        );
+        span.innerHTML = highlighted;
+        if (!firstMatch) firstMatch = bubble;
+      }
+    });
+  });
+
+  if (resultsEl) {
+    resultsEl.textContent = matchCount > 0 ? `${matchCount} result${matchCount > 1 ? 's' : ''} found` : 'No results found';
+    resultsEl.style.color = matchCount > 0 ? '#10ac84' : '#e74c3c';
+  }
+
+  // Scroll to first match
+  if (firstMatch) firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+};
+
+// ─── 5. SCROLL TO BOTTOM BUTTON ───────────────────────────
+function initScrollToBottom() {
+  const container = document.getElementById('adminChatMessages');
+  if (!container) return;
+
+  // Create the button if not exists
+  let btn = document.getElementById('scrollToBottomBtn');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = 'scrollToBottomBtn';
+    btn.innerHTML = '↓';
+    btn.style.cssText = 'display:none;position:absolute;bottom:80px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;border:none;cursor:pointer;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:50;';
+    btn.onclick = () => { container.scrollTop = container.scrollHeight; };
+    container.parentElement.style.position = 'relative';
+    container.parentElement.appendChild(btn);
+  }
+
+  container.onscroll = () => {
+    const distFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+    btn.style.display = distFromBottom > 120 ? 'flex' : 'none';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+  };
+}
+
+// Call initScrollToBottom when a session is opened
+const _origLoadAdminMsgs = loadAdminMessages;
+// Hook into openAdminChatSession — initScrollToBottom runs after messages load
+const _origOpen = window.openAdminChatSession;
+window.openAdminChatSession = async function(sessionId, username, status, userData) {
+  await _origOpen(sessionId, username, status, userData);
+  setTimeout(initScrollToBottom, 200);
+};
+
+// ─── 6. SEEN RECEIPT ──────────────────────────────────────
+// Already handled by message ticks (✓✓ blue = read). 
+// Additionally show "Seen" label under the last admin message.
+function updateSeenLabel(messages) {
+  // Remove existing seen labels
+  document.querySelectorAll('.seen-label').forEach(el => el.remove());
+
+  // Find last admin message that was read
+  const lastReadAdminMsg = [...messages].reverse().find(m => m.sender === 'admin' && m.read && !m.deleted);
+  if (!lastReadAdminMsg) return;
+
+  const bubble = document.querySelector(`[data-msg-id="${lastReadAdminMsg._id}"]`);
+  if (!bubble) return;
+
+  const label = document.createElement('div');
+  label.className = 'seen-label';
+  label.style.cssText = 'font-size:10px;color:#4fc3f7;text-align:right;padding:0 42px;margin-top:-4px;';
+  label.textContent = 'Seen ✓✓';
+  bubble.after(label);
+}
+
+// Patch startAdminChatPolling to call updateSeenLabel
+const _origPollFn = startAdminChatPolling;
+
+// ─── MOBILE: Back to session list ─────────────────────────
+window.closeChatOnMobile = function() {
+  document.getElementById('chatSessionList')?.classList.remove('slide-out');
+  document.getElementById('chatWindowActive').style.display = 'none';
+  document.getElementById('chatWindowEmpty').style.display = 'flex';
+  const backBtn = document.getElementById('chatBackBtn');
+  if (backBtn) backBtn.style.display = 'none';
+  stopAdminChatPolling();
+  activeSessionId = null;
+};
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 700) {
+    document.getElementById('chatSessionList')?.classList.remove('slide-out');
+    const backBtn = document.getElementById('chatBackBtn');
+    if (backBtn) backBtn.style.display = 'none';
+  }
+});
+    </script>
 </body>
+
+
 </html>
