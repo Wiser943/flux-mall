@@ -346,7 +346,7 @@ const allPages = document.querySelectorAll('.page');
 
 function switchPageByHash() {
   const hash = window.location.hash || '#dashboard';
-  //checkAdminSession()
+  checkAdminSession()
   const targetId = hash.substring(1);
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -5017,5 +5017,5 @@ document.head.appendChild(s2);
 
 
 
-// Boot — check sessionc
+// Boot — check session
 checkAdminSession();
