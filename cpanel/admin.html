@@ -985,7 +985,7 @@
       <label class="switch" style="flex-shrink:0;">
         <input
           type="checkbox"
-          id="maintenanceToggle"
+          id="maintenanceToggl"
           onchange="onToggle('maintenance', this.checked); syncMaintUI(this.checked);"
         >
         <span class="slider"></span>
@@ -1783,7 +1783,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <script src="index.js"></script>
   
   <script>
-  document.getElementById('maintenanceToggle').onchange = async (e) => {
+  document.getElementById('maintenanceToggl').onchange = async (e) => {
   await api('/api/admin/settings/maintenance', { method: 'PUT', body: JSON.stringify({ enabled: e.target.checked }) });
 };
     // ── Payment mode quick-switcher ─────────────────────────────
