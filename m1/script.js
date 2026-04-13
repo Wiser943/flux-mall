@@ -1060,7 +1060,7 @@ async function loadTeamData() {
     totalBalances += earnedAmount;
 
     const amountColor = earnedAmount > 0 ? 'var(--green)' : 'var(--yellow)';
-    
+  
     tableRows += `
       <tr>
         <td>${u.username || 'Anonymous'}</td>
@@ -1069,11 +1069,16 @@ async function loadTeamData() {
         <td style="color:${amountColor};font-weight:600;">₦${earnedAmount.toLocaleString()}</td>
       </tr>`;
   });
-
-  // Log the results as requested
-  console.log(`Total Users Referred: ${totalReferred}`);
-  console.log(`Total Team Balance: ₦${totalBalances.toLocaleString()}`);
   
+document.querySelectorAll(".refStat").forEach((div)=>{
+  div.innerHTML=`          <div class="stat-card yellow">
+            <div class="stat-icon yellow"><i class="ri-gift-line"></i></div>
+            <div class="stat-value">🪙${totalBalances.toLocaleString()}</div>
+            <div class="stat-label">Referral Earnings</div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i> ${totalReferred} user(s) reffered</div>
+          </div>
+`;
+})
   teamContainer.innerHTML = `
     <div class="table-wrap">
       <table>
