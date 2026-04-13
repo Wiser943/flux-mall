@@ -838,47 +838,29 @@
         <div class="grid-4 mb-6">
           <div class="stat-card purple">
             <div class="stat-icon purple"><i class="ri-user-add-line"></i></div>
-            <div class="stat-value">7</div>
+            <div class="stat-value">0</div>
             <div class="stat-label">Total Referrals</div>
           </div>
           <div class="stat-card green">
             <div class="stat-icon green"><i class="ri-money-naira-circle-line"></i></div>
-            <div class="stat-value">₦8,400</div>
+            <div class="stat-value">🪙Fex</div>
             <div class="stat-label">Total Earned</div>
           </div>
           <div class="stat-card yellow">
             <div class="stat-icon yellow"><i class="ri-time-line"></i></div>
-            <div class="stat-value">₦1,200</div>
+            <div class="stat-value">🪙Fex</div>
             <div class="stat-label">Pending Bonus</div>
           </div>
+          <!---
           <div class="stat-card blue">
             <div class="stat-icon blue"><i class="ri-bar-chart-box-line"></i></div>
             <div class="stat-value">L3</div>
             <div class="stat-label">Referral Tier</div>
-          </div>
+          </div>--->
         </div>
         
         <div class="grid-2 mb-6">
           <span id="refLink">
-              <div class="referral-block card">
-    <h3>Invite Your Friends</h3>
-    <p>Earn from refering friends!</p>
-    <div class="ref-input-row">
-      <input type="text" value="${refId}"  readonly>
-      <button onclick="copyCode('${refId}')" class="copy-btn"><i class="ri-file-copy-line"></i>copy</button>
-    </div>
-    <label>Link</label>
-    <div class="ref-input-row">
-      <input type="text" value="${link}" readonly>
-      
-      <button onclick="copyCode('${link}')" class="copy-btn"><i class="ri-file-copy-line"></i>copy</button>
-    </div>
-    
-    <div class="mt-6" style="margin-top:16px;display:flex;gap:8px;">
-      <button class="btn btn-primary" onclick="copyCode('${link}')"><i class="ri-share-line"></i> Share</button>
-      <button class="btn btn-outline" onclick="window.open('https://wa.me/?text=${encodeURIComponent(link)}','_blank')"><i class="ri-whatsapp-line"></i> WhatsApp</button>
-    </div>
-  </div>
           </span>
           <!-- How it works -->
           <div class="card">
@@ -904,7 +886,7 @@
           </div>
           
         </div>
-        <!-- Referral Levels -->
+        <!-- Referral Levels --
         <div class="card mb-6">
           <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Referral Tiers</div>
           <div class="ref-level">
@@ -947,13 +929,13 @@
               <div style="font-weight:700;color:var(--yellow);">₦2,500/ref + Bonus</div>
             </div>
           </div>
-        </div>
+        </div>--->
         
         <!-- Referred Users -->
         <div class="card">
           <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referrals</div>
           <div class="table-wrap" id="teamContainer">
-            <table>
+           <!--- <table>
               <thead>
                 <tr>
                   <th>User</th>
@@ -988,7 +970,7 @@
                   <td style="color:var(--green);font-weight:600;">₦1,200</td>
                 </tr>
               </tbody>
-            </table>
+            </table>-->
           </div>
         </div>
       </div>
@@ -1274,7 +1256,7 @@
           <a class="nav-sheet-item" href="#deposit" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-arrow-down-circle-line"></i></span><span class="ns-label">Deposit</span></a>
           <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon"><i class="ri-arrow-up-circle-line"></i></span><span class="ns-label">Withdraw</span></a>
           <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-gift-line"></i></span><span class="ns-label">Referral</span></a>
-          <a class="nav-sheet-item" href="#tasks" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Tasks</span></a>
+          <!---   <a class="nav-sheet-item" href="#tasks" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Tasks</span></a>--->
           <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-notification-3-line"></i></span><span class="ns-label">Alerts</span></a>
           <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-user-3-line"></i></span><span class="ns-label">Profile</span></a>
           <div class="nav-sheet-item" style="color: red;" onclick="logoutUser();closeNavSheet()"><span class="ns-icon"><i class="ri-logout-box-r-line"></i></span><span class="ns-label">Logout</span></div>
