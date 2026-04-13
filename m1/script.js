@@ -136,7 +136,7 @@ function renderUserUI() {
   const fexFmt = fexBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   
   document.querySelectorAll('.balance').forEach(el => {
-    el.innerHTML = `${fexFmt} <small style="font-size:0.6em;opacity:0.6;font-weight:400;">FEX</small>`;
+    el.innerHTML = `${fexFmt} <small style="font-size:0.6em;opacity:0.6;font-weight:400;"></small>`;
   });
   
   document.querySelectorAll('.balance-naira').forEach(el => {
@@ -1290,10 +1290,12 @@ async function updateVerificationUI() {
   if (!container) return;
   
   container.innerHTML = `
-  <div id="verificationIcon" class="stat-icon purple"><i class="ri-shield-check-line"></i></div>
+            <div class="stat-card purple">
+            <div id="verificationIcon" class="stat-icon purple"><i class="ri-shield-check-line"></i></div>
             <div class="stat-value">Status</div>
             <div class="stat-label" id="verificationText">Checking...</div>
-            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>Type: Fex</div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>Type: Fex</div></div>
+
 `;
   
   const text = document.getElementById('verificationText');
