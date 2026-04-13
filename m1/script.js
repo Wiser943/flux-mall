@@ -1218,7 +1218,7 @@ window.fetchUserHistory = async () => {
         <div class="txn-date">${date}</div>
       </div>
       <div class="txn-amount ${typeConfig.class}">
-        ${typeConfig.class === 'debit' ? '-' : ''}🪙${Number(item.amount).toLocaleString()} FEX
+        ${typeConfig.class === 'debit' ? '-' : ''}🪙${Number(item.amount).toLocaleString()}
       </div>`;
     list.appendChild(div);
   });
