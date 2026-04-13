@@ -1038,17 +1038,29 @@ async function loadTeamData() {
     return;
   }
   
+  // Variables to track totals
+  let totalReferred = users.length;
+  let totalBalances = 0;
   let tableRows = '';
+
   users.forEach(u => {
     const date = u.createdAt ?
       new Date(u.createdAt).toLocaleDateString('en-NG', { month: 'short', day: '2-digit', year: 'numeric' }) :
       '—';
+    
     const status = (u.status || 'pending').toLowerCase();
     const isSuccess = status === 'active' || status === 'success';
     const badgeClass = isSuccess ? 'success' : 'pending';
     const statusText = isSuccess ? 'Active' : 'Pending';
+
+    // Calculate earned amount for this specific user
     const earnedAmount = u.earned || (isSuccess ? 1200 : 0);
+    
+    // Add to the total balance
+    totalBalances += earnedAmount;
+
     const amountColor = earnedAmount > 0 ? 'var(--green)' : 'var(--yellow)';
+    
     tableRows += `
       <tr>
         <td>${u.username || 'Anonymous'}</td>
@@ -1057,6 +1069,10 @@ async function loadTeamData() {
         <td style="color:${amountColor};font-weight:600;">₦${earnedAmount.toLocaleString()}</td>
       </tr>`;
   });
+
+  // Log the results as requested
+  console.log(`Total Users Referred: ${totalReferred}`);
+  console.log(`Total Team Balance: ₦${totalBalances.toLocaleString()}`);
   
   teamContainer.innerHTML = `
     <div class="table-wrap">
