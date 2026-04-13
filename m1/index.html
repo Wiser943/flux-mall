@@ -182,12 +182,7 @@
             <div class="stat-label">Total Withdrawn</div>
             <div class="stat-change down"><i class="ri-arrow-down-s-line"></i> 0% this month</div>
           </div>
-          <div class="stat-card yellow">
-            <div class="stat-icon yellow"><i class="ri-gift-line"></i></div>
-            <div class="stat-value">₦0.00</div>
-            <div class="stat-label">Referral Earnings</div>
-            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i> ₦0 pending</div>
-          </div>
+          <span class="refStat"></span>
           <!-- KYC Status -->
           <div class="stat-card purple" id="verifiedStatus"></div>
           <!---    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Account Status</div>
@@ -841,12 +836,8 @@
             <div class="stat-value">0</div>
             <div class="stat-label">Total Referrals</div>
           </div>
+          <span class="refStat"></span>
           <div class="stat-card green">
-            <div class="stat-icon green"><i class="ri-money-naira-circle-line"></i></div>
-            <div class="stat-value">🪙0.00</div>
-            <div class="stat-label">Total Earned</div>
-          </div>
-          <div class="stat-card yellow">
             <div class="stat-icon yellow"><i class="ri-time-line"></i></div>
             <div class="stat-value">🪙0.00</div>
             <div class="stat-label">Pending Bonus</div>
@@ -935,7 +926,7 @@
         <div class="card">
           <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Your Referrals</div>
           <div class="table-wrap" id="teamContainer">
-           <!--- <table>
+            <!--- <table>
               <thead>
                 <tr>
                   <th>User</th>
