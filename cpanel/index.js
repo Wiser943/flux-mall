@@ -5017,5 +5017,5 @@ document.head.appendChild(s2);
 
 
 
-// Boot — check session
-//checkAdminSession();
+// Boot — check sessionc
+checkAdminSession();
