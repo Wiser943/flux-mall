@@ -1546,7 +1546,6 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#ctxMenu') && !e.target.closest('.row-btn[data-more]')) hideCtx();
 });
 
-
 // ══════════════════════════════════════════════════════════
 //  SECTION 10 — SETTINGS
 // ══════════════════════════════════════════════════════════
@@ -1558,7 +1557,7 @@ async function loadSettings() {
     if (!data?.success) { console.error('Failed to fetch settings:', data?.message); return; }
     const s = data.settings;
     
-    const mToggle = document.getElementById('maintenanceToggle');
+    const mToggle = document.getElementById('tgl-maintenance');
     if (mToggle && s.maintenance) {
       mToggle.checked = s.maintenance.enabled || false;
       mToggle.onchange = async (e) => {
@@ -5012,4 +5011,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
