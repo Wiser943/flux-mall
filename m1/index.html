@@ -170,12 +170,17 @@
         
         <!-- STAT CARDS -->
         <div class="grid-4 mb-6">
+          <span id="deposit-success-coun">
+          </span>
           <div class="stat-card green">
             <div class="stat-icon green"><i class="ri-arrow-down-circle-line"></i></div>
             <div class="stat-value">₦<span id="deposit-success-naira">0.00</span></div>
             <div class="stat-label">Total Deposited</div>
-            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i><span id="deposit-success-count">None</span> in last session</div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>
+              <span id="deposit-success-count">None</span> in last session
+            </div>
           </div>
+          
           <div class="stat-card blue">
             <div class="stat-icon blue"><i class="ri-arrow-up-circle-line"></i></div>
             <div class="stat-value">₦0.00</div>
@@ -184,7 +189,7 @@
           </div>
           <span class="refStat"></span>
           <!-- KYC Status -->
-          <div class="stat-card purple" id="verifiedStatus"></div>
+          <span id="verifiedStatus"></span>
           <!---    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Account Status</div>
     <div class="flex-center flex-gap-2 mb-4">
       <span id="verificationIcon" style="font-size:22px;"><i class="ri-shield-check-line"></i></span>
