@@ -185,51 +185,51 @@
       <!-- End of Insights -->
       
       <br>
-        <div class="items-list">
-          <div class="item">
-            <div class="info">
-              <div>
-                <h5>Data Analysis</h5>
-                <p>- 3 lessons left</p>
-                <p>- 1 project left</p>
-              </div>
-              <i class='bx bx-data'></i>
+      <div class="items-list">
+        <div class="item">
+          <div class="info">
+            <div>
+              <h5>Data Analysis</h5>
+              <p>- 3 lessons left</p>
+              <p>- 1 project left</p>
             </div>
-            <div class="progress">
-              <div class="bar"></div>
-            </div>
+            <i class='bx bx-data'></i>
           </div>
-          <div class="item">
-            <div class="info">
-              <div>
-                <h5>Machine Learn</h5>
-                <p>- 2 assignments left</p>
-                <p>- 5 tutorials left</p>
-              </div>
-              <i class='bx bx-terminal'></i>
-            </div>
-            <div class="progress">
-              <div class="bar"></div>
-            </div>
-          </div>
-          <div class="item">
-            <div class="info">
-              <div>
-                <h5>Python</h5>
-                <p>- 4 chapters left</p>
-                <p>- 8 quizzes left</p>
-              </div>
-              <i class='bx bxl-python'></i>
-            </div>
-            <div class="progress">
-              <div class="bar"></div>
-            </div>
-          </div>
-          <div class="item">
-            <canvas class="activity-chart"></canvas>
+          <div class="progress">
+            <div class="bar"></div>
           </div>
         </div>
-        
+        <div class="item">
+          <div class="info">
+            <div>
+              <h5>Machine Learn</h5>
+              <p>- 2 assignments left</p>
+              <p>- 5 tutorials left</p>
+            </div>
+            <i class='bx bx-terminal'></i>
+          </div>
+          <div class="progress">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div class="item">
+          <div class="info">
+            <div>
+              <h5>Python</h5>
+              <p>- 4 chapters left</p>
+              <p>- 8 quizzes left</p>
+            </div>
+            <i class='bx bxl-python'></i>
+          </div>
+          <div class="progress">
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div class="item">
+          <canvas class="activity-chart"></canvas>
+        </div>
+      </div>
+      
       <div class="bottom-container">
         <div class="prog-status">
           <div class="header">
@@ -457,130 +457,138 @@
     </main><!-- /page -->
     
     <main class="page" id="shares">
-
-
-
-
-  <!-- ── PAGE HEADER ──────────────────────────────────────── -->
-  <div class="page-header">
-    <div>
-      <h1><i class="ri-stock-line" style="color:var(--primary);margin-right:6px;"></i>Shares & Investments</h1>
-      <div class="sub">Manage share catalog · Track user investments</div>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
-      <button class="btn btn-primary btn-sm" onclick="openAddShareModal()"><i class="ri-add-line"></i> New Share</button>
-    </div>
-  </div>
-
-  <!-- ── STAT STRIP ──────────────────────────────────────── -->
-  <div class="stat-strip">
-    <div class="stat-card blue">
-      <div class="stat-val" id="statTotalShares">—</div>
-      <div class="stat-label">Share Packages</div>
-      <i class="ri-stack-line stat-icon"></i>
-    </div>
-    <div class="stat-card green">
-      <div class="stat-val" id="statActiveInvestments">—</div>
-      <div class="stat-label">Active Investments</div>
-      <i class="ri-line-chart-line stat-icon"></i>
-    </div>
-    <div class="stat-card orange">
-      <div class="stat-val" id="statTotalInvested">—</div>
-      <div class="stat-label">Total Invested (FEX)</div>
-      <i class="ri-coin-line stat-icon"></i>
-    </div>
-    <div class="stat-card red">
-      <div class="stat-val" id="statExpired">—</div>
-      <div class="stat-label">Expired</div>
-      <i class="ri-time-line stat-icon"></i>
-    </div>
-  </div>
-
-  <!-- ── TABS ─────────────────────────────────────────────── -->
-  <div class="tabs-wrap">
-    <div class="tabs-header">
-      <button class="tab-btn active" onclick="switchTab('catalog',this)">
-        <i class="ri-layout-grid-line"></i><span>Share Catalog</span>
-        <span class="tab-count" id="tcCatalog">0</span>
-      </button>
-      <button class="tab-btn" onclick="switchTab('investments',this)">
-        <i class="ri-user-star-line"></i><span>User Investments</span>
-        <span class="tab-count" id="tcInvestments">0</span>
-      </button>
-    </div>
-
-    <!-- ══ CATALOG TAB ═════════════════════════════════════ -->
-    <div class="tab-panel active" id="panel-catalog">
-      <div class="toolbar">
-        <div class="search-box">
-          <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
+      
+      
+      
+      
+      <!-- ── PAGE HEADER ──────────────────────────────────────── -->
+      <div class="page-header">
+        <div>
+          <h1><i class="ri-stock-line" style="color:var(--primary);margin-right:6px;"></i>Shares & Investments</h1>
+          <div class="sub">Manage share catalog · Track user investments</div>
         </div>
-        <select class="filter-select" onchange="sortCatalog(this.value)">
-          <option value="price-asc">Price: Low → High</option>
-          <option value="price-desc">Price: High → Low</option>
-          <option value="duration-asc">Duration: Short → Long</option>
-          <option value="name-asc">Name: A → Z</option>
-        </select>
-      </div>
-
-      <!-- Share cards grid -->
-      <div id="sharesGrid" class="shares-grid">
-        <div class="state-box" style="grid-column:1/-1">
-          <div class="spinner"></div><p>Loading shares…</p>
+        <div class="header-actions">
+          <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddShareModal()"><i class="ri-add-line"></i> New Share</button>
         </div>
       </div>
-    </div>
-
-    <!-- ══ INVESTMENTS TAB ══════════════════════════════════ -->
-    <div class="tab-panel" id="panel-investments">
-      <div class="toolbar">
-        <div class="search-box">
-          <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
+      
+      <!-- ── STAT STRIP ──────────────────────────────────────── -->
+      <div class="stat-strip">
+        <div class="stat-card blue">
+          <div class="stat-val" id="statTotalShares">—</div>
+          <div class="stat-label">Share Packages</div>
+          <i class="ri-stack-line stat-icon"></i>
         </div>
-        <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
-          <option value="all">All Status</option>
-          <option value="active">Active</option>
-          <option value="expired">Expired</option>
-        </select>
+        <div class="stat-card green">
+          <div class="stat-val" id="statActiveInvestments">—</div>
+          <div class="stat-label">Active Investments</div>
+          <i class="ri-line-chart-line stat-icon"></i>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-val" id="statTotalInvested">—</div>
+          <div class="stat-label">Total Invested (FEX)</div>
+          <i class="ri-coin-line stat-icon"></i>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-val" id="statExpired">—</div>
+          <div class="stat-label">Expired</div>
+          <i class="ri-time-line stat-icon"></i>
+        </div>
       </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Share Package</th>
-              <th>Progress</th>
-              <th>Daily Income</th>
-              <th>Purchased</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="investmentsTableBody">
-            <tr><td colspan="7"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="pagination" id="investPagination" style="display:none;">
-        <span id="investPageInfo"></span>
-        <div class="page-btns" id="investPageBtns"></div>
-      </div>
-    </div>
-
-  </div><!-- /tabs-wrap -->
-
-
-<!-- ── MODAL MOUNT ──────────────────────────────────────── -->
-<div id="__modal"></div>
-
-<!-- ══════════════════════════════════════════════════════════
+      
+      <!-- ── TABS ─────────────────────────────────────────────── -->
+      <div class="tabs-wrap">
+        <div class="tabs-header">
+          <button class="tab-btn active" onclick="switchTab('catalog',this)">
+            <i class="ri-layout-grid-line"></i><span>Share Catalog</span>
+            <span class="tab-count" id="tcCatalog">0</span>
+          </button>
+          <button class="tab-btn" onclick="switchTab('investments',this)">
+            <i class="ri-user-star-line"></i><span>User Investments</span>
+            <span class="tab-count" id="tcInvestments">0</span>
+          </button>
+        </div>
+        
+        <!-- ══ CATALOG TAB ═════════════════════════════════════ -->
+        <div class="tab-panel active" id="panel-catalog">
+          <div class="toolbar">
+            <div class="search-box">
+              <i class="ri-search-line"></i>
+              <input type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
+            </div>
+            <select class="filter-select" onchange="sortCatalog(this.value)">
+              <option value="price-asc">Price: Low → High</option>
+              <option value="price-desc">Price: High → Low</option>
+              <option value="duration-asc">Duration: Short → Long</option>
+              <option value="name-asc">Name: A → Z</option>
+            </select>
+          </div>
+          
+          <!-- Share cards grid -->
+          <div id="sharesGrid" class="shares-grid">
+            <div class="state-box" style="grid-column:1/-1">
+              <div class="spinner"></div>
+              <p>Loading shares…</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- ══ INVESTMENTS TAB ══════════════════════════════════ -->
+        <div class="tab-panel" id="panel-investments">
+          <div class="toolbar">
+            <div class="search-box">
+              <i class="ri-search-line"></i>
+              <input type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
+            </div>
+            <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+          
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Share Package</th>
+                  <th>Progress</th>
+                  <th>Daily Income</th>
+                  <th>Purchased</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="investmentsTableBody">
+                <tr>
+                  <td colspan="7">
+                    <div class="state-box">
+                      <div class="spinner"></div>
+                      <p>Loading…</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pagination" id="investPagination" style="display:none;">
+            <span id="investPageInfo"></span>
+            <div class="page-btns" id="investPageBtns"></div>
+          </div>
+        </div>
+        
+      </div><!-- /tabs-wrap -->
+      
+      
+      <!-- ── MODAL MOUNT ──────────────────────────────────────── -->
+      <div id="__modal"></div>
+      
+      <!-- ══════════════════════════════════════════════════════════
      SCRIPT
 ═══════════════════════════════════════════════════════════ -->
-
+      
     </main>
     
     <main class="page" id="chats">
@@ -920,216 +928,6 @@
     </main>
     
     <main class="page" id="settings">
-      
-      <!-- ── Maintenance Mode Dropdown ─────────────────────────── -->
-<div class="maint-dropdown-wrap">
-
-  <!-- The clickable header that opens/closes the dropdown -->
-  <div class="maint-header" onclick="toggleMaintDropdown()">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <div class="maint-icon-wrap">
-        <i class="ri-tools-line"></i>
-      </div>
-      <div>
-        <div style="font-weight:700;font-size:14px;color:var(--text1,#1b2559);">
-          Maintenance Mode
-        </div>
-        <div style="font-size:12px;color:var(--text3,#a3adc2);" id="maintStatusText">
-          Checking...
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <!-- Live status pill -->
-      <span id="maintStatusPill" style="
-        font-size:11px;font-weight:700;padding:3px 10px;
-        border-radius:20px;background:var(--success-soft,rgba(5,205,153,0.12));
-        color:var(--success,#05cd99);
-      ">OFF</span>
-      <!-- Chevron arrow -->
-      <i class="ri-arrow-down-s-line" id="maintChevron"
-        style="font-size:18px;color:var(--text3);transition:transform 0.25s;"></i>
-    </div>
-  </div>
-
-  <!-- The dropdown body — hidden by default -->
-  <div class="maint-body" id="maintDropdownBody">
-
-    <div style="
-      background:var(--warning-soft,rgba(246,173,85,0.12));
-      border:1px solid rgba(246,173,85,0.3);
-      border-radius:10px;padding:10px 12px;
-      margin-bottom:14px;font-size:12px;
-      color:var(--text2,#4a5568);line-height:1.6;
-    ">
-      ⚠️ When ON, all users are immediately locked out.
-      Only admins can access the platform.
-    </div>
-
-    <!-- Toggle row -->
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="font-size:13px;font-weight:600;color:var(--text1,#1b2559);">
-          Enable Maintenance Mode
-        </div>
-        <div style="font-size:11px;color:var(--text3,#a3adc2);margin-top:2px;">
-          Saves immediately on toggle
-        </div>
-      </div>
-
-      <!-- THE TOGGLE — id="maintenanceToggle" matches loadSettings() line 1561
-                        id="tgl-maintenance"   matches fillSettings()  line 1634
-           We use ONE checkbox and give it BOTH ids via a wrapper trick.
-           Actually we just use maintenanceToggle as the real input and
-           keep tgl-maintenance as a hidden mirror. -->
-      <label class="switch" style="flex-shrink:0;">
-        <input
-          type="checkbox"
-          id="maintenanceToggl"
-          onchange="onToggle('maintenance', this.checked); syncMaintUI(this.checked);"
-        >
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <!-- Hidden mirror input so tgl-maintenance id also resolves -->
-  <!--<input type="hidden" id="tgl-maintenance">--->
-
-  </div>
-</div>
-
-<style>
-/* ── Dropdown wrapper ──────────────────────────────────────── */
-.maint-dropdown-wrap {
-  background: var(--card, #fff);
-  border: 1px solid var(--border, #e0e5f2);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  margin-bottom: 14px;
-}
-
-/* ── Clickable header ──────────────────────────────────────── */
-.maint-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.15s;
-}
-.maint-header:hover {
-  background: var(--bg, #f4f7fe);
-}
-
-/* ── Icon box ──────────────────────────────────────────────── */
-.maint-icon-wrap {
-  width: 36px; height: 36px;
-  border-radius: 10px;
-  background: var(--warning-soft, rgba(246,173,85,0.12));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-  color: var(--warning, #f6ad55);
-}
-
-/* ── Dropdown body — collapsed by default ──────────────────── */
-.maint-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
-  padding: 0 16px;
-  border-top: 0px solid var(--border, #e0e5f2);
-}
-.maint-body.open {
-  max-height: 300px;
-  padding: 14px 16px;
-  border-top: 1px solid var(--border, #e0e5f2);
-}
-
-/* ── Chevron rotates when open ─────────────────────────────── */
-.maint-header.open #maintChevron {
-  transform: rotate(180deg);
-}
-
-/* ── Switch (reuse your existing .switch styles if present) ── */
-.switch { position:relative; display:inline-block; width:44px; height:24px; }
-.switch input { opacity:0; width:0; height:0; }
-.slider {
-  position:absolute; cursor:pointer; inset:0;
-  background:#ccc; border-radius:24px; transition:.3s;
-}
-.slider:before {
-  content:''; position:absolute;
-  width:18px; height:18px; left:3px; bottom:3px;
-  background:#fff; border-radius:50%; transition:.3s;
-}
-input:checked + .slider { background: var(--primary, #4318ff); }
-input:checked + .slider:before { transform: translateX(20px); }
-</style>
-
-<script>
-// ── Open / close the dropdown ─────────────────────────────────
-function toggleMaintDropdown() {
-  const body    = document.getElementById('maintDropdownBody');
-  const header  = body?.previousElementSibling;
-  const chevron = document.getElementById('maintChevron');
-  const isOpen  = body?.classList.contains('open');
-
-  body?.classList.toggle('open', !isOpen);
-  header?.classList.toggle('open', !isOpen);
-  if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-}
-
-// ── Sync the pill + subtitle text whenever toggle changes ─────
-function syncMaintUI(isOn) {
-  const pill   = document.getElementById('maintStatusPill');
-  const text   = document.getElementById('maintStatusText');
-  const mirror = document.getElementById('tgl-maintenance');
-
-  // Keep the hidden mirror in sync so fillSettings() can find it
-  if (mirror) mirror.value = isOn ? 'true' : 'false';
-
-  if (pill) {
-    pill.textContent = isOn ? 'ON' : 'OFF';
-    pill.style.background = isOn
-      ? 'rgba(238,93,80,0.12)'   // red-soft when ON
-      : 'rgba(5,205,153,0.12)';  // green-soft when OFF
-    pill.style.color = isOn
-      ? '#ee5d50'   // danger
-      : '#05cd99';  // success
-  }
-
-  if (text) {
-    text.textContent = isOn
-      ? '🔴 Platform is in maintenance'
-      : '🟢 Platform is live';
-  }
-}
-
-// ── On page load — reflect current state from API ─────────────
-// This runs AFTER loadSettings() has set maintenanceToggle.checked
-// We use a MutationObserver to catch when loadSettings() sets the checkbox
-const _maintObs = new MutationObserver(() => {});
-document.addEventListener('DOMContentLoaded', () => {
-  // Poll briefly until the checkbox is set by loadSettings()
-  const poll = setInterval(() => {
-    const toggle = document.getElementById('maintenanceToggle');
-    if (!toggle) return;
-    // Once loadSettings() has run it will have set .checked
-    // We just sync the UI to match whatever state it is
-    syncMaintUI(toggle.checked);
-    clearInterval(poll);
-  }, 200);
-
-  // Fallback — stop polling after 5s regardless
-  setTimeout(() => clearInterval(poll), 5000);
-});
-</script>
-      
-      
-      
-      
       <div class="page-wrap">
         <!-- ── PAGE HEADER ── -->
         <div class="page-header">
@@ -1709,31 +1507,99 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           
           <!-- MAINTENANCE -->
+          <script>
+            // ── Sync the pill + subtitle text whenever toggle changes ─────
+            function syncMaintUI(isOn) {
+              const pill = document.getElementById('maintStatusPill');
+              const text = document.getElementById('maintStatusText');
+              const mirror = document.getElementById('tgl-maintenance');
+              
+              // Keep the hidden mirror in sync so fillSettings() can find it
+              if (mirror) mirror.value = isOn ? 'true' : 'false';
+              
+              if (pill) {
+                pill.textContent = isOn ? 'ON' : 'OFF';
+                pill.style.background = isOn ?
+                  'rgba(238,93,80,0.12)' // red-soft when ON
+                  :
+                  'rgba(5,205,153,0.12)'; // green-soft when OFF
+                pill.style.color = isOn ?
+                  '#ee5d50' // danger
+                  :
+                  '#05cd99'; // success
+              }
+              
+              if (text) {
+                text.textContent = isOn ?
+                  '🔴 Platform is in maintenance' :
+                  '🟢 Platform is live';
+              }
+            }
+            
+            // ── On page load — reflect current state from API ─────────────
+            // This runs AFTER loadSettings() has set maintenanceToggle.checked
+            // We use a MutationObserver to catch when loadSettings() sets the checkbox
+            const _maintObs = new MutationObserver(() => {});
+            document.addEventListener('DOMContentLoaded', () => {
+              // Poll briefly until the checkbox is set by loadSettings()
+              const poll = setInterval(() => {
+                const toggle = document.getElementById('maintenanceToggle');
+                if (!toggle) return;
+                // Once loadSettings() has run it will have set .checked
+                // We just sync the UI to match whatever state it is
+                syncMaintUI(toggle.checked);
+                clearInterval(poll);
+              }, 200);
+              
+              // Fallback — stop polling after 5s regardless
+              setTimeout(() => clearInterval(poll), 5000);
+            });
+          </script>
+          
           <div class="section-card" id="card-maintenance" data-search-keywords="maintenance mode lock users upgrade downtime message">
             <div class="section-header" onclick="toggleSection('card-maintenance')">
               <div class="section-header-left">
                 <div class="section-icon red"><i class="ri-tools-fill"></i></div>
                 <div>
-                  <div class="section-title-text">Maintenance</div>
-                  <div class="section-sub">Lock platform for upgrades</div>
+                  <div class="section-title-text">Maintenance Mode</div>
+                  <div class="section-sub" style="font-size:12px;color:var(--text3,#a3adc2);" id="maintStatusText">
+                    Checking...
+                  </div>
                 </div>
-              </div>
+              </div><div style="display: flex; align-items: center;gap: 8px;">
+
+                              <span id="maintStatusPill" style="
+        font-size:11px;font-weight:700;padding:3px 10px;
+        border-radius:20px;background:var(--success-soft,rgba(5,205,153,0.12));
+        color:var(--success,#05cd99);
+      ">OFF</span>
               <i class="ri-arrow-down-s-line section-chevron"></i>
+              </div>
             </div>
             <div class="section-body">
               <div class="toggle-row">
                 <div class="toggle-info">
-                  <div class="tgl-title">Maintenance Mode</div>
-                  <div class="tgl-sub">Locks all users out of the platform. Only admins can log in.</div>
+                  <div class="tgl-title">Enable Maintenance Mode</div>
+                  <div class="tgl-sub">Saves immediately on toggle.</div>
                 </div>
-               <label class="toggle">
+                <label class="toggle">
                   <input type="checkbox" id="tgl-maintenance" onchange="onToggle('maintenance', this.checked)">
                   <span class="toggle-track"></span>
                 </label>
               </div>
               <div class="form-group">
-                <label class="form-label">Maintenance Message</label>
-                <textarea class="form-input" id="maintMsg" placeholder="We're currently upgrading the platform. We'll be back shortly." style="min-height:70px;"></textarea>
+                <label class="form-label">Notice:</label>
+                <div style="
+      background:var(--warning-soft,rgba(246,173,85,0.12));
+      border:1px solid rgba(246,173,85,0.3);
+      border-radius:10px;padding:10px 12px;
+      margin-bottom:14px;font-size:12px;
+      color:var(--text2);line-height:1.6;
+    ">
+                  ⚠️ When ON, all users are immediately locked out.
+                  Only admins can access the platform.
+                </div><!--
+                <textarea class="form-input" id="maintMsg" placeholder="We're currently upgrading the platform. We'll be back shortly." style="min-height:70px;"></textarea>--->
               </div>
             </div>
           </div>
@@ -1783,7 +1649,6 @@ document.addEventListener('DOMContentLoaded', () => {
   <script src="index.js"></script>
   
   <script>
-  
     // ── Payment mode quick-switcher ─────────────────────────────
     // Loads current mode on page load and highlights the active pill.
     // quickSetPaymentMode() saves instantly without opening the modal.
