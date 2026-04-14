@@ -2110,7 +2110,7 @@ const confirmIcons = { danger: 'ri-error-warning-line', warning: 'ri-alert-line'
 function showConfirm({ title, msg, type = 'danger', yesLabel = 'Confirm', onYes }) {
   confirmCallback = onYes;
   document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmMsg').innerHTML = msg;
   document.getElementById('confirmIconEl').className = confirmIcons[type] || confirmIcons.danger;
   document.getElementById('confirmIcon').className = `confirm-icon-wrap ${type}`;
   const yesBtn = document.getElementById('confirmYesBtn');
@@ -2231,7 +2231,7 @@ window.openBindBankModal = async () => {
         <div class="input-group"><label>Korapay Public Key</label><input type="text" id="koraPublicKey" value="${p.korapay?.publicKey||''}"></div>
         <div class="input-group"><label>Secret Key</label><input type="password" id="koraSecretKey" value="${p.korapay?.secretKey||''}"></div>
       </div>`,
-    type: 'success',
+    type: 'green',
     yesLabel: 'Configure',
     onYes: () => {
       savePaymentSettings()
@@ -5117,4 +5117,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
