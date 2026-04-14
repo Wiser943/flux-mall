@@ -1560,7 +1560,7 @@ if (mToggle) {
 */
 const mToggle = document.getElementById('tgl-maintenance');
       mToggle.onchange = async (e) => {
-        const enabled = e.target.checked;
+        const enabled = e.target.checked;console.log("hshshs"); alert("sjsjsj");
         await api('/api/admin/settings/maintenance', {
           method: 'PUT',
           body: JSON.stringify({ enabled })
