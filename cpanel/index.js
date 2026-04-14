@@ -1568,7 +1568,7 @@ const mToggle = document.getElementById('tgl-maintenance');
         // Sync the dropdown UI pill if the maintenance dropdown component is present
         if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
         showToast(
-          enabled ? '⚠️ Maintenance mode ON' : '✅ Maintenance mode OFF',
+          enabled ? '⚠️ Maintenance mode ON' : 'Maintenance mode OFF',
           enabled ? 'error' : 'success'
         );
       };
