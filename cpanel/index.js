@@ -1558,21 +1558,6 @@ if (mToggle) {
   };
 }
 */
-const mToggle = document.getElementById('tgl-maintenance');
-      mToggle.onchange = async (e) => {
-        const enabled = e.target.checked;console.log("hshshs"); alert("sjsjsj");
-        await api('/api/admin/settings/maintenance', {
-          method: 'PUT',
-          body: JSON.stringify({ enabled })
-        });
-        // Sync the dropdown UI pill if the maintenance dropdown component is present
-        if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
-        showToast(
-          enabled ? '⚠️ Maintenance mode ON' : '✅ Maintenance mode OFF',
-          enabled ? 'error' : 'success'
-        );
-      };
-
 async function loadSettings() {
   try {
     await loadApiKeys();
@@ -1581,7 +1566,7 @@ async function loadSettings() {
     const s = data.settings;
 
     // ── Maintenance toggle — uses id="tgl-maintenance" ──────
-
+    const mToggle = document.getElementById('tgl-maintenance');
     if (mToggle) {
       // Set checked state from server — default false if no maintenance doc yet
       const isOn = s.maintenance?.enabled || false;
