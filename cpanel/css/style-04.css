@@ -514,7 +514,7 @@ select.form-input {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--text);
-  margin:4px 0 2px 0;
+  margin:14px 0 0 0;
 }
 
 .toggle-info .tgl-sub {
