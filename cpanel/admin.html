@@ -993,7 +993,7 @@
     </div>
 
     <!-- Hidden mirror input so tgl-maintenance id also resolves -->
-    <input type="hidden" id="tgl-maintenance">
+  <!--<input type="hidden" id="tgl-maintenance">--->
 
   </div>
 </div>
@@ -1727,7 +1727,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <div class="tgl-sub">Locks all users out of the platform. Only admins can log in.</div>
                 </div>
                <label class="toggle">
-                  <input type="checkbox" id="tgl-maintenance">
+                  <input type="checkbox" id="tgl-maintenance" onchange="onToggle('maintenance', this.checked)">
                   <span class="toggle-track"></span>
                 </label>
               </div>
