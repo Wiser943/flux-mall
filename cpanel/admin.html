@@ -1507,55 +1507,6 @@
           </div>
           
           <!-- MAINTENANCE -->
-          <script>
-            // ── Sync the pill + subtitle text whenever toggle changes ─────
-            function syncMaintUI(isOn) {
-              const pill = document.getElementById('maintStatusPill');
-              const text = document.getElementById('maintStatusText');
-              const mirror = document.getElementById('tgl-maintenance');
-              
-              // Keep the hidden mirror in sync so fillSettings() can find it
-              if (mirror) mirror.value = isOn ? 'true' : 'false';
-              
-              if (pill) {
-                pill.textContent = isOn ? 'ON' : 'OFF';
-                pill.style.background = isOn ?
-                  'rgba(238,93,80,0.12)' // red-soft when ON
-                  :
-                  'rgba(5,205,153,0.12)'; // green-soft when OFF
-                pill.style.color = isOn ?
-                  '#ee5d50' // danger
-                  :
-                  '#05cd99'; // success
-              }
-              
-              if (text) {
-                text.textContent = isOn ?
-                  '🔴 Platform is in maintenance' :
-                  '🟢 Platform is live';
-              }
-            }
-            
-            // ── On page load — reflect current state from API ─────────────
-            // This runs AFTER loadSettings() has set maintenanceToggle.checked
-            // We use a MutationObserver to catch when loadSettings() sets the checkbox
-            const _maintObs = new MutationObserver(() => {});
-            document.addEventListener('DOMContentLoaded', () => {
-              // Poll briefly until the checkbox is set by loadSettings()
-              const poll = setInterval(() => {
-                const toggle = document.getElementById('maintenanceToggle');
-                if (!toggle) return;
-                // Once loadSettings() has run it will have set .checked
-                // We just sync the UI to match whatever state it is
-                syncMaintUI(toggle.checked);
-                clearInterval(poll);
-              }, 200);
-              
-              // Fallback — stop polling after 5s regardless
-              setTimeout(() => clearInterval(poll), 5000);
-            });
-          </script>
-          
           <div class="section-card" id="card-maintenance" data-search-keywords="maintenance mode lock users upgrade downtime message">
             <div class="section-header" onclick="toggleSection('card-maintenance')">
               <div class="section-header-left">
@@ -1566,14 +1517,15 @@
                     Checking...
                   </div>
                 </div>
-              </div><div style="display: flex; align-items: center;gap: 8px;">
-
-                              <span id="maintStatusPill" style="
+              </div>
+              <div style="display: flex; align-items: center;gap: 8px;">
+                
+                <span id="maintStatusPill" style="
         font-size:11px;font-weight:700;padding:3px 10px;
         border-radius:20px;background:var(--success-soft,rgba(5,205,153,0.12));
         color:var(--success,#05cd99);
       ">OFF</span>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
+                <i class="ri-arrow-down-s-line section-chevron"></i>
               </div>
             </div>
             <div class="section-body">
@@ -1642,13 +1594,59 @@
         </div>
         
       </div><!-- /page-wrap -->
-      
     </main>
   </div>
   
   <script src="index.js"></script>
   
   <script>
+    // ── Sync the pill + subtitle text whenever toggle changes ─────
+    function syncMaintUI(isOn) {
+      const pill = document.getElementById('maintStatusPill');
+      const text = document.getElementById('maintStatusText');
+      const mirror = document.getElementById('tgl-maintenance');
+      
+      // Keep the hidden mirror in sync so fillSettings() can find it
+      if (mirror) mirror.value = isOn ? 'true' : 'false';
+      
+      if (pill) {
+        pill.textContent = isOn ? 'ON' : 'OFF';
+        pill.style.background = isOn ?
+          'rgba(238,93,80,0.12)' // red-soft when ON
+          :
+          'rgba(5,205,153,0.12)'; // green-soft when OFF
+        pill.style.color = isOn ?
+          '#ee5d50' // danger
+          :
+          '#05cd99'; // success
+      }
+      
+      if (text) {
+        text.textContent = isOn ?
+          '🔴 Platform is in maintenance' :
+          '🟢 Platform is live';
+      }
+    }
+    
+    // ── On page load — reflect current state from API ─────────────
+    // This runs AFTER loadSettings() has set maintenanceToggle.checked
+    // We use a MutationObserver to catch when loadSettings() sets the checkbox
+    const _maintObs = new MutationObserver(() => {});
+    document.addEventListener('DOMContentLoaded', () => {
+      // Poll briefly until the checkbox is set by loadSettings()
+      const poll = setInterval(() => {
+        const toggle = document.getElementById('maintenanceToggle');
+        if (!toggle) return;
+        // Once loadSettings() has run it will have set .checked
+        // We just sync the UI to match whatever state it is
+        syncMaintUI(toggle.checked);
+        clearInterval(poll);
+      }, 200);
+      
+      // Fallback — stop polling after 5s regardless
+      setTimeout(() => clearInterval(poll), 5000);
+    });
+    
     // ── Payment mode quick-switcher ─────────────────────────────
     // Loads current mode on page load and highlights the active pill.
     // quickSetPaymentMode() saves instantly without opening the modal.
