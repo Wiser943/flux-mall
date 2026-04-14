@@ -212,31 +212,32 @@ window.showModal = (cfg) => {
   
   const overlay = document.createElement('div');
   overlay.id = cfg.id;
-  overlay.className = 'modal-overlay';
-  overlay.style.cssText = `
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:rgba(0,0,0,0.85);display:flex;align-items:center;
-    justify-content:center;z-index:9999;backdrop-filter:blur(8px);
-    animation:fadeIn 0.3s ease;`;
+  overlay.className = 'modal-overlay vis';
+  /*  overlay.style.cssText = `
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:rgba(0,0,0,0.85);display:flex;align-items:center;
+      justify-content:center;z-index:9999;backdrop-filter:blur(8px);
+      animation:fadeIn 0.3s ease;`;*/
   
   const buttonsHTML = (cfg.buttons || []).map(btn =>
     `<button class="${btn.class||'btn-submit'}" onclick="${btn.onclick}" style="${btn.style||''}">${btn.text}</button>`
   ).join('');
   
-  const card = document.createElement('div');
-  card.className = 'modal-card';
-  card.style.cssText = `
-    background:var(--card);color:var(--text);max-width:${cfg.width||'450px'};
-    box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);
-    border:1px solid var(--border);transform:scale(1);`;
-  card.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-      <h3 style="margin:0;font-size:1.4rem;">${cfg.title}</h3>
-      <span onclick="document.getElementById('${cfg.id}').remove()" style="cursor:pointer;opacity:0.5;font-size:1.5rem;">&times;</span>
-    </div>
-    <div class="modal-body" style="margin-bottom:25px;">${cfg.content}</div>
-    <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">${buttonsHTML}</div>`;
   
+  const card = document.createElement('div');
+  card.className = 'modal-content';
+  /* card.style.cssText = `
+     background:var(--card);color:var(--text);max-width:${cfg.width||'450px'};
+     box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);
+     border:1px solid var(--border);transform:scale(1);`;*/
+  card.innerHTML = `
+        <div class="modal-handle"></div>
+            <div class="modal-icon-wrap danger" id="confirmIcon">
+        <i class="ri-error-warning-line" id="confirmIconEl"></i>
+      </div>
+    <h3 class="modal-title">${cfg.title}</h3>
+    <div class="modal-body">${cfg.content}</div>
+    <div class="modal-btns">${buttonsHTML}</div>`;
   overlay.appendChild(card);
   document.body.appendChild(overlay);
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
@@ -1559,19 +1560,21 @@ if (mToggle) {
 }
 */
 const mToggle = document.getElementById('tgl-maintenance');
-      mToggle.onchange = async (e) => {
-        const enabled = e.target.checked;console.log("hshshs"); alert("sjsjsj");
-        await api('/api/admin/settings/maintenance', {
-          method: 'PUT',
-          body: JSON.stringify({ enabled })
-        });
-        // Sync the dropdown UI pill if the maintenance dropdown component is present
-        if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
-        showToast(
-          enabled ? '⚠️ Maintenance mode ON' : 'Maintenance mode OFF',
-          enabled ? 'error' : 'success'
-        );
-      };
+mToggle.onchange = async (e) => {
+  const enabled = e.target.checked;
+  console.log("hshshs");
+  alert("sjsjsj");
+  await api('/api/admin/settings/maintenance', {
+    method: 'PUT',
+    body: JSON.stringify({ enabled })
+  });
+  // Sync the dropdown UI pill if the maintenance dropdown component is present
+  if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
+  showToast(
+    enabled ? '⚠️ Maintenance mode ON' : 'Maintenance mode OFF',
+    enabled ? 'error' : 'success'
+  );
+};
 
 async function loadSettings() {
   try {
@@ -1579,14 +1582,14 @@ async function loadSettings() {
     const data = await api('/api/admin/settings');
     if (!data?.success) { console.error('Failed to fetch settings:', data?.message); return; }
     const s = data.settings;
-
+    
     // ── Maintenance toggle — uses id="tgl-maintenance" ──────
-
+    
     if (mToggle) {
       // Set checked state from server — default false if no maintenance doc yet
       const isOn = s.maintenance?.enabled || false;
       mToggle.checked = isOn;
-
+      
       // Wire up onchange to save immediately via the dedicated maintenance route
       mToggle.onchange = async (e) => {
         const enabled = e.target.checked;
@@ -1601,11 +1604,11 @@ async function loadSettings() {
           enabled ? 'error' : 'success'
         );
       };
-
+      
       // Sync dropdown UI to reflect the loaded state
       if (typeof syncMaintUI === 'function') syncMaintUI(isOn);
     }
-
+    
     if (s.config) {
       fillSettings({
         ...s.config,
@@ -2210,7 +2213,33 @@ if (rulesForm) {
 window.openBindBankModal = async () => {
   const data = await api('/api/admin/settings');
   const p = data?.settings?.payment || {};
-  showModal({
+  
+  showConfirm({
+    title: 'Payments Configuration',
+    msg: `      <div class="input-group"><label>Active Deposit Mode</label>
+        <select id="depositMode" onchange="togglePaymentFields()">
+          <option value="manual" ${p.mode==='manual'?'selected':''}>Manual Bank Transfer</option>
+          <option value="korapay" ${p.mode==='korapay'?'selected':''}>Korapay Automatic</option>
+        </select>
+      </div>
+      <div id="manualSettings">
+        <div class="input-group"><label>Bank Name</label><input type="text" id="adminBankName" value="${p.manual?.bankName||''}"></div>
+        <div class="input-group"><label>Account Number</label><input type="text" id="adminAccNum" value="${p.manual?.accountNumber||''}"></div>
+        <div class="input-group"><label>Account Name</label><input type="text" id="adminAccName" value="${p.manual?.accountName||''}"></div>
+      </div>
+      <div id="korapaySettings" style="display:none">
+        <div class="input-group"><label>Korapay Public Key</label><input type="text" id="koraPublicKey" value="${p.korapay?.publicKey||''}"></div>
+        <div class="input-group"><label>Secret Key</label><input type="password" id="koraSecretKey" value="${p.korapay?.secretKey||''}"></div>
+      </div>`,
+    type: 'success',
+    yesLabel: 'Configure',
+    onYes: () => {
+      savePaymentSettings()
+    }
+  });
+  
+  /*
+  showConfirm({
     id: 'createBankModal',
     title: 'Payments Configuration',
     content: `
@@ -2233,7 +2262,7 @@ window.openBindBankModal = async () => {
       { text: 'Cancel', class: 'btn-sec', onclick: "document.getElementById('createBankModal').remove()" },
       { text: 'Configure', class: 'btn-submit', onclick: 'savePaymentSettings()' }
     ]
-  });
+  });*/
   togglePaymentFields();
 };
 
