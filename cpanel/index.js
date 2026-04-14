@@ -1558,6 +1558,21 @@ if (mToggle) {
   };
 }
 */
+const mToggle = document.getElementById('tgl-maintenance');
+      mToggle.onchange = async (e) => {
+        const enabled = e.target.checked;console.log("hshshs"); alert("sjsjsj");
+        await api('/api/admin/settings/maintenance', {
+          method: 'PUT',
+          body: JSON.stringify({ enabled })
+        });
+        // Sync the dropdown UI pill if the maintenance dropdown component is present
+        if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
+        showToast(
+          enabled ? '⚠️ Maintenance mode ON' : '✅ Maintenance mode OFF',
+          enabled ? 'error' : 'success'
+        );
+      };
+
 async function loadSettings() {
   try {
     await loadApiKeys();
@@ -1566,7 +1581,7 @@ async function loadSettings() {
     const s = data.settings;
 
     // ── Maintenance toggle — uses id="tgl-maintenance" ──────
-    const mToggle = document.getElementById('tgl-maintenance');
+
     if (mToggle) {
       // Set checked state from server — default false if no maintenance doc yet
       const isOn = s.maintenance?.enabled || false;
@@ -5052,7 +5067,7 @@ let _tw = null;
 function showToast(msg, type = 'success') {
   if (!_tw) {
     _tw = document.createElement('div');
-    _tw.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
+    _tw.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:max-content';
     document.body.appendChild(_tw);
   }
   const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
