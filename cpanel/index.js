@@ -346,7 +346,7 @@ const allPages = document.querySelectorAll('.page');
 
 function switchPageByHash() {
   const hash = window.location.hash || '#dashboard';
-  checkAdminSession()
+  //checkAdminSession()
   const targetId = hash.substring(1);
   const target = document.getElementById(targetId);
   if (!target) return;
@@ -372,7 +372,7 @@ window.addEventListener('hashchange', switchPageByHash);
 // ══════════════════════════════════════════════════════════
 
 async function checkAdminSession() {
-  const res  = await fetch('/api/admin/me', { credentials: 'include' });
+  const res = await fetch('/api/admin/me', { credentials: 'include' });
   const data = await res.json().catch(() => null);
   if (res.ok && data) {
     const adminName = data.user?.username || data.user?.email || data.username || data.email;
@@ -395,7 +395,7 @@ window.handleAdminLogin = async (e) => {
     method: 'POST',
     body: JSON.stringify({ email, password: pass })
   });
-if (data?.success) {
+  if (data?.success) {
     const adminName = data.user?.username || data.user?.email || data.username || data.email || 'Admin';
     console.log(`%c[FluxMall] ✅ Admin login: ${adminName}`, 'color:#05cd99;font-weight:700;font-size:14px;');
     window.location.hash = '#dashboard';
@@ -1549,30 +1549,49 @@ document.addEventListener('click', e => {
 // ══════════════════════════════════════════════════════════
 //  SECTION 10 — SETTINGS
 // ══════════════════════════════════════════════════════════
+/*
 const mToggle = document.getElementById('tgl-maintenance');
 if (mToggle) {
-//  mToggle.checked = s.maintenance.enabled || false;
+  //  mToggle.checked = s.maintenance.enabled || false;
   mToggle.onchange = async (e) => {
     await api('/api/admin/settings/maintenance', { method: 'PUT', body: JSON.stringify({ enabled: e.target.checked }) });
   };
 }
-
+*/
 async function loadSettings() {
   try {
     await loadApiKeys();
     const data = await api('/api/admin/settings');
     if (!data?.success) { console.error('Failed to fetch settings:', data?.message); return; }
     const s = data.settings;
-    
+
+    // ── Maintenance toggle — uses id="tgl-maintenance" ──────
     const mToggle = document.getElementById('tgl-maintenance');
-    if (mToggle && s.maintenance) {
-      mToggle.checked = s.maintenance.enabled || false;
+    if (mToggle) {
+      // Set checked state from server — default false if no maintenance doc yet
+      const isOn = s.maintenance?.enabled || false;
+      mToggle.checked = isOn;
+
+      // Wire up onchange to save immediately via the dedicated maintenance route
       mToggle.onchange = async (e) => {
-        await api('/api/admin/settings/maintenance', { method: 'PUT', body: JSON.stringify({ enabled: e.target.checked }) });
+        const enabled = e.target.checked;
+        await api('/api/admin/settings/maintenance', {
+          method: 'PUT',
+          body: JSON.stringify({ enabled })
+        });
+        // Sync the dropdown UI pill if the maintenance dropdown component is present
+        if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
+        showToast(
+          enabled ? '⚠️ Maintenance mode ON' : '✅ Maintenance mode OFF',
+          enabled ? 'error' : 'success'
+        );
       };
+
+      // Sync dropdown UI to reflect the loaded state
+      if (typeof syncMaintUI === 'function') syncMaintUI(isOn);
     }
+
     if (s.config) {
-      // Merge maintenance and features into config so fillSettings can restore toggles
       fillSettings({
         ...s.config,
         maintenance: s.maintenance,
@@ -1638,7 +1657,11 @@ function fillSettings(data) {
   }
   if (data.maintenance?.enabled !== undefined) {
     const mt = document.getElementById('tgl-maintenance');
-    if (mt) mt.checked = !!data.maintenance.enabled;
+    if (mt) {
+      mt.checked = !!data.maintenance.enabled;
+      // Keep dropdown UI in sync if present
+      if (typeof syncMaintUI === 'function') syncMaintUI(mt.checked);
+    }
   }
 }
 
@@ -1665,7 +1688,7 @@ function toggleSection(id) {
   document.getElementById(id)?.classList.toggle('open');
 }
 
-function onToggle(feature, checked) {
+function onToggle(feature, endpoint = "toggle", checked) {
   if (feature === 'maintenance' && checked) {
     document.getElementById('tgl-maintenance').checked = false;
     showConfirm({
@@ -1676,11 +1699,19 @@ function onToggle(feature, checked) {
       onYes: () => {
         document.getElementById('tgl-maintenance').checked = true;
         settingsState['maintenance'] = true;
-        saveFeatureState('maintenance', true);
+        saveFeatureState('maintenance', 'maintenance', true);
         showToast('⚠️ Maintenance mode ON — users are locked out', 'error');
-        markChanged();
+        if (typeof syncMaintUI === 'function') syncMaintUI(true);
       }
     });
+    return;
+  }
+  // Turning maintenance OFF — no confirm needed, just save immediately
+  if (feature === 'maintenance' && !checked) {
+    settingsState['maintenance'] = false;
+    saveFeatureState('maintenance', 'maintenance', false);
+    showToast('✅ Maintenance mode OFF — platform is live', 'success');
+    if (typeof syncMaintUI === 'function') syncMaintUI(false);
     return;
   }
   if (feature === 'withdrawals' && !checked) {
@@ -1693,7 +1724,7 @@ function onToggle(feature, checked) {
       onYes: () => {
         document.getElementById('tgl-withdrawals').checked = false;
         settingsState['withdrawals'] = false;
-        saveFeatureState('withdrawals', false);
+        saveFeatureState('withdrawals', 'toggle', false);
         showToast('Withdrawals disabled', 'info');
         markChanged();
       }
@@ -1710,7 +1741,7 @@ function onToggle(feature, checked) {
       onYes: () => {
         document.getElementById('tgl-register').checked = false;
         settingsState['register'] = false;
-        saveFeatureState('register', false);
+        saveFeatureState('register', 'toggle', false);
         showToast('New registrations disabled', 'info');
         markChanged();
       }
@@ -1718,7 +1749,7 @@ function onToggle(feature, checked) {
     return;
   }
   settingsState[feature] = checked;
-  saveFeatureState(feature, checked);
+  saveFeatureState(feature, endpoint, checked);
   markChanged();
   if (feature !== 'maintenance') {
     const label = feature.charAt(0).toUpperCase() + feature.slice(1);
@@ -1726,12 +1757,20 @@ function onToggle(feature, checked) {
   }
 }
 
-async function saveFeatureState(feature, value) {
+async function saveFeatureState(feature, endpoint = "toggle", value) {
   try {
-    await api('/api/admin/settings/toggle', {
-      method: 'POST',
-      body: JSON.stringify({ feature, value })
-    });
+    if (feature === 'maintenance') {
+      // Maintenance has its own dedicated route — PUT /api/admin/settings/maintenance
+      await api('/api/admin/settings/maintenance', {
+        method: 'PUT',
+        body: JSON.stringify({ enabled: value })
+      });
+    } else {
+      await api(`/api/admin/settings/${endpoint}`, {
+        method: 'POST',
+        body: JSON.stringify({ feature, value })
+      });
+    }
   } catch (err) {
     console.warn('[saveFeatureState] API not available, change tracked locally');
   }
@@ -4376,38 +4415,40 @@ function showToast(msg, type = 'success') {
 
 
 // ── STATE ──────────────────────────────────────────────────
-let _shares      = [];   // share catalog
-let _investments = [];   // all purchased shares across all users
+let _shares = []; // share catalog
+let _investments = []; // all purchased shares across all users
 let _invFiltered = [];
 const INV_PER_PAGE = 15;
 let invPage = 1;
 
-const AVATAR_COLORS = ['#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
-function avatarColor(str){ let h=0; for(let i=0;i<(str||'').length;i++) h=str.charCodeAt(i)+((h<<5)-h); return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length]; }
-function initials(s){ return (s||'?').slice(0,2).toUpperCase(); }
+const AVATAR_COLORS = ['#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac'];
+
+function avatarColor(str) { let h = 0; for (let i = 0; i < (str || '').length; i++) h = str.charCodeAt(i) + ((h << 5) - h); return AVATAR_COLORS[Math.abs(h) % AVATAR_COLORS.length]; }
+
+function initials(s) { return (s || '?').slice(0, 2).toUpperCase(); }
 
 // ── API ─────────────────────────────────────────────────────
-async function api(path, opts={}) {
+async function api(path, opts = {}) {
   try {
     const res = await fetch(path, {
-      credentials:'include',
-      headers:{ 'Content-Type':'application/json', ...opts.headers },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', ...opts.headers },
       ...opts
     });
     return res.json();
-  } catch(e) { console.error('[API]',e); return null; }
+  } catch (e) { console.error('[API]', e); return null; }
 }
 
 // ── TAB SWITCH ──────────────────────────────────────────────
 function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('panel-'+name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
 }
 
 // ── INIT ────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', ()=>{
+window.addEventListener('DOMContentLoaded', () => {
   loadShares();
   loadInvestments();
 });
@@ -4415,7 +4456,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
 async function refreshAll() {
   loadShares();
   loadInvestments();
-  showToast('Refreshed ✓','success');
+  showToast('Refreshed ✓', 'success');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4424,7 +4465,7 @@ async function refreshAll() {
 async function loadShares() {
   document.getElementById('sharesGrid').innerHTML =
     `<div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading…</p></div>`;
-
+  
   const data = await api('/api/admin/shares');
   _shares = data?.shares || [];
   setText('statTotalShares', _shares.length);
@@ -4448,11 +4489,11 @@ function sortCatalog(val) {
 
 function applyCatalogSort() {
   const arr = _catalogFiltered.length ? _catalogFiltered : [..._shares];
-  arr.sort((a,b) => {
-    if (_catalogSort === 'price-asc')     return a.price - b.price;
-    if (_catalogSort === 'price-desc')    return b.price - a.price;
-    if (_catalogSort === 'duration-asc')  return a.duration - b.duration;
-    if (_catalogSort === 'name-asc')      return a.name.localeCompare(b.name);
+  arr.sort((a, b) => {
+    if (_catalogSort === 'price-asc') return a.price - b.price;
+    if (_catalogSort === 'price-desc') return b.price - a.price;
+    if (_catalogSort === 'duration-asc') return a.duration - b.duration;
+    if (_catalogSort === 'name-asc') return a.name.localeCompare(b.name);
     return 0;
   });
   renderCatalog(arr);
@@ -4466,21 +4507,21 @@ function renderCatalog(shares) {
     </div>`;
     return;
   }
-
+  
   // Count how many users bought each share
   const buyCount = {};
   _investments.forEach(inv => {
     const key = inv.shareName;
-    buyCount[key] = (buyCount[key]||0) + 1;
+    buyCount[key] = (buyCount[key] || 0) + 1;
   });
-
+  
   grid.innerHTML = shares.map(s => {
     const buyers = buyCount[s.name] || 0;
-    const roi    = s.duration > 0 ? ((s.dailyIncome * s.duration / s.price)*100).toFixed(1) : '0';
-    const imgHtml = s.img
-      ? `<img src="${s.img}" alt="${s.name}" onerror="this.parentElement.innerHTML='📦'">`
-      : '📦';
-
+    const roi = s.duration > 0 ? ((s.dailyIncome * s.duration / s.price) * 100).toFixed(1) : '0';
+    const imgHtml = s.img ?
+      `<img src="${s.img}" alt="${s.name}" onerror="this.parentElement.innerHTML='📦'">` :
+      '📦';
+    
     return `
     <div class="share-card">
       <div class="share-img">${imgHtml}</div>
@@ -4527,17 +4568,17 @@ async function loadInvestments() {
   const data = await api('/api/admin/purchased-shares');
   _investments = data?.investments || data?.purchasedShares || [];
   _invFiltered = [..._investments];
-
+  
   // Update stats
-  const active  = _investments.filter(i => !isExpired(i)).length;
-  const expired = _investments.filter(i =>  isExpired(i)).length;
-  const totalFex = _investments.reduce((s,i) => s + Number(i.pricePaid||0), 0);
-
+  const active = _investments.filter(i => !isExpired(i)).length;
+  const expired = _investments.filter(i => isExpired(i)).length;
+  const totalFex = _investments.reduce((s, i) => s + Number(i.pricePaid || 0), 0);
+  
   setText('statActiveInvestments', active);
   setText('statExpired', expired);
-  setText('statTotalInvested', '🪙'+totalFex.toLocaleString());
+  setText('statTotalInvested', '🪙' + totalFex.toLocaleString());
   setText('tcInvestments', _investments.length);
-
+  
   renderInvestmentsPage();
   // Re-render catalog to update buyer counts
   renderCatalog(_shares);
@@ -4551,12 +4592,12 @@ function isExpired(inv) {
 
 function daysLeft(inv) {
   const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
-  return Math.max(0, (inv.duration||0) - daysPassed);
+  return Math.max(0, (inv.duration || 0) - daysPassed);
 }
 
 function progressPct(inv) {
   const daysPassed = Math.floor((Date.now() - new Date(inv.purchaseDate)) / 86400000);
-  return Math.min(100, Math.round((daysPassed / (inv.duration||1)) * 100));
+  return Math.min(100, Math.round((daysPassed / (inv.duration || 1)) * 100));
 }
 
 function filterInvestments(term) {
@@ -4572,8 +4613,8 @@ function filterInvestmentStatus(status) {
 
 function applyInvestmentFilters(term, status) {
   _invFiltered = _investments.filter(inv => {
-    const name   = (inv.userId?.username || inv.username || '').toLowerCase();
-    const share  = (inv.shareName || '').toLowerCase();
+    const name = (inv.userId?.username || inv.username || '').toLowerCase();
+    const share = (inv.shareName || '').toLowerCase();
     const matchQ = !term || name.includes(term) || share.includes(term);
     const matchS = status === 'all' || (status === 'active' ? !isExpired(inv) : isExpired(inv));
     return matchQ && matchS;
@@ -4584,20 +4625,24 @@ function applyInvestmentFilters(term, status) {
 
 function renderInvestmentsPage() {
   const tbody = document.getElementById('investmentsTableBody');
-  if (!_invFiltered.length) { setEmpty('investmentsTableBody',7,'No investments found'); hidePagination('invest'); return; }
-
+  if (!_invFiltered.length) {
+    setEmpty('investmentsTableBody', 7, 'No investments found');
+    hidePagination('invest');
+    return;
+  }
+  
   const slice = paginate(_invFiltered, invPage, INV_PER_PAGE);
   tbody.innerHTML = slice.map(inv => {
     const username = inv.userId?.username || inv.username || '—';
-    const email    = inv.userId?.email    || '—';
-    const pct      = progressPct(inv);
-    const left     = daysLeft(inv);
-    const expired  = isExpired(inv);
-    const date     = inv.purchaseDate
-      ? new Date(inv.purchaseDate).toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'})
-      : '—';
-    const earned   = Math.floor((inv.duration - left) * (inv.dailyIncome||0));
-
+    const email = inv.userId?.email || '—';
+    const pct = progressPct(inv);
+    const left = daysLeft(inv);
+    const expired = isExpired(inv);
+    const date = inv.purchaseDate ?
+      new Date(inv.purchaseDate).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) :
+      '—';
+    const earned = Math.floor((inv.duration - left) * (inv.dailyIncome || 0));
+    
     return `<tr>
       <td>
         <div class="user-chip">
@@ -4644,8 +4689,11 @@ function renderInvestmentsPage() {
       </td>
     </tr>`;
   }).join('');
-
-  renderPagination('invest', _invFiltered.length, invPage, (p)=>{ invPage=p; renderInvestmentsPage(); });
+  
+  renderPagination('invest', _invFiltered.length, invPage, (p) => {
+    invPage = p;
+    renderInvestmentsPage();
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4692,22 +4740,22 @@ function openAddShareModal() {
       <button class="btn btn-primary" onclick="submitAddShare()"><i class="ri-check-line"></i> Create Share</button>
     </div>
   `);
-
+  
   // Live ROI preview
-  ['ms_price','ms_daily','ms_duration'].forEach(id => {
+  ['ms_price', 'ms_daily', 'ms_duration'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', updateRoiPreview);
   });
 }
 
 function updateRoiPreview() {
-  const price = Number(document.getElementById('ms_price')?.value)||0;
-  const daily = Number(document.getElementById('ms_daily')?.value)||0;
-  const dur   = Number(document.getElementById('ms_duration')?.value)||0;
-  const prev  = document.getElementById('ms_roiPreview');
-  const text  = document.getElementById('ms_roiText');
+  const price = Number(document.getElementById('ms_price')?.value) || 0;
+  const daily = Number(document.getElementById('ms_daily')?.value) || 0;
+  const dur = Number(document.getElementById('ms_duration')?.value) || 0;
+  const prev = document.getElementById('ms_roiPreview');
+  const text = document.getElementById('ms_roiText');
   if (price && daily && dur) {
     const total = daily * dur;
-    const roi   = ((total / price)*100).toFixed(1);
+    const roi = ((total / price) * 100).toFixed(1);
     text.textContent = `Total return: 🪙${total.toLocaleString()} FEX (${roi}% ROI over ${dur} days)`;
     prev.style.display = 'block';
   } else {
@@ -4716,13 +4764,13 @@ function updateRoiPreview() {
 }
 
 async function submitAddShare() {
-  const g   = id => document.getElementById(id)?.value;
+  const g = id => document.getElementById(id)?.value;
   const name = g('ms_name')?.trim();
-  const price    = Number(g('ms_price'));
-  const daily    = Number(g('ms_daily'));
+  const price = Number(g('ms_price'));
+  const daily = Number(g('ms_daily'));
   const duration = Number(g('ms_duration'));
-  if (!name || !price || !daily || !duration) { showToast('Please fill all fields','error'); return; }
-
+  if (!name || !price || !daily || !duration) { showToast('Please fill all fields', 'error'); return; }
+  
   let imgUrl = g('ms_imgUrl');
   const fileInput = document.getElementById('ms_imgFile');
   if (fileInput?.files[0]) {
@@ -4730,25 +4778,25 @@ async function submitAddShare() {
     imgUrl = await uploadToImgBB(fileInput.files[0], statusEl);
     if (!imgUrl) return;
   }
-
+  
   const res = await api('/api/admin/shares', {
-    method:'POST',
-    body: JSON.stringify({ name, price, dailyIncome: daily, duration, img: imgUrl||'' })
+    method: 'POST',
+    body: JSON.stringify({ name, price, dailyIncome: daily, duration, img: imgUrl || '' })
   });
-
+  
   if (res?.success) {
-    showToast(`✅ "${name}" share created!`,'success');
+    showToast(`✅ "${name}" share created!`, 'success');
     closeModal();
     loadShares();
   } else {
-    showToast(res?.error || 'Error creating share','error');
+    showToast(res?.error || 'Error creating share', 'error');
   }
 }
 
 function openEditShareModal(id) {
   const s = _shares.find(x => x._id === id);
   if (!s) return;
-
+  
   showModal(`
     <div class="modal-handle"></div>
     <div class="modal-head">
@@ -4790,36 +4838,36 @@ function openEditShareModal(id) {
 async function submitEditShare(id) {
   const g = id => document.getElementById(id)?.value;
   const payload = {
-    name:        g('es_name')?.trim(),
-    price:       Number(g('es_price')),
+    name: g('es_name')?.trim(),
+    price: Number(g('es_price')),
     dailyIncome: Number(g('es_daily')),
-    duration:    Number(g('es_duration')),
-    img:         g('es_img')?.trim() || '',
+    duration: Number(g('es_duration')),
+    img: g('es_img')?.trim() || '',
   };
-  if (!payload.name || !payload.price) { showToast('Name and price required','error'); return; }
-
+  if (!payload.name || !payload.price) { showToast('Name and price required', 'error'); return; }
+  
   const res = await api(`/api/admin/shares/${id}`, {
-    method:'PUT',
+    method: 'PUT',
     body: JSON.stringify(payload)
   });
-
+  
   if (res?.success) {
-    showToast('Share updated!','success');
+    showToast('Share updated!', 'success');
     closeModal();
     loadShares();
   } else {
-    showToast(res?.error||'Error updating share','error');
+    showToast(res?.error || 'Error updating share', 'error');
   }
 }
 
 async function deleteShare(id, name) {
   if (!confirm(`Delete "${name}"? Users who already bought it keep their investment.`)) return;
-  const res = await api(`/api/admin/shares/${id}`, { method:'DELETE' });
+  const res = await api(`/api/admin/shares/${id}`, { method: 'DELETE' });
   if (res?.success) {
-    showToast(`"${name}" deleted`,'warning');
+    showToast(`"${name}" deleted`, 'warning');
     loadShares();
   } else {
-    showToast(res?.error||'Error deleting share','error');
+    showToast(res?.error || 'Error deleting share', 'error');
   }
 }
 
@@ -4828,10 +4876,10 @@ async function deleteShare(id, name) {
 // ═══════════════════════════════════════════════════════════
 function viewInvestmentDetail(inv) {
   const username = inv.userId?.username || inv.username || '—';
-  const pct  = progressPct(inv);
+  const pct = progressPct(inv);
   const left = daysLeft(inv);
-  const earned = Math.floor(((inv.duration||0) - left) * (inv.dailyIncome||0));
-
+  const earned = Math.floor(((inv.duration || 0) - left) * (inv.dailyIncome || 0));
+  
   showModal(`
     <div class="modal-handle"></div>
     <div class="modal-head">
@@ -4891,12 +4939,12 @@ function viewInvestmentDetail(inv) {
 
 async function deleteInvestment(id, username) {
   if (!confirm(`Remove ${username}'s investment? This cannot be undone.`)) return;
-  const res = await api(`/api/admin/purchased-shares/${id}`, { method:'DELETE' });
+  const res = await api(`/api/admin/purchased-shares/${id}`, { method: 'DELETE' });
   if (res?.success) {
-    showToast(`Investment removed for ${username}`,'warning');
+    showToast(`Investment removed for ${username}`, 'warning');
     loadInvestments();
   } else {
-    showToast(res?.error||'Error removing investment','error');
+    showToast(res?.error || 'Error removing investment', 'error');
   }
 }
 
@@ -4910,24 +4958,24 @@ async function uploadToImgBB(file, statusEl) {
     const imgbbKey = settingsData?.apikeys?.imgbb;
     if (!imgbbKey) {
       if (statusEl) statusEl.innerHTML = '';
-      showToast('ImgBB API key not set in Settings','error');
+      showToast('ImgBB API key not set in Settings', 'error');
       return null;
     }
     const formData = new FormData();
     formData.append('image', file);
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
     const result = await res.json();
     if (result.success) {
       if (statusEl) statusEl.innerHTML = '✅ Image uploaded';
       return result.data.url;
     } else {
       if (statusEl) statusEl.innerHTML = '';
-      showToast('ImgBB upload failed','error');
+      showToast('ImgBB upload failed', 'error');
       return null;
     }
   } catch (err) {
     if (statusEl) statusEl.innerHTML = '';
-    showToast('Upload error: '+err.message,'error');
+    showToast('Upload error: ' + err.message, 'error');
     return null;
   }
 }
@@ -4936,26 +4984,27 @@ async function uploadToImgBB(file, statusEl) {
 // UI HELPERS
 // ═══════════════════════════════════════════════════════════
 function paginate(arr, page, per) {
-  return arr.slice((page-1)*per, page*per);
+  return arr.slice((page - 1) * per, page * per);
 }
 
 function renderPagination(prefix, total, page, onPage) {
-  const totalPages = Math.ceil(total/INV_PER_PAGE);
-  const wrap = document.getElementById(prefix+'Pagination');
-  const info = document.getElementById(prefix+'PageInfo');
-  const btns = document.getElementById(prefix+'PageBtns');
+  const totalPages = Math.ceil(total / INV_PER_PAGE);
+  const wrap = document.getElementById(prefix + 'Pagination');
+  const info = document.getElementById(prefix + 'PageInfo');
+  const btns = document.getElementById(prefix + 'PageBtns');
   if (!wrap) return;
-  if (totalPages <= 1) { wrap.style.display='none'; return; }
+  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'flex';
-  const start = (page-1)*INV_PER_PAGE+1;
-  const end   = Math.min(page*INV_PER_PAGE, total);
+  const start = (page - 1) * INV_PER_PAGE + 1;
+  const end = Math.min(page * INV_PER_PAGE, total);
   if (info) info.textContent = `${start}–${end} of ${total}`;
-
+  
   const range = [];
-  let s = Math.max(1,page-2), e = Math.min(totalPages,s+4);
-  if (e-s<4) s = Math.max(1,e-4);
-  for (let i=s;i<=e;i++) range.push(i);
-
+  let s = Math.max(1, page - 2),
+    e = Math.min(totalPages, s + 4);
+  if (e - s < 4) s = Math.max(1, e - 4);
+  for (let i = s; i <= e; i++) range.push(i);
+  
   btns.innerHTML = `
     <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
     ${range.map(p=>`<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
@@ -4963,7 +5012,7 @@ function renderPagination(prefix, total, page, onPage) {
 }
 
 function hidePagination(prefix) {
-  const el = document.getElementById(prefix+'Pagination');
+  const el = document.getElementById(prefix + 'Pagination');
   if (el) el.style.display = 'none';
 }
 
@@ -4988,28 +5037,34 @@ function showModal(html) {
   const overlay = document.createElement('div');
   overlay.className = 'modal-overlay';
   overlay.id = '__modalOverlay';
-  overlay.onclick = e => { if (e.target===overlay) closeModal(); };
+  overlay.onclick = e => { if (e.target === overlay) closeModal(); };
   overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
   document.body.appendChild(overlay);
-}/*
+}
+/*
 function closeModal() {
   document.getElementById('__modalOverlay')?.remove();
 }
 */
 // ── TOAST ──────────────────────────────────────────────────
 let _tw = null;
-function showToast(msg, type='success') {
+
+function showToast(msg, type = 'success') {
   if (!_tw) {
     _tw = document.createElement('div');
     _tw.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;';
     document.body.appendChild(_tw);
   }
-  const colors = { success:'#05cd99', warning:'#f6ad55', error:'#ee5d50' };
+  const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
   const t = document.createElement('div');
   t.style.cssText = `background:${colors[type]||'#4318ff'};color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);animation:toastIn 0.2s ease;`;
   t.textContent = msg;
   _tw.appendChild(t);
-  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transition = 'opacity 0.3s';
+    setTimeout(() => t.remove(), 300);
+  }, 3000);
 }
 const s2 = document.createElement('style');
 s2.textContent = '@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';
