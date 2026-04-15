@@ -2219,7 +2219,7 @@ window.openBindBankModal = async () => {
       </div>
       <div id="korapaySettings" style="display:none">
       
-      <div class="section-body" style="display:flex;">
+      <div class="section-body" style="display:block;">
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Payment Gateway</label>
