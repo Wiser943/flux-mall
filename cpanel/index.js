@@ -1562,18 +1562,24 @@ if (mToggle) {
 const mToggle = document.getElementById('tgl-maintenance');
 mToggle.onchange = async (e) => {
   const enabled = e.target.checked;
-  console.log("hshshs");
-  alert("sjsjsj");
-  await api('/api/admin/settings/maintenance', {
-    method: 'PUT',
-    body: JSON.stringify({ enabled })
+  showConfirm({
+    title: 'Enable Maintenance Mode?',
+    msg: 'All users will be locked out immediately. Only admins can log in during this time.',
+    type: 'danger',
+    yesLabel: 'Enable Maintenance',
+    onYes: () => {
+      await api('/api/admin/settings/maintenance', {
+        method: 'PUT',
+        body: JSON.stringify({ enabled })
+      });
+      // Sync the dropdown UI pill if the maintenance dropdown component is present
+      if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
+      showToast(
+        enabled ? '⚠️ Maintenance mode ON' : 'Maintenance mode OFF',
+        enabled ? 'error' : 'success'
+      );
+    }
   });
-  // Sync the dropdown UI pill if the maintenance dropdown component is present
-  if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
-  showToast(
-    enabled ? '⚠️ Maintenance mode ON' : 'Maintenance mode OFF',
-    enabled ? 'error' : 'success'
-  );
 };
 
 async function loadSettings() {
@@ -1585,7 +1591,7 @@ async function loadSettings() {
     
     // ── Maintenance toggle — uses id="tgl-maintenance" ──────
     
-    if (mToggle) {
+    /*if (mToggle) {
       // Set checked state from server — default false if no maintenance doc yet
       const isOn = s.maintenance?.enabled || false;
       mToggle.checked = isOn;
@@ -1607,7 +1613,7 @@ async function loadSettings() {
       
       // Sync dropdown UI to reflect the loaded state
       if (typeof syncMaintUI === 'function') syncMaintUI(isOn);
-    }
+    }*/
     
     if (s.config) {
       fillSettings({
@@ -5117,4 +5123,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
