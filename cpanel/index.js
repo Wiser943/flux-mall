@@ -2205,7 +2205,50 @@ window.openBindBankModal = async () => {
   
   showConfirm({
     title: 'Payments Configuration',
-    msg: `      <div class="input-group"><label>Active Deposit Mode</label>
+    msg: `               <div class="section-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Payment Gateway</label>
+                  <div class="select-wrap">
+                    <select class="form-input" id="payGateway" onchange="onGatewayChange(this.value)">
+                      <option value="paystack">Paystack</option>
+                      <option value="flutterwave">Flutterwave</option>
+                      <option value="korapay">Korapay</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Environment</label>
+                  <div class="select-wrap">
+                    <select class="form-input" id="payEnv">
+                      <option value="test">Test / Sandbox</option>
+                      <option value="live">Live / Production</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Public Key</label>
+                <div class="api-key-wrap">
+                  <input type="text" class="form-input" id="apiPubKey" placeholder="pk_live_xxxxxxxxxxxxxx">
+                  <button class="btn-icon" onclick="copyField('apiPubKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Secret Key</label>
+                <div class="api-key-wrap">
+                  <input type="password" class="form-input" id="apiSecKey" placeholder="sk_live_xxxxxxxxxxxxxx">
+                  <button class="btn-icon" onclick="togglePasswordField('apiSecKey', this)" title="Show/Hide"><i class="ri-eye-off-line"></i></button>
+                  <button class="btn-icon" onclick="copyField('apiSecKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+                </div>
+              </div>
+              <button class="btn-configure" onclick="testApiConnection()">
+                <i class="ri-plug-line"></i> Test Connection
+              </button>
+            </div>
+    
+    
+    <div class="input-group"><label>Active Deposit Mode</label>
         <select id="depositMode" onchange="togglePaymentFields()">
           <option value="manual" ${p.mode==='manual'?'selected':''}>Manual Bank Transfer</option>
           <option value="korapay" ${p.mode==='korapay'?'selected':''}>Korapay Automatic</option>
@@ -5106,4 +5149,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
