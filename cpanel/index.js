@@ -1550,36 +1550,49 @@ document.addEventListener('click', e => {
 // ══════════════════════════════════════════════════════════
 //  SECTION 10 — SETTINGS
 // ══════════════════════════════════════════════════════════
-/*
 const mToggle = document.getElementById('tgl-maintenance');
-if (mToggle) {
-  //  mToggle.checked = s.maintenance.enabled || false;
-  mToggle.onchange = async (e) => {
-    await api('/api/admin/settings/maintenance', { method: 'PUT', body: JSON.stringify({ enabled: e.target.checked }) });
-  };
-}
-*/
-const mToggle = document.getElementById('tgl-maintenance');
+
 mToggle.onchange = async (e) => {
   const enabled = e.target.checked;
-  showConfirm({
-    title: 'Enable Maintenance Mode?',
-    msg: 'All users will be locked out immediately. Only admins can log in during this time.',
-    type: 'danger',
-    yesLabel: 'Enable Maintenance',
-    onYes: async () => {
+
+  // Helper function to handle the actual API call and UI sync
+  const updateMaintenance = async (status) => {
+    try {
       await api('/api/admin/settings/maintenance', {
         method: 'PUT',
-        body: JSON.stringify({ enabled })
+        body: JSON.stringify({ enabled: status })
       });
-      // Sync the dropdown UI pill if the maintenance dropdown component is present
-      if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
+
+      if (typeof syncMaintUI === 'function') syncMaintUI(status);
+      
       showToast(
-        enabled ? '⚠️ Maintenance mode ON' : 'Maintenance mode OFF',
-        enabled ? 'error' : 'success'
+        status ? '⚠️ Maintenance mode ON' : 'Maintenance mode OFF',
+        status ? 'error' : 'success'
       );
+    } catch (err) {
+      // If API fails, revert the checkbox state
+      e.target.checked = !status;
+      showToast('Action failed', 'error');
     }
-  });
+  };
+
+  if (enabled) {
+    // 1. If checking ON: Show the warning modal
+    showConfirm({
+      title: 'Enable Maintenance Mode?',
+      msg: 'All users will be locked out immediately. Only admins can log in during this time.',
+      type: 'danger',
+      yesLabel: 'Enable Maintenance',
+      onYes: () => updateMaintenance(true),
+      onCancel: () => {
+        // Revert toggle if they click cancel
+        e.target.checked = false;
+      }
+    });
+  } else {
+    // 2. If checking OFF: Just do it immediately without warning
+    await updateMaintenance(false);
+  }
 };
 
 async function loadSettings() {
@@ -1591,29 +1604,6 @@ async function loadSettings() {
     
     // ── Maintenance toggle — uses id="tgl-maintenance" ──────
     
-    /*if (mToggle) {
-      // Set checked state from server — default false if no maintenance doc yet
-      const isOn = s.maintenance?.enabled || false;
-      mToggle.checked = isOn;
-      
-      // Wire up onchange to save immediately via the dedicated maintenance route
-      mToggle.onchange = async (e) => {
-        const enabled = e.target.checked;
-        await api('/api/admin/settings/maintenance', {
-          method: 'PUT',
-          body: JSON.stringify({ enabled })
-        });
-        // Sync the dropdown UI pill if the maintenance dropdown component is present
-        if (typeof syncMaintUI === 'function') syncMaintUI(enabled);
-        showToast(
-          enabled ? '⚠️ Maintenance mode ON' : '✅ Maintenance mode OFF',
-          enabled ? 'error' : 'success'
-        );
-      };
-      
-      // Sync dropdown UI to reflect the loaded state
-      if (typeof syncMaintUI === 'function') syncMaintUI(isOn);
-    }*/
     
     if (s.config) {
       fillSettings({
@@ -1783,18 +1773,11 @@ function onToggle(feature, endpoint = "toggle", checked) {
 
 async function saveFeatureState(feature, endpoint = "toggle", value) {
   try {
-    if (feature === 'maintenance') {
-      // Maintenance has its own dedicated route — PUT /api/admin/settings/maintenance
-      await api('/api/admin/settings/maintenance', {
-        method: 'PUT',
-        body: JSON.stringify({ enabled: value })
-      });
-    } else {
       await api(`/api/admin/settings/${endpoint}`, {
         method: 'POST',
         body: JSON.stringify({ feature, value })
       });
-    }
+    
   } catch (err) {
     console.warn('[saveFeatureState] API not available, change tracked locally');
   }
