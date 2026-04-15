@@ -1567,7 +1567,7 @@ mToggle.onchange = async (e) => {
     msg: 'All users will be locked out immediately. Only admins can log in during this time.',
     type: 'danger',
     yesLabel: 'Enable Maintenance',
-    onYes: () => {
+    onYes: async () => {
       await api('/api/admin/settings/maintenance', {
         method: 'PUT',
         body: JSON.stringify({ enabled })
