@@ -2205,7 +2205,21 @@ window.openBindBankModal = async () => {
   
   showConfirm({
     title: 'Payments Configuration',
-    msg: `               <div class="section-body">
+    msg: `               
+    <div class="input-group"><label>Active Deposit Mode</label>
+        <select id="depositMode" onchange="togglePaymentFields()">
+          <option value="manual" ${p.mode==='manual'?'selected':''}>Manual Bank Transfer</option>
+          <option value="korapay" ${p.mode==='korapay'?'selected':''}>Korapay Automatic</option>
+        </select>
+      </div>
+      <div id="manualSettings">
+        <div class="input-group"><label>Bank Name</label><input type="text" id="adminBankName" value="${p.manual?.bankName||''}"></div>
+        <div class="input-group"><label>Account Number</label><input type="text" id="adminAccNum" value="${p.manual?.accountNumber||''}"></div>
+        <div class="input-group"><label>Account Name</label><input type="text" id="adminAccName" value="${p.manual?.accountName||''}"></div>
+      </div>
+      <div id="korapaySettings" style="display:none">
+      
+      <div class="section-body">
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Payment Gateway</label>
@@ -2248,18 +2262,8 @@ window.openBindBankModal = async () => {
             </div>
     
     
-    <div class="input-group"><label>Active Deposit Mode</label>
-        <select id="depositMode" onchange="togglePaymentFields()">
-          <option value="manual" ${p.mode==='manual'?'selected':''}>Manual Bank Transfer</option>
-          <option value="korapay" ${p.mode==='korapay'?'selected':''}>Korapay Automatic</option>
-        </select>
-      </div>
-      <div id="manualSettings">
-        <div class="input-group"><label>Bank Name</label><input type="text" id="adminBankName" value="${p.manual?.bankName||''}"></div>
-        <div class="input-group"><label>Account Number</label><input type="text" id="adminAccNum" value="${p.manual?.accountNumber||''}"></div>
-        <div class="input-group"><label>Account Name</label><input type="text" id="adminAccName" value="${p.manual?.accountName||''}"></div>
-      </div>
-      <div id="korapaySettings" style="display:none">
+      
+      
         <div class="input-group"><label>Korapay Public Key</label><input type="text" id="koraPublicKey" value="${p.korapay?.publicKey||''}"></div>
         <div class="input-group"><label>Secret Key</label><input type="password" id="koraSecretKey" value="${p.korapay?.secretKey||''}"></div>
       </div>`,
