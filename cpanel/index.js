@@ -4780,13 +4780,9 @@ function renderInvestmentsPage() {
 // CRUD — SHARES
 // ═══════════════════════════════════════════════════════════
 function openAddShareModal() {
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-add-circle-line" style="color:var(--primary)"></i> New Share Package</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
+showConfirm({
+  title: 'New share package',
+  msg: `    
       <div class="form-group">
         <label>Package Name</label>
         <input id="ms_name" placeholder="e.g. Gold Pack">
@@ -4813,14 +4809,11 @@ function openAddShareModal() {
       </div>
       <div id="ms_roiPreview" style="background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);display:none;">
         💡 <span id="ms_roiText"></span>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="submitAddShare()"><i class="ri-check-line"></i> Create Share</button>
-    </div>
-  `);
-  
+    </div>`,
+  type: 'green',
+  yesLabel: 'Create share',
+  onYes: () => submitAddShare(),
+});
   // Live ROI preview
   ['ms_price', 'ms_daily', 'ms_duration'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', updateRoiPreview);
@@ -4876,15 +4869,11 @@ async function submitAddShare() {
 function openEditShareModal(id) {
   const s = _shares.find(x => x._id === id);
   if (!s) return;
-  
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-edit-line" style="color:var(--warning)"></i> Edit Share Package</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
+  showConfirm({
+  title: 'Edit package',
+  msg: `    <div class="modal-body">
+
+          <div class="form-group">
         <label>Package Name</label>
         <input id="es_name" value="${s.name}">
       </div>
@@ -4907,12 +4896,11 @@ function openEditShareModal(id) {
         <input id="es_img" value="${s.img||''}" placeholder="https://...">
       </div>
       ${s.img ? `<img src="${s.img}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-warning" onclick="submitEditShare('${id}')"><i class="ri-save-line"></i> Save Changes</button>
-    </div>
-  `);
+    </div>`,
+  type: 'warning',
+  yesLabel: 'Save changes',
+  onYes: () => submitEditShare('${id}'),
+});
 }
 
 async function submitEditShare(id) {
@@ -5153,4 +5141,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
