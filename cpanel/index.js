@@ -4899,7 +4899,7 @@ function openEditShareModal(id) {
     </div>`,
   type: 'warning',
   yesLabel: 'Save changes',
-  onYes: () => submitEditShare('${id}'),
+  onYes: () => submitEditShare(id),
 });
 }
 
@@ -5141,4 +5141,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
