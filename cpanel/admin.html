@@ -21,13 +21,17 @@
 </head>
 
 <body>
-  <!-- Toast container -->
+  <!-- Toast container --
   <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
-    <div class="modal" id="modal">
+    <div class="modal-overlay" id="modal">
       <div class="modal-handle"></div>
+            <div class="modal-icon-wrap danger" id="confirmIcon">
+        <i class="ri-error-warning-line" id="confirmIconEl"></i>
+      </div>
       <div id="modalContent"></div>
     </div>
   </div>
+  -->
   <!-- ── CONFIRMATION MODAL ── -->
   <div class="confirm-overlay" id="confirmOverlay" onclick="handleOverlayClick(event)">
     <div class="confirm-sheet" id="confirmSheet">
@@ -457,15 +461,10 @@
     </main><!-- /page -->
     
     <main class="page" id="shares">
-      
-      
-      
-      
-      <!-- ── PAGE HEADER ──────────────────────────────────────── -->
       <div class="page-header">
         <div>
-          <h1><i class="ri-stock-line" style="color:var(--primary);margin-right:6px;"></i>Shares & Investments</h1>
-          <div class="sub">Manage share catalog · Track user investments</div>
+            <h1>Investments</h1>
+          <div class="sub">Manage and Track user investments</div>
         </div>
         <div class="header-actions">
           <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
@@ -515,7 +514,7 @@
           <div class="toolbar">
             <div class="search-box">
               <i class="ri-search-line"></i>
-              <input type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
+              <input class="search-input" type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
             </div>
             <select class="filter-select" onchange="sortCatalog(this.value)">
               <option value="price-asc">Price: Low → High</option>
@@ -539,7 +538,7 @@
           <div class="toolbar">
             <div class="search-box">
               <i class="ri-search-line"></i>
-              <input type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
+              <input class="search-input" type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
             </div>
             <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
               <option value="all">All Status</option>
@@ -1513,9 +1512,7 @@
                 <div class="section-icon red"><i class="ri-tools-fill"></i></div>
                 <div>
                   <div class="section-title-text">Maintenance Mode</div>
-                  <div class="section-sub" style="font-size:12px;color:var(--text3,#a3adc2);" id="maintStatusText">
-                    Checking...
-                  </div>
+                  <div class="section-sub" style="font-size:12px;color:var(--text3,#a3adc2);" id="maintStatusText"></div>
                 </div>
               </div>
               <div style="display: flex; align-items: center;gap: 8px;">
