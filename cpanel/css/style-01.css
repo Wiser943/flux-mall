@@ -1800,17 +1800,44 @@ tbody td {
 .modal-head h3 { font-size:15px; font-weight:700; }
 .modal-close { background:none; border:none; font-size:20px; color:var(--text3); cursor:pointer; }
 .modal-body { padding:18px 20px; }
+*/
 
-.form-group { margin-bottom:14px; }
-.form-group label { display:block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3); margin-bottom:6px; }
-.form-group input, .form-group select, .form-group textarea {
-  width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:10px;
-  font-size:13px; color:var(--text1); background:var(--bg); outline:none; transition:border 0.15s;
+.form-group label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text3);
+    margin-bottom: 6px;
+    text-align: left;
 }
-.form-group input:focus, .form-group select:focus { border-color:var(--primary); background:#fff; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.modal-footer { display:flex; gap:8px; padding:0 20px; }
-.modal-footer .btn { flex:1; justify-content:center; }
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    color: var(--text1);
+    background: var(--bg);
+    outline: none;
+    transition: border 0.15s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    background: #fff;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
 
 /* ── PAGINATION ────────────────────────────────────────────── */
 .pagination {
