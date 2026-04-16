@@ -769,10 +769,16 @@ window.processAdjustment = async (action) => {
 };
 
 window.deleteUser = async (uid) => {
-  if (!confirm('⚠️ Permanently delete this user and all their data?')) return;
-  await api(`/api/admin/users/${uid}`, { method: 'DELETE' });
-  document.getElementById('userDetailModal')?.remove();
-  renderApiUsers();
+  showConfirm({
+    title: 'Delete Account?',
+    msg: '⚠️ This action will Permanently delete this user account and all thier data!!',
+    type: 'danger',
+    yesLabel: 'Delete',
+    onYes: () => {
+      await api(`/api/admin/users/${uid}`, { method: 'DELETE' });
+      renderApiUsers();
+    }
+  });
 };
 
 window.copyAndMove = (uid) => {
@@ -793,7 +799,6 @@ function initUserManagement() {
 async function loadUMUsers() {
   const data = await api('/api/admin/users');
   if (!data?.success) return;
-  
   UM_USERS = data.users.map((u, i) => ({
     id: u._id,
     name: u.username || 'Unknown',
@@ -1554,7 +1559,7 @@ const mToggle = document.getElementById('tgl-maintenance');
 
 mToggle.onchange = async (e) => {
   const enabled = e.target.checked;
-
+  
   // Helper function to handle the actual API call and UI sync
   const updateMaintenance = async (status) => {
     try {
@@ -1562,7 +1567,7 @@ mToggle.onchange = async (e) => {
         method: 'PUT',
         body: JSON.stringify({ enabled: status })
       });
-
+      
       if (typeof syncMaintUI === 'function') syncMaintUI(status);
       
       showToast(
@@ -1575,7 +1580,7 @@ mToggle.onchange = async (e) => {
       showToast('Action failed', 'error');
     }
   };
-
+  
   if (enabled) {
     // 1. If checking ON: Show the warning modal
     showConfirm({
@@ -1773,10 +1778,10 @@ function onToggle(feature, endpoint = "toggle", checked) {
 
 async function saveFeatureState(feature, endpoint = "toggle", value) {
   try {
-      await api(`/api/admin/settings/${endpoint}`, {
-        method: 'POST',
-        body: JSON.stringify({ feature, value })
-      });
+    await api(`/api/admin/settings/${endpoint}`, {
+      method: 'POST',
+      body: JSON.stringify({ feature, value })
+    });
     
   } catch (err) {
     console.warn('[saveFeatureState] API not available, change tracked locally');
@@ -2409,9 +2414,15 @@ window.addShare = async () => {
 };
 
 window.deleteShare = async (id) => {
-  if (!confirm('Delete this share?')) return;
-  await api(`/api/admin/shares/${id}`, { method: 'DELETE' });
-  document.getElementById('sharesModal')?.remove();
+  showConfirm({
+    title: 'Delete this share?',
+    msg: 'This share will be removed permanently and all active users on it will its benefits!!',
+    type: 'danger',
+    yesLabel: 'Delete',
+    onYes: async () => {
+      await api(`/api/admin/shares/${id}`, { method: 'DELETE' });
+    },
+  });
 };
 
 window.openCreateUserModal = () => {
@@ -3957,31 +3968,55 @@ function renderDepositsPage() {
 }
 
 window.approveDeposit = async (id, userId, amount, username) => {
-  if (!confirm(`Approve 🪙${Number(amount).toLocaleString()} deposit from ${username}?`)) return;
-  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) {
-    showToast('✅ Deposit approved — user credited!', 'success');
-    loadDeposits();
-  } else {
-    showToast(data?.error || 'Error approving deposit.', 'error');
-  }
+  showConfirm({
+    title: 'Approve this Deposit?',
+    msg: 'Approve <strong>🪙${Number(amount).toLocaleString()}</strong> deposit from <strong>${username}</strong>?',
+    type: 'warning',
+    yesLabel: 'Approve',
+    onYes: async () => {
+      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+      if (data?.success) {
+        showToast('✅ Deposit approved — user credited!', 'success');
+        loadDeposits();
+      } else {
+        showToast(data?.error || 'Error approving deposit.', 'error');
+      }
+    },
+  });
 };
 
 window.declineDeposit = async (id) => {
-  if (!confirm('Decline this deposit?')) return;
-  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) {
-    showToast('Deposit declined.', 'warning');
-    loadDeposits();
-  }
-  else showToast(data?.error || 'Error.', 'error');
+  showConfirm({
+    title: 'Decline this Deposit?',
+    msg: 'Decline this deposit and transaction will not hold',
+    type: 'warning',
+    yesLabel: 'Decline',
+    onYes: async () => {
+      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+      if (data?.success) {
+        showToast('Deposit declined.', 'warning');
+        loadDeposits();
+      }
+      else showToast(data?.error || 'Error.', 'error');
+    },
+  });
 };
 
 window.deleteDeposit = async (id) => {
   if (!confirm('Delete this deposit record permanently?')) return;
-  await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
-  showToast('Record deleted.', 'warning');
-  loadDeposits();
+  
+  
+  showConfirm({
+    title: 'Delete this Deposit?',
+    msg: 'Delete this deposit and transaction will not hold',
+    type: 'danger',
+    yesLabel: 'Remove',
+    onYes: async () => {
+      await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
+      showToast('Record deleted.', 'warning');
+      loadDeposits();
+    },
+  });
 };
 
 window.viewDepositDetail = (i) => {
@@ -4780,9 +4815,9 @@ function renderInvestmentsPage() {
 // CRUD — SHARES
 // ═══════════════════════════════════════════════════════════
 function openAddShareModal() {
-showConfirm({
-  title: 'New share package',
-  msg: `    
+  showConfirm({
+    title: 'New share package',
+    msg: `    
       <div class="form-group">
         <label>Package Name</label>
         <input id="ms_name" placeholder="e.g. Gold Pack">
@@ -4810,10 +4845,10 @@ showConfirm({
       <div id="ms_roiPreview" style="background:var(--bg);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);display:none;">
         💡 <span id="ms_roiText"></span>
     </div>`,
-  type: 'green',
-  yesLabel: 'Create share',
-  onYes: () => submitAddShare(),
-});
+    type: 'green',
+    yesLabel: 'Create share',
+    onYes: () => submitAddShare(),
+  });
   // Live ROI preview
   ['ms_price', 'ms_daily', 'ms_duration'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', updateRoiPreview);
@@ -4870,8 +4905,8 @@ function openEditShareModal(id) {
   const s = _shares.find(x => x._id === id);
   if (!s) return;
   showConfirm({
-  title: 'Edit package',
-  msg: `    <div class="modal-body">
+    title: 'Edit package',
+    msg: `    <div class="modal-body">
 
           <div class="form-group">
         <label>Package Name</label>
@@ -4897,10 +4932,10 @@ function openEditShareModal(id) {
       </div>
       ${s.img ? `<img src="${s.img}" style="width:100%;height:80px;object-fit:cover;border-radius:8px;margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
     </div>`,
-  type: 'warning',
-  yesLabel: 'Save changes',
-  onYes: () => submitEditShare(id),
-});
+    type: 'warning',
+    yesLabel: 'Save changes',
+    onYes: () => submitEditShare(id),
+  });
 }
 
 async function submitEditShare(id) {
@@ -5141,4 +5176,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
