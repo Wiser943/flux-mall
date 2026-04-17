@@ -13,22 +13,20 @@ app.use(cookieParser());
 
 app.use(cors({
   origin: function (origin, callback) {
-    // 1. Allow requests with no origin (mobile apps, curl, Postman)
+    // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
 
-    // 2. Dynamic Localhost Check (Perfect for Spck/Development)
-    // This allows any port on localhost or 127.0.0.1 automatically
-    const isLocal = origin.startsWith('http://localhost') || 
-                    origin.startsWith('http://127.0.0.1');
-
     const allowedOrigins = [
+      'http://localhost:3000',
+'http://localhost:7700',
+      'http://127.0.0.1:3000',
       'https://fluxmall.online',
       'https://www.fluxmall.online',
       process.env.NETLIFY_URL,
       process.env.CUSTOM_DOMAIN,
     ].filter(Boolean);
 
-    if (isLocal || allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
@@ -52,14 +50,11 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({ message: 'Flux Mall API. Frontend is on Netlify.' });
 });
-
 // Keep Render awake - ping every 14 minutes
 setInterval(() => {
-  // Use a dynamic check or environment variable for the URL to avoid hardcoding if possible
-  const apiUrl = process.env.API_URL || `https://flux-mall-api.onrender.com/health`;
-  fetch(apiUrl).catch(() => {});
+  fetch(`https://flux-mall-api.onrender.com/health`)
+    .catch(() => {});
 }, 14 * 60 * 1000);
-
 // ─── MONGODB CONNECTION ───────────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
