@@ -1,5 +1,5 @@
 /* ── MAIN AREA ── */
-#users,#transactions {
+#users,#transactions,#shares,#settings,#dashboard {
   padding: 20px 8px;
 }
 .users-main {flex: 1;
