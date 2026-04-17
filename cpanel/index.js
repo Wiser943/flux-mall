@@ -3220,9 +3220,9 @@ window.openAdminChatSession = async function(sessionId, username, status, userDa
   adminEditingMsgId = null;
   
   const logo = await getAdminSiteLogo();
-  document.getElementById('chatWindowEmpty').style.display = 'none';
+  /*document.getElementById('chatWindowEmpty').style.display = 'none';
   document.getElementById('chatWindowActive').style.display = 'flex';
-  
+  */
   if (window.innerWidth <= 700) {
     document.getElementById('chatSessionList')?.classList.add('slide-out');
     const backBtn = document.getElementById('chatBackBtn');
@@ -5282,4 +5282,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
