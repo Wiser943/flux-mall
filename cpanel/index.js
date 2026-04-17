@@ -2664,6 +2664,13 @@ function openChat(userId) {
   const sessions = window._chatSessions || [];
   const realSession = sessions.find(u => u.id === userId);
   
+  console.log(realSession);
+  console.log(sessions);
+  console.log(userId);
+
+
+  
+  /*
   // If this came from the API, always open the real session
   if (realSession && realSession.sessionId) {
     openAdminChatSession(
@@ -2674,6 +2681,8 @@ function openChat(userId) {
     );
     return;
   }
+  */
+  return 
   
   // ── Mock fallback (for demo / offline) ──────────────────
   const user = CHAT_USERS.find(u => u.id === userId);
