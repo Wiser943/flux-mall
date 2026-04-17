@@ -182,7 +182,7 @@ async function uploadToImgBB(file, statusEl) {
     const imgbbKey = settingsData?.apikeys?.imgbb;
     if (!imgbbKey) {
       if (statusEl) statusEl.innerHTML = '';
-      alert('⚠️ ImgBB API key not set. Go to Settings → API Keys and save your ImgBB key first.');
+      showToast('⚠️ ImgBB API key not set. Go to Settings → API Keys and save your ImgBB key first.', 'error');
       return null;
     }
     const formData = new FormData();
@@ -194,12 +194,12 @@ async function uploadToImgBB(file, statusEl) {
       return result.data.url;
     } else {
       if (statusEl) statusEl.innerHTML = '';
-      alert('❌ ImgBB upload failed. Check your API key in Settings → API Keys.');
+      showToast('❌ ImgBB upload failed. Check your API key in Settings → API Keys.', 'error');
       return null;
     }
   } catch (err) {
     if (statusEl) statusEl.innerHTML = '';
-    alert('❌ Upload error: ' + err.message);
+    showToast('❌ Upload error: ' + err.message, 'error');
     return null;
   }
 }
@@ -402,7 +402,7 @@ window.handleAdminLogin = async (e) => {
     window.location.hash = '#dashboard';
     initDashboard();
   } else {
-    alert(data?.error || 'Login failed.');
+    showToast(data?.error || 'Login failed.', 'error');
     btn.disabled = false;
     btn.innerText = 'Verify Identity';
   }
@@ -568,26 +568,48 @@ function renderDeposits(data) {
 }
 
 window.approveDeposit = async (id, userId, amount) => {
-  if (!confirm(`Approve ₦${Number(amount).toLocaleString()} deposit?`)) return;
-  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) {
-    showToast('Deposit approved and user credited!', 'success');
-    loadAnalytics();
-  }
-  else alert(data?.error || 'Error approving deposit.');
+  showConfirm({
+    title: 'Approve Deposit?',
+    msg: `Approve ₦${Number(amount).toLocaleString()} deposit and credit the user?`,
+    type: 'info',
+    yesLabel: 'Approve',
+    onYes: async () => {
+      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+      if (data?.success) {
+        showToast('Deposit approved and user credited!', 'success');
+        loadAnalytics();
+      } else {
+        showToast(data?.error || 'Error approving deposit.', 'error');
+      }
+    }
+  });
 };
 
 window.declineDeposit = async (id) => {
-  if (!confirm('Decline this deposit?')) return;
-  const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) loadAnalytics();
-  else alert(data?.error || 'Error.');
+  showConfirm({
+    title: 'Decline Deposit?',
+    msg: 'Decline this deposit? The user will not be credited.',
+    type: 'danger',
+    yesLabel: 'Decline',
+    onYes: async () => {
+      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+      if (data?.success) loadAnalytics();
+      else showToast(data?.error || 'Error.', 'error');
+    }
+  });
 };
 
 window.deleteDeposit = async (id) => {
-  if (!confirm('Delete this deposit record?')) return;
-  await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
-  loadAnalytics();
+  showConfirm({
+    title: 'Delete Deposit?',
+    msg: 'Delete this deposit record permanently?',
+    type: 'danger',
+    yesLabel: 'Delete',
+    onYes: async () => {
+      await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
+      loadAnalytics();
+    }
+  });
 };
 
 window.filterDeposits = () => {
@@ -642,14 +664,28 @@ async function loadWithdrawals() {
 }
 
 window.approveWithdrawal = async (id) => {
-  if (!confirm('Confirm payment sent?')) return;
-  await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  loadWithdrawals();
+  showConfirm({
+    title: 'Confirm Payment Sent?',
+    msg: 'Mark this withdrawal as paid? This cannot be undone.',
+    type: 'info',
+    yesLabel: 'Confirm Payment',
+    onYes: async () => {
+      await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+      loadWithdrawals();
+    }
+  });
 };
 window.declineWithdrawal = async (id) => {
-  if (!confirm('Decline and refund user?')) return;
-  await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  loadWithdrawals();
+  showConfirm({
+    title: 'Decline & Refund?',
+    msg: 'Decline this withdrawal and refund the user?',
+    type: 'warning',
+    yesLabel: 'Decline & Refund',
+    onYes: async () => {
+      await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+      loadWithdrawals();
+    }
+  });
 };
 window.deleteWithdrawal = async (id) => {
   await api(`/api/admin/withdrawals/${id}`, { method: 'DELETE' });
@@ -696,7 +732,7 @@ window.toggleBanStatus = async (uid, isBanned) => {
   const newStatus = isBanned ? 'Banned' : 'Active';
   const data = await api(`/api/admin/users/${uid}`, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
   if (!data?.success) {
-    alert('Error updating ban status.');
+    showToast('Error updating ban status.', 'error');
     renderApiUsers();
   }
 };
@@ -754,17 +790,17 @@ window.viewUserDetails = async (uid, status, name, email, balance, verified, cre
 window.processAdjustment = async (action) => {
   const uid = document.getElementById('crUserId')?.value.trim();
   const amount = Number(document.getElementById('crAmount')?.value);
-  if (!uid || !amount) return alert('Please enter a User ID and Amount.');
+  if (!uid || !amount) return showToast('Please enter a User ID and Amount.', 'error');
   const data = await api('/api/admin/users/adjust-balance', {
     method: 'POST',
     body: JSON.stringify({ userId: uid, amount, action })
   });
   if (data?.success) {
-    alert(`✅ ${action} of ₦${amount.toLocaleString()} successful! New balance: ₦${data.newBalance.toLocaleString()}`);
+    showToast(`✅ ${action} of ₦${amount.toLocaleString()} successful! New balance: ₦${data.newBalance.toLocaleString()}`, 'success');
     document.getElementById('userDetailModal')?.remove();
     renderApiUsers();
   } else {
-    alert(data?.error || 'Error processing adjustment.');
+    showToast(data?.error || 'Error processing adjustment.', 'error');
   }
 };
 
@@ -774,7 +810,7 @@ window.deleteUser = async (uid) => {
     msg: '⚠️ This action will Permanently delete this user account and all thier data!!',
     type: 'danger',
     yesLabel: 'Delete',
-    onYes: () => {
+    onYes: async () => {
       await api(`/api/admin/users/${uid}`, { method: 'DELETE' });
       renderApiUsers();
     }
@@ -2095,7 +2131,7 @@ window.saveApiKeys = async () => {
     body: JSON.stringify({ imgbb: g('imgbbKeyInput'), korapay_public: g('koraPublicKeyInput'), korapay_secret: g('koraSecretKeyInput') })
   });
   if (data?.success) showToast('API Keys saved!', 'success');
-  else alert(data?.error || 'Error saving API keys.');
+  else showToast(data?.error || 'Error saving API keys.', 'error');
 };
 
 // ── Confirmation modal ─────────────────────────────────────
@@ -2193,7 +2229,7 @@ if (rulesForm) {
       await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(newConfig) });
       showToast('Configuration saved!', 'success');
     } catch (err) {
-      alert('Error updating config. Check your connection.');
+      showToast('Error updating config. Check your connection.', 'error');
     } finally {
       if (btn) {
         btn.disabled = false;
@@ -2399,7 +2435,7 @@ window.addShare = async () => {
   const price = Number(g('newSharePrice'));
   const daily = Number(g('newShareDaily'));
   const duration = Number(g('newShareDuration'));
-  if (!name || !price) { alert('Please fill all required fields.'); return; }
+  if (!name || !price) { showToast('Please fill all required fields.', 'error'); return; }
   
   let imgUrl = g('newShareImg');
   const fileInput = document.getElementById('newShareImgFile');
@@ -2454,7 +2490,7 @@ window.createUser = async () => {
     document.getElementById('createUserModal')?.remove();
     renderApiUsers();
   } else {
-    alert(data?.error || 'Error creating user.');
+    showToast(data?.error || 'Error creating user.', 'error');
   }
 };
 
@@ -3369,13 +3405,20 @@ window.adminStartEdit = (msgId) => {
 };
 
 window.adminDeleteMsg = async (msgId) => {
-  if (!confirm('Delete this message?')) return;
-  const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
-  if (data?.success) await loadAdminMessages(activeSessionId);
+  showConfirm({
+    title: 'Delete Message?',
+    msg: 'This message will be permanently deleted.',
+    type: 'danger',
+    yesLabel: 'Delete',
+    onYes: async () => {
+      const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
+      if (data?.success) await loadAdminMessages(activeSessionId);
+    }
+  });
 };
 
 window.sendAdminMessage = async () => {
-  if (adminChatSessionStatus === 'ended') return alert('Session ended.');
+  if (adminChatSessionStatus === 'ended') return showToast('Session has ended.', 'error');
   const input = document.getElementById('adminChatInput');
   const text = input?.value.trim();
   if (!text || !activeSessionId) return;
@@ -3386,7 +3429,7 @@ window.sendAdminMessage = async () => {
       cancelAdminReply();
       await loadAdminMessages(activeSessionId);
     }
-    else alert(data?.error || 'Failed to edit.');
+    else showToast(data?.error || 'Failed to edit.', 'error');
     return;
   }
   
@@ -3419,15 +3462,15 @@ window.onAdminInputKeydown = (e) => {
 window.sendAdminImage = async (input) => {
   const file = input.files[0];
   if (!file || !activeSessionId) return;
-  if (adminChatSessionStatus === 'ended') return alert('Session ended.');
+  if (adminChatSessionStatus === 'ended') return showToast('Session has ended.', 'error');
   const keysRes = await api('/api/admin/settings/apikeys');
   const imgbbKey = keysRes?.apikeys?.imgbb;
-  if (!imgbbKey) return alert('ImgBB key not set in Settings → API Keys.');
+  if (!imgbbKey) return showToast('ImgBB key not set in Settings → API Keys.', 'error');
   const formData = new FormData();
   formData.append('image', file);
   const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
   const result = await res.json();
-  if (!result.success) return alert('Image upload failed.');
+  if (!result.success) return showToast('Image upload failed.', 'error');
   const body = { sessionId: activeSessionId, type: 'image', imageUrl: result.data.url, content: '📷 Image' };
   if (adminReplyingTo) body.replyTo = adminReplyingTo;
   cancelAdminReply();
@@ -3462,28 +3505,44 @@ window.sendAdminPolar = async () => {
 };
 
 window.endAdminChatSession = async () => {
-  if (!activeSessionId || !confirm('End this chat session?')) return;
-  const data = await api(`/api/admin/chat/session/${activeSessionId}/end`, { method: 'PUT' });
-  if (data?.success) {
-    adminChatSessionStatus = 'ended';
-    const st = document.getElementById('adminChatSessionStatus');
-    if (st) st.textContent = '🔴 Session Ended';
-    document.getElementById('adminChatInputBar').style.display = 'none';
-    document.getElementById('adminPolarBtn').style.display = 'none';
-    loadAdminChatSessions();
-  }
+  if (!activeSessionId) return;
+  showConfirm({
+    title: 'End Chat Session?',
+    msg: 'This will close the session. The user will no longer be able to send messages.',
+    type: 'warning',
+    yesLabel: 'End Session',
+    onYes: async () => {
+      const data = await api(`/api/admin/chat/session/${activeSessionId}/end`, { method: 'PUT' });
+      if (data?.success) {
+        adminChatSessionStatus = 'ended';
+        const st = document.getElementById('adminChatSessionStatus');
+        if (st) st.textContent = '🔴 Session Ended';
+        document.getElementById('adminChatInputBar').style.display = 'none';
+        document.getElementById('adminPolarBtn').style.display = 'none';
+        loadAdminChatSessions();
+      }
+    }
+  });
 };
 
 window.deleteAdminChatSession = async () => {
-  if (!activeSessionId || !confirm('Delete entire chat? Cannot be undone.')) return;
-  const data = await api(`/api/admin/chat/session/${activeSessionId}`, { method: 'DELETE' });
-  if (data?.success) {
-    activeSessionId = null;
-    document.getElementById('chatWindowEmpty').style.display = 'flex';
-    document.getElementById('chatWindowActive').style.display = 'none';
-    stopAdminChatPolling();
-    loadAdminChatSessions();
-  }
+  if (!activeSessionId) return;
+  showConfirm({
+    title: 'Delete Entire Chat?',
+    msg: 'This will permanently delete all messages in this chat. This cannot be undone.',
+    type: 'danger',
+    yesLabel: 'Delete Chat',
+    onYes: async () => {
+      const data = await api(`/api/admin/chat/session/${activeSessionId}`, { method: 'DELETE' });
+      if (data?.success) {
+        activeSessionId = null;
+        document.getElementById('chatWindowEmpty').style.display = 'flex';
+        document.getElementById('chatWindowActive').style.display = 'none';
+        stopAdminChatPolling();
+        loadAdminChatSessions();
+      }
+    }
+  });
 };
 
 function startAdminTypingPoll(sessionId) {
@@ -3616,7 +3675,7 @@ window.saveChatSettings = async () => {
     adminSoundEnabled = body.sound;
     showToast('Chat settings saved!', 'success');
   }
-  else alert(data?.error || 'Error saving settings.');
+  else showToast(data?.error || 'Error saving settings.', 'error');
 };
 
 loadChatSettings();
@@ -3636,19 +3695,28 @@ function updateBlockBtn(userStatus) {
 window.toggleBlockFromChat = async () => {
   if (!activeSessionId) return;
   const isBlocked = activeUserData?.status === 'blocked';
-  if (!confirm(`${isBlocked?'Unblock':'Block'} this user?`)) return;
-  const data = await api(`/api/admin/chat/session/${activeSessionId}/block`, { method: 'PUT', body: JSON.stringify({ block: !isBlocked }) });
-  if (data?.success) {
-    if (activeUserData) activeUserData.status = data.userStatus;
-    updateBlockBtn(data.userStatus);
-    startStatusTicker(activeSessionId, isBlocked ? 'active' : 'ended', data.userStatus);
-    adminChatSessionStatus = isBlocked ? 'active' : 'ended';
-    document.getElementById('adminChatInputBar').style.display = isBlocked ? 'flex' : 'none';
-    document.getElementById('adminPolarBtn').style.display = isBlocked ? 'inline-block' : 'none';
-    loadAdminChatSessions();
-  } else {
-    alert(data?.error || 'Failed.');
-  }
+  showConfirm({
+    title: isBlocked ? 'Unblock This User?' : 'Block This User?',
+    msg: isBlocked
+      ? 'The user will be able to send messages again.'
+      : 'The user will be blocked and the session will end immediately.',
+    type: isBlocked ? 'info' : 'danger',
+    yesLabel: isBlocked ? 'Unblock' : 'Block User',
+    onYes: async () => {
+      const data = await api(`/api/admin/chat/session/${activeSessionId}/block`, { method: 'PUT', body: JSON.stringify({ block: !isBlocked }) });
+      if (data?.success) {
+        if (activeUserData) activeUserData.status = data.userStatus;
+        updateBlockBtn(data.userStatus);
+        startStatusTicker(activeSessionId, isBlocked ? 'active' : 'ended', data.userStatus);
+        adminChatSessionStatus = isBlocked ? 'active' : 'ended';
+        document.getElementById('adminChatInputBar').style.display = isBlocked ? 'flex' : 'none';
+        document.getElementById('adminPolarBtn').style.display = isBlocked ? 'inline-block' : 'none';
+        loadAdminChatSessions();
+      } else {
+        showToast(data?.error || 'Failed.', 'error');
+      }
+    }
+  });
 };
 
 function startStatusTicker(sessionId, sessionStatus, userStatus) {
@@ -4003,9 +4071,6 @@ window.declineDeposit = async (id) => {
 };
 
 window.deleteDeposit = async (id) => {
-  if (!confirm('Delete this deposit record permanently?')) return;
-  
-  
   showConfirm({
     title: 'Delete this Deposit?',
     msg: 'Delete this deposit and transaction will not hold',
@@ -4178,30 +4243,49 @@ function renderWithdrawalsPage() {
 }
 
 window.approveWithdrawal = async (id, username, net) => {
-  if (!confirm(`Confirm payment of ₦${Number(net).toLocaleString()} to ${username}?`)) return;
-  const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-  if (data?.success) {
-    showToast('✅ Withdrawal marked as paid!', 'success');
-    loadWithdrawals();
-  }
-  else showToast(data?.error || 'Error.', 'error');
+  showConfirm({
+    title: 'Confirm Payment?',
+    msg: `Mark ₦${Number(net).toLocaleString()} withdrawal as paid to <strong>${username}</strong>? This cannot be undone.`,
+    type: 'info',
+    yesLabel: 'Confirm Payment',
+    onYes: async () => {
+      const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+      if (data?.success) {
+        showToast('✅ Withdrawal marked as paid!', 'success');
+        loadWithdrawals();
+      } else showToast(data?.error || 'Error.', 'error');
+    }
+  });
 };
 
 window.declineWithdrawal = async (id) => {
-  if (!confirm('Decline and refund user?')) return;
-  const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-  if (data?.success) {
-    showToast('Withdrawal declined — user refunded.', 'warning');
-    loadWithdrawals();
-  }
-  else showToast(data?.error || 'Error.', 'error');
+  showConfirm({
+    title: 'Decline & Refund?',
+    msg: 'Decline this withdrawal and refund the user? The funds will be returned to their balance.',
+    type: 'warning',
+    yesLabel: 'Decline & Refund',
+    onYes: async () => {
+      const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
+      if (data?.success) {
+        showToast('Withdrawal declined — user refunded.', 'warning');
+        loadWithdrawals();
+      } else showToast(data?.error || 'Error.', 'error');
+    }
+  });
 };
 
 window.deleteWithdrawal = async (id) => {
-  if (!confirm('Delete this withdrawal record?')) return;
-  await api(`/api/admin/withdrawals/${id}`, { method: 'DELETE' });
-  showToast('Record deleted.', 'warning');
-  loadWithdrawals();
+  showConfirm({
+    title: 'Delete Withdrawal Record?',
+    msg: 'This will permanently remove this withdrawal record. This cannot be undone.',
+    type: 'danger',
+    yesLabel: 'Delete Record',
+    onYes: async () => {
+      await api(`/api/admin/withdrawals/${id}`, { method: 'DELETE' });
+      showToast('Record deleted.', 'warning');
+      loadWithdrawals();
+    }
+  });
 };
 
 window.viewWithdrawalDetail = (w) => {
@@ -4964,14 +5048,21 @@ async function submitEditShare(id) {
 }
 
 async function deleteShare(id, name) {
-  if (!confirm(`Delete "${name}"? Users who already bought it keep their investment.`)) return;
-  const res = await api(`/api/admin/shares/${id}`, { method: 'DELETE' });
-  if (res?.success) {
-    showToast(`"${name}" deleted`, 'warning');
-    loadShares();
-  } else {
-    showToast(res?.error || 'Error deleting share', 'error');
-  }
+  showConfirm({
+    title: `Delete "${name}"?`,
+    msg: 'This share package will be removed permanently. Users who already bought it will keep their investment.',
+    type: 'danger',
+    yesLabel: 'Delete Share',
+    onYes: async () => {
+      const res = await api(`/api/admin/shares/${id}`, { method: 'DELETE' });
+      if (res?.success) {
+        showToast(`"${name}" deleted`, 'warning');
+        loadShares();
+      } else {
+        showToast(res?.error || 'Error deleting share', 'error');
+      }
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -5041,14 +5132,21 @@ function viewInvestmentDetail(inv) {
 }
 
 async function deleteInvestment(id, username) {
-  if (!confirm(`Remove ${username}'s investment? This cannot be undone.`)) return;
-  const res = await api(`/api/admin/purchased-shares/${id}`, { method: 'DELETE' });
-  if (res?.success) {
-    showToast(`Investment removed for ${username}`, 'warning');
-    loadInvestments();
-  } else {
-    showToast(res?.error || 'Error removing investment', 'error');
-  }
+  showConfirm({
+    title: 'Remove Investment?',
+    msg: `Remove <strong>${username}</strong>'s investment? This cannot be undone.`,
+    type: 'danger',
+    yesLabel: 'Remove Investment',
+    onYes: async () => {
+      const res = await api(`/api/admin/purchased-shares/${id}`, { method: 'DELETE' });
+      if (res?.success) {
+        showToast(`Investment removed for ${username}`, 'warning');
+        loadInvestments();
+      } else {
+        showToast(res?.error || 'Error removing investment', 'error');
+      }
+    }
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
