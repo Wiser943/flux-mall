@@ -2135,17 +2135,41 @@ window.saveApiKeys = async () => {
 };
 
 // ── Confirmation modal ─────────────────────────────────────
-const confirmIcons = { danger: 'ri-error-warning-line', warning: 'ri-alert-line', info: 'ri-question-line' };
+const confirmIcons = {
+  danger: 'ri-error-warning-line',
+  warning: 'ri-alert-line',
+  info: 'ri-question-line',
+  success: 'ri-checkbox-circle-line' // Added success just in case
+};
 
-function showConfirm({ title, msg, type = 'danger', yesLabel = 'Confirm', onYes }) {
+function showConfirm({ title, msg, type = 'danger', yesLabel = 'Confirm', onYes, icon = true, iconClass }) {
   confirmCallback = onYes;
+  
+  // 1. Set text and content
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').innerHTML = msg;
-  document.getElementById('confirmIconEl').className = confirmIcons[type] || confirmIcons.danger;
-  document.getElementById('confirmIcon').className = `confirm-icon-wrap ${type}`;
+  
+  // 2. Handle Icon Visibility and Logic
+  const iconWrap = document.getElementById('confirmIcon');
+  const iconEl = document.getElementById('confirmIconEl');
+  
+  if (icon === false) {
+    iconWrap.style.display = 'none'; // Hide if icon: false is passed
+  } else {
+    iconWrap.style.display = 'flex'; // Show by default
+    // Use passed iconClass > mapped icon > default danger icon
+    const finalIconClass = iconClass || confirmIcons[type] || confirmIcons.danger;
+    iconEl.className = finalIconClass;
+    iconWrap.className = `confirm-icon-wrap ${type}`;
+  }
+  
+  // 3. Setup Button
   const yesBtn = document.getElementById('confirmYesBtn');
   yesBtn.textContent = yesLabel;
+  // Keeps your specific 'green' override for info types
   yesBtn.className = `confirm-btn-yes ${type === 'info' ? 'green' : type}`;
+  
+  // 4. Show Overlay
   document.getElementById('confirmOverlay').classList.add('visible');
   document.body.style.overflow = 'hidden';
 }
@@ -3697,9 +3721,9 @@ window.toggleBlockFromChat = async () => {
   const isBlocked = activeUserData?.status === 'blocked';
   showConfirm({
     title: isBlocked ? 'Unblock This User?' : 'Block This User?',
-    msg: isBlocked
-      ? 'The user will be able to send messages again.'
-      : 'The user will be blocked and the session will end immediately.',
+    msg: isBlocked ?
+      'The user will be able to send messages again.' :
+      'The user will be blocked and the session will end immediately.',
     type: isBlocked ? 'info' : 'danger',
     yesLabel: isBlocked ? 'Unblock' : 'Block User',
     onYes: async () => {
@@ -5019,6 +5043,7 @@ function openEditShareModal(id) {
     type: 'warning',
     yesLabel: 'Save changes',
     onYes: () => submitEditShare(id),
+    icon:false,
   });
 }
 
@@ -5274,4 +5299,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
