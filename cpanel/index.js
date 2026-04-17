@@ -516,9 +516,9 @@ async function loadAnalytics() {
   }
   
   allData = data.deposits;
-  renderDeposits(allData);
+ // renderDeposits(allData);
 }
-
+/*
 function renderDeposits(data) {
   const tbody = document.getElementById('depositTableBody');
   if (!tbody) return;
@@ -610,7 +610,7 @@ window.exportCSV = () => {
   a.download = 'Report.csv';
   a.click();
 };
-
+*/
 
 // ══════════════════════════════════════════════════════════
 //  SECTION 8 — WITHDRAWALS (API)
@@ -4268,7 +4268,7 @@ window.approveWithdrawal = async (id, username, net) => {
       } else showToast(data?.error || 'Error.', 'error');
     }
   });
-};
+};/*
 
 window.declineWithdrawal = async (id) => {
   showConfirm({
@@ -4372,7 +4372,7 @@ window.viewWithdrawalDetail = (w) => {
   });
   
 };
-
+*/
 // ═══════════════════════════════════════════════════════════
 // ACTIVITY
 // ═══════════════════════════════════════════════════════════
@@ -5286,4 +5286,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
