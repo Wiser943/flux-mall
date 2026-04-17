@@ -2669,20 +2669,18 @@ function openChat(userId) {
   console.log(userId);
 
 
-  
-  /*
   // If this came from the API, always open the real session
   if (realSession && realSession.sessionId) {
     openAdminChatSession(
       realSession.sessionId,
       realSession.name,
       realSession.status === 'resolved' ? 'ended' : 'active',
-      realSession.userData
+      realSession.id
     );
     return;
   }
-  */
-  return 
+  
+ // return 
   
   // ── Mock fallback (for demo / offline) ──────────────────
   const user = CHAT_USERS.find(u => u.id === userId);
