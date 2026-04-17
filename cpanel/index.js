@@ -43,10 +43,6 @@ const CHAT_USERS = [
   { id: 2, name: 'Emeka Nwachukwu', email: 'emeka.n@yahoo.com', initials: 'EN', online: true, unread: 1, pinned: false, status: 'open', balance: '₦8,200', shares: 1, deposits: 3, referrals: 2, lastMsg: 'The deposit is not showing in my wallet', lastTime: '09:31', muted: false, color: '#f59e0b' },
   { id: 3, name: 'Fatima Bello', email: 'fbello@hotmail.com', initials: 'FB', online: false, unread: 0, pinned: false, status: 'resolved', balance: '₦15,750', shares: 2, deposits: 5, referrals: 8, lastMsg: 'Thank you so much! 🙏', lastTime: 'Yesterday', muted: false, color: '#3b82f6' },
   { id: 4, name: 'Tunde Adeyemi', email: 'tunde.a@gmail.com', initials: 'TA', online: false, unread: 1, pinned: false, status: 'open', balance: '₦3,000', shares: 0, deposits: 1, referrals: 0, lastMsg: 'How do I verify my account?', lastTime: 'Yesterday', muted: true, color: '#8b5cf6' },
-  { id: 5, name: 'Ngozi Williams', email: 'ngozi@mail.com', initials: 'NW', online: true, unread: 0, pinned: false, status: 'open', balance: '₦120,000', shares: 8, deposits: 22, referrals: 34, lastMsg: 'Can I get my referral bonus?', lastTime: 'Mon', muted: false, color: '#ec4899' },
-  { id: 6, name: 'Adaeze Ike', email: 'adaeze@gmail.com', initials: 'AI', online: false, unread: 0, pinned: false, status: 'resolved', balance: '₦28,000', shares: 4, deposits: 9, referrals: 5, lastMsg: 'Issue resolved, thank you!', lastTime: 'Mon', muted: false, color: '#14b8a6' },
-  { id: 7, name: 'Babatunde Folake', email: 'bfola@gmail.com', initials: 'BF', online: false, unread: 0, pinned: true, status: 'open', balance: '₦7,500', shares: 1, deposits: 2, referrals: 1, lastMsg: 'Admin please reply my message', lastTime: 'Sun', muted: false, color: '#f97316' },
-  { id: 8, name: 'Kemi Adebayo', email: 'kemi@gmail.com', initials: 'KA', online: true, unread: 0, pinned: false, status: 'open', balance: '₦55,000', shares: 5, deposits: 11, referrals: 19, lastMsg: 'Thanks for the quick response!', lastTime: 'Sun', muted: false, color: '#22c55e' },
 ];
 
 const CHAT_MESSAGES = {
@@ -70,27 +66,6 @@ const CHAT_MESSAGES = {
     { id: 3, from: 'user', text: 'I received the email, trying now...', time: '08:10', status: 'read' },
     { id: 4, from: 'admin', text: 'Great! Let me know if you need any more help.', time: '08:11', status: 'read' },
     { id: 5, from: 'user', text: 'Thank you so much! 🙏', time: '08:15', status: 'read' },
-  ],
-  4: [{ id: 1, from: 'user', text: 'How do I verify my account?', time: '14:30', status: 'delivered' }],
-  5: [
-    { id: 1, from: 'user', text: 'Hi, I referred 5 people to the platform but my bonus has not been credited', time: '10:00', status: 'read' },
-    { id: 2, from: 'admin', text: 'Hello Ngozi! Your referrals are confirmed. The bonus will be credited within 24 hours after your referrals make their first deposit.', time: '10:05', status: 'read' },
-    { id: 3, from: 'user', text: 'All 5 of them have deposited', time: '10:08', status: 'read' },
-    { id: 4, from: 'admin', text: 'Perfect! I can confirm this. Your bonus of ₦5,000 will be credited shortly. 🎉', time: '10:10', status: 'read' },
-    { id: 5, from: 'user', text: 'Can I get my referral bonus?', time: '10:15', status: 'read' },
-  ],
-  6: [
-    { id: 1, from: 'user', text: 'Issue resolved, thank you!', time: '11:00', status: 'read' },
-    { id: 2, from: 'admin', text: 'You are welcome Adaeze! Have a great day 😊', time: '11:02', status: 'read' },
-  ],
-  7: [
-    { id: 1, from: 'user', text: 'Hello admin I have a question about shares', time: '09:00', status: 'read' },
-    { id: 2, from: 'user', text: 'Admin please reply my message', time: '09:05', status: 'delivered' },
-  ],
-  8: [
-    { id: 1, from: 'user', text: 'Hi admin', time: '08:30', status: 'read' },
-    { id: 2, from: 'admin', text: 'Hello Kemi! What can I help you with?', time: '08:32', status: 'read' },
-    { id: 3, from: 'user', text: 'Thanks for the quick response!', time: '08:33', status: 'read' },
   ],
 };
 
@@ -2658,7 +2633,7 @@ function renderChatList(users, query = '') {
     const isActive = chatActiveUserId === u.id;
     return `
     <div class="chat-item ${u.unread?'unread':''} ${u.pinned?'pinned':''} ${u.muted?'muted':''} ${isActive?'active':''}"
-      id="ci-${u.id}" onclick="openChat(${u.id})" oncontextmenu="chatItemCtx(event,${u.id})">
+      id="ci-${u.id}" onclick="openChat('${u.id}')" oncontextmenu="chatItemCtx(event,${u.id})">
       <div class="chat-avatar">
         <div class="avatar-img initials" style="color:${u.color};border-color:${u.color}22;">${u.initials}</div>
         <div class="online-dot ${u.online?'visible':''}"></div>
@@ -5300,4 +5275,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
