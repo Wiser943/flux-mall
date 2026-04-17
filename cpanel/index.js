@@ -179,6 +179,7 @@ async function uploadToImgBB(file, statusEl) {
   }
 }
 
+/*
 // ── showModal (generic modal system) ───────────────────────
 window.showModal = (cfg) => {
   const old = document.getElementById(cfg.id);
@@ -192,7 +193,7 @@ window.showModal = (cfg) => {
       position:fixed;top:0;left:0;width:100%;height:100%;
       background:rgba(0,0,0,0.85);display:flex;align-items:center;
       justify-content:center;z-index:9999;backdrop-filter:blur(8px);
-      animation:fadeIn 0.3s ease;`;*/
+      animation:fadeIn 0.3s ease;`;**
   
   const buttonsHTML = (cfg.buttons || []).map(btn =>
     `<button class="${btn.class||'btn-submit'}" onclick="${btn.onclick}" style="${btn.style||''}">${btn.text}</button>`
@@ -204,7 +205,7 @@ window.showModal = (cfg) => {
   /* card.style.cssText = `
      background:var(--card);color:var(--text);max-width:${cfg.width||'450px'};
      box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);
-     border:1px solid var(--border);transform:scale(1);`;*/
+     border:1px solid var(--border);transform:scale(1);`;**
   card.innerHTML = `
         <div class="modal-handle"></div>
             <div class="modal-icon-wrap danger" id="confirmIcon">
@@ -234,7 +235,7 @@ function closeModalOutside(e) {
 // Aliases expected by the user management functions
 const openModal = openSlideModal;
 const closeModal = closeSlideModal;
-
+*/
 
 // ══════════════════════════════════════════════════════════
 //  SECTION 3 — SIDEBAR & PAGE NAVIGATION
@@ -516,48 +517,87 @@ async function loadAnalytics() {
   }
   
   allData = data.deposits;
- // renderDeposits(allData);
-}
-/*
-function renderDeposits(data) {
+renderDepositsPage()}
+
+
+function renderDepositsPage() {
   const tbody = document.getElementById('depositTableBody');
   if (!tbody) return;
-  tbody.innerHTML = data.map(i => {
-    const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString() : 'Now';
+  if (!_dFiltered.length) {
+    setEmpty('depositTableBody', 6, 'No deposits found');
+    hidePagination('deposit');
+    return;
+  }
+  
+  const slice = paginate(_dFiltered, dPage, PER_PAGE);
+  tbody.innerHTML = slice.map(i => {
+    const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Now';
     const userId = i.userId?._id || i.userId || '';
-    const userName = i.userId?.username || userId.substring(0, 7) + '...';
-    return `
-      <tr>
-        <td>${date}</td>
-        <td><small>${userName}</small></td>
-        <td>₦${Number(i.amount).toLocaleString()}</td>
-        <td><code>${(i.refCode||'').substring(0,8)}...</code></td>
-        <td><span class="status-badge ${i.status}">${i.status}</span></td>
-        <td>
+    const userName = i.userId?.username || userId.toString().substring(0, 8);
+    const ref = (i.refCode || '').substring(0, 10);
+    const fex = Number(i.amount);
+    const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+    
+    return `<tr>
+      <td>
+        <div class="user-chip">
+          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
+          <div>
+            <div class="username">${userName}</div>
+            <div class="user-id">${userId.toString().substring(0,8)}…</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="amt-fex">🪙 ${fex.toLocaleString()}</div>
+        <div class="amt-naira">≈ ₦${naira}</div>
+      </td>
+      <td><code style="font-size:11px;color:var(--text3);">${ref}…</code></td>
+      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
+      <td>${statusBadge(i.status)}</td>
+      <td>
+        <div class="action-group">
           ${i.status === 'pending' ? `
-            <button class="btn-action" style="background:var(--success)" onclick="approveDeposit('${i._id}','${userId}','${i.amount}')">✔</button>
-            <button class="btn-action" style="background:var(--danger)"  onclick="declineDeposit('${i._id}')">✖</button>
-          ` : `<button class="btn-action" style="color:var(--danger);background:transparent" onclick="deleteDeposit('${i._id}')">✖</button>`}
-        </td>
-      </tr>`;
+            <button class="btn btn-success btn-sm" onclick="approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
+              <i class="ri-check-line"></i> Approve
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="declineDeposit('${i._id}')">
+              <i class="ri-close-line"></i>
+            </button>
+          ` : `
+            <button class="btn btn-ghost btn-sm" onclick="viewDepositDetail(${JSON.stringify(i).replace(/"/g,'&quot;')})">
+              <i class="ri-eye-line"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deleteDeposit('${i._id}')">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          `}
+        </div>
+      </td>
+    </tr>`;
   }).join('');
+  
+  renderPagination('deposit', _dFiltered.length, dPage, (p) => {
+    dPage = p;
+    renderDepositsPage();
+  });
 }
 
-window.approveDeposit = async (id, userId, amount) => {
+window.approveDeposit = async (id, userId, amount, username) => {
   showConfirm({
-    title: 'Approve Deposit?',
-    msg: `Approve ₦${Number(amount).toLocaleString()} deposit and credit the user?`,
-    type: 'info',
+    title: 'Approve this Deposit?',
+    msg: 'Approve <strong>🪙${Number(amount).toLocaleString()}</strong> deposit from <strong>${username}</strong>?',
+    type: 'warning',
     yesLabel: 'Approve',
     onYes: async () => {
       const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
       if (data?.success) {
-        showToast('Deposit approved and user credited!', 'success');
-        loadAnalytics();
+        showToast('Deposit approved — user credited!', 'success');
+        loadDeposits();
       } else {
         showToast(data?.error || 'Error approving deposit.', 'error');
       }
-    }
+    },
   });
 };
 
@@ -569,7 +609,7 @@ window.declineDeposit = async (id) => {
     yesLabel: 'Decline',
     onYes: async () => {
       const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-      if (data?.success) loadAnalytics();
+      if (data?.success) loadDeposits();
       else showToast(data?.error || 'Error.', 'error');
     }
   });
@@ -588,29 +628,8 @@ window.deleteDeposit = async (id) => {
   });
 };
 
-window.filterDeposits = () => {
-  const term = document.getElementById('adminSearch')?.value.toLowerCase() || '';
-  const filtered = allData.filter(i => {
-    const uid = (i.userId?._id || i.userId || '').toString().toLowerCase();
-    const ref = (i.refCode || '').toLowerCase();
-    return uid.includes(term) || ref.includes(term);
-  });
-  renderDeposits(filtered);
-};
 
-window.exportCSV = () => {
-  let csv = 'Date,User,Amount,Ref,Status\n';
-  allData.forEach(i => {
-    csv += `${new Date(i.createdAt).toLocaleDateString()},${i.userId?._id||i.userId},${i.amount},${i.refCode},${i.status}\n`;
-  });
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'Report.csv';
-  a.click();
-};
-*/
+
 
 // ══════════════════════════════════════════════════════════
 //  SECTION 8 — WITHDRAWALS (API)
@@ -639,34 +658,6 @@ async function loadWithdrawals() {
     </tr>`).join('');
 }
 
-window.approveWithdrawal = async (id) => {
-  showConfirm({
-    title: 'Confirm Payment Sent?',
-    msg: 'Mark this withdrawal as paid? This cannot be undone.',
-    type: 'info',
-    yesLabel: 'Confirm Payment',
-    onYes: async () => {
-      await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-      loadWithdrawals();
-    }
-  });
-};
-window.declineWithdrawal = async (id) => {
-  showConfirm({
-    title: 'Decline & Refund?',
-    msg: 'Decline this withdrawal and refund the user?',
-    type: 'warning',
-    yesLabel: 'Decline & Refund',
-    onYes: async () => {
-      await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-      loadWithdrawals();
-    }
-  });
-};
-window.deleteWithdrawal = async (id) => {
-  await api(`/api/admin/withdrawals/${id}`, { method: 'DELETE' });
-  loadWithdrawals();
-};
 
 
 // ══════════════════════════════════════════════════════════
@@ -3967,6 +3958,7 @@ function updateDepositStats() {
   setText('tcDeposits', total);
 }
 
+//big issues
 function filterDeposits(term) {
   term = term.toLowerCase();
   _dFiltered = _deposits.filter(d => {
@@ -3984,125 +3976,36 @@ function filterDepositStatus(status) {
   renderDepositsPage();
 }
 
-function renderDepositsPage() {
-  const tbody = document.getElementById('depositTableBody');
-  if (!tbody) return;
-  if (!_dFiltered.length) {
-    setEmpty('depositTableBody', 6, 'No deposits found');
-    hidePagination('deposit');
-    return;
-  }
-  
-  const slice = paginate(_dFiltered, dPage, PER_PAGE);
-  tbody.innerHTML = slice.map(i => {
-    const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Now';
-    const userId = i.userId?._id || i.userId || '';
-    const userName = i.userId?.username || userId.toString().substring(0, 8);
-    const ref = (i.refCode || '').substring(0, 10);
-    const fex = Number(i.amount);
-    const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-    
-    return `<tr>
-      <td>
-        <div class="user-chip">
-          <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
-          <div>
-            <div class="username">${userName}</div>
-            <div class="user-id">${userId.toString().substring(0,8)}…</div>
-          </div>
-        </div>
-      </td>
-      <td>
-        <div class="amt-fex">🪙 ${fex.toLocaleString()}</div>
-        <div class="amt-naira">≈ ₦${naira}</div>
-      </td>
-      <td><code style="font-size:11px;color:var(--text3);">${ref}…</code></td>
-      <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
-      <td>${statusBadge(i.status)}</td>
-      <td>
-        <div class="action-group">
-          ${i.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
-              <i class="ri-check-line"></i> Approve
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="declineDeposit('${i._id}')">
-              <i class="ri-close-line"></i>
-            </button>
-          ` : `
-            <button class="btn btn-ghost btn-sm" onclick="viewDepositDetail(${JSON.stringify(i).replace(/"/g,'&quot;')})">
-              <i class="ri-eye-line"></i>
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="deleteDeposit('${i._id}')">
-              <i class="ri-delete-bin-line"></i>
-            </button>
-          `}
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-  
-  renderPagination('deposit', _dFiltered.length, dPage, (p) => {
-    dPage = p;
-    renderDepositsPage();
+/*
+window.filterDeposits = () => {
+  const term = document.getElementById('adminSearch')?.value.toLowerCase() || '';
+  const filtered = allData.filter(i => {
+    const uid = (i.userId?._id || i.userId || '').toString().toLowerCase();
+    const ref = (i.refCode || '').toLowerCase();
+    return uid.includes(term) || ref.includes(term);
   });
-}
-
-window.approveDeposit = async (id, userId, amount, username) => {
-  showConfirm({
-    title: 'Approve this Deposit?',
-    msg: 'Approve <strong>🪙${Number(amount).toLocaleString()}</strong> deposit from <strong>${username}</strong>?',
-    type: 'warning',
-    yesLabel: 'Approve',
-    onYes: async () => {
-      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-      if (data?.success) {
-        showToast('✅ Deposit approved — user credited!', 'success');
-        loadDeposits();
-      } else {
-        showToast(data?.error || 'Error approving deposit.', 'error');
-      }
-    },
-  });
+  renderDeposits(filtered);
 };
 
-window.declineDeposit = async (id) => {
-  showConfirm({
-    title: 'Decline this Deposit?',
-    msg: 'Decline this deposit and transaction will not hold',
-    type: 'warning',
-    yesLabel: 'Decline',
-    onYes: async () => {
-      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-      if (data?.success) {
-        showToast('Deposit declined.', 'warning');
-        loadDeposits();
-      }
-      else showToast(data?.error || 'Error.', 'error');
-    },
-  });
-};
 
-window.deleteDeposit = async (id) => {
-  showConfirm({
-    title: 'Delete this Deposit?',
-    msg: 'Delete this deposit and transaction will not hold',
-    type: 'danger',
-    yesLabel: 'Remove',
-    onYes: async () => {
-      await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
-      showToast('Record deleted.', 'warning');
-      loadDeposits();
-    },
-  });
-};
+*/
+
+
+
+
+
+
+
+
+
 
 window.viewDepositDetail = (i) => {
   const userName = i.userId?.username || i.userId?.toString().substring(0, 8) || '—';
   const fex = Number(i.amount);
   const naira = (fex * 0.7).toLocaleString();
   showConfirm({
-  title: '<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>',
-  msg: `    <div class="modal-body">
+    title: '<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>',
+    msg: `    <div class="modal-body">
       <div class="modal-row">
         <div class="info-card">
           <label>User</label>
@@ -4140,14 +4043,15 @@ window.viewDepositDetail = (i) => {
         </div>
       </div>
     </div>`,
-  type: 'warning',
-  yesLabel: 'Delete',
-  onYes: async () => {
-    const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
-    if (data?.success) await loadAdminMessages(activeSessionId);
-  },icon:false
-});
-
+    type: 'warning',
+    yesLabel: 'Delete',
+    onYes: async () => {
+      const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
+      if (data?.success) await loadAdminMessages(activeSessionId);
+    },
+    icon: false
+  });
+  
   /*${i.status === 'pending' ? `<button class="btn btn-success" onclick="approveDeposit('${i._id}','','${i.amount}','user');closeModal()"><i class="ri-check-line"></i> Approve</button>` : ''}*/
 };
 
@@ -4229,7 +4133,7 @@ function renderWithdrawalsPage() {
       <td>
         <div class="action-group">
           ${w.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w._id}','${userName}','${net}')">
+            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w._id}')">
               <i class="ri-money-dollar-circle-line"></i> Pay
             </button>
             <button class="btn btn-danger btn-sm" onclick="declineWithdrawal('${w._id}')">
@@ -4254,21 +4158,21 @@ function renderWithdrawalsPage() {
   });
 }
 
-window.approveWithdrawal = async (id, username, net) => {
+window.approveWithdrawal = async (id) => {
   showConfirm({
-    title: 'Confirm Payment?',
-    msg: `Mark ₦${Number(net).toLocaleString()} withdrawal as paid to <strong>${username}</strong>? This cannot be undone.`,
+    title: 'Confirm Payment Sent?',
+    msg: 'Mark this withdrawal as paid? This cannot be undone.',
     type: 'info',
     yesLabel: 'Confirm Payment',
     onYes: async () => {
-      const data = await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-      if (data?.success) {
-        showToast('✅ Withdrawal marked as paid!', 'success');
-        loadWithdrawals();
-      } else showToast(data?.error || 'Error.', 'error');
+      await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+      loadWithdrawals();
     }
   });
-};/*
+};
+
+
+
 
 window.declineWithdrawal = async (id) => {
   showConfirm({
@@ -4286,6 +4190,7 @@ window.declineWithdrawal = async (id) => {
   });
 };
 
+
 window.deleteWithdrawal = async (id) => {
   showConfirm({
     title: 'Delete Withdrawal Record?',
@@ -4299,6 +4204,7 @@ window.deleteWithdrawal = async (id) => {
     }
   });
 };
+
 
 window.viewWithdrawalDetail = (w) => {
   const fex = Number(w.amount);
@@ -4360,7 +4266,7 @@ window.viewWithdrawalDetail = (w) => {
       </div>
           <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      ${w.status === 'pending' ? `<button class="btn btn-success" onclick="approveWithdrawal('${w._id}','${w.username}','${net}');closeModal()"><i class="ri-check-line"></i> Mark Paid</button>` : ''}
+      ${w.status === 'pending' ? `<button class="btn btn-success" onclick="approveWithdrawal('${w._id}');closeModal()"><i class="ri-check-line"></i> Mark Paid</button>` : ''}
     </div>`,
     type: 'warning',
     yesLabel: 'Delete',
@@ -4372,7 +4278,8 @@ window.viewWithdrawalDetail = (w) => {
   });
   
 };
-*/
+
+
 // ═══════════════════════════════════════════════════════════
 // ACTIVITY
 // ═══════════════════════════════════════════════════════════
@@ -4464,6 +4371,19 @@ function renderActivityPage() {
 // ═══════════════════════════════════════════════════════════
 // EXPORT CSV
 // ═══════════════════════════════════════════════════════════
+window.exportCSV = () => {
+  let csv = 'Date,User,Amount,Ref,Status\n';
+  allData.forEach(i => {
+    csv += `${new Date(i.createdAt).toLocaleDateString()},${i.userId?._id||i.userId},${i.amount},${i.refCode},${i.status}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Report.csv';
+  a.click();
+};
+
 function exportAllCSV() {
   // Determine which tab is active
   const active = document.querySelector('.tab-panel.active')?.id;
@@ -4581,23 +4501,6 @@ function setText(id, val) {
   if (el) el.textContent = val;
 }
 
-// ── MODAL ──────────────────────────────────────────────────
-/*
-function showModal(html) {
- // closeModal();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = '_txnModalOverlay';
-  overlay.onclick = (e) => { if (e.target === overlay) closeModal(); };
-  overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
-  document.body.appendChild(overlay);
-}
-
-/*
-function closeModal() {
-  document.getElementById('_txnModalOverlay')?.remove();
-}
-*/
 // ── TOAST ──────────────────────────────────────────────────
 let _toastWrap = null;
 const toast = showToast;
@@ -5243,22 +5146,7 @@ function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
 }
-/*
-// ── MODAL ──────────────────────────────────────────────────
-function showModal(html) {
-  closeModal();
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.id = '__modalOverlay';
-  overlay.onclick = e => { if (e.target === overlay) closeModal(); };
-  overlay.innerHTML = `<div class="modal-sheet">${html}</div>`;
-  document.body.appendChild(overlay);
-}
-/*
-function closeModal() {
-  document.getElementById('__modalOverlay')?.remove();
-}
-*/
+
 // ── TOAST ──────────────────────────────────────────────────
 let _tw = null;
 
@@ -5286,4 +5174,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
