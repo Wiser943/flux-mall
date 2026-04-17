@@ -2312,7 +2312,8 @@ window.openBindBankModal = async () => {
     yesLabel: 'Configure',
     onYes: () => {
       savePaymentSettings()
-    }
+    },
+    icon: false
   });
   
   /*
@@ -2667,20 +2668,20 @@ function openChat(userId) {
   console.log(realSession);
   console.log(sessions);
   console.log(userId);
-
-
+  
+  
   // If this came from the API, always open the real session
   if (realSession && realSession.sessionId) {
     openAdminChatSession(
       realSession.sessionId,
       realSession.name,
       realSession.status === 'resolved' ? 'ended' : 'active',
-      realSession.id
+      realSession.userData
     );
     return;
   }
   
- // return 
+  // return 
   
   // ── Mock fallback (for demo / offline) ──────────────────
   const user = CHAT_USERS.find(u => u.id === userId);
@@ -3705,8 +3706,7 @@ window.toggleBlockFromChat = async () => {
   showConfirm({
     title: isBlocked ? 'Unblock This User?' : 'Block This User?',
     msg: isBlocked ?
-      'The user will be able to send messages again.' :
-      'The user will be blocked and the session will end immediately.',
+      'The user will be able to send messages again.' : 'The user will be blocked and the session will end immediately.',
     type: isBlocked ? 'info' : 'danger',
     yesLabel: isBlocked ? 'Unblock' : 'Block User',
     onYes: async () => {
@@ -4100,11 +4100,9 @@ window.viewDepositDetail = (i) => {
   const userName = i.userId?.username || i.userId?.toString().substring(0, 8) || '—';
   const fex = Number(i.amount);
   const naira = (fex * 0.7).toLocaleString();
-  showModal({
-    id: 'detailModal',
-    title: `<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>`,
-    content: `
-    <div class="modal-body">
+  showConfirm({
+  title: '<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>',
+  msg: `    <div class="modal-body">
       <div class="modal-row">
         <div class="info-card">
           <label>User</label>
@@ -4142,12 +4140,14 @@ window.viewDepositDetail = (i) => {
         </div>
       </div>
     </div>`,
-    
-    buttons: [
-      { text: 'Delete User', class: 'btn-danger', onclick: `document.getElementById('detailModal').remove()` },
-      { text: 'Close', class: 'btn-sec', onclick: `document.getElementById('detailModal').remove()` }
-    ]
-  });
+  type: 'warning',
+  yesLabel: 'Delete',
+  onYes: async () => {
+    const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
+    if (data?.success) await loadAdminMessages(activeSessionId);
+  },icon:false
+});
+
   /*${i.status === 'pending' ? `<button class="btn btn-success" onclick="approveDeposit('${i._id}','','${i.amount}','user');closeModal()"><i class="ri-check-line"></i> Approve</button>` : ''}*/
 };
 
@@ -4304,13 +4304,9 @@ window.viewWithdrawalDetail = (w) => {
   const fex = Number(w.amount);
   const net = Number(w.netAmount || fex * 0.7);
   const rate = w.fexRate || 0.7;
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-arrow-up-circle-line" style="color:var(--danger)"></i> Withdrawal Detail</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
+    showConfirm({
+    title: '<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>',
+    msg: `    <div class="modal-body">
       <div class="modal-row">
         <div class="info-card">
           <label>User</label>
@@ -4361,12 +4357,20 @@ window.viewWithdrawalDetail = (w) => {
           <div class="val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</div>
         </div>
       </div>
-    </div>
-    <div class="modal-footer">
+      </div>
+          <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Close</button>
       ${w.status === 'pending' ? `<button class="btn btn-success" onclick="approveWithdrawal('${w._id}','${w.username}','${net}');closeModal()"><i class="ri-check-line"></i> Mark Paid</button>` : ''}
-    </div>
-  `);
+    </div>`,
+    type: 'warning',
+    yesLabel: 'Delete',
+    onYes: async () => {
+      const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
+      if (data?.success) await loadAdminMessages(activeSessionId);
+    },
+    icon: false
+  });
+  
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -5026,7 +5030,7 @@ function openEditShareModal(id) {
     type: 'warning',
     yesLabel: 'Save changes',
     onYes: () => submitEditShare(id),
-    icon:false,
+    icon: false,
   });
 }
 
