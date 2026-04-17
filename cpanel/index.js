@@ -362,6 +362,7 @@ function switchPageByHash() {
   // Lazy-init pages on first visit
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
   if (targetId === 'chats') initChatPage();
+  if (targetId === 'shares') refreshAll();
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -2476,7 +2477,7 @@ window.addShare = async () => {
 window.deleteShare = async (id) => {
   showConfirm({
     title: 'Delete this share?',
-    msg: 'This share will be removed permanently and all active users on it will its benefits!!',
+    msg: 'This share will be removed permanently and all active users on it will lose its benefits!!',
     type: 'danger',
     yesLabel: 'Delete',
     onYes: async () => {
@@ -3948,9 +3949,14 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 async function refreshAll() {
+  //for transactions refresh
   loadDeposits();
   loadWithdrawals();
   loadActivity();
+  //shares refreshing
+  loadShares();
+  loadInvestments();
+  showToast('Refreshed ✓', 'success');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4676,11 +4682,6 @@ window.addEventListener('DOMContentLoaded', () => {
   loadInvestments();
 });
 
-async function refreshAll() {
-  loadShares();
-  loadInvestments();
-  showToast('Refreshed ✓', 'success');
-}
 
 // ═══════════════════════════════════════════════════════════
 // SHARE CATALOG
