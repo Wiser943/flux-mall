@@ -586,7 +586,7 @@ function renderDepositsPage() {
 window.approveDeposit = async (id, userId, amount, username) => {
   showConfirm({
     title: 'Approve this Deposit?',
-    msg: 'Approve <strong>🪙${Number(amount).toLocaleString()}</strong> deposit from <strong>${username}</strong>?',
+    msg: 'Approve deposit.Are you certain of this action?',
     type: 'warning',
     yesLabel: 'Approve',
     onYes: async () => {
@@ -2113,7 +2113,7 @@ function showConfirm({ title, msg, type = 'danger', yesLabel = 'Confirm', onYes,
   confirmCallback = onYes;
   
   // 1. Set text and content
-  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmTitle').innerHTML = title;
   document.getElementById('confirmMsg').innerHTML = msg;
   
   // 2. Handle Icon Visibility and Logic
