@@ -517,7 +517,8 @@ async function loadAnalytics() {
   }
   
   allData = data.deposits;
-renderDepositsPage()}
+  renderDepositsPage()
+}
 
 
 function renderDepositsPage() {
@@ -4210,7 +4211,7 @@ window.viewWithdrawalDetail = (w) => {
   const fex = Number(w.amount);
   const net = Number(w.netAmount || fex * 0.7);
   const rate = w.fexRate || 0.7;
-    showConfirm({
+  showConfirm({
     title: '<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>',
     msg: `    <div class="modal-body">
       <div class="modal-row">
@@ -4846,6 +4847,7 @@ function openAddShareModal() {
     type: 'green',
     yesLabel: 'Create share',
     onYes: () => submitAddShare(),
+    icon: false
   });
   // Live ROI preview
   ['ms_price', 'ms_daily', 'ms_duration'].forEach(id => {
@@ -5174,4 +5176,4 @@ document.head.appendChild(s2);
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
