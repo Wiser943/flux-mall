@@ -1162,10 +1162,9 @@ function closeDetail() {
 
 // ── User Modals ────────────────────────────────────────────
 function openAddUser() {
-  openModal(`
-    <div class="modal-title">Add New User</div>
-    <div class="modal-sub">Create a new user account manually.</div>
-    <div class="form-row">
+  showConfirm({
+    title: 'Add New User',
+    msg: `    <div class="form-row">
       <div class="form-group"><label class="form-label">First Name</label><input class="form-input" id="m-fname" placeholder="Chioma"></div>
       <div class="form-group"><label class="form-label">Last Name</label><input class="form-input" id="m-lname" placeholder="Okafor"></div>
     </div>
@@ -1178,39 +1177,39 @@ function openAddUser() {
       </div>
     </div>
     <div class="form-group"><label class="form-label">Initial Balance (₦)</label><input class="form-input" id="m-balance" type="number" placeholder="0" min="0"></div>
-    <div class="modal-btns">
-      <button class="modal-btn-primary" onclick="submitAddUser()">Create User</button>
-      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>`);
-}
-
-function submitAddUser() {
-  const fn = document.getElementById('m-fname')?.value.trim();
-  const ln = document.getElementById('m-lname')?.value.trim();
-  const email = document.getElementById('m-email')?.value.trim();
-  const pass = document.getElementById('m-pass')?.value;
-  if (!fn || !ln || !email || !pass) { showToast('Please fill all required fields', 'error'); return; }
-  
-  api('/api/admin/create-user', {
-    method: 'POST',
-    body: JSON.stringify({
-      username: `${fn}${ln}`.toLowerCase().replace(/\s+/g, ''),
-      email,
-      password: pass,
-      role: 'user',
-      initBal: parseInt(document.getElementById('m-balance')?.value) || 0
-    })
-  }).then(data => {
-    if (data?.success) {
-      closeModal();
-      showToast(`${fn} ${ln} added successfully`, 'success');
-      // Reload from API to get real _id
-      loadUMUsers();
-    } else {
-      showToast(data?.error || 'Failed to create user.', 'error');
-    }
+  `,
+    type: 'green',
+    yesLabel: 'Create user',
+    onYes: async () => {
+      const fn = document.getElementById('m-fname')?.value.trim();
+      const ln = document.getElementById('m-lname')?.value.trim();
+      const email = document.getElementById('m-email')?.value.trim();
+      const pass = document.getElementById('m-pass')?.value;
+      if (!fn || !ln || !email || !pass) { showToast('Please fill all required fields', 'error'); return; }
+      
+      api('/api/admin/create-user', {
+        method: 'POST',
+        body: JSON.stringify({
+          username: `${fn}${ln}`.toLowerCase().replace(/\s+/g, ''),
+          email,
+          password: pass,
+          role: 'user',
+          initBal: parseInt(document.getElementById('m-balance')?.value) || 0
+        })
+      }).then(data => {
+        if (data?.success) {
+          showToast(`${fn} ${ln} added successfully`, 'success');
+          // Reload from API to get real _id
+          loadUMUsers();
+        } else {
+          showToast(data?.error || 'Failed to create user.', 'error');
+        }
+      });
+    },
+    icon: false
   });
 }
+
 
 function openEditModal(id) {
   const u = UM_USERS.find(x => x.id === id);
@@ -2401,36 +2400,6 @@ window.saveAnnouncement = async () => {
   await api('/api/admin/settings/config', { method: 'PUT', body: JSON.stringify(config) });
   document.getElementById('createNewsModal')?.remove();
   showToast('Announcement saved!', 'success');
-};
-
-window.openCreateUserModal = () => {
-  showConfirm({
-    title: 'Create New User',
-    content: `
-      <div class="input-group"><label>Username</label><input id="newUsername" placeholder="johndoe"></div>
-      <div class="input-group"><label>Email</label><input type="email" id="newEmail" placeholder="user@email.com"></div>
-      <div class="input-group"><label>Password</label><input type="password" id="newPassword" placeholder="min 6 chars"></div>
-      <div class="input-group"><label>Role</label>
-        <select id="newRole"><option value="user">User</option><option value="admin">Admin</option></select>
-      </div>`,
-    type: 'green',
-    yesLabel: 'Create',
-    onYes: async () => {
-      const g = (id) => document.getElementById(id)?.value;
-      const data = await api('/api/admin/create-user', {
-        method: 'POST',
-        body: JSON.stringify({ username: g('newUsername'), email: g('newEmail'), password: g('newPassword'), role: g('newRole') })
-      });
-      if (data?.success) {
-        showToast('User created successfully!', 'success');
-        renderApiUsers();
-      } else {
-        showToast(data?.error || 'Error creating user.', 'error');
-      }
-      
-    },
-    icon: false
-  });
 };
 
 
