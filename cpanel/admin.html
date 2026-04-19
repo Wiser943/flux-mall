@@ -501,22 +501,23 @@
   <!-- TABS -->
   <div class="tabs-wrap">
     <div class="tabs-header">
-      <button class="tab-btn active" onclick="atSwitchTab('catalog',this)">
+
+      <button class="tab-btn active" onclick="switchTab('tasks-catalog',this)">
         <i class="ri-layout-grid-line"></i><span>Task Catalog</span>
         <span class="tab-count" id="atTcCatalog">0</span>
       </button>
-      <button class="tab-btn" onclick="atSwitchTab('submissions',this)">
+      <button class="tab-btn" onclick="switchTab('tasks-submissions',this)">
         <i class="ri-inbox-line"></i><span>Submissions</span>
         <span class="tab-count" id="atTcSubmissions">0</span>
       </button>
     </div>
 
     <!-- CATALOG TAB -->
-    <div class="tab-panel active" id="at-panel-catalog">
+    <div class="tab-panel active" id="panel-tasks-catalog">
       <div class="toolbar">
         <div class="search-box">
           <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search tasks…" oninput="atFilterCatalog(this.value)">
+          <input class="search-input" type="text" placeholder="Search tasks…" oninput="atFilterCatalog(this.value)">
         </div>
         <select class="filter-select" onchange="atFilterCatalogStatus(this.value)">
           <option value="all">All Status</option>
@@ -533,11 +534,11 @@
     </div>
 
     <!-- SUBMISSIONS TAB -->
-    <div class="tab-panel" id="at-panel-submissions">
+    <div class="tab-panel" id="panel-tasks-submissions">
       <div class="toolbar">
         <div class="search-box">
           <i class="ri-search-line"></i>
-          <input type="text" placeholder="Search user or task…" oninput="atFilterSubmissions(this.value)">
+          <input class="search-input" type="text" placeholder="Search user or task…" oninput="atFilterSubmissions(this.value)">
         </div>
         <select class="filter-select" onchange="atFilterSubStatus(this.value)">
           <option value="all">All Status</option>
