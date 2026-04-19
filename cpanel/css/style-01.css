@@ -1856,7 +1856,7 @@ tbody td {
         align-items: flex-start;
         gap: 8px;
     }
-    
+.page-header button{display: none;}
     .tabs-header {
         gap: 2px;
         padding: 4px 4px 0;

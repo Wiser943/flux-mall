@@ -1407,22 +1407,6 @@
             color: var(--danger);
           }
           
-          /* BUTTONS */
-          .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all .15s;
-            width: 100%;
-            justify-content: center;
-          }
-          
           .btn-primary {
             background: var(--primary);
             color: #fff;
@@ -1477,77 +1461,6 @@
             }
           }
           
-          /* MODAL */
-          .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(17, 24, 39, .6);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            z-index: 9999;
-          }
-          
-          .modal-sheet {
-            background: var(--card);
-            border-radius: 20px 20px 0 0;
-            width: 100%;
-            max-width: 540px;
-            padding: 0 0 32px;
-            max-height: 92vh;
-            overflow-y: auto;
-            animation: slideUp .22s ease;
-          }
-          
-          @keyframes slideUp {
-            from {
-              transform: translateY(50px);
-              opacity: 0
-            }
-            
-            to {
-              transform: translateY(0);
-              opacity: 1
-            }
-          }
-          
-          .modal-handle {
-            width: 40px;
-            height: 4px;
-            background: var(--border);
-            border-radius: 4px;
-            margin: 12px auto 0;
-          }
-          
-          .modal-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px 12px;
-            border-bottom: 1px solid var(--border);
-          }
-          
-          .modal-head h3 {
-            font-size: 15px;
-            font-weight: 700;
-          }
-          
-          .modal-close {
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: var(--text3);
-            cursor: pointer;
-          }
-          
-          .modal-body {
-            padding: 18px 20px;
-          }
-          
-          .modal-footer {
-            padding: 0 20px;
-          }
           
           /* NOTIFICATIONS */
           .notifications {
