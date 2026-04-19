@@ -280,7 +280,8 @@ function switchPageByHash() {
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
   if (targetId === 'chats') initChatPage();
   if (targetId === 'shares') refreshAll();
-  
+  if (targetId === 'tasks') refreshAll();
+
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
