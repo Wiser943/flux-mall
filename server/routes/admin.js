@@ -5,9 +5,19 @@ const bcrypt = require('bcryptjs');
 const { Resend } = require('resend');
 const User = require('../models/User');
 const {
-  Deposit, Withdrawal, Notification, Activity,
-  Share, PurchasedShare, Settings, DepositAmt,
-  ChatSession, ChatMessage, Typing,
+  Deposit,
+  Withdrawal,
+  Notification,
+  Activity,
+  Share,
+  PurchasedShare,
+  Settings,
+  DepositAmt,
+  ChatSession,
+  ChatMessage,
+  Typing,
+  Task,
+  TaskSubmission,
 } = require('../models/Models');
 const { requireAdmin } = require('../middleware/auth');
 
@@ -20,15 +30,17 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email: email.toLowerCase(), role: 'admin' });
     if (!user) return res.status(401).json({ error: 'Invalid admin credentials.' });
-
+    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: 'Invalid credentials.' });
-
+    
     const token = jwt.sign({ id: user._id }, process.env.ADMIN_JWT_SECRET, { expiresIn: '8h' });
     res.cookie('adminSession', token, {
-      httpOnly: true, sameSite: 'Strict', maxAge: 8 * 60 * 60 * 1000
+      httpOnly: true,
+      sameSite: 'Strict',
+      maxAge: 8 * 60 * 60 * 1000
     });
-
+    
     res.json({ success: true, message: 'Admin login successful.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -52,19 +64,25 @@ router.get('/analytics', requireAdmin, async (req, res) => {
   try {
     const deposits = await Deposit.find().sort({ createdAt: -1 });
     const users = await User.find().select('_id username email status createdAt ib refPoints referrerId');
-
-    let successV = 0, pendingV = 0, sCount = 0, pCount = 0, dCount = 0;
+    
+    let successV = 0,
+      pendingV = 0,
+      sCount = 0,
+      pCount = 0,
+      dCount = 0;
     let withdrawSuccessV = 0;
-
+    
     deposits.forEach(d => {
-      if (d.status === 'success') { successV += d.amount; sCount++; }
-      else if (d.status === 'pending') { pendingV += d.amount; pCount++; }
+      if (d.status === 'success') { successV += d.amount;
+        sCount++; }
+      else if (d.status === 'pending') { pendingV += d.amount;
+        pCount++; }
       else dCount++;
     });
-
+    
     const withdrawals = await Withdrawal.find({ status: 'success' });
     withdrawals.forEach(w => withdrawSuccessV += w.amount);
-
+    
     res.json({
       success: true,
       stats: { successV, pendingV, sCount, pCount, dCount, totalUsers: users.length, withdrawSuccessV },
@@ -75,6 +93,190 @@ router.get('/analytics', requireAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── GET /api/admin/tasks ─────────────────────────────────
+// All tasks with completion counts
+router.get('/tasks', requireAdmin, async (req, res) => {
+  try {
+    const tasks = await Task.find().sort({ createdAt: -1 });
+    
+    // Count completions per task
+    const counts = await TaskSubmission.aggregate([
+      { $group: { _id: '$taskId', total: { $sum: 1 }, approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } }, pending: { $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] } } } }
+    ]);
+    const countMap = {};
+    counts.forEach(c => { countMap[c._id.toString()] = c; });
+    
+    const tasksWithStats = tasks.map(t => ({
+      ...t.toObject(),
+      totalSubmissions: countMap[t._id.toString()]?.total || 0,
+      approvedCount: countMap[t._id.toString()]?.approved || 0,
+      pendingCount: countMap[t._id.toString()]?.pending || 0,
+    }));
+    
+    res.json({ success: true, tasks: tasksWithStats });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/admin/tasks ────────────────────────────────
+// Create a new task
+router.post('/tasks', requireAdmin, async (req, res) => {
+  try {
+    const { title, description, instructions, points, category, proofType, expiresAt, maxCompletions, taskLink, platform } = req.body;
+    if (!title || !description || !points)
+      return res.status(400).json({ error: 'Title, description and points are required.' });
+    
+    const task = await Task.create({
+      title,
+      description,
+      instructions: instructions || '',
+      points: Number(points),
+      category: category || 'General',
+      proofType: proofType || 'screenshot',
+      expiresAt: expiresAt || null,
+      maxCompletions: Number(maxCompletions) || 0,
+      taskLink: taskLink || '',
+      platform: platform || '',
+      active: true,
+    });
+    
+    res.json({ success: true, task });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/admin/tasks/:id ─────────────────────────────
+// Edit / toggle active status
+router.put('/tasks/:id', requireAdmin, async (req, res) => {
+  try {
+    const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!task) return res.status(404).json({ error: 'Task not found.' });
+    res.json({ success: true, task });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── DELETE /api/admin/tasks/:id ──────────────────────────
+router.delete('/tasks/:id', requireAdmin, async (req, res) => {
+  try {
+    await Task.findByIdAndDelete(req.params.id);
+    await TaskSubmission.deleteMany({ taskId: req.params.id });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/admin/tasks/submissions ─────────────────────
+// All submissions across all tasks — with optional filters
+router.get('/tasks/submissions', requireAdmin, async (req, res) => {
+  try {
+    const { status, taskId, page = 1, limit = 50 } = req.query;
+    const filter = {};
+    if (status && status !== 'all') filter.status = status;
+    if (taskId) filter.taskId = taskId;
+    
+    const skip = (Number(page) - 1) * Number(limit);
+    const [submissions, total] = await Promise.all([
+      TaskSubmission.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit))
+      .populate('userId', 'username email ib')
+      .populate('taskId', 'title points category'),
+      TaskSubmission.countDocuments(filter),
+    ]);
+    
+    res.json({ success: true, submissions, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── PUT /api/admin/tasks/submissions/:id ─────────────────
+// Approve or decline a submission
+router.put('/tasks/submissions/:id', requireAdmin, async (req, res) => {
+  try {
+    const { status, adminNote } = req.body;
+    if (!['approved', 'declined'].includes(status))
+      return res.status(400).json({ error: 'Status must be approved or declined.' });
+    
+    const submission = await TaskSubmission.findById(req.params.id)
+      .populate('userId', 'username email ib')
+      .populate('taskId', 'title points');
+    
+    if (!submission) return res.status(404).json({ error: 'Submission not found.' });
+    if (submission.status !== 'pending')
+      return res.status(400).json({ error: 'Submission already reviewed.' });
+    
+    submission.status = status;
+    submission.adminNote = adminNote || '';
+    submission.reviewedAt = new Date();
+    
+    if (status === 'approved') {
+      // Credit user with task points
+      const points = submission.points || submission.taskId?.points || 0;
+      await User.findByIdAndUpdate(submission.userId._id, { $inc: { ib: points } });
+      
+      await Activity.create({
+        userId: submission.userId._id,
+        type: 'Task',
+        amount: points,
+        desc: `Task approved: ${submission.taskId?.title || 'Task'}`,
+      });
+      
+      await Notification.create({
+        userId: submission.userId._id,
+        title: '✅ Task Approved!',
+        message: `Your submission for "${submission.taskId?.title}" was approved. 🪙${points} FEX credited!`,
+      });
+      
+    } else {
+      // Declined — deduct 5% penalty from user balance
+      const userBalance = submission.userId.ib || 0;
+      const penalty = parseFloat((userBalance * 0.05).toFixed(2));
+      
+      submission.penalty = penalty;
+      
+      if (penalty > 0) {
+        await User.findByIdAndUpdate(submission.userId._id, { $inc: { ib: -penalty } });
+        
+        await Activity.create({
+          userId: submission.userId._id,
+          type: 'Task Penalty',
+          amount: penalty,
+          desc: `5% penalty — task declined: ${submission.taskId?.title || 'Task'}`,
+        });
+      }
+      
+      await Notification.create({
+        userId: submission.userId._id,
+        title: '❌ Task Declined',
+        message: `Your submission for "${submission.taskId?.title}" was declined.${penalty > 0 ? ` 🪙${penalty} FEX (5%) deducted.` : ''} ${adminNote ? `Reason: ${adminNote}` : ''}`,
+      });
+    }
+    
+    await submission.save();
+    res.json({ success: true, submission });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── DELETE /api/admin/tasks/submissions/:id ──────────────
+router.delete('/tasks/submissions/:id', requireAdmin, async (req, res) => {
+  try {
+    await TaskSubmission.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // ─── GET /api/admin/deposits ──────────────────────────────
 router.get('/deposits', requireAdmin, async (req, res) => {
@@ -93,10 +295,10 @@ router.put('/deposits/:id', requireAdmin, async (req, res) => {
     const { status } = req.body;
     const deposit = await Deposit.findById(req.params.id);
     if (!deposit) return res.status(404).json({ error: 'Deposit not found.' });
-
+    
     deposit.status = status;
     await deposit.save();
-
+    
     if (status === 'success') {
       await User.findByIdAndUpdate(deposit.userId, { $inc: { ib: deposit.amount } });
       await Notification.create({
@@ -104,11 +306,11 @@ router.put('/deposits/:id', requireAdmin, async (req, res) => {
         title: '💰 Wallet Credited',
         message: `Wallet credited with ₦${Number(deposit.amount).toLocaleString()}`
       });
-
+      
       // Handle referral commission
       await handleReferralCommission(deposit.userId.toString(), deposit.amount, deposit._id.toString());
     }
-
+    
     if (status === 'declined') {
       await Notification.create({
         userId: deposit.userId,
@@ -116,7 +318,7 @@ router.put('/deposits/:id', requireAdmin, async (req, res) => {
         message: `Your deposit of ₦${Number(deposit.amount).toLocaleString()} was declined.`
       });
     }
-
+    
     res.json({ success: true, message: `Deposit ${status} successfully.` });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -149,7 +351,7 @@ router.put('/withdrawals/:id', requireAdmin, async (req, res) => {
     const { status } = req.body;
     const withdrawal = await Withdrawal.findByIdAndUpdate(req.params.id, { status }, { new: true });
     if (!withdrawal) return res.status(404).json({ error: 'Withdrawal not found.' });
-
+    
     // If declined, refund the user
     if (status === 'declined') {
       await User.findByIdAndUpdate(withdrawal.userId, { $inc: { ib: withdrawal.amount } });
@@ -165,7 +367,7 @@ router.put('/withdrawals/:id', requireAdmin, async (req, res) => {
         message: `Your withdrawal of ₦${withdrawal.netAmount?.toLocaleString()} has been sent.`
       });
     }
-
+    
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -210,7 +412,7 @@ router.get('/users', requireAdmin, async (req, res) => {
   try {
     const users = await User.find().select('-password').sort({ createdAt: -1 });
     const deposits = await Deposit.find();
-
+    
     // Build stats map
     const statsMap = {};
     deposits.forEach(d => {
@@ -219,13 +421,13 @@ router.get('/users', requireAdmin, async (req, res) => {
       statsMap[uid].count++;
       statsMap[uid].total += d.amount;
     });
-
+    
     const usersWithStats = users.map(u => ({
       ...u.toObject(),
       transCount: statsMap[u._id.toString()]?.count || 0,
       transTotal: statsMap[u._id.toString()]?.total || 0
     }));
-
+    
     res.json({ success: true, users: usersWithStats });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -253,7 +455,7 @@ router.put('/users/:id', requireAdmin, async (req, res) => {
     if (status !== undefined) update.status = status;
     if (ib !== undefined) update.ib = Number(ib);
     if (username) update.username = username;
-
+    
     const user = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
     res.json({ success: true, user });
   } catch (err) {
@@ -268,14 +470,14 @@ router.post('/users/adjust-balance', requireAdmin, async (req, res) => {
     const change = action === 'credit' ? Number(amount) : -Number(amount);
     const user = await User.findByIdAndUpdate(userId, { $inc: { ib: change } }, { new: true }).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found.' });
-
+    
     await Activity.create({ userId, type: action, amount, desc: `Admin ${action}` });
     await Notification.create({
       userId,
       title: action === 'credit' ? '💰 Balance Credited' : '💸 Balance Debited',
       message: `Admin ${action}ed ₦${Number(amount).toLocaleString()} ${action === 'credit' ? 'to' : 'from'} your account.`
     });
-
+    
     res.json({ success: true, newBalance: user.ib });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -288,7 +490,7 @@ router.post('/create-user', requireAdmin, async (req, res) => {
     const { username, email, password, role } = req.body;
     const existing = await User.findOne({ email: email.toLowerCase() });
     if (existing) return res.status(400).json({ error: 'Email already in use.' });
-
+    
     const hashed = await bcrypt.hash(password, 12);
     const user = await User.create({ username, email: email.toLowerCase(), password: hashed, role: role || 'user' });
     res.json({ success: true, user: { ...user.toObject(), password: undefined } });
@@ -304,26 +506,26 @@ router.get('/activity', requireAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 50, type, userId } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
-
+    
     // Build filter — optional type and userId filters
     const filter = {};
-    if (type)   filter.type   = type;
+    if (type) filter.type = type;
     if (userId) filter.userId = userId;
-
+    
     const [activity, total] = await Promise.all([
       Activity.find(filter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(Number(limit))
-        .populate('userId', 'username email'),
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit))
+      .populate('userId', 'username email'),
       Activity.countDocuments(filter)
     ]);
-
+    
     res.json({
       success: true,
       activity,
       total,
-      page:  Number(page),
+      page: Number(page),
       pages: Math.ceil(total / Number(limit))
     });
   } catch (err) {
@@ -337,7 +539,7 @@ router.get('/activity/:userId', requireAdmin, async (req, res) => {
   try {
     const activity = await Activity.find({ userId: req.params.userId })
       .sort({ createdAt: -1 });
-
+    
     res.json({ success: true, activity });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -360,7 +562,7 @@ router.delete('/activity/:id', requireAdmin, async (req, res) => {
 router.delete('/users/:id', requireAdmin, async (req, res) => {
   try {
     const uid = req.params.id;
-
+    
     await Promise.all([
       User.findByIdAndDelete(uid),
       Deposit.deleteMany({ userId: uid }),
@@ -369,7 +571,7 @@ router.delete('/users/:id', requireAdmin, async (req, res) => {
       Notification.deleteMany({ userId: uid }),
       PurchasedShare.deleteMany({ userId: uid }),
     ]);
-
+    
     res.json({ success: true, message: 'User and all related data deleted.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -402,13 +604,11 @@ router.put('/settings/:key', requireAdmin, async (req, res) => {
     for (const field in incomingData) {
       updateObj[`value.${field}`] = incomingData[field];
     }
-
-    await Settings.findOneAndUpdate(
-      { key }, 
-      { $set: updateObj }, // Use $set to only update specific fields
+    
+    await Settings.findOneAndUpdate({ key }, { $set: updateObj }, // Use $set to only update specific fields
       { upsert: true, new: true }
     );
-
+    
     res.json({ success: true, message: `Settings "${key}" updated.` });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -487,21 +687,21 @@ async function handleReferralCommission(depositorUid, depositAmount, tid) {
     const config = await Settings.findOne({ key: 'config' });
     let rates = [15, 4, 2];
     if (config?.value?.referralPercents) rates = config.value.referralPercents;
-
+    
     const L1 = (rates[0] || 0) / 100;
     const L2 = (rates[1] || 0) / 100;
     const L3 = (rates[2] || 0) / 100;
-
+    
     const user = await User.findById(depositorUid);
     if (!user || user.hasDeposited) return;
-
+    
     await User.findByIdAndUpdate(depositorUid, { hasDeposited: true });
-
+    
     const payReferrer = async (uid, bonus, level) => {
       await User.findByIdAndUpdate(uid, { $inc: { ib: bonus, refPoints: bonus } });
       console.log(`✅ ${level} Bonus of ₦${bonus} sent to ${uid}`);
     };
-
+    
     if (user.referrerId) {
       const l1User = await User.findById(user.referrerId);
       if (l1User) {
@@ -537,11 +737,7 @@ router.get('/settings/apikeys', requireAdmin, async (req, res) => {
 router.put('/settings/apikeys', requireAdmin, async (req, res) => {
   try {
     const { imgbb, korapay_public, korapay_secret } = req.body;
-    await Settings.findOneAndUpdate(
-      { key: 'apikeys' },
-      { key: 'apikeys', value: { imgbb, korapay_public, korapay_secret } },
-      { upsert: true, new: true }
-    );
+    await Settings.findOneAndUpdate({ key: 'apikeys' }, { key: 'apikeys', value: { imgbb, korapay_public, korapay_secret } }, { upsert: true, new: true });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -567,10 +763,7 @@ router.get('/chat/messages/:sessionId', requireAdmin, async (req, res) => {
   try {
     const messages = await ChatMessage.find({ sessionId: req.params.sessionId }).sort({ createdAt: 1 });
     // Mark user messages as read
-    await ChatMessage.updateMany(
-      { sessionId: req.params.sessionId, sender: 'user', read: false },
-      { read: true }
-    );
+    await ChatMessage.updateMany({ sessionId: req.params.sessionId, sender: 'user', read: false }, { read: true });
     await ChatSession.findByIdAndUpdate(req.params.sessionId, { unreadAdmin: 0 });
     res.json({ success: true, messages });
   } catch (err) {
@@ -583,7 +776,7 @@ router.post('/chat/send', requireAdmin, async (req, res) => {
   try {
     const { sessionId, content, type, imageUrl, polarQuestion, replyTo } = req.body;
     if (!sessionId) return res.status(400).json({ error: 'sessionId required.' });
-
+    
     const msg = await ChatMessage.create({
       sessionId,
       sender: 'admin',
@@ -593,14 +786,14 @@ router.post('/chat/send', requireAdmin, async (req, res) => {
       polarQuestion: polarQuestion || '',
       replyTo: replyTo || {},
     });
-
+    
     const preview = type === 'image' ? '📷 Image' : type === 'polar' ? `❓ ${polarQuestion}` : content?.substring(0, 60) || '';
     await ChatSession.findByIdAndUpdate(sessionId, {
       lastMessage: preview,
       lastMessageAt: new Date(),
       $inc: { unreadUser: 1 }
     });
-
+    
     res.json({ success: true, message: msg });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -654,11 +847,7 @@ router.get('/chat/settings', requireAdmin, async (req, res) => {
 router.put('/chat/settings', requireAdmin, async (req, res) => {
   try {
     const { available, autoReply, officeHours, sound, allowImages, autoClose, maxImageSize, requireVerified, charLimit } = req.body;
-    await Settings.findOneAndUpdate(
-      { key: 'chat' },
-      { key: 'chat', value: { available, autoReply, officeHours, sound, allowImages, autoClose, maxImageSize, requireVerified, charLimit } },
-      { upsert: true, new: true }
-    );
+    await Settings.findOneAndUpdate({ key: 'chat' }, { key: 'chat', value: { available, autoReply, officeHours, sound, allowImages, autoClose, maxImageSize, requireVerified, charLimit } }, { upsert: true, new: true });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -670,11 +859,7 @@ router.put('/chat/settings', requireAdmin, async (req, res) => {
 router.post('/chat/typing', requireAdmin, async (req, res) => {
   try {
     const { sessionId } = req.body;
-    await Typing.findOneAndUpdate(
-      { sessionId, sender: 'admin' },
-      { sessionId, sender: 'admin', updatedAt: new Date() },
-      { upsert: true }
-    );
+    await Typing.findOneAndUpdate({ sessionId, sender: 'admin' }, { sessionId, sender: 'admin', updatedAt: new Date() }, { upsert: true });
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });

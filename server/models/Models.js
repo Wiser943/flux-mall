@@ -1,67 +1,98 @@
 const mongoose = require('mongoose');
 
+// ─── TASK ───────────────────────────────────────────────────
+const TaskSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  instructions: { type: String, default: '' },
+  points: { type: Number, required: true },
+  category: { type: String, default: 'General' },
+  proofType: { type: String, enum: ['screenshot', 'text', 'url', 'none'], default: 'screenshot' },
+  expiresAt: { type: Date, default: null },
+  maxCompletions: { type: Number, default: 0 },
+  active: { type: Boolean, default: true },
+  taskLink: { type: String, default: '' },
+  platform: { type: String, default: '' },
+  createdAt: { type: Date, default: Date.now },
+});
+
+// ─── TASK SUBMISSION ────────────────────────────────────────
+const TaskSubmissionSchema = new mongoose.Schema({
+  taskId: { type: mongoose.Schema.Types.ObjectId, ref: 'Task', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  proof: { type: String, default: '' },
+  status: { type: String, enum: ['pending', 'approved', 'declined'], default: 'pending' },
+  adminNote: { type: String, default: '' },
+  points: { type: Number, default: 0 },
+  penalty: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  reviewedAt: { type: Date, default: null },
+});
+
+TaskSubmissionSchema.index({ taskId: 1, userId: 1 }, { unique: true });
+
 // ─── DEPOSIT ───────────────────────────────────────────────
 const depositSchema = new mongoose.Schema({
-  userId:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  amount:  { type: Number, required: true },
-  method:  { type: String, default: 'Bank Transfer' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  amount: { type: Number, required: true },
+  method: { type: String, default: 'Bank Transfer' },
   refCode: { type: String, required: true },
-  status:  { type: String, default: 'pending', enum: ['pending', 'success', 'declined'] },
+  status: { type: String, default: 'pending', enum: ['pending', 'success', 'declined'] },
 }, { timestamps: true });
 
 // ─── WITHDRAWAL ────────────────────────────────────────────
 const withdrawalSchema = new mongoose.Schema({
-  userId:           { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  username:         { type: String },
-  amount:           { type: Number, required: true },
-  fee:              { type: Number, default: 0 },
-  feePercentage:    { type: Number, default: 0 },
-  netAmount:        { type: Number },
-  status:           { type: String, default: 'pending', enum: ['pending', 'success', 'declined'] },
-  bankDetails:      { type: Object },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username: { type: String },
+  amount: { type: Number, required: true },
+  fee: { type: Number, default: 0 },
+  feePercentage: { type: Number, default: 0 },
+  netAmount: { type: Number },
+  status: { type: String, default: 'pending', enum: ['pending', 'success', 'declined'] },
+  bankDetails: { type: Object },
   remainingBalance: { type: Number },
 }, { timestamps: true });
 
 // ─── NOTIFICATION ──────────────────────────────────────────
 const notificationSchema = new mongoose.Schema({
-  userId:  { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  title:   { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, required: true },
   message: { type: String, required: true },
-  read:    { type: Boolean, default: false },
+  read: { type: Boolean, default: false },
 }, { timestamps: true });
 
 // ─── ACTIVITY LOG ──────────────────────────────────────────
 const activitySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type:   { type: String },
+  type: { type: String },
   amount: { type: mongoose.Schema.Types.Mixed },
-  desc:   { type: String },
+  desc: { type: String },
 }, { timestamps: true });
 
-// ─── SHARE (Products Admin creates) ────────────────────────
+// ─── SHARE ─────────────────────────────────────────────────
 const shareSchema = new mongoose.Schema({
-  name:        { type: String, required: true },
-  price:       { type: Number, required: true },
+  name: { type: String, required: true },
+  price: { type: Number, required: true },
   dailyIncome: { type: Number, required: true },
-  duration:    { type: Number, required: true },
-  img:         { type: String, default: '' },
+  duration: { type: Number, required: true },
+  img: { type: String, default: '' },
 }, { timestamps: true });
 
 // ─── PURCHASED SHARE ───────────────────────────────────────
 const purchasedShareSchema = new mongoose.Schema({
-  userId:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  shareName:     { type: String },
-  pricePaid:     { type: Number },
-  dailyIncome:   { type: Number },
-  duration:      { type: Number },
-  status:        { type: String, default: 'active' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  shareName: { type: String },
+  pricePaid: { type: Number },
+  dailyIncome: { type: Number },
+  duration: { type: Number },
+  status: { type: String, default: 'active' },
   lastClaimDate: { type: Date, default: Date.now },
-  purchaseDate:  { type: Date, default: Date.now },
+  purchaseDate: { type: Date, default: Date.now },
 }, { timestamps: true });
 
-// ─── SETTINGS (single doc approach) ────────────────────────
+// ─── SETTINGS ──────────────────────────────────────────────
 const settingsSchema = new mongoose.Schema({
-  key:   { type: String, unique: true, required: true },
+  key: { type: String, unique: true, required: true },
   value: { type: mongoose.Schema.Types.Mixed },
 }, { timestamps: true });
 
@@ -72,31 +103,31 @@ const depositAmtSchema = new mongoose.Schema({
 
 // ─── CHAT SESSION ──────────────────────────────────────────
 const chatSessionSchema = new mongoose.Schema({
-  userId:        { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  username:      { type: String, required: true },
-  status:        { type: String, enum: ['active', 'ended'], default: 'active' },
-  lastMessage:   { type: String, default: '' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username: { type: String, required: true },
+  status: { type: String, enum: ['active', 'ended'], default: 'active' },
+  lastMessage: { type: String, default: '' },
   lastMessageAt: { type: Date, default: Date.now },
-  unreadAdmin:   { type: Number, default: 0 },
-  unreadUser:    { type: Number, default: 0 },
+  unreadAdmin: { type: Number, default: 0 },
+  unreadUser: { type: Number, default: 0 },
 }, { timestamps: true });
 
 // ─── CHAT MESSAGE ──────────────────────────────────────────
 const chatMessageSchema = new mongoose.Schema({
-  sessionId:     { type: mongoose.Schema.Types.ObjectId, ref: 'ChatSession', required: true },
-  sender:        { type: String, enum: ['user', 'admin'], required: true },
-  type:          { type: String, enum: ['text', 'image', 'polar'], default: 'text' },
-  content:       { type: String, default: '' },
-  imageUrl:      { type: String, default: '' },
+  sessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'ChatSession', required: true },
+  sender: { type: String, enum: ['user', 'admin'], required: true },
+  type: { type: String, enum: ['text', 'image', 'polar'], default: 'text' },
+  content: { type: String, default: '' },
+  imageUrl: { type: String, default: '' },
   polarQuestion: { type: String, default: '' },
-  polarAnswer:   { type: String, default: '' },
-  read:          { type: Boolean, default: false },
-  delivered:     { type: Boolean, default: false },
-  edited:        { type: Boolean, default: false },
-  deleted:       { type: Boolean, default: false },
+  polarAnswer: { type: String, default: '' },
+  read: { type: Boolean, default: false },
+  delivered: { type: Boolean, default: false },
+  edited: { type: Boolean, default: false },
+  deleted: { type: Boolean, default: false },
   replyTo: {
-    msgId:   { type: String, default: '' },
-    sender:  { type: String, default: '' },
+    msgId: { type: String, default: '' },
+    sender: { type: String, default: '' },
     preview: { type: String, default: '' },
   },
   reactions: { type: mongoose.Schema.Types.Mixed, default: {} },
@@ -105,20 +136,22 @@ const chatMessageSchema = new mongoose.Schema({
 // ─── TYPING INDICATOR ──────────────────────────────────────
 const typingSchema = new mongoose.Schema({
   sessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'ChatSession', required: true },
-  sender:    { type: String, enum: ['user', 'admin'], required: true },
+  sender: { type: String, enum: ['user', 'admin'], required: true },
   updatedAt: { type: Date, default: Date.now },
 });
 
 module.exports = {
-  Deposit:        mongoose.model('Deposit', depositSchema),
-  Withdrawal:     mongoose.model('Withdrawal', withdrawalSchema),
-  Notification:   mongoose.model('Notification', notificationSchema),
-  Activity:       mongoose.model('Activity', activitySchema),
-  Share:          mongoose.model('Share', shareSchema),
+  Task: mongoose.model('Task', TaskSchema),
+  TaskSubmission: mongoose.model('TaskSubmission', TaskSubmissionSchema),
+  Deposit: mongoose.model('Deposit', depositSchema),
+  Withdrawal: mongoose.model('Withdrawal', withdrawalSchema),
+  Notification: mongoose.model('Notification', notificationSchema),
+  Activity: mongoose.model('Activity', activitySchema),
+  Share: mongoose.model('Share', shareSchema),
   PurchasedShare: mongoose.model('PurchasedShare', purchasedShareSchema),
-  Settings:       mongoose.model('Settings', settingsSchema),
-  DepositAmt:     mongoose.model('DepositAmt', depositAmtSchema),
-  ChatSession:    mongoose.model('ChatSession', chatSessionSchema),
-  ChatMessage:    mongoose.model('ChatMessage', chatMessageSchema),
-  Typing:         mongoose.model('Typing', typingSchema),
+  Settings: mongoose.model('Settings', settingsSchema),
+  DepositAmt: mongoose.model('DepositAmt', depositAmtSchema),
+  ChatSession: mongoose.model('ChatSession', chatSessionSchema),
+  ChatMessage: mongoose.model('ChatMessage', chatMessageSchema),
+  Typing: mongoose.model('Typing', typingSchema),
 };
