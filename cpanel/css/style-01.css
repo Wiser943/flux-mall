@@ -1441,6 +1441,7 @@ tbody td {
 
 
 /*task system continues */
+.task-card{padding: 16px;}
 .tc-header {
     display: flex;
     align-items: flex-start;
@@ -1648,7 +1649,7 @@ tbody td {
 }
 
 .btn-warning {
-    background: var(--warning-soft);
+    background: var(--light-warning);
     color: var(--warning);
 }
 
