@@ -729,7 +729,7 @@ window.filterUsers = () => {
 };
 
 window.viewUserDetails = async (uid, status, name, email, balance, verified, createdAt, refPoints, referrerId) => {
-showConfirm({
+  showConfirm({
     title: 'Approve this Deposit?',
     msg: 'Approve deposit.Are you certain of this action?',
     type: 'warning',
@@ -764,16 +764,9 @@ showConfirm({
       <input type="hidden" id="crUserId" value="${uid}">
       <button class="btn-submit" onclick= "processAdjustment('credit')">Credit</button>
       <button class="btn-sec" onclick= "processAdjustment('debit')">Debit</button>
-      <button class="btn-danger" onclick="deleteUser('${uid}')">Delete</button>
-
-      `,
-    buttons: [
-      { text: 'Credit', class: 'btn-submit', onclick: `processAdjustment('credit')` },
-      { text: 'Debit', class: 'btn-sec', onclick: `processAdjustment('debit')` },
-      { text: 'Delete User', class: 'btn-danger', onclick: `deleteUser('${uid}')` },
-      
-      { text: 'Close', class: 'btn-sec', onclick: `document.getElementById('userDetailModal').remove()` }
-    ]
+      <button class="btn-danger" onclick="deleteUser('${uid}')">Delete user</button>`,
+    onYes: async () => {},
+    icon: false
   });
 };
 
@@ -2416,10 +2409,9 @@ window.saveAnnouncement = async () => {
 window.openSharesModal = async () => {
   const data = await api('/api/admin/shares');
   const shares = data?.shares || [];
-  showModal({
-    id: 'sharesModal',
+  showConfirm({
     title: 'Manage Investment Shares',
-    content: `
+    msg: `
       <div id="sharesList">${shares.map(s => `
         <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid #eee;border-radius:8px;margin-bottom:8px;">
           <span>${s.name} — ₦${s.price.toLocaleString()} | ₦${s.dailyIncome}/day | ${s.duration}days</span>
@@ -2437,10 +2429,12 @@ window.openSharesModal = async () => {
         <span id="shareImgStatus" style="font-size:12px;color:var(--primary)"></span>
         <input type="hidden" id="newShareImg">
       </div>`,
-    buttons: [
-      { text: 'Add Share', class: 'btn-submit', onclick: 'addShare()' },
-      { text: 'Close', class: 'btn-sec', onclick: "document.getElementById('sharesModal').remove()" }
-    ]
+    type: 'green',
+    yesLabel: 'Add share',
+    onYes: () => {
+      addShare()
+    },
+    icon: false,
   });
 };
 
@@ -5731,20 +5725,20 @@ function atViewProof(type, data, username) {
 }
 
 async function atDeleteSub(id) {
-showConfirm({
-  title: 'Delete Submission?',
-  msg: 'Delete this submission record?',
-  type: 'warning',
-  yesLabel: 'Delete',
-  onYes: async () => {
-  const res = await api(`/api/admin/tasks/submissions/${id}`, { method: 'DELETE' });
-  if (res?.success) {
-    showToast('Deleted', 'warning');
-    atLoadSubmissions();
-  }
-  else showToast(res?.error || 'Error', 'error');
-  },
-});
+  showConfirm({
+    title: 'Delete Submission?',
+    msg: 'Delete this submission record?',
+    type: 'warning',
+    yesLabel: 'Delete',
+    onYes: async () => {
+      const res = await api(`/api/admin/tasks/submissions/${id}`, { method: 'DELETE' });
+      if (res?.success) {
+        showToast('Deleted', 'warning');
+        atLoadSubmissions();
+      }
+      else showToast(res?.error || 'Error', 'error');
+    },
+  });
 }
 
 // ── PLATFORM CHIP SELECTOR ──────────────────────────────
