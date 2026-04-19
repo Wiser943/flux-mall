@@ -729,10 +729,26 @@ window.filterUsers = () => {
 };
 
 window.viewUserDetails = async (uid, status, name, email, balance, verified, createdAt, refPoints, referrerId) => {
-  showModal({
-    id: 'userDetailModal',
+showConfirm({
+    title: 'Approve this Deposit?',
+    msg: 'Approve deposit.Are you certain of this action?',
+    type: 'warning',
+    yesLabel: 'Approve',
+    onYes: async () => {
+      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
+      if (data?.success) {
+        showToast('Deposit approved — user credited!', 'success');
+        loadDeposits();
+      } else {
+        showToast(data?.error || 'Error approving deposit.', 'error');
+      }
+    },
+  });
+  
+  
+  showConfirm({
     title: `User: ${name}`,
-    content: `
+    msg: `
       <p><b>ID:</b> <code>${uid}</code></p>
       <p><b>Email:</b> ${email}</p>
       <p><b>Balance:</b> ₦${Number(balance).toLocaleString()}</p>
@@ -745,11 +761,17 @@ window.viewUserDetails = async (uid, status, name, email, balance, verified, cre
         <label>Adjust Balance</label>
         <input type="number" id="crAmount" placeholder="Amount" min="0">
       </div>
-      <input type="hidden" id="crUserId" value="${uid}">`,
+      <input type="hidden" id="crUserId" value="${uid}">
+      <button class="btn-submit" onclick= "processAdjustment('credit')">Credit</button>
+      <button class="btn-sec" onclick= "processAdjustment('debit')">Debit</button>
+      <button class="btn-danger" onclick="deleteUser('${uid}')">Delete</button>
+
+      `,
     buttons: [
       { text: 'Credit', class: 'btn-submit', onclick: `processAdjustment('credit')` },
       { text: 'Debit', class: 'btn-sec', onclick: `processAdjustment('debit')` },
       { text: 'Delete User', class: 'btn-danger', onclick: `deleteUser('${uid}')` },
+      
       { text: 'Close', class: 'btn-sec', onclick: `document.getElementById('userDetailModal').remove()` }
     ]
   });
@@ -5172,6 +5194,611 @@ function showToast(msg, type = 'success') {
 const s2 = document.createElement('style');
 s2.textContent = '@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';
 document.head.appendChild(s2);
+
+
+
+
+
+
+
+
+
+
+
+
+// ══════════════════════════════════════════════════════════
+// SUBMISSIONS
+// ══════════════════════════════════════════════════════════
+async function atLoadSubmissions() {
+  const data = await api('/api/admin/tasks/submissions?limit=500');
+  _atSubs = data?.submissions || [];
+  _atSubFiltered = [..._atSubs];
+  atSetText('atTcSubmissions', _atSubs.length);
+  
+  // Update stat counts after subs load
+  atSetText('atStatPending', _atSubs.filter(s => s.status === 'pending').length);
+  atSetText('atStatApproved', _atSubs.filter(s => s.status === 'approved').length);
+  atSetText('atStatDeclined', _atSubs.filter(s => s.status === 'declined').length);
+  
+  _atSubPage = 1;
+  atRenderSubsPage();
+}
+
+function atFilterSubmissions(term) {
+  term = term.toLowerCase();
+  const statusSel = document.querySelector('#at-panel-submissions .filter-select')?.value || 'all';
+  atApplySubFilters(term, statusSel);
+}
+
+function atFilterSubStatus(status) {
+  const term = document.querySelector('#at-panel-submissions .search-box input')?.value.toLowerCase() || '';
+  atApplySubFilters(term, status);
+}
+
+function atApplySubFilters(term, status) {
+  _atSubFiltered = _atSubs.filter(s => {
+    const user = (s.userId?.username || '').toLowerCase();
+    const task = (s.taskId?.title || '').toLowerCase();
+    const matchQ = !term || user.includes(term) || task.includes(term);
+    const matchS = status === 'all' || s.status === status;
+    return matchQ && matchS;
+  });
+  _atSubPage = 1;
+  atRenderSubsPage();
+}
+
+function atRenderSubsPage() {
+  const tbody = document.getElementById('atSubTableBody');
+  if (!_atSubFiltered.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="state-box"><i class="ri-inbox-line"></i><p>No submissions found</p></div></td></tr>`;
+    document.getElementById('atSubPagination').style.display = 'none';
+    return;
+  }
+  const start = (_atSubPage - 1) * AT_PER;
+  const slice = _atSubFiltered.slice(start, start + AT_PER);
+  
+  tbody.innerHTML = slice.map(s => {
+    const uname = s.userId?.username || '—';
+    const date = s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+    const pts = s.points || s.taskId?.points || 0;
+    const proof = s.proof || '—';
+    const isImg = proof.startsWith('http') && (proof.includes('imgbb') || proof.includes('imgur') || proof.includes('.png') || proof.includes('.jpg'));
+    const isUrl = proof.startsWith('http') && !isImg;
+    
+    let proofHtml = '—';
+    if (proof && proof !== '—') {
+      if (isImg) proofHtml = `<div class="proof-box" onclick="atViewProof('img','${proof}','${uname}')"><i class="ri-image-line"></i> Screenshot</div>`;
+      else if (isUrl) proofHtml = `<div class="proof-box" onclick="window.open('${proof}','_blank')"><i class="ri-link"></i> ${proof.substring(0,30)}…</div>`;
+      else proofHtml = `<div class="proof-box" title="${proof}" onclick="atViewProof('text','${encodeURIComponent(proof)}','${uname}')">${proof.substring(0,30)}${proof.length>30?'…':''}</div>`;
+    }
+    
+    return `<tr>
+      <td>
+        <div class="user-chip">
+          <div class="avatar" style="background:${atAvatarColor(uname)}">${atInitials(uname)}</div>
+          <div>
+            <div class="username">${uname}</div>
+            <div class="user-sub">${s.userId?.email||'—'}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div style="font-weight:700;font-size:12px;">${s.taskId?.title||'—'}</div>
+        <div style="font-size:11px;color:var(--text3);">${s.taskId?.category||''}</div>
+      </td>
+      <td><span style="font-weight:700;color:var(--primary);">🪙${Number(pts).toLocaleString()}</span></td>
+      <td>${proofHtml}</td>
+      <td style="font-size:11px;color:var(--text3);white-space:nowrap;">${date}</td>
+      <td>${atStatusBadge(s.status)}</td>
+      <td>
+        <div class="action-group">
+          ${s.status==='pending' ? `
+            <button class="btn btn-success btn-sm" onclick="atReviewSub('${s._id}','approved','${uname}','${s.taskId?.title||''}')">
+              <i class="ri-check-line"></i> Approve
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="atOpenDeclineModal('${s._id}','${uname}','${s.userId?.ib||0}')">
+              <i class="ri-close-line"></i> Decline
+            </button>
+          ` : `
+            <button class="btn btn-ghost btn-sm" onclick="atViewSubDetail(${JSON.stringify(s).replace(/"/g,'&quot;')})">
+              <i class="ri-eye-line"></i>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="atDeleteSub('${s._id}')">
+              <i class="ri-delete-bin-line"></i>
+            </button>
+          `}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  
+  atRenderPagination(_atSubFiltered.length, _atSubPage, (p) => {
+    _atSubPage = p;
+    atRenderSubsPage();
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// CRUD — TASKS
+// ══════════════════════════════════════════════════════════
+// ── PLATFORM HELPER ─────────────────────────────────────
+function atTogglePlatform(selectId, wrapId) {
+  const cat = document.getElementById(selectId)?.value;
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  if (cat === 'Social') {
+    wrap.style.display = 'block';
+    wrap.style.animation = 'fadeSlideDown .18s ease';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+function atGetPlatform(selectId) {
+  const wrap = document.getElementById(selectId)?.closest('.form-group')?.nextElementSibling;
+  // just read by id directly
+  return null;
+}
+
+function openCreateTaskModal() {
+  atShowModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-add-circle-line" style="color:var(--primary)"></i> New Task</h3>
+      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Task Title *</label>
+        <input id="ct_title" placeholder="e.g. Follow us on Twitter">
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea id="ct_desc" rows="3" placeholder="What the user needs to do…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Step-by-step Instructions</label>
+        <textarea id="ct_instr" rows="2" placeholder="1. Go to… 2. Click… 3. Screenshot…"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Points (FEX) *</label>
+          <input type="number" id="ct_points" placeholder="500" min="1">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="ct_cat" onchange="atTogglePlatform('ct_cat','ct_platform_wrap')">
+            <option value="General">General</option>
+            <option value="Social">Social</option>
+            <option value="Survey">Survey</option>
+            <option value="Watch">Watch</option>
+            <option value="Download">Download</option>
+            <option value="Review">Review</option>
+          </select>
+        </div>
+      </div>
+      <div id="ct_platform_wrap" style="display:none;">
+        <div class="form-group">
+          <label>Platform</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="ct_platform_grid">
+            <label class="platform-chip" data-val="X" onclick="atSelectPlatform(this,'ct')">
+              <i class="ri-twitter-x-line"></i><span>X</span>
+            </label>
+            <label class="platform-chip" data-val="Facebook" onclick="atSelectPlatform(this,'ct')">
+              <i class="ri-facebook-fill" style="color:#1877f2"></i><span>Facebook</span>
+            </label>
+            <label class="platform-chip" data-val="Instagram" onclick="atSelectPlatform(this,'ct')">
+              <i class="ri-instagram-line" style="color:#e1306c"></i><span>Instagram</span>
+            </label>
+            <label class="platform-chip" data-val="GitHub" onclick="atSelectPlatform(this,'ct')">
+              <i class="ri-github-fill"></i><span>GitHub</span>
+            </label>
+            <label class="platform-chip" data-val="YouTube" onclick="atSelectPlatform(this,'ct')">
+              <i class="ri-youtube-line" style="color:#ff0000"></i><span>YouTube</span>
+            </label>
+            <label class="platform-chip" data-val="Custom" onclick="atSelectPlatform(this,'ct')">
+              <i class="ri-global-line" style="color:#4318ff"></i><span>Custom</span>
+            </label>
+          </div>
+          <input type="hidden" id="ct_platform" value="">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Proof Type</label>
+          <select id="ct_proof">
+            <option value="screenshot">Screenshot (image URL)</option>
+            <option value="url">URL link</option>
+            <option value="text">Text response</option>
+            <option value="none">No proof needed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Completions (0 = unlimited)</label>
+          <input type="number" id="ct_max" placeholder="0" min="0" value="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Expiry Date (optional)</label>
+        <input type="datetime-local" id="ct_expires">
+      </div>
+      <div class="form-group">
+        <label>Task Link (optional — shown to user as a button)</label>
+        <input type="url" id="ct_link" placeholder="https://twitter.com/FluxMall — link user clicks to do the task">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="atCloseModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="atSubmitCreateTask()"><i class="ri-check-line"></i> Create Task</button>
+    </div>
+  `);
+}
+
+async function atSubmitCreateTask() {
+  const g = id => document.getElementById(id)?.value;
+  const title = g('ct_title')?.trim();
+  const desc = g('ct_desc')?.trim();
+  const points = Number(g('ct_points'));
+  if (!title || !desc || !points) { showToast('Title, description and points are required', 'error'); return; }
+  
+  const res = await api('/api/admin/tasks', {
+    method: 'POST',
+    body: JSON.stringify({
+      title,
+      description: desc,
+      instructions: g('ct_instr')?.trim() || '',
+      points,
+      category: g('ct_cat'),
+      platform: g('ct_platform') || '',
+      proofType: g('ct_proof'),
+      maxCompletions: Number(g('ct_max')) || 0,
+      expiresAt: g('ct_expires') || null,
+      taskLink: g('ct_link')?.trim() || '',
+    })
+  });
+  
+  if (res?.success) {
+    showToast(`✅ Task "${title}" created!`, 'success');
+    atCloseModal();
+    atLoadTasks();
+  } else {
+    showToast(res?.error || 'Error creating task', 'error');
+  }
+}
+
+function openEditTaskModal(id) {
+  const t = _atTasks.find(x => x._id === id);
+  if (!t) return;
+  
+  atShowModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-edit-line" style="color:var(--warning)"></i> Edit Task</h3>
+      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Task Title</label>
+        <input id="et_title" value="${t.title}">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="et_desc" rows="3">${t.description}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Instructions</label>
+        <textarea id="et_instr" rows="2">${t.instructions||''}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Task Link (optional — shown to user as a button)</label>
+        <input type="url" id="et_link" value="${t.taskLink||''}" placeholder="https://…">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Points (FEX)</label>
+          <input type="number" id="et_points" value="${t.points}">
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="et_cat" onchange="atTogglePlatform('et_cat','et_platform_wrap')">
+            ${['General','Social','Survey','Watch','Download','Review'].map(c=>`<option value="${c}" ${t.category===c?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div id="et_platform_wrap" style="display:${t.category==='Social'?'block':'none'};">
+        <div class="form-group">
+          <label>Platform</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="et_platform_grid">
+            ${['X','Facebook','Instagram','GitHub','YouTube','Custom'].map(p=>{
+              const pm = PLATFORM_META[p];
+              const sel = t.platform===p;
+              return `<label class="platform-chip ${sel?'selected':''}" data-val="${p}" onclick="atSelectPlatform(this,'et')">
+                <i class="${pm.icon}" style="color:${sel?'#fff':pm.color}"></i><span>${p==='X'?'X':p}</span>
+              </label>`;
+            }).join('')}
+          </div>
+          <input type="hidden" id="et_platform" value="${t.platform||''}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Proof Type</label>
+          <select id="et_proof">
+            ${['screenshot','url','text','none'].map(p=>`<option value="${p}" ${t.proofType===p?'selected':''}>${p}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Completions</label>
+          <input type="number" id="et_max" value="${t.maxCompletions||0}" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="et_active">
+          <option value="true"  ${t.active?'selected':''}>Active</option>
+          <option value="false" ${!t.active?'selected':''}>Inactive</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="atCloseModal()">Cancel</button>
+      <button class="btn btn-warning" onclick="atSubmitEditTask('${id}')"><i class="ri-save-line"></i> Save</button>
+    </div>
+  `);
+}
+
+async function atSubmitEditTask(id) {
+  const g = id2 => document.getElementById(id2)?.value;
+  const res = await api(`/api/admin/tasks/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      title: g('et_title')?.trim(),
+      description: g('et_desc')?.trim(),
+      instructions: g('et_instr')?.trim(),
+      points: Number(g('et_points')),
+      category: g('et_cat'),
+      platform: g('et_platform') || '',
+      proofType: g('et_proof'),
+      maxCompletions: Number(g('et_max')) || 0,
+      active: g('et_active') === 'true',
+      taskLink: g('et_link')?.trim() || '',
+    })
+  });
+  if (res?.success) {
+    showToast('Task updated!', 'success');
+    atCloseModal();
+    atLoadTasks();
+  }
+  else showToast(res?.error || 'Error', 'error');
+}
+
+async function atToggleActive(id, active) {
+  const res = await api(`/api/admin/tasks/${id}`, { method: 'PUT', body: JSON.stringify({ active }) });
+  if (res?.success) {
+    showToast(active ? 'Task activated' : 'Task deactivated', active ? 'success' : 'warning');
+    atLoadTasks();
+  }
+  else showToast(res?.error || 'Error', 'error');
+}
+
+async function atDeleteTask(id, name) {
+  if (!confirm(`Delete task "${name}"? All submissions will also be deleted.`)) return;
+  const res = await api(`/api/admin/tasks/${id}`, { method: 'DELETE' });
+  if (res?.success) {
+    showToast(`"${name}" deleted`, 'warning');
+    atLoadTasks();
+    atLoadSubmissions();
+  }
+  else showToast(res?.error || 'Error', 'error');
+}
+
+// ══════════════════════════════════════════════════════════
+// REVIEW SUBMISSIONS
+// ══════════════════════════════════════════════════════════
+async function atReviewSub(id, status, username, taskTitle) {
+  if (!confirm(`Approve ${username}'s submission for "${taskTitle}"?`)) return;
+  const res = await api(`/api/admin/tasks/submissions/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
+  if (res?.success) {
+    showToast(`✅ Submission approved — user credited!`, 'success');
+    atLoadSubmissions();
+    atLoadTasks(); // refresh pending counts on cards
+  } else {
+    showToast(res?.error || 'Error', 'error');
+  }
+}
+
+function atOpenDeclineModal(id, username, balance) {
+  const penalty = parseFloat((Number(balance) * 0.05).toFixed(2));
+  atShowModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-close-circle-line" style="color:var(--danger)"></i> Decline Submission</h3>
+      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--danger-soft);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--danger);">
+        ⚠️ Declining will deduct <strong>5% (🪙${penalty.toLocaleString()} FEX)</strong> from <strong>${username}</strong>'s balance.
+      </div>
+      <div class="form-group">
+        <label>Reason for decline (shown to user)</label>
+        <textarea id="dec_note" rows="3" placeholder="e.g. Screenshot not clear, task not completed correctly…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="atCloseModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="atSubmitDecline('${id}','${username}')">
+        <i class="ri-close-line"></i> Decline & Deduct ${penalty.toLocaleString()} FEX
+      </button>
+    </div>
+  `);
+}
+
+async function atSubmitDecline(id, username) {
+  const note = document.getElementById('dec_note')?.value.trim();
+  const res = await api(`/api/admin/tasks/submissions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ status: 'declined', adminNote: note || '' })
+  });
+  if (res?.success) {
+    showToast(`Submission declined — 5% deducted from ${username}`, 'warning');
+    atCloseModal();
+    atLoadSubmissions();
+    atLoadTasks();
+  } else {
+    showToast(res?.error || 'Error', 'error');
+  }
+}
+
+function atViewSubDetail(s) {
+  const uname = s.userId?.username || '—';
+  const pts = s.points || s.taskId?.points || 0;
+  const proof = s.proof || '—';
+  const isImg = proof.startsWith('http') && (proof.includes('imgbb') || proof.includes('.png') || proof.includes('.jpg') || proof.includes('.jpeg') || proof.includes('.webp'));
+  
+  atShowModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-file-list-line" style="color:var(--primary)"></i> Submission Detail</h3>
+      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:var(--bg);border-radius:10px;">
+        <div class="avatar" style="width:38px;height:38px;font-size:13px;background:${atAvatarColor(uname)}">${atInitials(uname)}</div>
+        <div>
+          <div style="font-weight:700;">${uname}</div>
+          <div style="font-size:11px;color:var(--text3);">${s.userId?.email||'—'}</div>
+        </div>
+        <div style="margin-left:auto;">${atStatusBadge(s.status)}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Task</div>
+          <div style="font-weight:700;font-size:12px;">${s.taskId?.title||'—'}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Reward</div>
+          <div style="font-weight:700;color:var(--primary);">🪙${Number(pts).toLocaleString()} FEX</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Submitted</div>
+          <div style="font-weight:700;font-size:12px;">${s.createdAt?new Date(s.createdAt).toLocaleString():'—'}</div>
+        </div>
+        ${s.penalty>0?`<div style="background:var(--danger-soft);border-radius:10px;padding:10px 12px;">
+          <div style="font-size:10px;color:var(--danger);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Penalty Deducted</div>
+          <div style="font-weight:700;color:var(--danger);">🪙${Number(s.penalty).toLocaleString()} FEX</div>
+        </div>`:''}
+      </div>
+
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px;">Proof Submitted</div>
+      ${isImg
+        ? `<img src="${proof}" class="proof-img" onclick="window.open('${proof}','_blank')" style="cursor:pointer;">`
+        : `<div class="proof-full">${proof}</div>`}
+
+      ${s.adminNote?`<div style="margin-top:12px;background:var(--warning-soft);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--warning);">
+        <strong>Admin Note:</strong> ${s.adminNote}
+      </div>`:''}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="atCloseModal()">Close</button>
+      ${s.status==='pending'?`
+        <button class="btn btn-success" onclick="atReviewSub('${s._id}','approved','${uname}','${s.taskId?.title||''}');atCloseModal()"><i class="ri-check-line"></i> Approve</button>
+        <button class="btn btn-danger" onclick="atOpenDeclineModal('${s._id}','${uname}','${s.userId?.ib||0}');"><i class="ri-close-line"></i> Decline</button>
+      `:''}
+    </div>
+  `);
+}
+
+function atViewProof(type, data, username) {
+  const isImg = type === 'img';
+  const text = isImg ? data : decodeURIComponent(data);
+  atShowModal(`
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <h3><i class="ri-eye-line" style="color:var(--primary)"></i> Proof — ${username}</h3>
+      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
+    </div>
+    <div class="modal-body">
+      ${isImg
+        ? `<img src="${text}" class="proof-img" onclick="window.open('${text}','_blank')" style="cursor:pointer;width:100%;">`
+        : `<div class="proof-full">${text}</div>`}
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="atCloseModal()">Close</button>
+      ${isImg?`<button class="btn btn-primary" onclick="window.open('${text}','_blank')"><i class="ri-external-link-line"></i> Open Full</button>`:''}
+    </div>
+  `);
+}
+
+async function atDeleteSub(id) {
+showConfirm({
+  title: 'Delete Submission?',
+  msg: 'Delete this submission record?',
+  type: 'warning',
+  yesLabel: 'Delete',
+  onYes: async () => {
+  const res = await api(`/api/admin/tasks/submissions/${id}`, { method: 'DELETE' });
+  if (res?.success) {
+    showToast('Deleted', 'warning');
+    atLoadSubmissions();
+  }
+  else showToast(res?.error || 'Error', 'error');
+  },
+});
+}
+
+// ── PLATFORM CHIP SELECTOR ──────────────────────────────
+function atSelectPlatform(chip, prefix) {
+  const grid = chip.parentElement;
+  grid.querySelectorAll('.platform-chip').forEach(c => {
+    c.classList.remove('selected');
+    const icon = c.querySelector('i');
+    const val = c.dataset.val;
+    if (icon && PLATFORM_META[val]) icon.style.color = PLATFORM_META[val].color;
+  });
+  chip.classList.add('selected');
+  const icon = chip.querySelector('i');
+  if (icon) icon.style.color = '#fff';
+  const hidden = document.getElementById(prefix + '_platform');
+  if (hidden) hidden.value = chip.dataset.val;
+}
+
+// ══════════════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════════════
+function atStatusBadge(s) {
+  const map = { approved: 'success', pending: 'pending', declined: 'declined' };
+  const dot = { approved: '🟢', pending: '🟡', declined: '🔴' };
+  const cls = map[s] || 'pending';
+  return `<span class="badge ${cls}">${dot[s]||'⚪'} ${(s||'pending').charAt(0).toUpperCase()+(s||'pending').slice(1)}</span>`;
+}
+
+function atSetText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function atRenderPagination(total, page, onPage) {
+  const totalPages = Math.ceil(total / AT_PER);
+  const wrap = document.getElementById('atSubPagination');
+  const info = document.getElementById('atSubPageInfo');
+  const btns = document.getElementById('atSubPageBtns');
+  if (!wrap) return;
+  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
+  const start = (page - 1) * AT_PER + 1,
+    end = Math.min(page * AT_PER, total);
+  if (info) info.textContent = `${start}–${end} of ${total}`;
+  const range = [];
+  let s = Math.max(1, page - 2),
+    e = Math.min(totalPages, s + 4);
+  if (e - s < 4) s = Math.max(1, e - 4);
+  for (let i = s; i <= e; i++) range.push(i);
+  btns.innerHTML = `
+    <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
+    ${range.map(p=>`<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
+    <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
+}
 
 
 
