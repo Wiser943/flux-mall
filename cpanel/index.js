@@ -15,8 +15,7 @@ let originalTitle = document.title;
 
 // ── User Management Table ──────────────────────────────────
 const COLORS = ['#4CAF7D', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899',
-  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac'
-];
+  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac', '#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
 
 const PER_PAGE = 10;
 
@@ -281,6 +280,7 @@ function switchPageByHash() {
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
   if (targetId === 'chats') initChatPage();
   if (targetId === 'shares') refreshAll();
+  
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -5035,7 +5035,143 @@ document.head.appendChild(s2);
 
 
 
+// ══════════════════════════════════════════════════════════
+// FLUX MALL — Admin Task Manager
+// ══════════════════════════════════════════════════════════
 
+
+const CAT_ICONS = { Social:'ri-share-line', Survey:'ri-questionnaire-line', Watch:'ri-play-circle-line', Download:'ri-download-line', Review:'ri-star-line', General:'ri-task-line' };
+const PLATFORM_META = {
+  X:         { icon:'ri-twitter-x-line',    color:'#000000', label:'X (Twitter)' },
+  Facebook:  { icon:'ri-facebook-fill',      color:'#1877f2', label:'Facebook'    },
+  Instagram: { icon:'ri-instagram-line',     color:'#e1306c', label:'Instagram'   },
+  GitHub:    { icon:'ri-github-fill',        color:'#24292e', label:'GitHub'      },
+  YouTube:   { icon:'ri-youtube-line',       color:'#ff0000', label:'YouTube'     },
+  Custom:    { icon:'ri-global-line',        color:'#4318ff', label:'Custom'      },
+};
+const CAT_COLORS = { Social:'#4299e1', Survey:'#9f7aea', Watch:'#ee5d50', Download:'#05cd99', Review:'#f6ad55', General:'#4318ff' };
+
+let _atTasks = [];
+let _atSubs  = [];
+let _atSubFiltered = [];
+let _atSubPage = 1;
+const AT_PER = 20;
+
+function atAvatarColor(s){ let h=0; for(let i=0;i<(s||'').length;i++) h=s.charCodeAt(i)+((h<<5)-h); return COLORS[Math.abs(h)%COLORS.length]; }
+function atInitials(s){ return (s||'?').slice(0,2).toUpperCase(); }
+
+
+
+// ══════════════════════════════════════════════════════════
+// TASK CATALOG
+// ══════════════════════════════════════════════════════════
+async function atLoadTasks(){
+  document.getElementById('atTasksGrid').innerHTML =
+    `<div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading…</p></div>`;
+
+  const data = await api('/api/admin/tasks');
+  _atTasks = data?.tasks || [];
+/*
+  // Stats
+  const totalPending  = _atSubs.filter(s=>s.status==='pending').length;
+  const totalApproved = _atSubs.filter(s=>s.status==='approved').length;
+  const totalDeclined = _atSubs.filter(s=>s.status==='declined').length;
+  atSetText('atStatTasks',    _atTasks.length);
+  atSetText('atStatPending',  totalPending);
+  atSetText('atStatApproved', totalApproved);
+  atSetText('atStatDeclined', totalDeclined);
+  atSetText('atTcCatalog',    _atTasks.length);
+
+  // Populate category filter
+  const cats = [...new Set(_atTasks.map(t=>t.category).filter(Boolean))];
+  const catSel = document.getElementById('atCatFilter');
+  if(catSel){ catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join(''); }
+*/
+  atRenderCatalog(_atTasks);
+}
+
+let _atCatalogFiltered = [];
+let _atStatusFilter = 'all';
+let _atCatFilter    = 'all';
+let _atSearchFilter = '';
+
+function atFilterCatalog(term){ _atSearchFilter = term.toLowerCase(); atApplyCatalogFilters(); }
+function atFilterCatalogStatus(v){ _atStatusFilter = v; atApplyCatalogFilters(); }
+function atFilterCatalogCategory(v){ _atCatFilter = v; atApplyCatalogFilters(); }
+
+function atApplyCatalogFilters(){
+  _atCatalogFiltered = _atTasks.filter(t=>{
+    const matchSearch = !_atSearchFilter || t.title.toLowerCase().includes(_atSearchFilter) || t.description.toLowerCase().includes(_atSearchFilter);
+    const matchStatus = _atStatusFilter==='all' || (_atStatusFilter==='active'?t.active:!t.active);
+    const matchCat    = _atCatFilter==='all' || t.category===_atCatFilter;
+    return matchSearch && matchStatus && matchCat;
+  });
+  atRenderCatalog(_atCatalogFiltered);
+}
+
+function atRenderCatalog(tasks){
+  const grid = document.getElementById('atTasksGrid');
+  if(!tasks.length){
+    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">
+      <i class="ri-task-line"></i><p>No tasks found. Click <strong>+ New Task</strong> to create one.</p></div>`;
+    return;
+  }
+  grid.innerHTML = tasks.map(t=>{
+    const icon  = CAT_ICONS[t.category]  || 'ri-task-line';
+    const color = CAT_COLORS[t.category] || '#4318ff';
+    const exp   = t.expiresAt ? `<span style="font-size:11px;color:var(--danger);">⏳ ${new Date(t.expiresAt).toLocaleDateString()}</span>` : '';
+    const maxTag = t.maxCompletions > 0 ? `<span style="font-size:11px;color:var(--text3);">Max: ${t.approvedCount}/${t.maxCompletions}</span>` : '';
+
+    return `
+    <div class="task-card ${t.active?'':'inactive'}">
+      <div class="tc-header">
+        <div class="tc-icon" style="background:${color}22;color:${color};">
+          <i class="${icon}"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div class="tc-title">${t.title}</div>
+          <div class="tc-cat">${t.category}${t.platform&&t.category==='Social'?` · <span style="font-weight:700;">${t.platform}</span>`:''} · ${t.proofType}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <div class="status-dot ${t.active?'active':'inactive'}"></div>
+        </div>
+      </div>
+
+      <div class="tc-points"><i class="ri-coin-line"></i> 🪙${Number(t.points).toLocaleString()} FEX reward</div>
+      <div class="tc-desc">${t.description}</div>
+      ${t.taskLink?`<a href="${t.taskLink}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--primary);background:var(--primary-soft);border-radius:6px;padding:3px 9px;margin-bottom:8px;text-decoration:none;font-weight:600;"><i class="ri-external-link-line"></i> Task Link</a>`:''}
+
+      <div class="tc-stats">
+        <div class="tc-stat">
+          <span class="tc-stat-val" style="color:var(--text1);">${t.totalSubmissions||0}</span>
+          <span class="tc-stat-label">Total</span>
+        </div>
+        <div class="tc-stat">
+          <span class="tc-stat-val" style="color:var(--success);">${t.approvedCount||0}</span>
+          <span class="tc-stat-label">Approved</span>
+        </div>
+        <div class="tc-stat">
+          <span class="tc-stat-val" style="color:var(--warning);">${t.pendingCount||0}</span>
+          <span class="tc-stat-label">Pending</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">${exp}${maxTag}</div>
+
+      <div class="tc-actions">
+        <button class="btn btn-warning btn-sm" style="flex:1" onclick="openEditTaskModal('${t._id}')">
+          <i class="ri-edit-line"></i> Edit
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="atToggleActive('${t._id}',${!t.active})" title="${t.active?'Deactivate':'Activate'}">
+          <i class="ri-${t.active?'pause':'play'}-circle-line"></i>
+        </button>
+        <button class="btn btn-danger btn-sm" onclick="atDeleteTask('${t._id}','${t.title}')">
+          <i class="ri-delete-bin-line"></i>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 
 // ══════════════════════════════════════════════════════════
@@ -5286,8 +5422,7 @@ async function atSubmitCreateTask() {
   });
   
   if (res?.success) {
-    showToast(`✅ Task "${title}" created!`, 'success');
-    atCloseModal();
+    showToast(`Task "${title}" created!`, 'success');
     atLoadTasks();
   } else {
     showToast(res?.error || 'Error creating task', 'error');
