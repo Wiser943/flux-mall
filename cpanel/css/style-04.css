@@ -1692,6 +1692,8 @@ select.form-input {
 .confirm-sheet {
   background: var(--card);
   width: 100%;
+  max-height: 600px;
+  overflow-y: scroll;
   max-width: 100%;
   border-radius: 22px 22px 0 0;
   padding: 8px 22px 36px;
@@ -1716,7 +1718,7 @@ select.form-input {
   
   .modal-content,
   .confirm-sheet {
-    max-width: 420px;
+    max-width: 420px;max-height: 600px;
     border-radius: 18px;
     padding: 28px 28px 28px;
     transform: scale(0.88) translateY(10px);
@@ -1992,7 +1994,7 @@ select.form-input {
 
 /* Container for each Label + Input pair */
 
-.confirm-msg .input-group{
+.confirm-msg .input-group {
   display: flex;
   flex-direction: column;
   margin-bottom: 16px;
