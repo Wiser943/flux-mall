@@ -1618,7 +1618,7 @@ tbody td {
 }
 
 .btn-success {
-    background: var(--success-soft);
+    background: var(--light-success);
     color: var(--success);
 }
 
@@ -1650,11 +1650,11 @@ tbody td {
 
 .btn-warning {
     background: var(--light-warning);
-    color: var(--warning);
+    color: var(--yellow);
 }
 
 .btn-warning:hover {
-    background: var(--warning);
+    background: var(--yellow);
     color: #fff;
 }
 
