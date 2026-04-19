@@ -460,6 +460,119 @@
       </div><!-- /tabs-wrap -->
     </main><!-- /page -->
     
+    
+    <main class="page" id="tasks">
+  <!-- HEADER -->
+  <div class="page-header">
+    <div>
+      <h1>Task Manager</h1>
+      <div class="sub">Create tasks · Review submissions · Reward users</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="adminRefreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()"><i class="ri-add-line"></i> New Task</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stat-strip">
+    <div class="stat-card blue">
+      <div class="stat-val" id="atStatTasks">—</div>
+      <div class="stat-label">Total Tasks</div>
+      <i class="ri-task-line stat-icon"></i>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-val" id="atStatApproved">—</div>
+      <div class="stat-label">Approved</div>
+      <i class="ri-checkbox-circle-line stat-icon"></i>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-val" id="atStatPending">—</div>
+      <div class="stat-label">Pending Review</div>
+      <i class="ri-time-line stat-icon"></i>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-val" id="atStatDeclined">—</div>
+      <div class="stat-label">Declined</div>
+      <i class="ri-close-circle-line stat-icon"></i>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrap">
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="atSwitchTab('catalog',this)">
+        <i class="ri-layout-grid-line"></i><span>Task Catalog</span>
+        <span class="tab-count" id="atTcCatalog">0</span>
+      </button>
+      <button class="tab-btn" onclick="atSwitchTab('submissions',this)">
+        <i class="ri-inbox-line"></i><span>Submissions</span>
+        <span class="tab-count" id="atTcSubmissions">0</span>
+      </button>
+    </div>
+
+    <!-- CATALOG TAB -->
+    <div class="tab-panel active" id="at-panel-catalog">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search tasks…" oninput="atFilterCatalog(this.value)">
+        </div>
+        <select class="filter-select" onchange="atFilterCatalogStatus(this.value)">
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <select class="filter-select" onchange="atFilterCatalogCategory(this.value)" id="atCatFilter">
+          <option value="all">All Categories</option>
+        </select>
+      </div>
+      <div id="atTasksGrid" class="tasks-grid">
+        <div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading tasks…</p></div>
+      </div>
+    </div>
+
+    <!-- SUBMISSIONS TAB -->
+    <div class="tab-panel" id="at-panel-submissions">
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="ri-search-line"></i>
+          <input type="text" placeholder="Search user or task…" oninput="atFilterSubmissions(this.value)">
+        </div>
+        <select class="filter-select" onchange="atFilterSubStatus(this.value)">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="declined">Declined</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Task</th>
+              <th>Points</th>
+              <th>Proof</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="atSubTableBody">
+            <tr><td colspan="7"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination" id="atSubPagination" style="display:none;">
+        <span id="atSubPageInfo"></span>
+        <div class="page-btns" id="atSubPageBtns"></div>
+      </div>
+    </div>
+
+  </div><!-- /tabs-wrap -->
+</main><!-- /page -->
+
     <main class="page" id="shares">
       <div class="page-header">
         <div>
@@ -1491,17 +1604,16 @@
                   <i class="ri-external-link-line"></i> Manage
                 </a>
               </div>
-              
-              <div class="util-row">
+                            <div class="util-row">
                 <div class="util-info">
-                  <div class="util-title">User Accounts</div>
-                  <div class="util-sub">Manage users and KYC verification</div>
+                  <div class="util-title">Task System</div>
+                  <div class="util-sub">Validate and manage user tasks </div>
                 </div>
-                <button class="btn-util" onclick="openUtil('users')">
-                  <i class="ri-external-link-line"></i> Manage
-                </button>
+  <a href="#tasks" class="btn-util" onclick="openUtil('tasks')">
+    <i class="ri-external-link-line"></i> Manage
+  </a>
               </div>
-              
+
             </div>
           </div>
           
