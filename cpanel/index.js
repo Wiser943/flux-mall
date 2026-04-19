@@ -179,64 +179,6 @@ async function uploadToImgBB(file, statusEl) {
   }
 }
 
-/*
-// ── showModal (generic modal system) ───────────────────────
-window.showModal = (cfg) => {
-  const old = document.getElementById(cfg.id);
-  if (old) old.remove();
-  if (window.navigator?.vibrate) window.navigator.vibrate(100);
-  
-  const overlay = document.createElement('div');
-  overlay.id = cfg.id;
-  overlay.className = 'modal-overlay vis';
-  /*  overlay.style.cssText = `
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      background:rgba(0,0,0,0.85);display:flex;align-items:center;
-      justify-content:center;z-index:9999;backdrop-filter:blur(8px);
-      animation:fadeIn 0.3s ease;`;**
-  
-  const buttonsHTML = (cfg.buttons || []).map(btn =>
-    `<button class="${btn.class||'btn-submit'}" onclick="${btn.onclick}" style="${btn.style||''}">${btn.text}</button>`
-  ).join('');
-  
-  
-  const card = document.createElement('div');
-  card.className = 'modal-content';
-  /* card.style.cssText = `
-     background:var(--card);color:var(--text);max-width:${cfg.width||'450px'};
-     box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);
-     border:1px solid var(--border);transform:scale(1);`;**
-  card.innerHTML = `
-        <div class="modal-handle"></div>
-            <div class="modal-icon-wrap danger" id="confirmIcon">
-        <i class="ri-error-warning-line" id="confirmIconEl"></i>
-      </div>
-    <h3 class="modal-title">${cfg.title}</h3>
-    <div class="modal-body">${cfg.content}</div>
-    <div class="modal-btns">${buttonsHTML}</div>`;
-  overlay.appendChild(card);
-  document.body.appendChild(overlay);
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-};
-
-// ── Slide-up modal (settings/users confirm) ────────────────
-function openSlideModal(html) {
-  document.getElementById('modalContent').innerHTML = html;
-  document.getElementById('modalOverlay').classList.add('vis');
-}
-
-function closeSlideModal() {
-  document.getElementById('modalOverlay').classList.remove('vis');
-}
-
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modalOverlay')) closeSlideModal();
-}
-// Aliases expected by the user management functions
-const openModal = openSlideModal;
-const closeModal = closeSlideModal;
-*/
-
 // ══════════════════════════════════════════════════════════
 //  SECTION 3 — SIDEBAR & PAGE NAVIGATION
 // ══════════════════════════════════════════════════════════
@@ -1214,7 +1156,7 @@ function openAddUser() {
 function openEditModal(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  openModal(`
+  showConfirm(`
     <div class="modal-title">Edit User</div>
     <div class="modal-sub">Update details for <strong>${u.name}</strong></div>
     <div class="form-row">
@@ -3846,6 +3788,7 @@ async function refreshAll() {
   //shares refreshing
   loadShares();
   loadInvestments();
+  await Promise.all([atLoadTasks(), atLoadSubmissions()]);
   showToast('Refreshed ✓', 'success');
 }
 
@@ -4907,14 +4850,9 @@ function viewInvestmentDetail(inv) {
   const left = daysLeft(inv);
   const earned = Math.floor(((inv.duration || 0) - left) * (inv.dailyIncome || 0));
   
-  showModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-user-star-line" style="color:var(--primary)"></i> Investment Detail</h3>
-      <button class="modal-close" onclick="closeModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:10px;">
+  showConfirm({
+    title: 'Investment Details',
+    msg: `      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:10px;">
         <div class="avatar" style="width:40px;height:40px;font-size:14px;background:${avatarColor(username)}">${initials(username)}</div>
         <div>
           <div style="font-weight:700;font-size:14px;">${username}</div>
@@ -4954,14 +4892,14 @@ function viewInvestmentDetail(inv) {
       <div class="progress-bar" style="height:8px;">
         <div class="progress-fill" style="width:${pct}%;background:${isExpired(inv)?'var(--text3)':'var(--success)'}"></div>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
-      <button class="btn btn-danger" onclick="deleteInvestment('${inv._id}','${username}');closeModal()">
-        <i class="ri-delete-bin-line"></i> Remove Investment
-      </button>
-    </div>
-  `);
+    </div>`,
+    type: 'warning',
+    yesLabel: 'Remove Investment',
+    onYes: async () => {
+      deleteInvestment('${inv._id}', '${username}')
+    },
+    icon: false
+  });
 }
 
 async function deleteInvestment(id, username) {
@@ -5235,14 +5173,9 @@ function atGetPlatform(selectId) {
 }
 
 function openCreateTaskModal() {
-  atShowModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-add-circle-line" style="color:var(--primary)"></i> New Task</h3>
-      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
+showConfirm({
+    title: 'New Task',
+    msg: ` <div class="form-group">
         <label>Task Title *</label>
         <input id="ct_title" placeholder="e.g. Follow us on Twitter">
       </div>
@@ -5320,12 +5253,13 @@ function openCreateTaskModal() {
         <label>Task Link (optional — shown to user as a button)</label>
         <input type="url" id="ct_link" placeholder="https://twitter.com/FluxMall — link user clicks to do the task">
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="atCloseModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="atSubmitCreateTask()"><i class="ri-check-line"></i> Create Task</button>
-    </div>
-  `);
+    </div>`,
+    type: 'warning',
+    yesLabel: 'Create Task',
+    onYes: () => {
+      atSubmitCreateTask()
+    },icon:false
+  });
 }
 
 async function atSubmitCreateTask() {
