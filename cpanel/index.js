@@ -659,8 +659,6 @@ async function loadWithdrawals() {
     </tr>`).join('');
 }
 
-
-
 // ══════════════════════════════════════════════════════════
 //  SECTION 9 — USER MANAGEMENT (API + Mock UI)
 // ══════════════════════════════════════════════════════════
@@ -2405,74 +2403,8 @@ window.saveAnnouncement = async () => {
   showToast('Announcement saved!', 'success');
 };
 
-// Shares
-window.openSharesModal = async () => {
-  const data = await api('/api/admin/shares');
-  const shares = data?.shares || [];
-  showConfirm({
-    title: 'Manage Investment Shares',
-    msg: `
-      <div id="sharesList">${shares.map(s => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border:1px solid #eee;border-radius:8px;margin-bottom:8px;">
-          <span>${s.name} — ₦${s.price.toLocaleString()} | ₦${s.dailyIncome}/day | ${s.duration}days</span>
-          <button class="btn-action" style="background:var(--danger)" onclick="deleteShare('${s._id}')">✖</button>
-        </div>`).join('') || '<p style="color:gray">No shares yet.</p>'}</div>
-      <hr>
-      <h4>Add New Share</h4>
-      <div class="input-group"><label>Name</label><input id="newShareName" placeholder="e.g Gold Pack"></div>
-      <div class="input-group"><label>Price</label><input type="number" id="newSharePrice" placeholder="5000"></div>
-      <div class="input-group"><label>Daily Income</label><input type="number" id="newShareDaily" placeholder="200"></div>
-      <div class="input-group"><label>Duration (Days)</label><input type="number" id="newShareDuration" placeholder="30"></div>
-      <div class="input-group">
-        <label>Share Image</label>
-        <input type="file" id="newShareImgFile" accept="image/*" style="padding:6px;border-radius:8px;border:1px solid #ddd;width:100%">
-        <span id="shareImgStatus" style="font-size:12px;color:var(--primary)"></span>
-        <input type="hidden" id="newShareImg">
-      </div>`,
-    type: 'green',
-    yesLabel: 'Add share',
-    onYes: () => {
-      addShare()
-    },
-    icon: false,
-  });
-};
-
-window.addShare = async () => {
-  const g = (id) => document.getElementById(id)?.value;
-  const name = g('newShareName');
-  const price = Number(g('newSharePrice'));
-  const daily = Number(g('newShareDaily'));
-  const duration = Number(g('newShareDuration'));
-  if (!name || !price) { showToast('Please fill all required fields.', 'error'); return; }
-  
-  let imgUrl = g('newShareImg');
-  const fileInput = document.getElementById('newShareImgFile');
-  if (fileInput?.files[0]) {
-    imgUrl = await uploadToImgBB(fileInput.files[0], document.getElementById('shareImgStatus'));
-    if (!imgUrl) return;
-  }
-  
-  await api('/api/admin/shares', { method: 'POST', body: JSON.stringify({ name, price, dailyIncome: daily, duration, img: imgUrl || '' }) });
-  document.getElementById('sharesModal')?.remove();
-  showToast('Share added successfully!', 'success');
-};
-
-window.deleteShare = async (id) => {
-  showConfirm({
-    title: 'Delete this share?',
-    msg: 'This share will be removed permanently and all active users on it will lose its benefits!!',
-    type: 'danger',
-    yesLabel: 'Delete',
-    onYes: async () => {
-      await api(`/api/admin/shares/${id}`, { method: 'DELETE' });
-    },
-  });
-};
-
 window.openCreateUserModal = () => {
-  showModal({
-    id: 'createUserModal',
+  showConfirm({
     title: 'Create New User',
     content: `
       <div class="input-group"><label>Username</label><input id="newUsername" placeholder="johndoe"></div>
@@ -2481,27 +2413,26 @@ window.openCreateUserModal = () => {
       <div class="input-group"><label>Role</label>
         <select id="newRole"><option value="user">User</option><option value="admin">Admin</option></select>
       </div>`,
-    buttons: [
-      { text: 'Create', class: 'btn-submit', onclick: 'createUser()' },
-      { text: 'Cancel', class: 'btn-sec', onclick: "document.getElementById('createUserModal').remove()" }
-    ]
+    type: 'green',
+    yesLabel: 'Create',
+    onYes: async () => {
+      const g = (id) => document.getElementById(id)?.value;
+      const data = await api('/api/admin/create-user', {
+        method: 'POST',
+        body: JSON.stringify({ username: g('newUsername'), email: g('newEmail'), password: g('newPassword'), role: g('newRole') })
+      });
+      if (data?.success) {
+        showToast('User created successfully!', 'success');
+        renderApiUsers();
+      } else {
+        showToast(data?.error || 'Error creating user.', 'error');
+      }
+      
+    },
+    icon: false
   });
 };
 
-window.createUser = async () => {
-  const g = (id) => document.getElementById(id)?.value;
-  const data = await api('/api/admin/create-user', {
-    method: 'POST',
-    body: JSON.stringify({ username: g('newUsername'), email: g('newEmail'), password: g('newPassword'), role: g('newRole') })
-  });
-  if (data?.success) {
-    showToast('User created successfully!', 'success');
-    document.getElementById('createUserModal')?.remove();
-    renderApiUsers();
-  } else {
-    showToast(data?.error || 'Error creating user.', 'error');
-  }
-};
 
 window.previewLogo = async (input) => {
   const file = input.files[0];
