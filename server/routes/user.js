@@ -4,9 +4,19 @@ const jwt = require('jsonwebtoken');
 const { Resend } = require('resend');
 const User = require('../models/User');
 const {
-  Deposit, Withdrawal, Notification, Activity,
-  Share, PurchasedShare, Settings, DepositAmt,
-  ChatSession, ChatMessage, Typing,
+  Deposit,
+  Withdrawal,
+  Notification,
+  Activity,
+  Share,
+  PurchasedShare,
+  Settings,
+  DepositAmt,
+  Task,
+  TaskSubmission,
+  ChatSession,
+  ChatMessage,
+  Typing,
 } = require('../models/Models');
 const { requireAuth } = require('../middleware/auth');
 
@@ -48,16 +58,16 @@ router.get('/profile', requireAuth, async (req, res) => {
 // ─── GET /api/user/config ──────────────────────────────────
 router.get('/config', async (req, res) => {
   try {
-    const config      = await Settings.findOne({ key: 'config' });
-    const payment     = await Settings.findOne({ key: 'payment' });
+    const config = await Settings.findOne({ key: 'config' });
+    const payment = await Settings.findOne({ key: 'payment' });
     const maintenance = await Settings.findOne({ key: 'maintenance' });
-    const wheel       = await Settings.findOne({ key: 'wheel' });
+    const wheel = await Settings.findOne({ key: 'wheel' });
     res.json({
       success: true,
-      config:      config?.value      || {},
-      payment:     payment?.value     || {},
+      config: config?.value || {},
+      payment: payment?.value || {},
       maintenance: maintenance?.value || { enabled: false },
-      wheel:       wheel?.value       || { prizes: [] }
+      wheel: wheel?.value || { prizes: [] }
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -80,8 +90,8 @@ router.put('/bank-details', requireAuth, async (req, res) => {
     const { bankName, bankCode, accountNumber, accountName } = req.body;
     if (!bankName || accountNumber?.length < 10 || !accountName)
       return res.status(400).json({ error: 'Please fill all fields correctly.' });
-    const config          = await Settings.findOne({ key: 'config' });
-    const isMasterLocked  = config?.value?.globalBankLock || false;
+    const config = await Settings.findOne({ key: 'config' });
+    const isMasterLocked = config?.value?.globalBankLock || false;
     const hasExistingBank = req.user.bankDetails?.accountNumber;
     if (isMasterLocked && hasExistingBank)
       return res.status(403).json({ error: '⛔ System locked. Contact Admin to change bank details.' });
@@ -175,7 +185,7 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
 // ─── GET /api/user/fex-rate ───────────────────────────────
 router.get('/fex-rate', requireAuth, async (req, res) => {
   try {
-    const config  = await Settings.findOne({ key: 'config' });
+    const config = await Settings.findOne({ key: 'config' });
     const fexRate = config?.value?.fexRate || 0.7;
     res.json({ success: true, fexRate });
   } catch (err) {
@@ -189,15 +199,15 @@ router.post('/convert-fex', requireAuth, async (req, res) => {
     const { fexAmount } = req.body;
     if (!fexAmount || isNaN(fexAmount) || Number(fexAmount) <= 0)
       return res.status(400).json({ error: 'Invalid FEX amount.' });
-    const config  = await Settings.findOne({ key: 'config' });
+    const config = await Settings.findOne({ key: 'config' });
     const fexRate = config?.value?.fexRate || 0.7;
-    const naira   = parseFloat((Number(fexAmount) * fexRate).toFixed(2));
+    const naira = parseFloat((Number(fexAmount) * fexRate).toFixed(2));
     res.json({
-      success:   true,
+      success: true,
       fexAmount: parseFloat(fexAmount),
       fexRate,
       naira,
-      summary:   `🪙 ${fexAmount} FEX × ₦${fexRate} = ₦${naira.toLocaleString()}`
+      summary: `🪙 ${fexAmount} FEX × ₦${fexRate} = ₦${naira.toLocaleString()}`
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -213,14 +223,14 @@ router.post('/initiate-korapay', requireAuth, async (req, res) => {
     const { amount } = req.body;
     if (!amount || Number(amount) <= 0)
       return res.status(400).json({ error: 'Invalid amount.' });
-
+    
     const secretKey = process.env.KORAPAY_SECRET_KEY;
     if (!secretKey)
       return res.status(400).json({ error: 'Payment not configured.' });
-
+    
     const reference = 'DEP_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
     const u = req.user;
-
+    
     const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/initialize', {
       method: 'POST',
       headers: {
@@ -239,28 +249,28 @@ router.post('/initiate-korapay', requireAuth, async (req, res) => {
         notification_url: process.env.KORAPAY_WEBHOOK_URL || `${process.env.APP_URL}/api/webhook/korapay`
       })
     });
-
+    
     const result = await response.json();
-
+    
     if (!result.status || !result.data) {
       console.error('[Korapay Init]', result);
       return res.status(400).json({ error: result.message || 'Failed to initialize payment. Try again.' });
     }
-
-    const payData     = result.data;
+    
+    const payData = result.data;
     const bankTransfer = payData.payment_options?.bank_transfer;
-
+    
     res.json({
-      success:       true,
-      reference:     payData.reference,
-      amount:        payData.amount,
-      currency:      payData.currency,
-      bankName:      bankTransfer?.bank_name      || null,
+      success: true,
+      reference: payData.reference,
+      amount: payData.amount,
+      currency: payData.currency,
+      bankName: bankTransfer?.bank_name || null,
       accountNumber: bankTransfer?.account_number || null,
-      accountName:   bankTransfer?.account_name   || u.username,
-      expiresAt:     bankTransfer?.expires_at      || null,
+      accountName: bankTransfer?.account_name || u.username,
+      expiresAt: bankTransfer?.expires_at || null,
     });
-
+    
   } catch (err) {
     console.error('[Korapay Init Error]', err);
     res.status(500).json({ error: err.message });
@@ -304,59 +314,59 @@ router.get('/deposits', requireAuth, async (req, res) => {
 router.post('/withdraw', requireAuth, async (req, res) => {
   try {
     if (!requireVerified(req, res)) return;
-
+    
     const { fexAmount } = req.body;
-    const user   = req.user;
+    const user = req.user;
     const config = await Settings.findOne({ key: 'config' });
-
-    const fexRate     = config?.value?.fexRate     || 0.7;
-    const minWithdraw = config?.value?.minWithdraw  || 2000;
-    const withdrawFee = config?.value?.withdrawFee  || 0;
-
+    
+    const fexRate = config?.value?.fexRate || 0.7;
+    const minWithdraw = config?.value?.minWithdraw || 2000;
+    const withdrawFee = config?.value?.withdrawFee || 0;
+    
     if (!user.bankDetails?.accountNumber)
       return res.status(400).json({ error: 'Please bind your Bank Account first.' });
     if (!fexAmount || Number(fexAmount) <= 0)
       return res.status(400).json({ error: 'Invalid FEX amount.' });
     if (Number(fexAmount) > user.ib)
       return res.status(400).json({ error: 'Insufficient FEX balance.' });
-
+    
     const nairaAmount = parseFloat((Number(fexAmount) * fexRate).toFixed(2));
-    const minFex      = Math.ceil(minWithdraw / fexRate);
-
+    const minFex = Math.ceil(minWithdraw / fexRate);
+    
     if (nairaAmount < minWithdraw)
       return res.status(400).json({
         error: `Minimum withdrawal is ₦${minWithdraw.toLocaleString()} (${minFex.toLocaleString()} FEX at current rate of ₦${fexRate}/FEX)`
       });
-
+    
     const feeAmount = parseFloat(((nairaAmount * withdrawFee) / 100).toFixed(2));
     const netAmount = parseFloat((nairaAmount - feeAmount).toFixed(2));
-
+    
     await User.findByIdAndUpdate(user._id, { $inc: { ib: -Number(fexAmount) } });
-
+    
     await Activity.create({
       userId: user._id,
-      type:   'Withdrawal',
+      type: 'Withdrawal',
       amount: fexAmount,
-      desc:   `Withdrawal — 🪙${fexAmount} FEX → ₦${netAmount.toLocaleString()} @ ₦${fexRate}/FEX`
+      desc: `Withdrawal — 🪙${fexAmount} FEX → ₦${netAmount.toLocaleString()} @ ₦${fexRate}/FEX`
     });
-
+    
     const withdrawal = await Withdrawal.create({
-      userId:           user._id,
-      username:         user.username,
-      amount:           Number(fexAmount),
+      userId: user._id,
+      username: user.username,
+      amount: Number(fexAmount),
       nairaAmount,
       fexRate,
-      fee:              feeAmount,
-      feePercentage:    withdrawFee,
+      fee: feeAmount,
+      feePercentage: withdrawFee,
       netAmount,
-      status:           'pending',
-      bankDetails:      user.bankDetails,
+      status: 'pending',
+      bankDetails: user.bankDetails,
       remainingBalance: user.ib - Number(fexAmount)
     });
-
+    
     res.json({
-      success:    true,
-      message:    `Withdrawal of 🪙${fexAmount} FEX (≈ ₦${netAmount.toLocaleString()}) submitted!`,
+      success: true,
+      message: `Withdrawal of 🪙${fexAmount} FEX (≈ ₦${netAmount.toLocaleString()}) submitted!`,
       withdrawal
     });
   } catch (err) {
@@ -425,9 +435,14 @@ router.post('/buy-share', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Insufficient Balance!' });
     await User.findByIdAndUpdate(user._id, { $inc: { ib: -price, freeSpins: 2 } });
     const purchased = await PurchasedShare.create({
-      userId: user._id, shareName: name, pricePaid: price,
-      dailyIncome, duration, status: 'active',
-      purchaseDate: new Date(), lastClaimDate: new Date()
+      userId: user._id,
+      shareName: name,
+      pricePaid: price,
+      dailyIncome,
+      duration,
+      status: 'active',
+      purchaseDate: new Date(),
+      lastClaimDate: new Date()
     });
     await Activity.create({ userId: user._id, type: 'Shares', amount: name, desc: 'Investment purchased' });
     res.json({ success: true, message: 'Investment Active!', share: purchased });
@@ -446,20 +461,165 @@ router.get('/my-investments', requireAuth, async (req, res) => {
   }
 });
 
+
+// ═══════════════════════════════════════════════════════════
+// TASK SYSTEM — USER ROUTES
+// Add Task, TaskSubmission to your Models destructure at top:
+// const { ..., Task, TaskSubmission } = require('../models/Models');
+// ═══════════════════════════════════════════════════════════
+
+// ─── GET /api/user/tasks ──────────────────────────────────
+// All active tasks — with user's own submission status per task
+router.get('/tasks', requireAuth, async (req, res) => {
+  try {
+    const now = new Date();
+    
+    // Only return active tasks that haven't expired
+    const tasks = await Task.find({
+      active: true,
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
+    }).sort({ createdAt: -1 });
+    
+    // Fetch user's own submissions so we can mark done/pending tasks
+    const userSubmissions = await TaskSubmission.find({ userId: req.user._id })
+      .select('taskId status');
+    
+    const submissionMap = {};
+    userSubmissions.forEach(s => { submissionMap[s.taskId.toString()] = s.status; });
+    
+    // Attach completion counts and user status to each task
+    const counts = await TaskSubmission.aggregate([
+      { $match: { taskId: { $in: tasks.map(t => t._id) }, status: 'approved' } },
+      { $group: { _id: '$taskId', count: { $sum: 1 } } },
+    ]);
+    const countMap = {};
+    counts.forEach(c => { countMap[c._id.toString()] = c.count; });
+    
+    const enriched = tasks.map(t => {
+      const tid = t._id.toString();
+      const completed = countMap[tid] || 0;
+      const maxHit = t.maxCompletions > 0 && completed >= t.maxCompletions;
+      const userStatus = submissionMap[tid] || null; // null = not submitted yet
+      
+      return {
+        ...t.toObject(),
+        completedCount: completed,
+        maxReached: maxHit,
+        userStatus, // 'pending' | 'approved' | 'declined' | null
+        canSubmit: !maxHit && !userStatus, // user can only submit once
+      };
+    });
+    
+    res.json({ success: true, tasks: enriched });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── GET /api/user/tasks/my-submissions ───────────────────
+// User's own submission history
+router.get('/tasks/my-submissions', requireAuth, async (req, res) => {
+  try {
+    const submissions = await TaskSubmission.find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .populate('taskId', 'title points category proofType');
+    
+    res.json({ success: true, submissions });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/user/tasks/:id/submit ─────────────────────
+// Submit proof of task completion
+router.post('/tasks/:id/submit', requireAuth, async (req, res) => {
+  try {
+    const { proof } = req.body;
+    const task = await Task.findById(req.params.id);
+    
+    if (!task) return res.status(404).json({ error: 'Task not found.' });
+    if (!task.active) return res.status(400).json({ error: 'This task is no longer active.' });
+    
+    // Check expiry
+    if (task.expiresAt && new Date() > task.expiresAt)
+      return res.status(400).json({ error: 'This task has expired.' });
+    
+    // Check max completions
+    if (task.maxCompletions > 0) {
+      const approvedCount = await TaskSubmission.countDocuments({ taskId: task._id, status: 'approved' });
+      if (approvedCount >= task.maxCompletions)
+        return res.status(400).json({ error: 'This task has reached its maximum completions.' });
+    }
+    
+    // Check if user already submitted
+    const existing = await TaskSubmission.findOne({ taskId: task._id, userId: req.user._id });
+    if (existing) {
+      if (existing.status === 'pending')
+        return res.status(400).json({ error: 'You already submitted this task. Awaiting review.' });
+      if (existing.status === 'approved')
+        return res.status(400).json({ error: 'You already completed this task.' });
+      // If declined — allow re-submission by updating existing doc
+      existing.proof = proof || '';
+      existing.status = 'pending';
+      existing.adminNote = '';
+      existing.penalty = 0;
+      existing.createdAt = new Date();
+      await existing.save();
+      
+      await Activity.create({
+        userId: req.user._id,
+        type: 'Task',
+        amount: 0,
+        desc: `Re-submitted task: ${task.title}`,
+      });
+      
+      return res.json({ success: true, submission: existing, message: 'Task re-submitted for review!' });
+    }
+    
+    // Require proof if task demands it
+    if (task.proofType !== 'none' && !proof?.trim())
+      return res.status(400).json({ error: 'Please provide proof to submit this task.' });
+    
+    const submission = await TaskSubmission.create({
+      taskId: task._id,
+      userId: req.user._id,
+      proof: proof || '',
+      status: 'pending',
+      points: task.points,
+    });
+    
+    await Activity.create({
+      userId: req.user._id,
+      type: 'Task',
+      amount: 0,
+      desc: `Submitted task: ${task.title}`,
+    });
+    
+    res.json({ success: true, submission, message: 'Task submitted! Awaiting admin review.' });
+  } catch (err) {
+    // Duplicate key error = already submitted
+    if (err.code === 11000)
+      return res.status(400).json({ error: 'You already submitted this task.' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+
 // ─── POST /api/user/collect-earnings ─────────────────────
 router.post('/collect-earnings', requireAuth, async (req, res) => {
   try {
-    const uid         = req.user._id;
+    const uid = req.user._id;
     const investments = await PurchasedShare.find({ userId: uid, status: 'active' });
     if (!investments.length) return res.json({ success: true, credited: 0 });
     const now = new Date();
     let totalToCredit = 0;
-    const updates  = [];
+    const updates = [];
     const toDelete = [];
     for (const share of investments) {
-      const lastClaim   = share.lastClaimDate || share.purchaseDate;
+      const lastClaim = share.lastClaimDate || share.purchaseDate;
       const daysToClaim = Math.floor((now - lastClaim) / (1000 * 60 * 60 * 24));
-      const daysPassed  = Math.floor((now - share.purchaseDate) / (1000 * 60 * 60 * 24));
+      const daysPassed = Math.floor((now - share.purchaseDate) / (1000 * 60 * 60 * 24));
       if (daysPassed >= share.duration) { toDelete.push(share._id); continue; }
       if (daysToClaim <= 0) continue;
       totalToCredit += daysToClaim * Number(share.dailyIncome);
@@ -481,7 +641,7 @@ router.post('/collect-earnings', requireAuth, async (req, res) => {
 // ─── GET /api/user/team ───────────────────────────────────
 router.get('/team', requireAuth, async (req, res) => {
   try {
-    const uid    = req.user._id.toString();
+    const uid = req.user._id.toString();
     const level1 = await User.find({ referrerId: uid }).select('username email createdAt ib');
     const level2Users = [];
     for (const l1 of level1) {
@@ -495,9 +655,9 @@ router.get('/team', requireAuth, async (req, res) => {
     }
     res.json({
       success: true,
-      level1: { count: level1.length,      users: level1 },
-      level2: { count: level2Users.length,  users: level2Users },
-      level3: { count: level3Users.length,  users: level3Users },
+      level1: { count: level1.length, users: level1 },
+      level2: { count: level2Users.length, users: level2Users },
+      level3: { count: level3Users.length, users: level3Users },
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -508,7 +668,7 @@ router.get('/team', requireAuth, async (req, res) => {
 router.post('/spin', requireAuth, async (req, res) => {
   try {
     if (!requireVerified(req, res)) return;
-    const user  = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id);
     const today = new Date().toISOString().split('T')[0];
     if (user.ib < 90)
       return res.status(400).json({ error: 'Insufficient balance. Need 🪙90 FEX to spin.' });
@@ -523,9 +683,9 @@ router.post('/spin', requireAuth, async (req, res) => {
     else { update.$set = { lastSpinDate: today }; }
     await User.findByIdAndUpdate(user._id, update);
     const wheelSettings = await Settings.findOne({ key: 'wheel' });
-    const prizes      = wheelSettings?.value?.prizes || [];
+    const prizes = wheelSettings?.value?.prizes || [];
     const randomIndex = Math.floor(Math.random() * prizes.length);
-    const win         = prizes[randomIndex] || { value: 0, label: 'Empty' };
+    const win = prizes[randomIndex] || { value: 0, label: 'Empty' };
     if (win.value > 0) {
       await User.findByIdAndUpdate(user._id, { $inc: { ib: win.value } });
       await Activity.create({ userId: user._id, type: 'Won spin', amount: win.value, desc: `Won ${win.label}` });
@@ -543,10 +703,10 @@ router.post('/checkin', requireAuth, async (req, res) => {
   try {
     if (!requireVerified(req, res)) return;
     const today = new Date().toDateString();
-    const user  = req.user;
+    const user = req.user;
     if (user.lastCheckIn === today)
       return res.status(400).json({ error: 'Already claimed today! Come back tomorrow.' });
-    const config       = await Settings.findOne({ key: 'config' });
+    const config = await Settings.findOne({ key: 'config' });
     const checkInBonus = config?.value?.checkInBonus || 50;
     await User.findByIdAndUpdate(user._id, { lastCheckIn: today, $inc: { ib: checkInBonus } });
     await Activity.create({ userId: user._id, type: 'Check-in', amount: checkInBonus, desc: 'Daily check-in bonus' });
@@ -563,11 +723,11 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
     if (user.emailVerified)
       return res.status(400).json({ error: 'Your email is already verified.' });
     const verifyToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    const verifyUrl   = `${process.env.APP_URL}/api/auth/verify-email?token=${verifyToken}`;
+    const verifyUrl = `${process.env.APP_URL}/api/auth/verify-email?token=${verifyToken}`;
     res.json({ success: true, message: 'Verification email sent! Check your inbox.' });
     resend.emails.send({
       from: process.env.EMAIL_FROM || 'Flux Mall <noreply@fluxmall.online>',
-      to:   user.email,
+      to: user.email,
       subject: 'Verify your email — Flux Mall',
       html: `
         <div style="font-family:Arial;max-width:500px;margin:auto;padding:32px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
@@ -614,15 +774,15 @@ router.get('/apikeys', requireAuth, async (req, res) => {
 router.get('/chat/session', requireAuth, async (req, res) => {
   try {
     const chatSettings = await Settings.findOne({ key: 'chat' });
-    const isAvailable  = chatSettings?.value?.available !== false;
-    const officeHours  = chatSettings?.value?.officeHours;
-    const autoReply    = chatSettings?.value?.autoReply || '';
+    const isAvailable = chatSettings?.value?.available !== false;
+    const officeHours = chatSettings?.value?.officeHours;
+    const autoReply = chatSettings?.value?.autoReply || '';
     if (!isAvailable)
       return res.json({ success: true, offline: true, offlineMsg: '🔒 Chat is currently unavailable. Please try again later.' });
     if (officeHours?.enabled) {
-      const now   = new Date();
-      const hour  = now.getHours();
-      const open  = parseInt(officeHours.open  || '9');
+      const now = new Date();
+      const hour = now.getHours();
+      const open = parseInt(officeHours.open || '9');
       const close = parseInt(officeHours.close || '18');
       if (hour < open || hour >= close)
         return res.json({ success: true, offline: true, offlineMsg: officeHours.offlineMsg || "We're offline. Leave a message and we'll reply soon." });
@@ -647,10 +807,7 @@ router.get('/chat/messages', requireAuth, async (req, res) => {
     const session = await ChatSession.findOne({ userId: req.user._id });
     if (!session) return res.json({ success: true, messages: [] });
     const messages = await ChatMessage.find({ sessionId: session._id }).sort({ createdAt: 1 });
-    await ChatMessage.updateMany(
-      { sessionId: session._id, sender: 'admin', read: false },
-      { read: true }
-    );
+    await ChatMessage.updateMany({ sessionId: session._id, sender: 'admin', read: false }, { read: true });
     await ChatSession.findByIdAndUpdate(session._id, { unreadUser: 0 });
     res.json({ success: true, messages, sessionId: session._id, sessionStatus: session.status });
   } catch (err) {
@@ -677,24 +834,32 @@ router.post('/chat/send', requireAuth, async (req, res) => {
       if (polarMsg.polarAnswer) return res.status(400).json({ error: 'Already answered.' });
       await ChatMessage.findByIdAndUpdate(polarMsgId, { polarAnswer: content });
       const msg = await ChatMessage.create({
-        sessionId: session._id, sender: 'user', type: 'text',
+        sessionId: session._id,
+        sender: 'user',
+        type: 'text',
         content: content === 'yes' ? '✅ Yes' : '❌ No',
       });
       await ChatSession.findByIdAndUpdate(session._id, {
         lastMessage: content === 'yes' ? '✅ Yes' : '❌ No',
-        lastMessageAt: new Date(), $inc: { unreadAdmin: 1 }
+        lastMessageAt: new Date(),
+        $inc: { unreadAdmin: 1 }
       });
       notifyAdmin(req.user.username, content === 'yes' ? '✅ Yes' : '❌ No').catch(() => {});
       return res.json({ success: true, message: msg });
     }
     const msg = await ChatMessage.create({
-      sessionId: session._id, sender: 'user',
-      type: type || 'text', content: content || '',
-      imageUrl: imageUrl || '', replyTo: replyTo || {},
+      sessionId: session._id,
+      sender: 'user',
+      type: type || 'text',
+      content: content || '',
+      imageUrl: imageUrl || '',
+      replyTo: replyTo || {},
     });
     const preview = type === 'image' ? '📷 Image' : content?.substring(0, 60) || '';
     await ChatSession.findByIdAndUpdate(session._id, {
-      lastMessage: preview, lastMessageAt: new Date(), $inc: { unreadAdmin: 1 }
+      lastMessage: preview,
+      lastMessageAt: new Date(),
+      $inc: { unreadAdmin: 1 }
     });
     res.json({ success: true, message: msg });
     notifyAdmin(req.user.username, preview).catch(() => {});
@@ -708,14 +873,14 @@ async function notifyAdmin(username, messagePreview) {
   try {
     const admin = await User.findOne({ role: 'admin' }).select('email');
     if (!admin?.email) return;
-    const config        = await Settings.findOne({ key: 'config' });
-    const siteName      = config?.value?.siteName || 'Flux Mall';
-    const adminPanelUrl = process.env.APP_URL
-      ? `${process.env.APP_URL}/cpanel/admin.html`
-      : 'https://fluxmall.online/cpanel/admin.html';
+    const config = await Settings.findOne({ key: 'config' });
+    const siteName = config?.value?.siteName || 'Flux Mall';
+    const adminPanelUrl = process.env.APP_URL ?
+      `${process.env.APP_URL}/cpanel/admin.html` :
+      'https://fluxmall.online/cpanel/admin.html';
     await resend.emails.send({
       from: process.env.EMAIL_FROM || `${siteName} <noreply@fluxmall.online>`,
-      to:   admin.email,
+      to: admin.email,
       subject: `💬 New message from ${username} — ${siteName}`,
       html: `
         <div style="font-family:Arial;max-width:480px;margin:auto;padding:28px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
@@ -750,7 +915,7 @@ router.get('/chat/unread', requireAuth, async (req, res) => {
 router.get('/chat/settings', requireAuth, async (req, res) => {
   try {
     const doc = await Settings.findOne({ key: 'chat' });
-    const s   = doc?.value || {};
+    const s = doc?.value || {};
     res.json({ success: true, settings: { sound: s.sound !== false, allowImages: s.allowImages !== false } });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -762,11 +927,7 @@ router.post('/chat/typing', requireAuth, async (req, res) => {
   try {
     const session = await ChatSession.findOne({ userId: req.user._id, status: 'active' });
     if (!session) return res.json({ success: false });
-    await Typing.findOneAndUpdate(
-      { sessionId: session._id, sender: 'user' },
-      { sessionId: session._id, sender: 'user', updatedAt: new Date() },
-      { upsert: true }
-    );
+    await Typing.findOneAndUpdate({ sessionId: session._id, sender: 'user' }, { sessionId: session._id, sender: 'user', updatedAt: new Date() }, { upsert: true });
     res.json({ success: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
