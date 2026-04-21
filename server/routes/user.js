@@ -462,31 +462,25 @@ router.get('/my-investments', requireAuth, async (req, res) => {
 });
 
 
-// ═══════════════════════════════════════════════════════════
-// TASK SYSTEM — USER ROUTES
-// Add Task, TaskSubmission to your Models destructure at top:
-// const { ..., Task, TaskSubmission } = require('../models/Models');
-// ═══════════════════════════════════════════════════════════
-
 // ─── GET /api/user/tasks ──────────────────────────────────
 // All active tasks — with user's own submission status per task
 router.get('/tasks', requireAuth, async (req, res) => {
   try {
     const now = new Date();
-    
+
     // Only return active tasks that haven't expired
     const tasks = await Task.find({
       active: true,
       $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
     }).sort({ createdAt: -1 });
-    
+
     // Fetch user's own submissions so we can mark done/pending tasks
     const userSubmissions = await TaskSubmission.find({ userId: req.user._id })
-      .select('taskId status');
-    
+      .select('taskId status proof');
+
     const submissionMap = {};
     userSubmissions.forEach(s => { submissionMap[s.taskId.toString()] = s.status; });
-    
+
     // Attach completion counts and user status to each task
     const counts = await TaskSubmission.aggregate([
       { $match: { taskId: { $in: tasks.map(t => t._id) }, status: 'approved' } },
@@ -494,22 +488,22 @@ router.get('/tasks', requireAuth, async (req, res) => {
     ]);
     const countMap = {};
     counts.forEach(c => { countMap[c._id.toString()] = c.count; });
-    
+
     const enriched = tasks.map(t => {
-      const tid = t._id.toString();
-      const completed = countMap[tid] || 0;
-      const maxHit = t.maxCompletions > 0 && completed >= t.maxCompletions;
+      const tid        = t._id.toString();
+      const completed  = countMap[tid] || 0;
+      const maxHit     = t.maxCompletions > 0 && completed >= t.maxCompletions;
       const userStatus = submissionMap[tid] || null; // null = not submitted yet
-      
+
       return {
         ...t.toObject(),
         completedCount: completed,
-        maxReached: maxHit,
-        userStatus, // 'pending' | 'approved' | 'declined' | null
-        canSubmit: !maxHit && !userStatus, // user can only submit once
+        maxReached:     maxHit,
+        userStatus,          // 'pending' | 'approved' | 'declined' | null
+        canSubmit:      !maxHit && (!userStatus || userStatus === 'declined'), // allow resubmit after decline
       };
     });
-    
+
     res.json({ success: true, tasks: enriched });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -522,8 +516,8 @@ router.get('/tasks/my-submissions', requireAuth, async (req, res) => {
   try {
     const submissions = await TaskSubmission.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
-      .populate('taskId', 'title points category proofType');
-    
+      .populate('taskId', 'title points category proofType platform taskLink');
+
     res.json({ success: true, submissions });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -536,21 +530,21 @@ router.post('/tasks/:id/submit', requireAuth, async (req, res) => {
   try {
     const { proof } = req.body;
     const task = await Task.findById(req.params.id);
-    
-    if (!task) return res.status(404).json({ error: 'Task not found.' });
-    if (!task.active) return res.status(400).json({ error: 'This task is no longer active.' });
-    
+
+    if (!task)          return res.status(404).json({ error: 'Task not found.' });
+    if (!task.active)   return res.status(400).json({ error: 'This task is no longer active.' });
+
     // Check expiry
     if (task.expiresAt && new Date() > task.expiresAt)
       return res.status(400).json({ error: 'This task has expired.' });
-    
+
     // Check max completions
     if (task.maxCompletions > 0) {
       const approvedCount = await TaskSubmission.countDocuments({ taskId: task._id, status: 'approved' });
       if (approvedCount >= task.maxCompletions)
         return res.status(400).json({ error: 'This task has reached its maximum completions.' });
     }
-    
+
     // Check if user already submitted
     const existing = await TaskSubmission.findOne({ taskId: task._id, userId: req.user._id });
     if (existing) {
@@ -559,42 +553,42 @@ router.post('/tasks/:id/submit', requireAuth, async (req, res) => {
       if (existing.status === 'approved')
         return res.status(400).json({ error: 'You already completed this task.' });
       // If declined — allow re-submission by updating existing doc
-      existing.proof = proof || '';
-      existing.status = 'pending';
+      existing.proof     = proof || '';
+      existing.status    = 'pending';
       existing.adminNote = '';
-      existing.penalty = 0;
+      existing.penalty   = 0;
       existing.createdAt = new Date();
       await existing.save();
-      
+
       await Activity.create({
         userId: req.user._id,
-        type: 'Task',
+        type:   'Task',
         amount: 0,
-        desc: `Re-submitted task: ${task.title}`,
+        desc:   `Re-submitted task: ${task.title}`,
       });
-      
+
       return res.json({ success: true, submission: existing, message: 'Task re-submitted for review!' });
     }
-    
+
     // Require proof if task demands it
     if (task.proofType !== 'none' && !proof?.trim())
       return res.status(400).json({ error: 'Please provide proof to submit this task.' });
-    
+
     const submission = await TaskSubmission.create({
       taskId: task._id,
       userId: req.user._id,
-      proof: proof || '',
+      proof:  proof || '',
       status: 'pending',
       points: task.points,
     });
-    
+
     await Activity.create({
       userId: req.user._id,
-      type: 'Task',
+      type:   'Task',
       amount: 0,
-      desc: `Submitted task: ${task.title}`,
+      desc:   `Submitted task: ${task.title}`,
     });
-    
+
     res.json({ success: true, submission, message: 'Task submitted! Awaiting admin review.' });
   } catch (err) {
     // Duplicate key error = already submitted
@@ -603,8 +597,6 @@ router.post('/tasks/:id/submit', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-
 
 // ─── POST /api/user/collect-earnings ─────────────────────
 router.post('/collect-earnings', requireAuth, async (req, res) => {
