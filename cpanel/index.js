@@ -1229,10 +1229,9 @@ function submitEdit(id) {
 function openCreditModal(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  openModal(`
-    <div class="modal-title">Adjust Balance</div>
-    <div class="modal-sub">Current balance: <strong style="color:var(--gl)">₦${u.balance.toLocaleString()}</strong></div>
-    <div class="form-group"><label class="form-label">Action</label>
+  showConfirm({
+    title: `Adjust Balance<br><div class="modal-sub">Current balance: <strong style="color:var(--gl)">₦${u.balance.toLocaleString()}</strong></div>`,
+    msg: ` <div class="form-group"><label class="form-label">Action</label>
       <select class="form-input" id="c-type">
         <option value="credit">Credit (Add)</option>
         <option value="debit">Debit (Subtract)</option>
@@ -1240,46 +1239,45 @@ function openCreditModal(id) {
       </select>
     </div>
     <div class="form-group"><label class="form-label">Amount (₦)</label><input class="form-input" id="c-amount" type="number" min="0" placeholder="0"></div>
-    <div class="form-group"><label class="form-label">Reason / Note</label><input class="form-input" id="c-note" placeholder="e.g. Manual adjustment..."></div>
-    <div class="modal-btns">
-      <button class="modal-btn-primary" onclick="submitBalance('${id}')">Apply</button>
-      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>`);
-}
-
-function submitBalance(id) {
-  const u = UM_USERS.find(x => x.id === id);
-  if (!u) return;
-  const type = document.getElementById('c-type')?.value;
-  const amt = parseInt(document.getElementById('c-amount')?.value) || 0;
-  if (amt <= 0 && type !== 'set') { showToast('Enter a valid amount', 'error'); return; }
-  
-  // Map UI type to API action
-  const action = type === 'credit' ? 'credit' : type === 'debit' ? 'debit' : 'set';
-  
-  api('/api/admin/users/adjust-balance', {
-    method: 'POST',
-    body: JSON.stringify({ userId: id, amount: amt, action })
-  }).then(data => {
-    if (data?.success) {
-      u.balance = data.newBalance ?? (
-        type === 'credit' ? u.balance + amt :
-        type === 'debit' ? Math.max(0, u.balance - amt) :
-        amt
-      );
-      closeModal();
-      updateUMStats();
-      applyFilters();
-      if (activeUserId === id) openDetail(id);
-      showToast(
-        `Balance ${type === 'credit' ? 'credited' : type === 'debit' ? 'debited' : 'set'} — ₦${u.balance.toLocaleString()}`,
-        'success'
-      );
-    } else {
-      showToast(data?.error || 'Error adjusting balance.', 'error');
-    }
+    <div class="form-group"><label class="form-label">Reason / Note</label><input class="form-input" id="c-note" placeholder="e.g. Manual adjustment..."></div>`,
+    type: 'warning',
+    yesLabel: 'Apply',
+    onYes: async () => {
+      const u = UM_USERS.find(x => x.id === id);
+      if (!u) return;
+      const type = document.getElementById('c-type')?.value;
+      const amt = parseInt(document.getElementById('c-amount')?.value) || 0;
+      if (amt <= 0 && type !== 'set') { showToast('Enter a valid amount', 'error'); return; }
+      
+      // Map UI type to API action
+      const action = type === 'credit' ? 'credit' : type === 'debit' ? 'debit' : 'set';
+      
+      await api('/api/admin/users/adjust-balance', {
+        method: 'POST',
+        body: JSON.stringify({ userId: id, amount: amt, action })
+      }).then(data => {
+        if (data?.success) {
+          u.balance = data.newBalance ?? (
+            type === 'credit' ? u.balance + amt :
+            type === 'debit' ? Math.max(0, u.balance - amt) :
+            amt
+          );
+          updateUMStats();
+          applyFilters();
+          if (activeUserId === id) openDetail(id);
+          showToast(
+            `Balance ${type === 'credit' ? 'credited' : type === 'debit' ? 'debited' : 'set'} — ₦${u.balance.toLocaleString()}`,
+            'success'
+          );
+        } else {
+          showToast(data?.error || 'Error adjusting balance.', 'error');
+        }
+      });
+    },
+    icon: false
   });
 }
+
 
 function sendMessageModal(id) {
   const u = UM_USERS.find(x => x.id === id);
@@ -1332,74 +1330,68 @@ function confirmBan(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   const isBanned = u.status === 'banned';
-  openModal(`
-    <div class="modal-title">${isBanned?'Unban':'Ban'} User</div>
-    <div class="modal-sub">${isBanned?`Remove ban from <strong>${u.name}</strong>?`:`Ban <strong>${u.name}</strong>? They will lose all access immediately.`}</div>
-    ${!isBanned?`<div class="form-group"><label class="form-label">Reason for Ban</label><input class="form-input" id="ban-reason" placeholder="e.g. Fraudulent activity..."></div>`:''}
-    <div class="modal-btns">
-      <button class="${isBanned?'modal-btn-primary':'modal-btn-danger'}" onclick="submitBan('${id}')">${isBanned?'Unban User':'Confirm Ban'}</button>
-      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>`);
-}
-
-// ── Ban / Unban ────────────────────────────────────────────
-function submitBan(id) {
-  const u = UM_USERS.find(x => x.id === id);
-  if (!u) return;
-  const newStatus = u.status === 'banned' ? 'Active' : 'Banned';
-  const reason = document.getElementById('ban-reason')?.value || '';
-  
-  api(`/api/admin/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ status: newStatus, banReason: reason })
-  }).then(data => {
-    if (data?.success) {
-      u.status = newStatus === 'Banned' ? 'banned' : 'unverified';
-      closeModal();
-      updateUMStats();
-      applyFilters();
-      if (activeUserId === id) openDetail(id);
-      showToast(`${u.name} ${u.status === 'banned' ? 'banned' : 'unbanned'}`, 'info');
-    } else {
-      showToast(data?.error || 'Failed to update ban status.', 'error');
+  showConfirm({
+    title: `${isBanned?'Unban':'Ban'} User`,
+    msg: `<div class="modal-sub">${isBanned?`Remove ban from <strong>${u.name}</strong>?`:`Ban <strong>${u.name}</strong>? They will lose all access immediately.`}</div>
+      ${!isBanned?`<div class="form-group"><label class="form-label">Reason for Ban</label><input class="form-input" id="ban-reason" placeholder="e.g. Fraudulent activity..."></div>`:''}`,
+    type: 'danger',
+    yesLabel: `${isBanned?'Unban User':'Confirm Ban'}`,
+    onYes: async () => {
+      const u = UM_USERS.find(x => x.id === id);
+      if (!u) return;
+      const newStatus = u.status === 'banned' ? 'Active' : 'Banned';
+      const reason = document.getElementById('ban-reason')?.value || '';
+      
+      await api(`/api/admin/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: newStatus, banReason: reason })
+      }).then(data => {
+        if (data?.success) {
+          u.status = newStatus === 'Banned' ? 'banned' : 'unverified';
+          updateUMStats();
+          applyFilters();
+          if (activeUserId === id) openDetail(id);
+          showToast(`${u.name} ${u.status === 'banned' ? 'banned' : 'unbanned'}`, 'info');
+        } else {
+          showToast(data?.error || 'Failed to update ban status.', 'error');
+        }
+      });
     }
   });
 }
-
 
 function confirmDelete(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  openModal(`
-    <div class="modal-title">Delete Account</div>
-    <div class="modal-sub">This will permanently delete <strong>${u.name}</strong>'s account. <strong>Cannot be undone.</strong></div>
-    <div class="form-group"><label class="form-label">Type "DELETE" to confirm</label><input class="form-input" id="del-confirm" placeholder="DELETE"></div>
-    <div class="modal-btns">
-      <button class="modal-btn-danger" onclick="submitDelete('${id}')">Delete Permanently</button>
-      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>`);
-}
-
-function submitDelete(id) {
-  if (document.getElementById('del-confirm')?.value !== 'DELETE') {
-    showToast('Type DELETE to confirm', 'error');
-    return;
-  }
-  api(`/api/admin/users/${id}`, { method: 'DELETE' }).then(data => {
-    if (data?.success) {
-      const u = UM_USERS.find(x => x.id === id);
-      UM_USERS = UM_USERS.filter(x => x.id !== id);
-      if (activeUserId === id) closeDetail();
-      selected.delete(id);
-      closeModal();
-      updateUMStats();
-      applyFilters();
-      showToast(`${u?.name || 'User'} deleted`, 'info');
-    } else {
-      showToast(data?.error || 'Failed to delete user.', 'error');
+  
+  showConfirm({
+    title: `Delete Account`,
+    msg: ` <div class="modal-sub">This will permanently delete <strong>${u.name}</strong>'s account. <strong>Cannot be undone.</strong></div>
+    <div class="form-group"><label class="form-label">Type "DELETE" to confirm</label><input class="form-input" id="del-confirm" placeholder="DELETE"></div>`,
+    type: 'danger',
+    yesLabel: `Delete Permanently`,
+    onYes: async () => {
+      if (document.getElementById('del-confirm')?.value !== 'DELETE') {
+        showToast('Type DELETE to confirm', 'error');
+        return;
+      }
+      api(`/api/admin/users/${id}`, { method: 'DELETE' }).then(data => {
+        if (data?.success) {
+          const u = UM_USERS.find(x => x.id === id);
+          UM_USERS = UM_USERS.filter(x => x.id !== id);
+          /*   if (activeUserId === id) closeDetail();*/
+          selected.delete(id);
+          updateUMStats();
+          applyFilters();
+          showToast(`${u?.name || 'User'} deleted`, 'info');
+        } else {
+          showToast(data?.error || 'Failed to delete user.', 'error');
+        }
+      });
     }
   });
 }
+
 
 
 
@@ -4127,7 +4119,6 @@ window.viewWithdrawalDetail = (w) => {
       </div>
       </div>
           <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
       ${w.status === 'pending' ? `<button class="btn btn-success" onclick="approveWithdrawal('${w._id}');closeModal()"><i class="ri-check-line"></i> Mark Paid</button>` : ''}
     </div>`,
     type: 'warning',
@@ -5098,14 +5089,20 @@ let _atStatusFilter = 'all';
 let _atCatFilter = 'all';
 let _atSearchFilter = '';
 
-function atFilterCatalog(term) { _atSearchFilter = term.toLowerCase();
-  atApplyCatalogFilters(); }
+function atFilterCatalog(term) {
+  _atSearchFilter = term.toLowerCase();
+  atApplyCatalogFilters();
+}
 
-function atFilterCatalogStatus(v) { _atStatusFilter = v;
-  atApplyCatalogFilters(); }
+function atFilterCatalogStatus(v) {
+  _atStatusFilter = v;
+  atApplyCatalogFilters();
+}
 
-function atFilterCatalogCategory(v) { _atCatFilter = v;
-  atApplyCatalogFilters(); }
+function atFilterCatalogCategory(v) {
+  _atCatFilter = v;
+  atApplyCatalogFilters();
+}
 
 function atApplyCatalogFilters() {
   _atCatalogFiltered = _atTasks.filter(t => {
