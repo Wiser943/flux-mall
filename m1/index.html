@@ -1586,14 +1586,7 @@
         let _utHistory = [];
         let _utActiveCat = 'all';
         
-        // ── API ──────────────────────────────────────────────────
-        async function utApi(path, opts = {}) {
-          try {
-            const res = await fetch(path, { credentials: 'include', headers: { 'Content-Type': 'application/json', ...opts.headers }, ...opts });
-            if (res.status === 401) { window.location.href = '/m2/index.html#login-page'; return null; }
-            return res.json();
-          } catch (e) { console.error('[utApi]', e); return null; }
-        }
+
         
         // ── TABS ─────────────────────────────────────────────────
         function utSwitchTab(name, btn) {
@@ -1608,7 +1601,7 @@
         window.addEventListener('DOMContentLoaded', utLoadTasks);
         
         async function utLoadTasks() {
-          const data = await utApi('/api/user/tasks');
+          const data = await api('/api/user/tasks');
           if (!data?.success) { document.getElementById('utTaskList').innerHTML = `<div class="state-box"><i class="ri-error-warning-line"></i><p>Could not load tasks.</p></div>`; return; }
           
           _utTasks = data.tasks || [];
@@ -1736,7 +1729,7 @@
           btn.disabled = true;
           btn.innerHTML = '<i class="ri-loader-line"></i> Submitting…';
           
-          const res = await utApi(`/api/user/tasks/${taskId}/submit`, {
+          const res = await api(`/api/user/tasks/${taskId}/submit`, {
             method: 'POST',
             body: JSON.stringify({ proof })
           });
@@ -1754,7 +1747,7 @@
         // ── HISTORY ──────────────────────────────────────────────
         async function utLoadHistory() {
           document.getElementById('utHistoryList').innerHTML = `<div class="state-box"><div class="spinner"></div><p>Loading…</p></div>`;
-          const data = await utApi('/api/user/tasks/my-submissions');
+          const data = await api('/api/user/tasks/my-submissions');
           _utHistory = data?.submissions || [];
           document.getElementById('utTcHistory').textContent = _utHistory.length;
           
