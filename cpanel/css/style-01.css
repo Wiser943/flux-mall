@@ -1803,7 +1803,7 @@ tbody td {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 }
-/*
+
 @media(max-width:600px) {
     .stat-strip {
         grid-template-columns: repeat(2, 1fr);
@@ -1823,19 +1823,11 @@ tbody td {
         min-width: unset;
     }
     
-    .filter-select {
-        width: 100%;
-    }
-    
     thead th:nth-child(4),
     tbody td:nth-child(4),
     thead th:nth-child(5),
     tbody td:nth-child(5) {
         display: none;
-    }
-    
-    .modal-sheet {
-        border-radius: 20px 20px 0 0;
     }
     
     .form-row {
@@ -1852,7 +1844,6 @@ tbody td {
         align-items: flex-start;
         gap: 8px;
     }
-.page-header button{display: none;}
     .tabs-header {
         gap: 2px;
         padding: 4px 4px 0;
@@ -1863,7 +1854,7 @@ tbody td {
         padding: 8px 4px;
     }
     
-
+.filter-select,.btn.btn-outline{display:none}
 }
 @media(max-width:400px) {
     .tab-btn span {
@@ -1883,8 +1874,4 @@ tbody td {
         font-size: 10px;
         padding: 4px 7px;
     }
-    
-    .page {
-        padding: 12px 10px 80px;
     }
-}*/
