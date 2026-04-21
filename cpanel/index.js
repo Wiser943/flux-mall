@@ -1160,7 +1160,6 @@ function openEditModal(id) {
   showConfirm({
     title: 'Edit User',
     msg: `
-    <div class="modal-title">Edit User</div>
     <div class="modal-sub">Update details for <strong>${u.name}</strong></div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="e-name" value="${u.name}"></div>
@@ -1181,10 +1180,6 @@ function openEditModal(id) {
           <option value="0" ${!u.active?'selected':''}>Inactive</option>
         </select>
       </div>
-    </div>
-    <div class="modal-btns">
-      <button class="modal-btn-primary" onclick="submitEdit('${u.id}')">Save Changes</button>
-      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
     </div>`,
     type: 'warning',
     yesLabel: 'Save changes',
@@ -1192,15 +1187,12 @@ function openEditModal(id) {
     
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  
       const name = document.getElementById('e-name')?.value.trim() || u.name;
       const email = document.getElementById('e-email')?.value.trim() || u.email;
       const phone = document.getElementById('e-phone')?.value.trim() || u.phone;
       const status = document.getElementById('e-status')?.value;
       const active = document.getElementById('e-active')?.value === '1';
-      
       const apiStatus = status === 'banned' ? 'Banned' : 'Active';
-      
       api(`/api/admin/users/${id}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -1217,7 +1209,6 @@ function openEditModal(id) {
           u.phone = phone;
           u.status = status;
           u.active = active;
-          closeModal();
           updateUMStats();
           applyFilters();
           if (activeUserId === id) openDetail(id);
