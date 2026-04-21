@@ -1788,3 +1788,267 @@ async function init() {
       window.addEventListener('DOMContentLoaded', () => {
         setTimeout(pollChatUnread, 3000);
       });
+      
+      
+      
+      
+      
+      
+      // ══════════════════════════════════════════════════════════
+      // FLUX MALL — User Task Page (embedded)
+      // ══════════════════════════════════════════════════════════
+
+      const UT_CAT_ICONS  = { Social:'ri-share-line', Survey:'ri-questionnaire-line', Watch:'ri-play-circle-line', Download:'ri-download-line', Review:'ri-star-line', General:'ri-task-line' };
+      const UT_CAT_COLORS = { Social:'#4299e1', Survey:'#9f7aea', Watch:'#ee5d50', Download:'#05cd99', Review:'#f6ad55', General:'#4318ff' };
+      const UT_PLATFORM   = {
+        X:         { icon:'ri-twitter-x-line',  color:'#000000', label:'X (Twitter)' },
+        Facebook:  { icon:'ri-facebook-fill',    color:'#1877f2', label:'Facebook'    },
+        Instagram: { icon:'ri-instagram-line',   color:'#e1306c', label:'Instagram'   },
+        GitHub:    { icon:'ri-github-fill',      color:'#24292e', label:'GitHub'      },
+        YouTube:   { icon:'ri-youtube-line',     color:'#ff0000', label:'YouTube'     },
+        Custom:    { icon:'ri-global-line',      color:'#4318ff', label:'Custom'      },
+      };
+
+      let _utTasks     = [];
+      let _utHistory   = [];
+      let _utActiveCat = 'all';
+
+      // ── TABS ────────────────────────────────────────────────
+      function utSwitchTab(name, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('ut-panel-' + name).classList.add('active');
+        if (name === 'history') utLoadHistory();
+      }
+
+      // ── INIT ────────────────────────────────────────────────
+      // FIX: DOMContentLoaded already fired in a single-page app.
+      // Call directly — the page element is already in the DOM.
+      utLoadTasks();
+
+      async function utLoadTasks() {
+        document.getElementById('utTaskList').innerHTML =
+          `<div class="state-box"><div class="spinner"></div><p>Loading tasks…</p></div>`;
+
+        const data = await api('/api/user/tasks');
+        if (!data?.success) {
+          document.getElementById('utTaskList').innerHTML =
+            `<div class="state-box"><i class="ri-error-warning-line"></i><p>Could not load tasks.</p></div>`;
+          return;
+        }
+
+        _utTasks = data.tasks || [];
+        document.getElementById('utTcAvailable').textContent = _utTasks.filter(t => t.canSubmit).length;
+
+        // Build category chips
+        const cats = ['all', ...new Set(_utTasks.map(t => t.category).filter(Boolean))];
+        document.getElementById('utChipRow').innerHTML = cats.map((c, i) =>
+          `<div class="chip ${i===0?'active':''}" onclick="utFilterCat('${c}',this)">${c==='all'?'All':c}</div>`
+        ).join('');
+
+        utRenderTasks();
+      }
+
+      function utFilterCat(cat, el) {
+        _utActiveCat = cat;
+        document.querySelectorAll('#utChipRow .chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        utRenderTasks();
+      }
+
+      function utRenderTasks() {
+        const list  = document.getElementById('utTaskList');
+        const tasks = _utActiveCat === 'all' ? _utTasks : _utTasks.filter(t => t.category === _utActiveCat);
+
+        if (!tasks.length) {
+          list.innerHTML = `<div class="state-box"><i class="ri-task-line"></i><p>No tasks in this category.</p></div>`;
+          return;
+        }
+
+        list.innerHTML = tasks.map(t => {
+          // Use platform icon/color for Social tasks
+          const pm    = t.category === 'Social' && t.platform && UT_PLATFORM[t.platform] ? UT_PLATFORM[t.platform] : null;
+          const icon  = pm ? pm.icon  : (UT_CAT_ICONS[t.category]  || 'ri-task-line');
+          const color = pm ? pm.color : (UT_CAT_COLORS[t.category] || '#4318ff');
+
+          // Category label — show platform name for Social
+          const catLabel = t.category === 'Social' && pm
+            ? `<span style="display:inline-flex;align-items:center;gap:3px;font-weight:700;color:${pm.color};"><i class="${pm.icon}"></i> ${pm.label}</span>`
+            : t.category;
+
+          let statusBar = '';
+          if (t.userStatus === 'pending') {
+            statusBar = `<div class="tc-status-bar pending"><i class="ri-time-line"></i> Submitted — awaiting review</div>`;
+          } else if (t.userStatus === 'approved') {
+            statusBar = `<div class="tc-status-bar approved"><i class="ri-checkbox-circle-line"></i> Approved! 🪙${Number(t.points).toLocaleString()} FEX credited</div>`;
+          } else if (t.userStatus === 'declined') {
+            statusBar = `<div class="tc-status-bar declined"><i class="ri-close-circle-line"></i> Declined — you may re-submit</div>`;
+          }
+
+          const maxTag = t.maxCompletions > 0
+            ? `<div class="tc-meta-tag"><i class="ri-group-line"></i>${t.completedCount}/${t.maxCompletions} spots</div>` : '';
+          const expTag = t.expiresAt
+            ? `<div class="tc-meta-tag"><i class="ri-time-line"></i>Ends ${new Date(t.expiresAt).toLocaleDateString()}</div>` : '';
+
+          // FIX: canSubmit already accounts for declined on the server,
+          // but also check locally in case of stale data
+          const canSubmit = t.canSubmit || t.userStatus === 'declined';
+
+          let proofInput = '';
+          if (t.proofType === 'screenshot') {
+            proofInput = `<label>Screenshot URL (upload to imgbb.com and paste link)</label>
+              <input type="url" id="proof_${t._id}" placeholder="https://i.ibb.co/…">`;
+          } else if (t.proofType === 'url') {
+            proofInput = `<label>Link / URL</label>
+              <input type="url" id="proof_${t._id}" placeholder="https://…">`;
+          } else if (t.proofType === 'text') {
+            proofInput = `<label>Your response</label>
+              <textarea id="proof_${t._id}" rows="3" placeholder="Type your answer here…"></textarea>`;
+          }
+
+          return `
+          <div class="task-card ${t.userStatus && t.userStatus !== 'declined' ? 'done' : ''}">
+            <div class="tc-top">
+              <div class="tc-icon-wrap" style="background:${color}22;color:${color};">
+                <i class="${icon}"></i>
+              </div>
+              <div class="tc-info">
+                <div class="tc-title">${t.title}</div>
+                <div class="tc-cat">${catLabel}</div>
+              </div>
+            </div>
+
+            <div class="tc-reward"><i class="ri-coin-line"></i> 🪙${Number(t.points).toLocaleString()} FEX</div>
+
+            ${t.taskLink ? `<a href="${t.taskLink}" target="_blank" rel="noopener"
+              style="display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;">
+              <i class="ri-external-link-line"></i> Go to Task
+            </a>` : ''}
+
+            <div class="tc-desc">${t.description}</div>
+
+            ${t.instructions ? `<div class="instructions-box"><strong>How to complete:</strong><br>${t.instructions.replace(/\n/g,'<br>')}</div>` : ''}
+
+            <div class="tc-meta">
+              ${maxTag}${expTag}
+              <div class="tc-meta-tag"><i class="ri-file-list-line"></i>${t.proofType === 'none' ? 'No proof needed' : t.proofType}</div>
+            </div>
+
+            ${statusBar}
+
+            ${canSubmit ? `
+              <div class="submit-area" id="submitArea_${t._id}">
+                ${proofInput}
+                <div style="margin-top:10px;">
+                  <button class="btn btn-primary" id="submitBtn_${t._id}" onclick="utSubmitTask('${t._id}','${t.proofType}')">
+                    <i class="ri-check-line"></i> ${t.userStatus === 'declined' ? 'Re-submit Task' : 'Submit Task'}
+                  </button>
+                </div>
+              </div>` : ''}
+
+            ${t.maxReached && !t.userStatus ? `<div style="text-align:center;font-size:12px;color:var(--text3);padding:8px;">This task is fully claimed</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+
+      async function utSubmitTask(taskId, proofType) {
+        const btn = document.getElementById(`submitBtn_${taskId}`);
+        let proof = '';
+
+        if (proofType !== 'none') {
+          const inp = document.getElementById(`proof_${taskId}`);
+          proof = inp?.value?.trim() || '';
+          if (!proof) {
+            utShowToast('Please provide proof before submitting', 'error');
+            inp?.focus();
+            return;
+          }
+          if ((proofType === 'screenshot' || proofType === 'url') && !proof.startsWith('http')) {
+            utShowToast('Please enter a valid URL starting with https://', 'error');
+            inp?.focus();
+            return;
+          }
+        }
+
+        btn.disabled  = true;
+        btn.innerHTML = '<i class="ri-loader-line"></i> Submitting…';
+
+        const res = await api(`/api/user/tasks/${taskId}/submit`, {
+          method: 'POST',
+          body: JSON.stringify({ proof })
+        });
+
+        if (res?.success) {
+          utShowToast(res.message || 'Task submitted!', 'success');
+          utLoadTasks();
+        } else {
+          utShowToast(res?.error || 'Error submitting task', 'error');
+          btn.disabled  = false;
+          btn.innerHTML = '<i class="ri-check-line"></i> Submit Task';
+        }
+      }
+
+      // ── HISTORY ─────────────────────────────────────────────
+      async function utLoadHistory() {
+        document.getElementById('utHistoryList').innerHTML =
+          `<div class="state-box"><div class="spinner"></div><p>Loading…</p></div>`;
+
+        const data = await api('/api/user/tasks/my-submissions');
+        _utHistory = data?.submissions || [];
+        document.getElementById('utTcHistory').textContent = _utHistory.length;
+
+        if (!_utHistory.length) {
+          document.getElementById('utHistoryList').innerHTML =
+            `<div class="state-box"><i class="ri-history-line"></i><p>No submissions yet. Complete a task to get started!</p></div>`;
+          return;
+        }
+
+        document.getElementById('utHistoryList').innerHTML = _utHistory.map(s => {
+          const date = s.createdAt
+            ? new Date(s.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+          const pts        = s.points || s.taskId?.points || 0;
+          const isApproved = s.status === 'approved';
+          const isDeclined = s.status === 'declined';
+
+          // Platform label for history
+          const histPm  = s.taskId?.category === 'Social' && s.taskId?.platform && UT_PLATFORM[s.taskId.platform]
+            ? UT_PLATFORM[s.taskId.platform] : null;
+          const catDisp = histPm
+            ? `<i class="${histPm.icon}" style="color:${histPm.color};margin-right:2px;"></i>${histPm.label}`
+            : (s.taskId?.category || '');
+
+          return `
+          <div class="history-item">
+            <div class="hi-header">
+              <div class="hi-title">${s.taskId?.title || 'Task'}</div>
+              <span class="badge ${s.status}">
+                ${s.status === 'approved' ? '🟢' : s.status === 'pending' ? '🟡' : '🔴'}
+                ${s.status.charAt(0).toUpperCase() + s.status.slice(1)}
+              </span>
+            </div>
+            <div class="hi-sub">
+              <span class="tc-meta-tag" style="font-size:11px;">${catDisp}</span>
+              <span style="color:var(--text3);font-size:11px;">${date}</span>
+              ${isApproved ? `<span class="hi-points credit">+🪙${Number(pts).toLocaleString()} FEX</span>` : ''}
+              ${isDeclined && s.penalty > 0 ? `<span class="hi-points debit">-🪙${Number(s.penalty).toLocaleString()} FEX</span>` : ''}
+            </div>
+            ${s.adminNote ? `<div class="hi-note"><i class="ri-information-line"></i> ${s.adminNote}</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+
+      // ── TOAST ────────────────────────────────────────────────
+      function utShowToast(msg, type = 'success') {
+        const wrap = document.getElementById('notifWrap');
+        if (!wrap) return;
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.innerHTML = `<i class="ri-${type==='success'?'check-line':type==='error'?'close-line':'information-line'}"></i><span>${msg}</span>`;
+        wrap.appendChild(t);
+        setTimeout(() => {
+          t.style.opacity    = '0';
+          t.style.transition = 'opacity .3s';
+          setTimeout(() => t.remove(), 300);
+        }, 4000);
+      }

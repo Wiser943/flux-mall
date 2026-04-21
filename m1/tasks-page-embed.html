@@ -1,0 +1,394 @@
+      <div class="notifications" id="notifWrap"></div>
+      
+      <!--TASK PAGE-->
+      <div class="page" id="tasks">
+        
+        <style>
+          /* EARN BANNER */
+          .earn-banner {
+            background: linear-gradient(135deg, #4318ff, #868cff);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            margin-bottom: 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+          }
+          .earn-banner .left h2 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+          .earn-banner .left p  { font-size: 12px; opacity: .85; line-height: 1.5; }
+          .earn-banner .right   { font-size: 40px; flex-shrink: 0; }
+
+          /* FILTER CHIPS */
+          .chip-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+          .chip-row::-webkit-scrollbar { display: none; }
+          .chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--card); color: var(--text2); white-space: nowrap; transition: all .15s; }
+          .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+          /* TASK CARD */
+          .task-card { background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); transition: transform .15s; }
+          .task-card:active { transform: scale(.99); }
+          .task-card.done { opacity: .7; }
+          .tc-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+          .tc-icon-wrap { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+          .tc-info { flex: 1; min-width: 0; }
+          .tc-title { font-size: 14px; font-weight: 800; color: var(--text1); margin-bottom: 2px; }
+          .tc-cat { font-size: 11px; color: var(--text3); }
+          .tc-desc { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 12px; }
+          .tc-reward { display: inline-flex; align-items: center; gap: 5px; background: var(--primary-soft); color: var(--primary); border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+          .tc-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+          .tc-meta-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text3); background: var(--bg); border-radius: 6px; padding: 3px 8px; }
+          .tc-status-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-size: 12px; font-weight: 600; }
+          .tc-status-bar.pending  { background: var(--warning-soft); color: var(--warning); }
+          .tc-status-bar.approved { background: var(--success-soft); color: var(--success); }
+          .tc-status-bar.declined { background: var(--danger-soft);  color: var(--danger);  }
+
+          /* SUBMIT FORM */
+          .submit-area { border-top: 1px solid var(--border); padding-top: 12px; }
+          .submit-area label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); display: block; margin-bottom: 6px; }
+          .submit-area input, .submit-area textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--text1); background: var(--bg); outline: none; transition: border .15s; font-family: inherit; resize: vertical; }
+          .submit-area input:focus, .submit-area textarea:focus { border-color: var(--primary); background: #fff; }
+          .instructions-box { background: var(--bg); border-left: 3px solid var(--primary); border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 12px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
+
+          /* HISTORY ITEM */
+          .history-item { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 12px 14px; margin-bottom: 8px; box-shadow: var(--shadow-sm); }
+          .hi-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+          .hi-title  { font-size: 13px; font-weight: 700; color: var(--text1); }
+          .hi-date   { font-size: 11px; color: var(--text3); }
+          .hi-sub    { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+          .hi-note   { font-size: 11px; color: var(--danger); margin-top: 4px; }
+          .hi-points { font-weight: 700; font-size: 13px; }
+          .hi-points.credit { color: var(--success); }
+          .hi-points.debit  { color: var(--danger);  }
+
+          /* BADGES */
+          .badge          { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+          .badge.pending  { background: var(--warning-soft); color: var(--warning); }
+          .badge.approved { background: var(--success-soft); color: var(--success); }
+          .badge.declined { background: var(--danger-soft);  color: var(--danger);  }
+
+          /* EMPTY / LOADING */
+          .state-box   { text-align: center; padding: 50px 20px; color: var(--text3); }
+          .state-box i { font-size: 36px; opacity: .4; display: block; margin-bottom: 10px; }
+          .state-box p { font-size: 13px; }
+          .spinner { width: 26px; height: 26px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 10px; }
+          @keyframes spin { to { transform: rotate(360deg) } }
+
+          /* TOAST */
+          .toast { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); font-size: 13px; display: flex; align-items: center; gap: 8px; min-width: 240px; animation: utSlideIn .2s ease; }
+          @keyframes utSlideIn { from { opacity: 0; transform: translateX(20px) } to { opacity: 1; transform: translateX(0) } }
+          .toast.success { border-left: 4px solid var(--success); }
+          .toast.error   { border-left: 4px solid var(--danger);  }
+          .toast.info    { border-left: 4px solid var(--primary); }
+        </style>
+        
+        <!-- HEADER -->
+        <div class="flex-between mb-6">
+          <div>
+            <div class="section-title">Tasks</div>
+            <div class="section-sub">Complete tasks · Earn FEX coins instantly</div>
+          </div>
+        </div>
+        
+        <!-- EARN BANNER -->
+        <div class="earn-banner">
+          <div class="left">
+            <h2>Earn FEX by doing tasks</h2>
+            <p>Complete simple tasks and get FEX coins credited to your wallet after review.</p>
+          </div>
+          <div class="right">🎯</div>
+        </div>
+        
+        <div class="investment-header">
+          <div class="main-tabs">
+            <button class="tab-btn active" onclick="utSwitchTab('available',this)">
+              <i class="ri-layout-grid-line"></i> Available
+              <span class="tab-count" id="utTcAvailable">0</span>
+            </button>
+            <button class="tab-btn" onclick="utSwitchTab('history',this)">
+              <i class="ri-history-line"></i> History
+              <span class="tab-count" id="utTcHistory">0</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- AVAILABLE TASKS -->
+        <div class="tab-panel active" id="ut-panel-available">
+          <div class="chip-row" id="utChipRow">
+            <div class="chip active" onclick="utFilterCat('all',this)">All</div>
+          </div>
+          <div id="utTaskList">
+            <div class="state-box"><div class="spinner"></div><p>Loading tasks…</p></div>
+          </div>
+        </div>
+        
+        <!-- HISTORY -->
+        <div class="tab-panel" id="ut-panel-history">
+          <div id="utHistoryList">
+            <div class="state-box"><div class="spinner"></div><p>Loading…</p></div>
+          </div>
+        </div>
+        
+      </div><!-- /page -->
+      
+      <script>
+      // ══════════════════════════════════════════════════════════
+      // FLUX MALL — User Task Page (embedded)
+      // ══════════════════════════════════════════════════════════
+
+      const UT_CAT_ICONS  = { Social:'ri-share-line', Survey:'ri-questionnaire-line', Watch:'ri-play-circle-line', Download:'ri-download-line', Review:'ri-star-line', General:'ri-task-line' };
+      const UT_CAT_COLORS = { Social:'#4299e1', Survey:'#9f7aea', Watch:'#ee5d50', Download:'#05cd99', Review:'#f6ad55', General:'#4318ff' };
+      const UT_PLATFORM   = {
+        X:         { icon:'ri-twitter-x-line',  color:'#000000', label:'X (Twitter)' },
+        Facebook:  { icon:'ri-facebook-fill',    color:'#1877f2', label:'Facebook'    },
+        Instagram: { icon:'ri-instagram-line',   color:'#e1306c', label:'Instagram'   },
+        GitHub:    { icon:'ri-github-fill',      color:'#24292e', label:'GitHub'      },
+        YouTube:   { icon:'ri-youtube-line',     color:'#ff0000', label:'YouTube'     },
+        Custom:    { icon:'ri-global-line',      color:'#4318ff', label:'Custom'      },
+      };
+
+      let _utTasks     = [];
+      let _utHistory   = [];
+      let _utActiveCat = 'all';
+
+      // ── TABS ────────────────────────────────────────────────
+      function utSwitchTab(name, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('ut-panel-' + name).classList.add('active');
+        if (name === 'history') utLoadHistory();
+      }
+
+      // ── INIT ────────────────────────────────────────────────
+      // FIX: DOMContentLoaded already fired in a single-page app.
+      // Call directly — the page element is already in the DOM.
+      utLoadTasks();
+
+      async function utLoadTasks() {
+        document.getElementById('utTaskList').innerHTML =
+          `<div class="state-box"><div class="spinner"></div><p>Loading tasks…</p></div>`;
+
+        const data = await api('/api/user/tasks');
+        if (!data?.success) {
+          document.getElementById('utTaskList').innerHTML =
+            `<div class="state-box"><i class="ri-error-warning-line"></i><p>Could not load tasks.</p></div>`;
+          return;
+        }
+
+        _utTasks = data.tasks || [];
+        document.getElementById('utTcAvailable').textContent = _utTasks.filter(t => t.canSubmit).length;
+
+        // Build category chips
+        const cats = ['all', ...new Set(_utTasks.map(t => t.category).filter(Boolean))];
+        document.getElementById('utChipRow').innerHTML = cats.map((c, i) =>
+          `<div class="chip ${i===0?'active':''}" onclick="utFilterCat('${c}',this)">${c==='all'?'All':c}</div>`
+        ).join('');
+
+        utRenderTasks();
+      }
+
+      function utFilterCat(cat, el) {
+        _utActiveCat = cat;
+        document.querySelectorAll('#utChipRow .chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        utRenderTasks();
+      }
+
+      function utRenderTasks() {
+        const list  = document.getElementById('utTaskList');
+        const tasks = _utActiveCat === 'all' ? _utTasks : _utTasks.filter(t => t.category === _utActiveCat);
+
+        if (!tasks.length) {
+          list.innerHTML = `<div class="state-box"><i class="ri-task-line"></i><p>No tasks in this category.</p></div>`;
+          return;
+        }
+
+        list.innerHTML = tasks.map(t => {
+          // Use platform icon/color for Social tasks
+          const pm    = t.category === 'Social' && t.platform && UT_PLATFORM[t.platform] ? UT_PLATFORM[t.platform] : null;
+          const icon  = pm ? pm.icon  : (UT_CAT_ICONS[t.category]  || 'ri-task-line');
+          const color = pm ? pm.color : (UT_CAT_COLORS[t.category] || '#4318ff');
+
+          // Category label — show platform name for Social
+          const catLabel = t.category === 'Social' && pm
+            ? `<span style="display:inline-flex;align-items:center;gap:3px;font-weight:700;color:${pm.color};"><i class="${pm.icon}"></i> ${pm.label}</span>`
+            : t.category;
+
+          let statusBar = '';
+          if (t.userStatus === 'pending') {
+            statusBar = `<div class="tc-status-bar pending"><i class="ri-time-line"></i> Submitted — awaiting review</div>`;
+          } else if (t.userStatus === 'approved') {
+            statusBar = `<div class="tc-status-bar approved"><i class="ri-checkbox-circle-line"></i> Approved! 🪙${Number(t.points).toLocaleString()} FEX credited</div>`;
+          } else if (t.userStatus === 'declined') {
+            statusBar = `<div class="tc-status-bar declined"><i class="ri-close-circle-line"></i> Declined — you may re-submit</div>`;
+          }
+
+          const maxTag = t.maxCompletions > 0
+            ? `<div class="tc-meta-tag"><i class="ri-group-line"></i>${t.completedCount}/${t.maxCompletions} spots</div>` : '';
+          const expTag = t.expiresAt
+            ? `<div class="tc-meta-tag"><i class="ri-time-line"></i>Ends ${new Date(t.expiresAt).toLocaleDateString()}</div>` : '';
+
+          // FIX: canSubmit already accounts for declined on the server,
+          // but also check locally in case of stale data
+          const canSubmit = t.canSubmit || t.userStatus === 'declined';
+
+          let proofInput = '';
+          if (t.proofType === 'screenshot') {
+            proofInput = `<label>Screenshot URL (upload to imgbb.com and paste link)</label>
+              <input type="url" id="proof_${t._id}" placeholder="https://i.ibb.co/…">`;
+          } else if (t.proofType === 'url') {
+            proofInput = `<label>Link / URL</label>
+              <input type="url" id="proof_${t._id}" placeholder="https://…">`;
+          } else if (t.proofType === 'text') {
+            proofInput = `<label>Your response</label>
+              <textarea id="proof_${t._id}" rows="3" placeholder="Type your answer here…"></textarea>`;
+          }
+
+          return `
+          <div class="task-card ${t.userStatus && t.userStatus !== 'declined' ? 'done' : ''}">
+            <div class="tc-top">
+              <div class="tc-icon-wrap" style="background:${color}22;color:${color};">
+                <i class="${icon}"></i>
+              </div>
+              <div class="tc-info">
+                <div class="tc-title">${t.title}</div>
+                <div class="tc-cat">${catLabel}</div>
+              </div>
+            </div>
+
+            <div class="tc-reward"><i class="ri-coin-line"></i> 🪙${Number(t.points).toLocaleString()} FEX</div>
+
+            ${t.taskLink ? `<a href="${t.taskLink}" target="_blank" rel="noopener"
+              style="display:inline-flex;align-items:center;gap:6px;background:var(--primary);color:#fff;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;text-decoration:none;margin-bottom:10px;">
+              <i class="ri-external-link-line"></i> Go to Task
+            </a>` : ''}
+
+            <div class="tc-desc">${t.description}</div>
+
+            ${t.instructions ? `<div class="instructions-box"><strong>How to complete:</strong><br>${t.instructions.replace(/\n/g,'<br>')}</div>` : ''}
+
+            <div class="tc-meta">
+              ${maxTag}${expTag}
+              <div class="tc-meta-tag"><i class="ri-file-list-line"></i>${t.proofType === 'none' ? 'No proof needed' : t.proofType}</div>
+            </div>
+
+            ${statusBar}
+
+            ${canSubmit ? `
+              <div class="submit-area" id="submitArea_${t._id}">
+                ${proofInput}
+                <div style="margin-top:10px;">
+                  <button class="btn btn-primary" id="submitBtn_${t._id}" onclick="utSubmitTask('${t._id}','${t.proofType}')">
+                    <i class="ri-check-line"></i> ${t.userStatus === 'declined' ? 'Re-submit Task' : 'Submit Task'}
+                  </button>
+                </div>
+              </div>` : ''}
+
+            ${t.maxReached && !t.userStatus ? `<div style="text-align:center;font-size:12px;color:var(--text3);padding:8px;">This task is fully claimed</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+
+      async function utSubmitTask(taskId, proofType) {
+        const btn = document.getElementById(`submitBtn_${taskId}`);
+        let proof = '';
+
+        if (proofType !== 'none') {
+          const inp = document.getElementById(`proof_${taskId}`);
+          proof = inp?.value?.trim() || '';
+          if (!proof) {
+            utShowToast('Please provide proof before submitting', 'error');
+            inp?.focus();
+            return;
+          }
+          if ((proofType === 'screenshot' || proofType === 'url') && !proof.startsWith('http')) {
+            utShowToast('Please enter a valid URL starting with https://', 'error');
+            inp?.focus();
+            return;
+          }
+        }
+
+        btn.disabled  = true;
+        btn.innerHTML = '<i class="ri-loader-line"></i> Submitting…';
+
+        const res = await api(`/api/user/tasks/${taskId}/submit`, {
+          method: 'POST',
+          body: JSON.stringify({ proof })
+        });
+
+        if (res?.success) {
+          utShowToast(res.message || 'Task submitted!', 'success');
+          utLoadTasks();
+        } else {
+          utShowToast(res?.error || 'Error submitting task', 'error');
+          btn.disabled  = false;
+          btn.innerHTML = '<i class="ri-check-line"></i> Submit Task';
+        }
+      }
+
+      // ── HISTORY ─────────────────────────────────────────────
+      async function utLoadHistory() {
+        document.getElementById('utHistoryList').innerHTML =
+          `<div class="state-box"><div class="spinner"></div><p>Loading…</p></div>`;
+
+        const data = await api('/api/user/tasks/my-submissions');
+        _utHistory = data?.submissions || [];
+        document.getElementById('utTcHistory').textContent = _utHistory.length;
+
+        if (!_utHistory.length) {
+          document.getElementById('utHistoryList').innerHTML =
+            `<div class="state-box"><i class="ri-history-line"></i><p>No submissions yet. Complete a task to get started!</p></div>`;
+          return;
+        }
+
+        document.getElementById('utHistoryList').innerHTML = _utHistory.map(s => {
+          const date = s.createdAt
+            ? new Date(s.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+          const pts        = s.points || s.taskId?.points || 0;
+          const isApproved = s.status === 'approved';
+          const isDeclined = s.status === 'declined';
+
+          // Platform label for history
+          const histPm  = s.taskId?.category === 'Social' && s.taskId?.platform && UT_PLATFORM[s.taskId.platform]
+            ? UT_PLATFORM[s.taskId.platform] : null;
+          const catDisp = histPm
+            ? `<i class="${histPm.icon}" style="color:${histPm.color};margin-right:2px;"></i>${histPm.label}`
+            : (s.taskId?.category || '');
+
+          return `
+          <div class="history-item">
+            <div class="hi-header">
+              <div class="hi-title">${s.taskId?.title || 'Task'}</div>
+              <span class="badge ${s.status}">
+                ${s.status === 'approved' ? '🟢' : s.status === 'pending' ? '🟡' : '🔴'}
+                ${s.status.charAt(0).toUpperCase() + s.status.slice(1)}
+              </span>
+            </div>
+            <div class="hi-sub">
+              <span class="tc-meta-tag" style="font-size:11px;">${catDisp}</span>
+              <span style="color:var(--text3);font-size:11px;">${date}</span>
+              ${isApproved ? `<span class="hi-points credit">+🪙${Number(pts).toLocaleString()} FEX</span>` : ''}
+              ${isDeclined && s.penalty > 0 ? `<span class="hi-points debit">-🪙${Number(s.penalty).toLocaleString()} FEX</span>` : ''}
+            </div>
+            ${s.adminNote ? `<div class="hi-note"><i class="ri-information-line"></i> ${s.adminNote}</div>` : ''}
+          </div>`;
+        }).join('');
+      }
+
+      // ── TOAST ────────────────────────────────────────────────
+      function utShowToast(msg, type = 'success') {
+        const wrap = document.getElementById('notifWrap');
+        if (!wrap) return;
+        const t = document.createElement('div');
+        t.className = `toast ${type}`;
+        t.innerHTML = `<i class="ri-${type==='success'?'check-line':type==='error'?'close-line':'information-line'}"></i><span>${msg}</span>`;
+        wrap.appendChild(t);
+        setTimeout(() => {
+          t.style.opacity    = '0';
+          t.style.transition = 'opacity .3s';
+          setTimeout(() => t.remove(), 300);
+        }, 4000);
+      }
+      </script>
