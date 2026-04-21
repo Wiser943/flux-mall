@@ -1154,11 +1154,12 @@ function openAddUser() {
   });
 }
 
-
 function openEditModal(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  showConfirm(`
+  showConfirm({
+    title: 'Edit User',
+    msg: `
     <div class="modal-title">Edit User</div>
     <div class="modal-sub">Update details for <strong>${u.name}</strong></div>
     <div class="form-row">
@@ -1184,45 +1185,50 @@ function openEditModal(id) {
     <div class="modal-btns">
       <button class="modal-btn-primary" onclick="submitEdit('${u.id}')">Save Changes</button>
       <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>`);
-}
-
-function submitEdit(id) {
+    </div>`,
+    type: 'warning',
+    yesLabel: 'Save changes',
+    onYes: async () => {
+    
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
   
-  const name = document.getElementById('e-name')?.value.trim() || u.name;
-  const email = document.getElementById('e-email')?.value.trim() || u.email;
-  const phone = document.getElementById('e-phone')?.value.trim() || u.phone;
-  const status = document.getElementById('e-status')?.value;
-  const active = document.getElementById('e-active')?.value === '1';
-  
-  const apiStatus = status === 'banned' ? 'Banned' : 'Active';
-  
-  api(`/api/admin/users/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({
-      username: name,
-      email,
-      phone,
-      status: apiStatus,
-      emailVerified: status === 'verified'
-    })
-  }).then(data => {
-    if (data?.success) {
-      u.name = name;
-      u.email = email;
-      u.phone = phone;
-      u.status = status;
-      u.active = active;
-      closeModal();
-      updateUMStats();
-      applyFilters();
-      if (activeUserId === id) openDetail(id);
-      showToast('User updated', 'success');
-    } else {
-      showToast(data?.error || 'Failed to update user.', 'error');
-    }
+      const name = document.getElementById('e-name')?.value.trim() || u.name;
+      const email = document.getElementById('e-email')?.value.trim() || u.email;
+      const phone = document.getElementById('e-phone')?.value.trim() || u.phone;
+      const status = document.getElementById('e-status')?.value;
+      const active = document.getElementById('e-active')?.value === '1';
+      
+      const apiStatus = status === 'banned' ? 'Banned' : 'Active';
+      
+      api(`/api/admin/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          username: name,
+          email,
+          phone,
+          status: apiStatus,
+          emailVerified: status === 'verified'
+        })
+      }).then(data => {
+        if (data?.success) {
+          u.name = name;
+          u.email = email;
+          u.phone = phone;
+          u.status = status;
+          u.active = active;
+          closeModal();
+          updateUMStats();
+          applyFilters();
+          if (activeUserId === id) openDetail(id);
+          showToast('User updated', 'success');
+        } else {
+          showToast(data?.error || 'Failed to update user.', 'error');
+        }
+      });
+    },
+    icon: false
+    
   });
 }
 
