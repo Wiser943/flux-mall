@@ -1518,7 +1518,6 @@ select.form-input {
     align-items: flex-start;
   }
   
-  
   .page-header-actions {
     width: 100%;
   }
@@ -1537,22 +1536,6 @@ select.form-input {
     display: none;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 .bottom-container {
@@ -1688,7 +1671,6 @@ select.form-input {
   }
 }
 
-.modal-content,
 .confirm-sheet {
   background: var(--card);
   width: 100%;
@@ -1718,7 +1700,8 @@ select.form-input {
   
   .modal-content,
   .confirm-sheet {
-    max-width: 420px;max-height: 600px;
+    max-width: 420px;
+    max-height: 600px;
     border-radius: 18px;
     padding: 28px 28px 28px;
     transform: scale(0.88) translateY(10px);
