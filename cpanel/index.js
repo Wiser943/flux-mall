@@ -3854,7 +3854,7 @@ window.viewDepositDetail = (i) => {
   const naira = (fex * 0.7).toLocaleString();
   showConfirm({
     title: '<h3>Deposit Detail</h3>',
-    msg: `   <div class="dp-section">Account Info</div>
+    msg: `   <div class="dp-section">Transaction Info</div>
     <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${userName}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(i.status)}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Amount (FEX)</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
@@ -3864,15 +3864,10 @@ window.viewDepositDetail = (i) => {
     <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</span>
     </div>`,
     type: 'warning',
-    yesLabel: 'Delete',
-    onYes: async () => {
-      const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
-      if (data?.success) await loadAdminMessages(activeSessionId);
-    },
+    yesLabel: 'Approve',
+    onYes: () => approveDeposit(i._id),
     icon: false
   });
-  
-  /*${i.status === 'pending' ? `<button class="btn btn-success" onclick="approveDeposit('${i._id}','','${i.amount}','user');closeModal()"><i class="ri-check-line"></i> Approve</button>` : ''}*/
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -4031,71 +4026,23 @@ window.viewWithdrawalDetail = (w) => {
   const net = Number(w.netAmount || fex * 0.7);
   const rate = w.fexRate || 0.7;
   showConfirm({
-    title: '<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>',
-    msg: `    <div class="modal-body">
-      <div class="modal-row">
-        <div class="info-card">
-          <label>User</label>
-          <div class="val">${w.username || '—'}</div>
-        </div>
-        <div class="info-card">
-          <label>Status</label>
-          <div class="val">${statusBadge(w.status)}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>FEX Amount</label>
-          <div class="val">🪙 ${fex.toLocaleString()}</div>
-        </div>
-        <div class="info-card">
-          <label>Naira Payout</label>
-          <div class="val">₦${net.toLocaleString()}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>Rate</label>
-          <div class="val">₦${rate}/FEX</div>
-        </div>
-        <div class="info-card">
-          <label>Fee</label>
-          <div class="val">₦${Number(w.fee || 0).toLocaleString()}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card" style="flex:1">
-          <label>Bank</label>
-          <div class="val">${w.bankDetails?.bankName || '—'}</div>
-        </div>
-        <div class="info-card" style="flex:1">
-          <label>Account</label>
-          <div class="val" style="font-family:monospace">${w.bankDetails?.accountNumber || '—'}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card" style="flex:1">
-          <label>Account Name</label>
-          <div class="val">${w.bankDetails?.accountName || '—'}</div>
-        </div>
-        <div class="info-card">
-          <label>Date</label>
-          <div class="val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</div>
-        </div>
-      </div>
-      </div>
-          <div class="modal-footer">
-      ${w.status === 'pending' ? `<button class="btn btn-success" onclick="approveWithdrawal('${w._id}');closeModal()"><i class="ri-check-line"></i> Mark Paid</button>` : ''}
-    </div>`,
+    title: '<h3>Withdrawal Detail</h3>',
+    msg: `<div class="dp-section">Transaction Info</div>
+    <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${w.username || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(w.status)}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">FEX Amount</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Naira Payout</span><span class="dp-info-val">₦${net.toLocaleString()}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Rate</span><span class="dp-info-val">>₦${rate}/FEX</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Fee</span><span class="dp-info-val">₦${Number(w.fee || 0).toLocaleString()}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Bank</span><span class="dp-info-val">${w.bankDetails?.bankName || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Account</span><span class="dp-info-val">${w.bankDetails?.accountNumber || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Account name</span><span class="dp-info-val">${w.bankDetails?.accountName || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</span></div>`,
     type: 'warning',
-    yesLabel: 'Delete',
-    onYes: async () => {
-      const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
-      if (data?.success) await loadAdminMessages(activeSessionId);
-    },
+    yesLabel: 'Mark Paid',
+    onYes: () => approveWithdrawal(w._id),
     icon: false
   });
-  
 };
 
 
