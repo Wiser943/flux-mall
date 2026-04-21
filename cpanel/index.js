@@ -15,7 +15,8 @@ let originalTitle = document.title;
 
 // ── User Management Table ──────────────────────────────────
 const COLORS = ['#4CAF7D', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899',
-  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac', '#4318ff','#05cd99','#ee5d50','#f6ad55','#4299e1','#9f7aea','#ed64a6','#38b2ac'];
+  '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac'
+];
 
 const PER_PAGE = 10;
 
@@ -281,7 +282,7 @@ function switchPageByHash() {
   if (targetId === 'chats') initChatPage();
   if (targetId === 'shares') refreshAll();
   if (targetId === 'tasks') refreshAll();
-
+  
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -5041,88 +5042,94 @@ document.head.appendChild(s2);
 // ══════════════════════════════════════════════════════════
 
 
-const CAT_ICONS = { Social:'ri-share-line', Survey:'ri-questionnaire-line', Watch:'ri-play-circle-line', Download:'ri-download-line', Review:'ri-star-line', General:'ri-task-line' };
+const CAT_ICONS = { Social: 'ri-share-line', Survey: 'ri-questionnaire-line', Watch: 'ri-play-circle-line', Download: 'ri-download-line', Review: 'ri-star-line', General: 'ri-task-line' };
 const PLATFORM_META = {
-  X:         { icon:'ri-twitter-x-line',    color:'#000000', label:'X (Twitter)' },
-  Facebook:  { icon:'ri-facebook-fill',      color:'#1877f2', label:'Facebook'    },
-  Instagram: { icon:'ri-instagram-line',     color:'#e1306c', label:'Instagram'   },
-  GitHub:    { icon:'ri-github-fill',        color:'#24292e', label:'GitHub'      },
-  YouTube:   { icon:'ri-youtube-line',       color:'#ff0000', label:'YouTube'     },
-  Custom:    { icon:'ri-global-line',        color:'#4318ff', label:'Custom'      },
+  X: { icon: 'ri-twitter-x-line', color: '#000000', label: 'X (Twitter)' },
+  Facebook: { icon: 'ri-facebook-fill', color: '#1877f2', label: 'Facebook' },
+  Instagram: { icon: 'ri-instagram-line', color: '#e1306c', label: 'Instagram' },
+  GitHub: { icon: 'ri-github-fill', color: '#24292e', label: 'GitHub' },
+  YouTube: { icon: 'ri-youtube-line', color: '#ff0000', label: 'YouTube' },
+  Custom: { icon: 'ri-global-line', color: '#4318ff', label: 'Custom' },
 };
-const CAT_COLORS = { Social:'#4299e1', Survey:'#9f7aea', Watch:'#ee5d50', Download:'#05cd99', Review:'#f6ad55', General:'#4318ff' };
+const CAT_COLORS = { Social: '#4299e1', Survey: '#9f7aea', Watch: '#ee5d50', Download: '#05cd99', Review: '#f6ad55', General: '#4318ff' };
 
 let _atTasks = [];
-let _atSubs  = [];
+let _atSubs = [];
 let _atSubFiltered = [];
 let _atSubPage = 1;
 const AT_PER = 20;
 
-function atAvatarColor(s){ let h=0; for(let i=0;i<(s||'').length;i++) h=s.charCodeAt(i)+((h<<5)-h); return COLORS[Math.abs(h)%COLORS.length]; }
-function atInitials(s){ return (s||'?').slice(0,2).toUpperCase(); }
+function atAvatarColor(s) { let h = 0; for (let i = 0; i < (s || '').length; i++) h = s.charCodeAt(i) + ((h << 5) - h); return COLORS[Math.abs(h) % COLORS.length]; }
+
+function atInitials(s) { return (s || '?').slice(0, 2).toUpperCase(); }
 
 
 
 // ══════════════════════════════════════════════════════════
 // TASK CATALOG
 // ══════════════════════════════════════════════════════════
-async function atLoadTasks(){
+async function atLoadTasks() {
   document.getElementById('atTasksGrid').innerHTML =
     `<div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading…</p></div>`;
-
+  
   const data = await api('/api/admin/tasks');
   _atTasks = data?.tasks || [];
-/*
-  // Stats
-  const totalPending  = _atSubs.filter(s=>s.status==='pending').length;
-  const totalApproved = _atSubs.filter(s=>s.status==='approved').length;
-  const totalDeclined = _atSubs.filter(s=>s.status==='declined').length;
-  atSetText('atStatTasks',    _atTasks.length);
-  atSetText('atStatPending',  totalPending);
-  atSetText('atStatApproved', totalApproved);
-  atSetText('atStatDeclined', totalDeclined);
-  atSetText('atTcCatalog',    _atTasks.length);
+  /*
+    // Stats
+    const totalPending  = _atSubs.filter(s=>s.status==='pending').length;
+    const totalApproved = _atSubs.filter(s=>s.status==='approved').length;
+    const totalDeclined = _atSubs.filter(s=>s.status==='declined').length;
+    atSetText('atStatTasks',    _atTasks.length);
+    atSetText('atStatPending',  totalPending);
+    atSetText('atStatApproved', totalApproved);
+    atSetText('atStatDeclined', totalDeclined);
+    atSetText('atTcCatalog',    _atTasks.length);
 
-  // Populate category filter
-  const cats = [...new Set(_atTasks.map(t=>t.category).filter(Boolean))];
-  const catSel = document.getElementById('atCatFilter');
-  if(catSel){ catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join(''); }
-*/
+    // Populate category filter
+    const cats = [...new Set(_atTasks.map(t=>t.category).filter(Boolean))];
+    const catSel = document.getElementById('atCatFilter');
+    if(catSel){ catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join(''); }
+  */
   atRenderCatalog(_atTasks);
 }
 
 let _atCatalogFiltered = [];
 let _atStatusFilter = 'all';
-let _atCatFilter    = 'all';
+let _atCatFilter = 'all';
 let _atSearchFilter = '';
 
-function atFilterCatalog(term){ _atSearchFilter = term.toLowerCase(); atApplyCatalogFilters(); }
-function atFilterCatalogStatus(v){ _atStatusFilter = v; atApplyCatalogFilters(); }
-function atFilterCatalogCategory(v){ _atCatFilter = v; atApplyCatalogFilters(); }
+function atFilterCatalog(term) { _atSearchFilter = term.toLowerCase();
+  atApplyCatalogFilters(); }
 
-function atApplyCatalogFilters(){
-  _atCatalogFiltered = _atTasks.filter(t=>{
+function atFilterCatalogStatus(v) { _atStatusFilter = v;
+  atApplyCatalogFilters(); }
+
+function atFilterCatalogCategory(v) { _atCatFilter = v;
+  atApplyCatalogFilters(); }
+
+function atApplyCatalogFilters() {
+  _atCatalogFiltered = _atTasks.filter(t => {
     const matchSearch = !_atSearchFilter || t.title.toLowerCase().includes(_atSearchFilter) || t.description.toLowerCase().includes(_atSearchFilter);
-    const matchStatus = _atStatusFilter==='all' || (_atStatusFilter==='active'?t.active:!t.active);
-    const matchCat    = _atCatFilter==='all' || t.category===_atCatFilter;
+    const matchStatus = _atStatusFilter === 'all' || (_atStatusFilter === 'active' ? t.active : !t.active);
+    const matchCat = _atCatFilter === 'all' || t.category === _atCatFilter;
     return matchSearch && matchStatus && matchCat;
   });
   atRenderCatalog(_atCatalogFiltered);
 }
 
-function atRenderCatalog(tasks){
+function atRenderCatalog(tasks) {
   const grid = document.getElementById('atTasksGrid');
-  if(!tasks.length){
+  if (!tasks.length) {
     grid.innerHTML = `<div class="state-box" style="grid-column:1/-1">
       <i class="ri-task-line"></i><p>No tasks found. Click <strong>+ New Task</strong> to create one.</p></div>`;
     return;
   }
-  grid.innerHTML = tasks.map(t=>{
-    const icon  = CAT_ICONS[t.category]  || 'ri-task-line';
+  grid.innerHTML = tasks.map(t => {
+    const icon = CAT_ICONS[t.category] || 'ri-task-line';
     const color = CAT_COLORS[t.category] || '#4318ff';
-    const exp   = t.expiresAt ? `<span style="font-size:11px;color:var(--danger);">⏳ ${new Date(t.expiresAt).toLocaleDateString()}</span>` : '';
+    const exp = t.expiresAt ? `<span style="font-size:11px;color:var(--danger);">⏳ ${new Date(t.expiresAt).toLocaleDateString()}</span>` : '';
     const maxTag = t.maxCompletions > 0 ? `<span style="font-size:11px;color:var(--text3);">Max: ${t.approvedCount}/${t.maxCompletions}</span>` : '';
-
+    
     return `
     <div class="task-card ${t.active?'':'inactive'}">
       <div class="tc-header">
@@ -5310,7 +5317,7 @@ function atGetPlatform(selectId) {
 }
 
 function openCreateTaskModal() {
-showConfirm({
+  showConfirm({
     title: 'New Task',
     msg: ` <div class="form-group">
         <label>Task Title *</label>
@@ -5395,7 +5402,8 @@ showConfirm({
     yesLabel: 'Create Task',
     onYes: () => {
       atSubmitCreateTask()
-    },icon:false
+    },
+    icon: false
   });
 }
 
@@ -5546,14 +5554,21 @@ async function atToggleActive(id, active) {
 }
 
 async function atDeleteTask(id, name) {
-  if (!confirm(`Delete task "${name}"? All submissions will also be deleted.`)) return;
-  const res = await api(`/api/admin/tasks/${id}`, { method: 'DELETE' });
-  if (res?.success) {
-    showToast(`"${name}" deleted`, 'warning');
-    atLoadTasks();
-    atLoadSubmissions();
-  }
-  else showToast(res?.error || 'Error', 'error');
+  showConfirm({
+    title: `Delete task "${name}"?`,
+    msg: 'All submissions will also be deleted.',
+    type: 'danger',
+    yesLabel: 'Delete',
+    onYes: async () => {
+      const res = await api(`/api/admin/tasks/${id}`, { method: 'DELETE' });
+      if (res?.success) {
+        showToast(`"${name}" deleted`, 'warning');
+        atLoadTasks();
+        atLoadSubmissions();
+      }
+      else showToast(res?.error || 'Error', 'error');
+    },
+  });
 }
 
 // ══════════════════════════════════════════════════════════
