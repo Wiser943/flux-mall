@@ -1184,9 +1184,9 @@ function openEditModal(id) {
     type: 'warning',
     yesLabel: 'Save changes',
     onYes: async () => {
-    
-  const u = UM_USERS.find(x => x.id === id);
-  if (!u) return;
+      
+      const u = UM_USERS.find(x => x.id === id);
+      if (!u) return;
       const name = document.getElementById('e-name')?.value.trim() || u.name;
       const email = document.getElementById('e-email')?.value.trim() || u.email;
       const phone = document.getElementById('e-phone')?.value.trim() || u.phone;
@@ -1279,8 +1279,9 @@ function openCreditModal(id) {
 function sendMessageModal(id) {
   const u = UM_USERS.find(x => x.id === id);
   if (!u) return;
-  openModal(`
-    <div class="modal-title">Send Message</div>
+  showConfirm({
+    title: "Send Message",
+    msg: `
     <div class="modal-sub">Send a notification to <strong>${u.name}</strong></div>
     <div class="form-group"><label class="form-label">Message Type</label>
       <select class="form-input" id="msg-type">
@@ -1291,37 +1292,34 @@ function sendMessageModal(id) {
     <div class="form-group"><label class="form-label">Title</label><input class="form-input" id="msg-title" placeholder="e.g. Important Notice"></div>
     <div class="form-group"><label class="form-label">Message</label>
       <textarea class="form-input" id="msg-body" rows="4" placeholder="Enter your message..."></textarea>
-    </div>
-    <div class="modal-btns">
-      <button class="modal-btn-primary" onclick="submitMessage('${id}')">Send Notification</button>
-      <button class="modal-btn-secondary" onclick="closeModal()">Cancel</button>
-    </div>`);
-}
-
-function submitMessage(id) {
-  const u = UM_USERS.find(x => x.id === id);
-  if (!u) return;
-  const body = document.getElementById('msg-body')?.value.trim();
-  if (!body) { showToast('Message cannot be empty', 'error'); return; }
-  
-  api(`/api/admin/users/${id}/notify`, {
-    method: 'POST',
-    body: JSON.stringify({
-      title: document.getElementById('msg-title')?.value.trim() || 'Admin Message',
-      message: body,
-      type: document.getElementById('msg-type')?.value || 'info'
-    })
-  }).then(data => {
-    if (data?.success) {
-      closeModal();
-      showToast(`Message sent to ${u.name}`, 'success');
-    } else {
-      // Endpoint may not exist yet — still close and notify
-      closeModal();
-      showToast(`Message queued for ${u.name}`, 'info');
-    }
+    </div>`,
+    type: "warning",
+    yesLabel: "Send Notification",
+    onYes: () => {
+      const u = UM_USERS.find(x => x.id === id);
+      if (!u) return;
+      const body = document.getElementById('msg-body')?.value.trim();
+      if (!body) { showToast('Message cannot be empty', 'error'); return; }
+      api(`/api/admin/users/${id}/notify`, {
+        method: 'POST',
+        body: JSON.stringify({
+          title: document.getElementById('msg-title')?.value.trim() || 'Admin Message',
+          message: body,
+          type: document.getElementById('msg-type')?.value || 'info'
+        })
+      }).then(data => {
+        if (data?.success) {
+          showToast(`Message sent to ${u.name}`, 'success');
+        } else {
+          // Endpoint may not exist yet — still close and notify
+          showToast(`Message queued for ${u.name}`, 'info');
+        }
+      });
+    },
+    icon: false
   });
 }
+
 
 function confirmBan(id) {
   const u = UM_USERS.find(x => x.id === id);
