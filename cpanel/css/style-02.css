@@ -1103,7 +1103,7 @@ select.form-input {
     max-width: 100%;
     transform: translateX(100%);
     transition: transform .32s cubic-bezier(.25, .46, .45, .94);
-    overflow-y: auto;
+    overflow-y: auto;margin-bottom: 100px;padding-bottom: 100px;
   }
   
   .detail-pane.mobile-open {
