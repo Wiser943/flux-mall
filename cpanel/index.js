@@ -2011,18 +2011,6 @@ function onGatewayChange(val) {
   markChanged();
 }
 
-async function testApiConnection() {
-  const btn = document.querySelector('#card-api .btn-configure');
-  if (!btn) return;
-  const orig = btn.innerHTML;
-  btn.innerHTML = '<i class="ri-loader-4-line"></i> Testing...';
-  btn.disabled = true;
-  await new Promise(r => setTimeout(r, 1800));
-  btn.innerHTML = orig;
-  btn.disabled = false;
-  showToast('Connection successful ✓', 'success');
-}
-
 function openUtil(section) { showToast(`Opening ${section} manager...`, 'info'); }
 
 function saveBrandAssets() {
@@ -2220,34 +2208,24 @@ window.openBindBankModal = async () => {
               <div class="form-group">
                 <label class="form-label">Public Key</label>
                 <div class="api-key-wrap">
-                  <input type="text" class="form-input" id="apiPubKey" placeholder="pk_live_xxxxxxxxxxxxxx">
-                  <button class="btn-icon" onclick="copyField('apiPubKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+                  <input type="text" class="form-input" id="koraPublicKey" value="${p.korapay?.publicKey||''}"
+                   placeholder="pk_live_xxxxxxxxxxxxxx">
+                  <button class="btn-icon" onclick="copyField('koraPublicKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
                 </div>
               </div>
               <div class="form-group">
                 <label class="form-label">Secret Key</label>
                 <div class="api-key-wrap">
-                  <input type="password" class="form-input" id="apiSecKey" placeholder="sk_live_xxxxxxxxxxxxxx">
-                  <button class="btn-icon" onclick="togglePasswordField('apiSecKey', this)" title="Show/Hide"><i class="ri-eye-off-line"></i></button>
-                  <button class="btn-icon" onclick="copyField('apiSecKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+                  <input type="password" class="form-input" id="koraSecretKey" value="${p.korapay?.secretKey||''}" placeholder="sk_live_xxxxxxxxxxxxxx">
+                  <button class="btn-icon" onclick="togglePasswordField('koraSecretKey', this)" title="Show/Hide"><i class="ri-eye-off-line"></i></button>
+                  <button class="btn-icon" onclick="copyField('koraSecretKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
                 </div>
               </div>
-              <button class="btn-configure" onclick="testApiConnection()">
-                <i class="ri-plug-line"></i> Test Connection
-              </button>
             </div>
-    
-    
-      
-      
-        <div class="input-group"><label>Korapay Public Key</label><input type="text" id="koraPublicKey" value="${p.korapay?.publicKey||''}"></div>
-        <div class="input-group"><label>Secret Key</label><input type="password" id="koraSecretKey" value="${p.korapay?.secretKey||''}"></div>
-      </div>`,
+  `,
     type: 'green',
-    yesLabel: 'Configure',
-    onYes: () => {
-      savePaymentSettings()
-    },
+    yesLabel: 'Configure Connection',
+    onYes: () => savePaymentSettings(),
     icon: false
   });
   
