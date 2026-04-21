@@ -1814,7 +1814,7 @@ async function init() {
       };
 
       // ─── Replace with your own key from imgbb.com/api ──────
-      const IMGBB_KEY = 'YOUR_IMGBB_API_KEY';
+      const IMGBB_KEY = '0251ff89aa26f5ade333ed4e51cdc2e1';
 
       let _utTasks     = [];
       let _utHistory   = [];
