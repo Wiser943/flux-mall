@@ -1794,9 +1794,6 @@ tbody td {
 
 /* ── RESPONSIVE ── */
 @media(max-width:768px) {
-    .page {
-        padding: 16px 12px 80px;
-    }
     
     .page-header h1 {
         font-size: 18px;
@@ -1806,7 +1803,7 @@ tbody td {
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 }
-
+/*
 @media(max-width:600px) {
     .stat-strip {
         grid-template-columns: repeat(2, 1fr);
@@ -1868,7 +1865,6 @@ tbody td {
     
 
 }
-
 @media(max-width:400px) {
     .tab-btn span {
         display: none;
@@ -1891,4 +1887,4 @@ tbody td {
     .page {
         padding: 12px 10px 80px;
     }
-}
+}*/
