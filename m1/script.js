@@ -1794,6 +1794,10 @@ async function init() {
       
       
       
+      
+      
+      
+      
       // ══════════════════════════════════════════════════════════
       // FLUX MALL — User Task Page (embedded)
       // ══════════════════════════════════════════════════════════
@@ -1809,9 +1813,16 @@ async function init() {
         Custom:    { icon:'ri-global-line',      color:'#4318ff', label:'Custom'      },
       };
 
+      // ─── Replace with your own key from imgbb.com/api ──────
+      const IMGBB_KEY = 'YOUR_IMGBB_API_KEY';
+
       let _utTasks     = [];
       let _utHistory   = [];
       let _utActiveCat = 'all';
+
+      // Per-task upload cache: { taskId: { fileHash: imgbbUrl } }
+      // Persists in memory for the session — prevents re-uploading the same file
+      const _utUploadCache = {};
 
       // ── TABS ────────────────────────────────────────────────
       function utSwitchTab(name, btn) {
@@ -1823,8 +1834,7 @@ async function init() {
       }
 
       // ── INIT ────────────────────────────────────────────────
-      // FIX: DOMContentLoaded already fired in a single-page app.
-      // Call directly — the page element is already in the DOM.
+      // Direct call — DOMContentLoaded already fired in SPA context
       utLoadTasks();
 
       async function utLoadTasks() {
@@ -1841,7 +1851,6 @@ async function init() {
         _utTasks = data.tasks || [];
         document.getElementById('utTcAvailable').textContent = _utTasks.filter(t => t.canSubmit).length;
 
-        // Build category chips
         const cats = ['all', ...new Set(_utTasks.map(t => t.category).filter(Boolean))];
         document.getElementById('utChipRow').innerHTML = cats.map((c, i) =>
           `<div class="chip ${i===0?'active':''}" onclick="utFilterCat('${c}',this)">${c==='all'?'All':c}</div>`
@@ -1867,12 +1876,9 @@ async function init() {
         }
 
         list.innerHTML = tasks.map(t => {
-          // Use platform icon/color for Social tasks
           const pm    = t.category === 'Social' && t.platform && UT_PLATFORM[t.platform] ? UT_PLATFORM[t.platform] : null;
           const icon  = pm ? pm.icon  : (UT_CAT_ICONS[t.category]  || 'ri-task-line');
           const color = pm ? pm.color : (UT_CAT_COLORS[t.category] || '#4318ff');
-
-          // Category label — show platform name for Social
           const catLabel = t.category === 'Social' && pm
             ? `<span style="display:inline-flex;align-items:center;gap:3px;font-weight:700;color:${pm.color};"><i class="${pm.icon}"></i> ${pm.label}</span>`
             : t.category;
@@ -1891,14 +1897,55 @@ async function init() {
           const expTag = t.expiresAt
             ? `<div class="tc-meta-tag"><i class="ri-time-line"></i>Ends ${new Date(t.expiresAt).toLocaleDateString()}</div>` : '';
 
-          // FIX: canSubmit already accounts for declined on the server,
-          // but also check locally in case of stale data
           const canSubmit = t.canSubmit || t.userStatus === 'declined';
 
+          // ── PROOF INPUT ──────────────────────────────────────
           let proofInput = '';
+
           if (t.proofType === 'screenshot') {
-            proofInput = `<label>Screenshot URL (upload to imgbb.com and paste link)</label>
-              <input type="url" id="proof_${t._id}" placeholder="https://i.ibb.co/…">`;
+            // Full drag-drop + file-picker uploader
+            // The hidden input #proof_{id} gets the imgbb URL after upload
+            proofInput = `
+              <label>Screenshot Proof</label>
+
+              <div class="screenshot-drop" id="sdDrop_${t._id}"
+                ondragover="utDragOver(event,'${t._id}')"
+                ondragleave="utDragLeave('${t._id}')"
+                ondrop="utHandleDrop(event,'${t._id}')">
+                <input type="file" id="sdFile_${t._id}" accept="image/*"
+                  onchange="utHandleFileSelect(this,'${t._id}')">
+                <i class="ri-image-add-line sd-icon"></i>
+                <div class="sd-label">Tap to upload screenshot</div>
+                <div class="sd-sub">PNG · JPG · WEBP — uploads instantly</div>
+              </div>
+
+              <div class="sd-uploading" id="sdUploading_${t._id}">
+                <div class="sd-upload-spinner"></div>
+                <span>Uploading image…</span>
+              </div>
+
+              <div class="sd-duplicate" id="sdDuplicate_${t._id}">
+                <i class="ri-error-warning-line"></i>
+                <span>Same image detected — using your previous upload link.</span>
+              </div>
+
+              <div class="sd-error" id="sdError_${t._id}">
+                <i class="ri-close-circle-line"></i>
+                <span id="sdErrorMsg_${t._id}">Upload failed. Please try again.</span>
+              </div>
+
+              <div class="sd-preview" id="sdPreview_${t._id}">
+                <img id="sdPreviewImg_${t._id}" src="" alt="Screenshot preview">
+                <div class="sd-preview-bar">
+                  <span class="sd-ok"><i class="ri-checkbox-circle-fill"></i> Uploaded successfully</span>
+                  <button class="sd-redo" onclick="utResetUpload('${t._id}')">
+                    <i class="ri-refresh-line"></i> Change image
+                  </button>
+                </div>
+              </div>
+
+              <input type="hidden" id="proof_${t._id}" value="">`;
+
           } else if (t.proofType === 'url') {
             proofInput = `<label>Link / URL</label>
               <input type="url" id="proof_${t._id}" placeholder="https://…">`;
@@ -1941,7 +1988,9 @@ async function init() {
               <div class="submit-area" id="submitArea_${t._id}">
                 ${proofInput}
                 <div style="margin-top:10px;">
-                  <button class="btn btn-primary" id="submitBtn_${t._id}" onclick="utSubmitTask('${t._id}','${t.proofType}')">
+                  <button class="btn btn-primary" id="submitBtn_${t._id}"
+                    onclick="utSubmitTask('${t._id}','${t.proofType}')"
+                    ${t.proofType === 'screenshot' ? 'disabled' : ''}>
                     <i class="ri-check-line"></i> ${t.userStatus === 'declined' ? 'Re-submit Task' : 'Submit Task'}
                   </button>
                 </div>
@@ -1952,6 +2001,156 @@ async function init() {
         }).join('');
       }
 
+      // ══════════════════════════════════════════════════════════
+      // SCREENSHOT UPLOAD SYSTEM
+      // ══════════════════════════════════════════════════════════
+
+      // SHA-256 hash of file bytes → 16-char hex fingerprint
+      // Used to detect if the exact same file was already uploaded
+      async function utFileHash(file) {
+        const buf    = await file.arrayBuffer();
+        const digest = await crypto.subtle.digest('SHA-256', buf);
+        return Array.from(new Uint8Array(digest))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+          .slice(0, 16);
+      }
+
+      // Check file is actually an image (not a PDF, video, etc.)
+      function utIsImage(file) {
+        return file && /^image\/(jpeg|png|webp|gif|bmp)$/i.test(file.type);
+      }
+
+      // Central state machine — controls which UI elements are visible
+      function utSetUploadState(taskId, state, data = {}) {
+        const drop      = document.getElementById(`sdDrop_${taskId}`);
+        const uploading = document.getElementById(`sdUploading_${taskId}`);
+        const preview   = document.getElementById(`sdPreview_${taskId}`);
+        const duplicate = document.getElementById(`sdDuplicate_${taskId}`);
+        const errorBox  = document.getElementById(`sdError_${taskId}`);
+        const submitBtn = document.getElementById(`submitBtn_${taskId}`);
+
+        // Hide all feedback elements
+        uploading?.classList.remove('show');
+        preview?.classList.remove('show');
+        duplicate?.classList.remove('show');
+        errorBox?.classList.remove('show');
+
+        if (state === 'idle') {
+          if (drop) drop.style.display = '';
+          if (submitBtn) submitBtn.disabled = true; // no image yet
+        }
+        else if (state === 'uploading') {
+          if (drop) drop.style.display = 'none';
+          uploading?.classList.add('show');
+          if (submitBtn) submitBtn.disabled = true;
+        }
+        else if (state === 'done') {
+          if (drop) drop.style.display = 'none';
+          preview?.classList.add('show');
+          const img = document.getElementById(`sdPreviewImg_${taskId}`);
+          if (img && data.url) img.src = data.url;
+          if (submitBtn) submitBtn.disabled = false;
+        }
+        else if (state === 'duplicate') {
+          // Same image already uploaded — show preview + warning, still allow submit
+          if (drop) drop.style.display = 'none';
+          duplicate?.classList.add('show');
+          preview?.classList.add('show');
+          const img = document.getElementById(`sdPreviewImg_${taskId}`);
+          if (img && data.url) img.src = data.url;
+          if (submitBtn) submitBtn.disabled = false;
+        }
+        else if (state === 'error') {
+          if (drop) drop.style.display = '';
+          errorBox?.classList.add('show');
+          const msg = document.getElementById(`sdErrorMsg_${taskId}`);
+          if (msg) msg.textContent = data.message || 'Upload failed. Please try again.';
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      }
+
+      // Reset everything back to the initial upload state
+      function utResetUpload(taskId) {
+        utSetUploadState(taskId, 'idle');
+        const hidden = document.getElementById(`proof_${taskId}`);
+        if (hidden) hidden.value = '';
+        const fileInput = document.getElementById(`sdFile_${taskId}`);
+        if (fileInput) fileInput.value = ''; // clear so same file can be re-selected
+      }
+
+      // Core upload function — called by both file input and drag-drop
+      async function utUploadToImgbb(file, taskId) {
+        // 1. Validate it's an image
+        if (!utIsImage(file)) {
+          utSetUploadState(taskId, 'error', { message: 'Only image files are accepted (PNG, JPG, WEBP).' });
+          return;
+        }
+
+        // 2. Check for duplicate — hash the file bytes
+        const hash = await utFileHash(file);
+        if (!_utUploadCache[taskId]) _utUploadCache[taskId] = {};
+
+        if (_utUploadCache[taskId][hash]) {
+          // Exact same image was uploaded before for this task — reuse the URL silently
+          const cachedUrl = _utUploadCache[taskId][hash];
+          const hidden = document.getElementById(`proof_${taskId}`);
+          if (hidden) hidden.value = cachedUrl;
+          utSetUploadState(taskId, 'duplicate', { url: cachedUrl });
+          return;
+        }
+
+        // 3. Upload to imgbb
+        utSetUploadState(taskId, 'uploading');
+        try {
+          const fd = new FormData();
+          fd.append('image', file);
+          fd.append('key', IMGBB_KEY);
+
+          const res  = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: fd });
+          const json = await res.json();
+
+          if (json.success) {
+            const url = json.data.url;
+            _utUploadCache[taskId][hash] = url; // cache so duplicate detection works
+            const hidden = document.getElementById(`proof_${taskId}`);
+            if (hidden) hidden.value = url;
+            utSetUploadState(taskId, 'done', { url });
+          } else {
+            utSetUploadState(taskId, 'error', {
+              message: json.error?.message || 'Image host rejected the upload. Try a different image.'
+            });
+          }
+        } catch (e) {
+          utSetUploadState(taskId, 'error', {
+            message: 'Network error — check your connection and try again.'
+          });
+        }
+      }
+
+      // ── Event handlers for the upload widget ────────────────
+      function utHandleFileSelect(input, taskId) {
+        const file = input.files?.[0];
+        if (file) utUploadToImgbb(file, taskId);
+      }
+
+      function utDragOver(e, taskId) {
+        e.preventDefault();
+        document.getElementById(`sdDrop_${taskId}`)?.classList.add('drag-over');
+      }
+      function utDragLeave(taskId) {
+        document.getElementById(`sdDrop_${taskId}`)?.classList.remove('drag-over');
+      }
+      function utHandleDrop(e, taskId) {
+        e.preventDefault();
+        document.getElementById(`sdDrop_${taskId}`)?.classList.remove('drag-over');
+        const file = e.dataTransfer.files?.[0];
+        if (file) utUploadToImgbb(file, taskId);
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // SUBMIT
+      // ══════════════════════════════════════════════════════════
       async function utSubmitTask(taskId, proofType) {
         const btn = document.getElementById(`submitBtn_${taskId}`);
         let proof = '';
@@ -1959,12 +2158,19 @@ async function init() {
         if (proofType !== 'none') {
           const inp = document.getElementById(`proof_${taskId}`);
           proof = inp?.value?.trim() || '';
+
           if (!proof) {
-            utShowToast('Please provide proof before submitting', 'error');
-            inp?.focus();
+            if (proofType === 'screenshot') {
+              utShowToast('Please upload a screenshot first', 'error');
+            } else {
+              utShowToast('Please provide proof before submitting', 'error');
+              inp?.focus();
+            }
             return;
           }
-          if ((proofType === 'screenshot' || proofType === 'url') && !proof.startsWith('http')) {
+
+          // URL proof type — basic validation
+          if (proofType === 'url' && !proof.startsWith('http')) {
             utShowToast('Please enter a valid URL starting with https://', 'error');
             inp?.focus();
             return;
@@ -2005,18 +2211,29 @@ async function init() {
         }
 
         document.getElementById('utHistoryList').innerHTML = _utHistory.map(s => {
-          const date = s.createdAt
-            ? new Date(s.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+          const date       = s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-NG', { day:'2-digit', month:'short', year:'numeric' }) : '—';
           const pts        = s.points || s.taskId?.points || 0;
           const isApproved = s.status === 'approved';
           const isDeclined = s.status === 'declined';
 
-          // Platform label for history
           const histPm  = s.taskId?.category === 'Social' && s.taskId?.platform && UT_PLATFORM[s.taskId.platform]
             ? UT_PLATFORM[s.taskId.platform] : null;
           const catDisp = histPm
             ? `<i class="${histPm.icon}" style="color:${histPm.color};margin-right:2px;"></i>${histPm.label}`
             : (s.taskId?.category || '');
+
+          // Show proof thumbnail if it's an image
+          const proof = s.proof || '';
+          const isImg = proof.startsWith('http') && (
+            proof.includes('ibb.co') || proof.includes('imgbb') ||
+            /\.(png|jpg|jpeg|webp|gif)(\?|$)/i.test(proof)
+          );
+          const proofThumb = isImg
+            ? `<img src="${proof}" alt="Your proof" onclick="window.open('${proof}','_blank')"
+                style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;margin-top:8px;cursor:pointer;">`
+            : (proof && s.taskId?.proofType !== 'none'
+                ? `<div style="font-size:11px;color:var(--text3);margin-top:4px;word-break:break-all;">${proof.length > 70 ? proof.slice(0,70)+'…' : proof}</div>`
+                : '');
 
           return `
           <div class="history-item">
@@ -2033,6 +2250,7 @@ async function init() {
               ${isApproved ? `<span class="hi-points credit">+🪙${Number(pts).toLocaleString()} FEX</span>` : ''}
               ${isDeclined && s.penalty > 0 ? `<span class="hi-points debit">-🪙${Number(s.penalty).toLocaleString()} FEX</span>` : ''}
             </div>
+            ${proofThumb}
             ${s.adminNote ? `<div class="hi-note"><i class="ri-information-line"></i> ${s.adminNote}</div>` : ''}
           </div>`;
         }).join('');
@@ -2047,8 +2265,7 @@ async function init() {
         t.innerHTML = `<i class="ri-${type==='success'?'check-line':type==='error'?'close-line':'information-line'}"></i><span>${msg}</span>`;
         wrap.appendChild(t);
         setTimeout(() => {
-          t.style.opacity    = '0';
-          t.style.transition = 'opacity .3s';
+          t.style.opacity = '0'; t.style.transition = 'opacity .3s';
           setTimeout(() => t.remove(), 300);
         }, 4000);
       }
