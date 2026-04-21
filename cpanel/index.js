@@ -3853,44 +3853,15 @@ window.viewDepositDetail = (i) => {
   const fex = Number(i.amount);
   const naira = (fex * 0.7).toLocaleString();
   showConfirm({
-    title: '<h3><i class="ri-arrow-down-circle-line" style="color:var(--primary)"></i> Deposit Detail</h3>',
-    msg: `    <div class="modal-body">
-      <div class="modal-row">
-        <div class="info-card">
-          <label>User</label>
-          <div class="val">${userName}</div>
-        </div>
-        <div class="info-card">
-          <label>Status</label>
-          <div class="val">${statusBadge(i.status)}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>Amount (FEX)</label>
-          <div class="val">🪙 ${fex.toLocaleString()}</div>
-        </div>
-        <div class="info-card">
-          <label>Naira Equiv.</label>
-          <div class="val">₦${naira}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card" style="flex:1">
-          <label>Reference</label>
-          <div class="val" style="font-family:monospace;font-size:12px;">${i.refCode || '—'}</div>
-        </div>
-      </div>
-      <div class="modal-row">
-        <div class="info-card">
-          <label>Method</label>
-          <div class="val">${i.method || 'Bank Transfer'}</div>
-        </div>
-        <div class="info-card">
-          <label>Date</label>
-          <div class="val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</div>
-        </div>
-      </div>
+    title: '<h3>Deposit Detail</h3>',
+    msg: `   <div class="dp-section">Account Info</div>
+    <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${userName}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(i.status)}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Amount (FEX)</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Reference</span><span class="dp-info-val">${i.refCode || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Method</span><span class="dp-info-val">${i.method || 'Bank Transfer'}</span></div>
+    
+    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</span>
     </div>`,
     type: 'warning',
     yesLabel: 'Delete',
