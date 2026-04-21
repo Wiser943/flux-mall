@@ -4023,8 +4023,9 @@ window.deleteWithdrawal = async (id) => {
 
 window.viewWithdrawalDetail = (w) => {
   const fex = Number(w.amount);
-  const net = Number(w.netAmount || fex * 0.7);
   const rate = w.fexRate || 0.7;
+  const net = Number(fex * rate || 0.7);
+  
   showConfirm({
     title: '<h3>Withdrawal Detail</h3>',
     msg: `<div class="dp-section">Transaction Info</div>
@@ -4032,7 +4033,7 @@ window.viewWithdrawalDetail = (w) => {
     <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(w.status)}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">FEX Amount</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Naira Payout</span><span class="dp-info-val">₦${net.toLocaleString()}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Rate</span><span class="dp-info-val">>₦${rate}/FEX</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Rate</span><span class="dp-info-val">₦${rate}/FEX</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Fee</span><span class="dp-info-val">₦${Number(w.fee || 0).toLocaleString()}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Bank</span><span class="dp-info-val">${w.bankDetails?.bankName || '—'}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Account</span><span class="dp-info-val">${w.bankDetails?.accountNumber || '—'}</span></div>
