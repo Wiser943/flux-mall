@@ -118,24 +118,24 @@ textarea {
     display: none;
     animation: fadeIn 0.3s ease;
     padding-bottom: 70px;
-}
-.page {
-  height: 100vh;      /* Takes up full screen height */
-  overflow-y: auto;   /* This creates the scrollbar on .page instead of body */
+    height: 100vh;
+    /* Takes up full screen height */
+    overflow: hidden;
+    overflow-y: auto;
 }
 
 .sidebar {
-  transition: transform 0.4s ease;
-  z-index: 1000;      /* Ensure it stays above the .page content */
+    transition: transform 0.4s ease;
+    z-index: 1000;
+    /* Ensure it stays above the .page content */
 }
 
 .sidebar.hide-scroll {
-  transform: translateX(-100%);
+    transform: translateY(400%);
 }
 
 .content {
     position: relative;
-    margin-bottom: 100px !important;
 }
 
 .tab-panel.active,
@@ -575,7 +575,7 @@ textarea {
         padding: 0;
         overflow: hidden;
         align-items: center;
-        height: 60px;
+        height: 55px;
         justify-content: flex-start;
         border-top: 2px solid var(--bg);
     }
@@ -1453,7 +1453,10 @@ tbody td {
 
 
 /*task system continues */
-.task-card{padding: 16px;}
+.task-card {
+    padding: 16px;
+}
+
 .tc-header {
     display: flex;
     align-items: flex-start;
@@ -1857,6 +1860,7 @@ tbody td {
         align-items: flex-start;
         gap: 8px;
     }
+    
     .tabs-header {
         gap: 2px;
         padding: 4px 4px 0;
@@ -1867,8 +1871,12 @@ tbody td {
         padding: 8px 4px;
     }
     
-.filter-select,.btn.btn-outline{display:none}
+    .filter-select,
+    .btn.btn-outline {
+        display: none
+    }
 }
+
 @media(max-width:400px) {
     .tab-btn span {
         display: none;
@@ -1887,4 +1895,4 @@ tbody td {
         font-size: 10px;
         padding: 4px 7px;
     }
-    }
+}

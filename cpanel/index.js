@@ -240,9 +240,10 @@ document.addEventListener('click', (e) => {
 });
 */
 const allPages = document.querySelectorAll('.page');
+
 // 1. Select all elements with the .page class
 let lastScrollTop = 0;
-const threshold = 15;
+const threshold = 20;
 
 allPages.forEach(page => {
   page.addEventListener('scroll', () => {
@@ -254,12 +255,14 @@ allPages.forEach(page => {
     // FIXED LOGIC:
     // Scroll DOWN -> HIDE
     // Scroll UP -> SHOW
+    if (window.innerWidth < 768) {
+
     if (currentScroll > lastScrollTop) {
       sideBar?.classList.add('hide-scroll');
     } else {
       sideBar?.classList.remove('hide-scroll');
     }
-
+}
     // Update position - ensures it stays positive
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
   }, { passive: true });
