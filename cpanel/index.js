@@ -4985,7 +4985,7 @@ async function atLoadTasks() {
   
   const data = await api('/api/admin/tasks');
   _atTasks = data?.tasks || [];
-  /*
+
     // Stats
     const totalPending  = _atSubs.filter(s=>s.status==='pending').length;
     const totalApproved = _atSubs.filter(s=>s.status==='approved').length;
@@ -5000,7 +5000,7 @@ async function atLoadTasks() {
     const cats = [...new Set(_atTasks.map(t=>t.category).filter(Boolean))];
     const catSel = document.getElementById('atCatFilter');
     if(catSel){ catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join(''); }
-  */
+  
   atRenderCatalog(_atTasks);
 }
 
