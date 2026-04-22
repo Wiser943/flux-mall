@@ -1337,62 +1337,53 @@
               <i class="ri-settings-3-line"></i> Configure Payment Details
             </button>
           </div>
-          
-          <!-- API KEYS -->
-          <div class="section-card full" id="card-api" data-search-keywords="api keys paystack flutterwave korapay gateway secret public credentials payment integration">
-            <div class="section-header" onclick="toggleSection('card-api')">
+            <!-- UTILITIES -->
+          <div class="section-card open" id="card-utils" data-search-keywords="utilities tools manage deposits shares users export csv report data">
+            <div class="section-header" onclick="toggleSection('card-utils')">
               <div class="section-header-left">
-                <div class="section-icon yellow"><i class="ri-key-2-line"></i></div>
+                <div class="section-icon yellow"><i class="ri-tools-line"></i></div>
                 <div>
-                  <div class="section-title-text">API Keys</div>
-                  <div class="section-sub">Payment gateway credentials</div>
+                  <div class="section-title-text">Utilities</div>
+                  <div class="section-sub">Data management tools</div>
                 </div>
               </div>
               <i class="ri-arrow-down-s-line section-chevron"></i>
             </div>
             <div class="section-body">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Payment Gateway</label>
-                  <div class="select-wrap">
-                    <select class="form-input" id="payGateway" onchange="onGatewayChange(this.value)">
-                      <option value="paystack">Paystack</option>
-                      <option value="flutterwave">Flutterwave</option>
-                      <option value="korapay">Korapay</option>
-                    </select>
-                  </div>
+              <div class="util-row">
+                <div class="util-info">
+                  <div class="util-title">Active Deposits</div>
+                  <div class="util-sub">View and manage pending deposits</div>
                 </div>
-                <div class="form-group">
-                  <label class="form-label">Environment</label>
-                  <div class="select-wrap">
-                    <select class="form-input" id="payEnv">
-                      <option value="test">Test / Sandbox</option>
-                      <option value="live">Live / Production</option>
-                    </select>
-                  </div>
-                </div>
+                <a href="#transactions" class="btn-util" onclick="openUtil('deposits')">
+                  <i class="ri-external-link-line"></i> Manage
+                </a>
               </div>
-              <div class="form-group">
-                <label class="form-label">Public Key</label>
-                <div class="api-key-wrap">
-                  <input type="text" class="form-input" id="apiPubKey" placeholder="pk_live_xxxxxxxxxxxxxx">
-                  <button class="btn-icon" onclick="copyField('apiPubKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+              
+              <div class="util-row">
+                <div class="util-info">
+                  <div class="util-title">Active Shares</div>
+                  <div class="util-sub">View all active investment shares</div>
                 </div>
+                <a href="#shares" class="btn-util" onclick="openUtil('shares')">
+                  <i class="ri-external-link-line"></i> Manage
+                </a>
               </div>
-              <div class="form-group">
-                <label class="form-label">Secret Key</label>
-                <div class="api-key-wrap">
-                  <input type="password" class="form-input" id="apiSecKey" placeholder="sk_live_xxxxxxxxxxxxxx">
-                  <button class="btn-icon" onclick="togglePasswordField('apiSecKey', this)" title="Show/Hide"><i class="ri-eye-off-line"></i></button>
-                  <button class="btn-icon" onclick="copyField('apiSecKey')" title="Copy"><i class="ri-file-copy-line"></i></button>
+                            <div class="util-row">
+                <div class="util-info">
+                  <div class="util-title">Task System</div>
+                  <div class="util-sub">Validate and manage user tasks </div>
                 </div>
+  <a href="#tasks" class="btn-util" onclick="openUtil('tasks')">
+    <i class="ri-external-link-line"></i> Manage
+  </a>
               </div>
-              <button class="btn-configure" onclick="testApiConnection()">
-                <i class="ri-plug-line"></i> Test Connection
-              </button>
+
             </div>
           </div>
           
+          
+       
         </div>
         
         <!-- ══ SECTION LABEL ══ -->
@@ -1483,141 +1474,13 @@
             </div>
           </div>
           
-          <!-- NOTIFICATIONS -->
-          <div class="section-card" id="card-notif" data-search-keywords="notifications email alerts admin deposit withdrawal new user">
-            <div class="section-header" onclick="toggleSection('card-notif')">
-              <div class="section-header-left">
-                <div class="section-icon blue"><i class="ri-notification-3-line"></i></div>
-                <div>
-                  <div class="section-title-text">Notifications</div>
-                  <div class="section-sub">Email and alert settings</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="form-group">
-                <label class="form-label">Admin Email</label>
-                <input type="email" class="form-input" id="adminEmail" placeholder="admin@fluxmall.com">
-              </div>
-              <div class="toggle-row" style="margin-top:10px;">
-                <div class="toggle-info">
-                  <div class="tgl-title">Deposit Alerts</div>
-                  <div class="tgl-sub">Email on every deposit</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-depalert" checked onchange="onToggle('depositAlert', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Withdrawal Alerts</div>
-                  <div class="tgl-sub">Email on withdrawal requests</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-wdalert" checked onchange="onToggle('withdrawalAlert', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">New User Alerts</div>
-                  <div class="tgl-sub">Email on new registrations</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-useralert" onchange="onToggle('newUserAlert', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-            </div>
-          </div>
-          
-          <!-- SITE LOGO (dedicated) -->
-          <div class="section-card" id="card-logo" data-search-keywords="logo favicon brand assets image upload url">
-            <div class="section-header" onclick="toggleSection('card-logo')">
-              <div class="section-header-left">
-                <div class="section-icon blue"><i class="ri-image-line"></i></div>
-                <div>
-                  <div class="section-title-text">Site Logo</div>
-                  <div class="section-sub">Manage brand assets</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="form-group">
-                <label class="form-label">Logo URL (or upload above)</label>
-                <div class="input-adorn">
-                  <span class="input-adorn-prefix"><i class="ri-link"></i></span>
-                  <input type="url" id="logoUrl" placeholder="https://...">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Favicon URL</label>
-                <div class="input-adorn">
-                  <span class="input-adorn-prefix"><i class="ri-link"></i></span>
-                  <input type="url" id="faviconUrl" placeholder="https://...">
-                </div>
-              </div>
-              <button class="btn-configure" onclick="saveBrandAssets()">
-                <i class="ri-save-3-line"></i> Save Assets
-              </button>
-            </div>
-          </div>
-          
+         
         </div>
         
         <!-- ══ SECTION LABEL ══ -->
         <div class="section-label" data-search-label>Utilities & Maintenance</div>
         
         <div class="settings-grid">
-          
-          <!-- UTILITIES -->
-          <div class="section-card open" id="card-utils" data-search-keywords="utilities tools manage deposits shares users export csv report data">
-            <div class="section-header" onclick="toggleSection('card-utils')">
-              <div class="section-header-left">
-                <div class="section-icon yellow"><i class="ri-tools-line"></i></div>
-                <div>
-                  <div class="section-title-text">Utilities</div>
-                  <div class="section-sub">Data management tools</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="util-row">
-                <div class="util-info">
-                  <div class="util-title">Active Deposits</div>
-                  <div class="util-sub">View and manage pending deposits</div>
-                </div>
-                <a href="#transactions" class="btn-util" onclick="openUtil('deposits')">
-                  <i class="ri-external-link-line"></i> Manage
-                </a>
-              </div>
-              
-              <div class="util-row">
-                <div class="util-info">
-                  <div class="util-title">Active Shares</div>
-                  <div class="util-sub">View all active investment shares</div>
-                </div>
-                <a href="#shares" class="btn-util" onclick="openUtil('shares')">
-                  <i class="ri-external-link-line"></i> Manage
-                </a>
-              </div>
-                            <div class="util-row">
-                <div class="util-info">
-                  <div class="util-title">Task System</div>
-                  <div class="util-sub">Validate and manage user tasks </div>
-                </div>
-  <a href="#tasks" class="btn-util" onclick="openUtil('tasks')">
-    <i class="ri-external-link-line"></i> Manage
-  </a>
-              </div>
-
-            </div>
-          </div>
-          
           <!-- MAINTENANCE -->
           <div class="section-card" id="card-maintenance" data-search-keywords="maintenance mode lock users upgrade downtime message">
             <div class="section-header" onclick="toggleSection('card-maintenance')">
