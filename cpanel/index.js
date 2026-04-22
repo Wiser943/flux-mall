@@ -248,21 +248,21 @@ const threshold = 20;
 allPages.forEach(page => {
   page.addEventListener('scroll', () => {
     const currentScroll = page.scrollTop;
-
+    
     // Accuracy Check: Ignore tiny jitters
     if (Math.abs(currentScroll - lastScrollTop) < threshold) return;
-
+    
     // FIXED LOGIC:
     // Scroll DOWN -> HIDE
     // Scroll UP -> SHOW
     if (window.innerWidth < 768) {
-
-    if (currentScroll > lastScrollTop) {
-      sideBar?.classList.add('hide-scroll');
-    } else {
-      sideBar?.classList.remove('hide-scroll');
+      
+      if (currentScroll > lastScrollTop) {
+        sideBar?.classList.add('hide-scroll');
+      } else {
+        sideBar?.classList.remove('hide-scroll');
+      }
     }
-}
     // Update position - ensures it stays positive
     lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
   }, { passive: true });
@@ -291,6 +291,7 @@ if (toggler) {
 
 // ── Hash-based page switching ──────────────────────────────
 const navItems = document.querySelectorAll('.nav-item');
+
 function switchPageByHash() {
   const hash = window.location.hash || '#dashboard';
   //checkAdminSession()
@@ -1766,10 +1767,10 @@ async function saveFeatureState(feature, endpoint = "toggle", value) {
 
 // ── Unsaved changes ────────────────────────────────────────
 function markChanged() {
- /* unsavedChanges++;
-  const cnt = document.getElementById('unsavedCount');
-  if (cnt) cnt.textContent = unsavedChanges;
-  document.getElementById('unsavedBar')?.classList.add('visible');*/
+  /* unsavedChanges++;
+   const cnt = document.getElementById('unsavedCount');
+   if (cnt) cnt.textContent = unsavedChanges;
+   document.getElementById('unsavedBar')?.classList.add('visible');*/
 }
 
 function resetUnsaved() {
@@ -2360,7 +2361,6 @@ window.previewLogo = async (input) => {
 
 window.openChatModal = async () => {
   showModal({
-    id: 'createChatModal',
     title: 'Chat settings',
     content: `
       <div class="settings-row">
@@ -5317,54 +5317,47 @@ function openCreateTaskModal() {
     </div>`,
     type: 'warning',
     yesLabel: 'Create Task',
-    onYes: () => {
-      atSubmitCreateTask()
+    onYes: async () => {
+      const g = id => document.getElementById(id)?.value;
+      const title = g('ct_title')?.trim();
+      const desc = g('ct_desc')?.trim();
+      const points = Number(g('ct_points'));
+      if (!title || !desc || !points) { showToast('Title, description and points are required', 'error'); return; }
+      
+      const res = await api('/api/admin/tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          description: desc,
+          instructions: g('ct_instr')?.trim() || '',
+          points,
+          category: g('ct_cat'),
+          platform: g('ct_platform') || '',
+          proofType: g('ct_proof'),
+          maxCompletions: Number(g('ct_max')) || 0,
+          expiresAt: g('ct_expires') || null,
+          taskLink: g('ct_link')?.trim() || '',
+        })
+      });
+      
+      if (res?.success) {
+        showToast(`Task "${title}" created!`, 'success');
+        atLoadTasks();
+      } else {
+        showToast(res?.error || 'Error creating task', 'error');
+      }
     },
     icon: false
   });
 }
 
-async function atSubmitCreateTask() {
-  const g = id => document.getElementById(id)?.value;
-  const title = g('ct_title')?.trim();
-  const desc = g('ct_desc')?.trim();
-  const points = Number(g('ct_points'));
-  if (!title || !desc || !points) { showToast('Title, description and points are required', 'error'); return; }
-  
-  const res = await api('/api/admin/tasks', {
-    method: 'POST',
-    body: JSON.stringify({
-      title,
-      description: desc,
-      instructions: g('ct_instr')?.trim() || '',
-      points,
-      category: g('ct_cat'),
-      platform: g('ct_platform') || '',
-      proofType: g('ct_proof'),
-      maxCompletions: Number(g('ct_max')) || 0,
-      expiresAt: g('ct_expires') || null,
-      taskLink: g('ct_link')?.trim() || '',
-    })
-  });
-  
-  if (res?.success) {
-    showToast(`Task "${title}" created!`, 'success');
-    atLoadTasks();
-  } else {
-    showToast(res?.error || 'Error creating task', 'error');
-  }
-}
 
 function openEditTaskModal(id) {
   const t = _atTasks.find(x => x._id === id);
   if (!t) return;
-  
-  atShowModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-edit-line" style="color:var(--warning)"></i> Edit Task</h3>
-      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
-    </div>
+  showConfirm({
+    title: "Edit Task",
+    msg: `
     <div class="modal-body">
       <div class="form-group">
         <label>Task Title</label>
@@ -5429,36 +5422,34 @@ function openEditTaskModal(id) {
         </select>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="atCloseModal()">Cancel</button>
-      <button class="btn btn-warning" onclick="atSubmitEditTask('${id}')"><i class="ri-save-line"></i> Save</button>
-    </div>
-  `);
-}
-
-async function atSubmitEditTask(id) {
-  const g = id2 => document.getElementById(id2)?.value;
-  const res = await api(`/api/admin/tasks/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({
-      title: g('et_title')?.trim(),
-      description: g('et_desc')?.trim(),
-      instructions: g('et_instr')?.trim(),
-      points: Number(g('et_points')),
-      category: g('et_cat'),
-      platform: g('et_platform') || '',
-      proofType: g('et_proof'),
-      maxCompletions: Number(g('et_max')) || 0,
-      active: g('et_active') === 'true',
-      taskLink: g('et_link')?.trim() || '',
-    })
+  `,
+    type: "warning",
+    yesLabel: "Save",
+    onYes: async () => {
+      const g = id2 => document.getElementById(id2)?.value;
+      const res = await api(`/api/admin/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: g('et_title')?.trim(),
+          description: g('et_desc')?.trim(),
+          instructions: g('et_instr')?.trim(),
+          points: Number(g('et_points')),
+          category: g('et_cat'),
+          platform: g('et_platform') || '',
+          proofType: g('et_proof'),
+          maxCompletions: Number(g('et_max')) || 0,
+          active: g('et_active') === 'true',
+          taskLink: g('et_link')?.trim() || '',
+        })
+      });
+      if (res?.success) {
+        showToast('Task updated!', 'success');
+        atLoadTasks();
+      }
+      else showToast(res?.error || 'Error', 'error');
+    },
+    icon: false
   });
-  if (res?.success) {
-    showToast('Task updated!', 'success');
-    atCloseModal();
-    atLoadTasks();
-  }
-  else showToast(res?.error || 'Error', 'error');
 }
 
 async function atToggleActive(id, active) {
@@ -5492,25 +5483,29 @@ async function atDeleteTask(id, name) {
 // REVIEW SUBMISSIONS
 // ══════════════════════════════════════════════════════════
 async function atReviewSub(id, status, username, taskTitle) {
-  if (!confirm(`Approve ${username}'s submission for "${taskTitle}"?`)) return;
-  const res = await api(`/api/admin/tasks/submissions/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
-  if (res?.success) {
-    showToast(`✅ Submission approved — user credited!`, 'success');
-    atLoadSubmissions();
-    atLoadTasks(); // refresh pending counts on cards
-  } else {
-    showToast(res?.error || 'Error', 'error');
-  }
+  showConfirm({
+    title: `Approve Submission`,
+    msg: `Approve ${username}'s submission for "${taskTitle}"?`,
+    type: 'Warning',
+    yesLabel: 'Approve',
+    onYes: async () => {
+      const res = await api(`/api/admin/tasks/submissions/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
+      if (res?.success) {
+        showToast(`✅ Submission approved — user credited!`, 'success');
+        atLoadSubmissions();
+        atLoadTasks(); // refresh pending counts on cards
+      } else {
+        showToast(res?.error || 'Error', 'error');
+      }
+    },
+  });
 }
 
 function atOpenDeclineModal(id, username, balance) {
   const penalty = parseFloat((Number(balance) * 0.05).toFixed(2));
-  atShowModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-close-circle-line" style="color:var(--danger)"></i> Decline Submission</h3>
-      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
-    </div>
+  showConfirm({
+    title: "Decline Submission",
+    msg: `
     <div class="modal-body">
       <div style="background:var(--danger-soft);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--danger);">
         ⚠️ Declining will deduct <strong>5% (🪙${penalty.toLocaleString()} FEX)</strong> from <strong>${username}</strong>'s balance.
@@ -5519,31 +5514,26 @@ function atOpenDeclineModal(id, username, balance) {
         <label>Reason for decline (shown to user)</label>
         <textarea id="dec_note" rows="3" placeholder="e.g. Screenshot not clear, task not completed correctly…"></textarea>
       </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="atCloseModal()">Cancel</button>
-      <button class="btn btn-danger" onclick="atSubmitDecline('${id}','${username}')">
-        <i class="ri-close-line"></i> Decline & Deduct ${penalty.toLocaleString()} FEX
-      </button>
-    </div>
-  `);
+    </div>`,
+    type: "warning",
+    yesLabel: `Decline & Deduct ${penalty.toLocaleString()} FEX`,
+    onYes: async () => {
+      const note = document.getElementById('dec_note')?.value.trim();
+      const res = await api(`/api/admin/tasks/submissions/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'declined', adminNote: note || '' })
+      });
+      if (res?.success) {
+        showToast(`Submission declined — 5% deducted from ${username}`, 'warning');
+        atLoadSubmissions();
+        atLoadTasks();
+      } else {
+        showToast(res?.error || 'Error', 'error');
+      }
+    }
+  });
 }
 
-async function atSubmitDecline(id, username) {
-  const note = document.getElementById('dec_note')?.value.trim();
-  const res = await api(`/api/admin/tasks/submissions/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ status: 'declined', adminNote: note || '' })
-  });
-  if (res?.success) {
-    showToast(`Submission declined — 5% deducted from ${username}`, 'warning');
-    atCloseModal();
-    atLoadSubmissions();
-    atLoadTasks();
-  } else {
-    showToast(res?.error || 'Error', 'error');
-  }
-}
 
 function atViewSubDetail(s) {
   const uname = s.userId?.username || '—';
@@ -5551,12 +5541,9 @@ function atViewSubDetail(s) {
   const proof = s.proof || '—';
   const isImg = proof.startsWith('http') && (proof.includes('imgbb') || proof.includes('.png') || proof.includes('.jpg') || proof.includes('.jpeg') || proof.includes('.webp'));
   
-  atShowModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-file-list-line" style="color:var(--primary)"></i> Submission Detail</h3>
-      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
-    </div>
+  showConfirm({
+    title: "Submission Details",
+    msg: `
     <div class="modal-body">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px;background:var(--bg);border-radius:10px;">
         <div class="avatar" style="width:38px;height:38px;font-size:13px;background:${atAvatarColor(uname)}">${atInitials(uname)}</div>
@@ -5596,34 +5583,44 @@ function atViewSubDetail(s) {
       </div>`:''}
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="atCloseModal()">Close</button>
       ${s.status==='pending'?`
-        <button class="btn btn-success" onclick="atReviewSub('${s._id}','approved','${uname}','${s.taskId?.title||''}');atCloseModal()"><i class="ri-check-line"></i> Approve</button>
         <button class="btn btn-danger" onclick="atOpenDeclineModal('${s._id}','${uname}','${s.userId?.ib||0}');"><i class="ri-close-line"></i> Decline</button>
       `:''}
     </div>
-  `);
+  `,
+    type: "warning",
+    yesLabel: "Approve",
+    onYes: () => {
+      atReviewSub(s._id, 'approved', uname, s.taskId?.title || '')
+    },
+    icon: false
+  });
 }
 
 function atViewProof(type, data, username) {
   const isImg = type === 'img';
   const text = isImg ? data : decodeURIComponent(data);
-  atShowModal(`
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <h3><i class="ri-eye-line" style="color:var(--primary)"></i> Proof — ${username}</h3>
-      <button class="modal-close" onclick="atCloseModal()"><i class="ri-close-line"></i></button>
-    </div>
+  showConfirm({
+    title: `Proof — ${username}`,
+    msg: `
     <div class="modal-body">
       ${isImg
         ? `<img src="${text}" class="proof-img" onclick="window.open('${text}','_blank')" style="cursor:pointer;width:100%;">`
         : `<div class="proof-full">${text}</div>`}
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="atCloseModal()">Close</button>
       ${isImg?`<button class="btn btn-primary" onclick="window.open('${text}','_blank')"><i class="ri-external-link-line"></i> Open Full</button>`:''}
     </div>
-  `);
+  `,
+    type: "warning",
+    yesLabel: "Open Full",
+    onYes: () => {
+      if (isImg) {
+        window.open(text, '_blank')
+      }
+    },
+    icon: false
+  });
 }
 
 async function atDeleteSub(id) {
