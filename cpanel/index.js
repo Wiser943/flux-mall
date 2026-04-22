@@ -1738,10 +1738,10 @@ async function saveFeatureState(feature, endpoint = "toggle", value) {
 
 // ── Unsaved changes ────────────────────────────────────────
 function markChanged() {
-  unsavedChanges++;
+ /* unsavedChanges++;
   const cnt = document.getElementById('unsavedCount');
   if (cnt) cnt.textContent = unsavedChanges;
-  document.getElementById('unsavedBar')?.classList.add('visible');
+  document.getElementById('unsavedBar')?.classList.add('visible');*/
 }
 
 function resetUnsaved() {
