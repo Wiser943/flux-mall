@@ -5486,7 +5486,7 @@ async function atReviewSub(id, status, username, taskTitle) {
   showConfirm({
     title: `Approve Submission`,
     msg: `Approve ${username}'s submission for "${taskTitle}"?`,
-    type: 'Warning',
+    type: 'warning',
     yesLabel: 'Approve',
     onYes: async () => {
       const res = await api(`/api/admin/tasks/submissions/${id}`, { method: 'PUT', body: JSON.stringify({ status }) });
