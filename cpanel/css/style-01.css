@@ -119,6 +119,19 @@ textarea {
     animation: fadeIn 0.3s ease;
     padding-bottom: 70px;
 }
+.page {
+  height: 100vh;      /* Takes up full screen height */
+  overflow-y: auto;   /* This creates the scrollbar on .page instead of body */
+}
+
+.sidebar {
+  transition: transform 0.4s ease;
+  z-index: 1000;      /* Ensure it stays above the .page content */
+}
+
+.sidebar.hide-scroll {
+  transform: translateX(-100%);
+}
 
 .content {
     position: relative;

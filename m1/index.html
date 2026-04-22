@@ -626,7 +626,7 @@
             <div class="section-sub">Grow your money with smart investment plans</div>
           </div>
         </div>
-                <!-- SHARES BANNER -->
+        <!-- SHARES BANNER -->
         <div class="earn-banner">
           <div class="left">
             <h2>Earn FEX by investing in shares</h2>
@@ -980,7 +980,7 @@
           <button class="btn btn-ghost btn-sm" onclick="showAlert('All notifications marked as read.','success')"><i class="ri-check-double-line"></i> Mark all read</button>
         </div>
         
-        <div class="card">
+        <div class="" style="gap:10px; display:flex;flex-direction: column;">
           <div class="notif-item unread">
             <div class="notif-dot"></div>
             <div>
@@ -1088,7 +1088,7 @@
         </div>
       </div>
       
-            <div class="notifications" id="notifWrap"></div>
+      <div class="notifications" id="notifWrap"></div>
       
       <div class="page" id="tasks">
         <style>
@@ -1104,43 +1104,223 @@
             justify-content: space-between;
             gap: 12px;
           }
-          .earn-banner .left h2 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
-          .earn-banner .left p  { font-size: 12px; opacity: .85; line-height: 1.5; }
-          .earn-banner .right   { font-size: 40px; flex-shrink: 0; }
-
+          
+          .earn-banner .left h2 {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 4px;
+          }
+          
+          .earn-banner .left p {
+            font-size: 12px;
+            opacity: .85;
+            line-height: 1.5;
+          }
+          
+          .earn-banner .right {
+            font-size: 40px;
+            flex-shrink: 0;
+          }
+          
           /* FILTER CHIPS */
-          .chip-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
-          .chip-row::-webkit-scrollbar { display: none; }
-          .chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: var(--card); color: var(--text2); white-space: nowrap; transition: all .15s; }
-          .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
+          .chip-row {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            margin-bottom: 14px;
+            scrollbar-width: none;
+          }
+          
+          .chip-row::-webkit-scrollbar {
+            display: none;
+          }
+          
+          .chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            color: var(--text2);
+            white-space: nowrap;
+            transition: all .15s;
+          }
+          
+          .chip.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+          }
+          
           /* TASK CARD */
-          .task-card { background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow-sm); transition: transform .15s; }
-          .task-card:active { transform: scale(.99); }
-          .task-card.done { opacity: .7; }
-          .tc-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
-          .tc-icon-wrap { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
-          .tc-info { flex: 1; min-width: 0; }
-          .tc-title { font-size: 14px; font-weight: 800; color: var(--text1); margin-bottom: 2px; }
-          .tc-cat { font-size: 11px; color: var(--text3); }
-          .tc-desc { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 12px; }
-          .tc-reward { display: inline-flex; align-items: center; gap: 5px; background: var(--primary-soft); color: var(--primary); border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 700; margin-bottom: 12px; }
-          .tc-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-          .tc-meta-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text3); background: var(--bg); border-radius: 6px; padding: 3px 8px; }
-          .tc-status-bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-size: 12px; font-weight: 600; }
-          .tc-status-bar.pending  { background: var(--warning-soft); color: var(--warning); }
-          .tc-status-bar.approved { background: var(--success-soft); color: var(--success); }
-          .tc-status-bar.declined { background: var(--danger-soft);  color: var(--danger);  }
-
+          .task-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            border: 1.5px solid var(--border);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: transform .15s;
+          }
+          
+          .task-card:active {
+            transform: scale(.99);
+          }
+          
+          .task-card.done {
+            opacity: .7;
+          }
+          
+          .tc-top {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+          }
+          
+          .tc-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+          }
+          
+          .tc-info {
+            flex: 1;
+            min-width: 0;
+          }
+          
+          .tc-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text1);
+            margin-bottom: 2px;
+          }
+          
+          .tc-cat {
+            font-size: 11px;
+            color: var(--text3);
+          }
+          
+          .tc-desc {
+            font-size: 13px;
+            color: var(--text2);
+            line-height: 1.6;
+            margin-bottom: 12px;
+          }
+          
+          .tc-reward {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 12px;
+          }
+          
+          .tc-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+          }
+          
+          .tc-meta-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: var(--text3);
+            background: var(--bg);
+            border-radius: 6px;
+            padding: 3px 8px;
+          }
+          
+          .tc-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: 600;
+          }
+          
+          .tc-status-bar.pending {
+            background: var(--warning-soft);
+            color: var(--warning);
+          }
+          
+          .tc-status-bar.approved {
+            background: var(--success-soft);
+            color: var(--success);
+          }
+          
+          .tc-status-bar.declined {
+            background: var(--danger-soft);
+            color: var(--danger);
+          }
+          
           /* SUBMIT FORM */
-          .submit-area { border-top: 1px solid var(--border); padding-top: 12px; }
-          .submit-area label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: var(--text3); display: block; margin-bottom: 6px; }
+          .submit-area {
+            border-top: 1px solid var(--border);
+            padding-top: 12px;
+          }
+          
+          .submit-area label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text3);
+            display: block;
+            margin-bottom: 6px;
+          }
+          
           .submit-area input[type="url"],
-          .submit-area textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--text1); background: var(--bg); outline: none; transition: border .15s; font-family: inherit; resize: vertical; }
+          .submit-area textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            color: var(--text1);
+            background: var(--bg);
+            outline: none;
+            transition: border .15s;
+            font-family: inherit;
+            resize: vertical;
+          }
+          
           .submit-area input[type="url"]:focus,
-          .submit-area textarea:focus { border-color: var(--primary); background: #fff; }
-          .instructions-box { background: var(--bg); border-left: 3px solid var(--primary); border-radius: 0 8px 8px 0; padding: 10px 12px; font-size: 12px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
-
+          .submit-area textarea:focus {
+            border-color: var(--primary);
+            background: #fff;
+          }
+          
+          .instructions-box {
+            background: var(--bg);
+            border-left: 3px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: var(--text2);
+            line-height: 1.7;
+            margin-bottom: 12px;
+          }
+          
           /* ── SCREENSHOT UPLOADER ── */
           .screenshot-drop {
             border: 2px dashed var(--border);
@@ -1153,85 +1333,304 @@
             position: relative;
             overflow: hidden;
           }
-          .screenshot-drop:hover, .screenshot-drop.drag-over {
+          
+          .screenshot-drop:hover,
+          .screenshot-drop.drag-over {
             border-color: var(--primary);
             background: var(--primary-soft);
           }
+          
           .screenshot-drop input[type="file"] {
-            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; margin: 0; padding: 0;
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
           }
-          .sd-icon  { font-size: 28px; color: var(--primary); margin-bottom: 6px; display: block; }
-          .sd-label { font-size: 13px; font-weight: 700; color: var(--text1); }
-          .sd-sub   { font-size: 11px; color: var(--text3); margin-top: 3px; }
-
+          
+          .sd-icon {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: block;
+          }
+          
+          .sd-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text1);
+          }
+          
+          .sd-sub {
+            font-size: 11px;
+            color: var(--text3);
+            margin-top: 3px;
+          }
+          
           .sd-uploading {
-            display: none; align-items: center; gap: 10px;
-            background: var(--primary-soft); border-radius: 10px;
-            padding: 10px 14px; margin-top: 10px;
-            font-size: 13px; color: var(--primary); font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: var(--primary-soft);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--primary);
+            font-weight: 600;
           }
-          .sd-uploading.show { display: flex; }
+          
+          .sd-uploading.show {
+            display: flex;
+          }
+          
           .sd-upload-spinner {
-            width: 18px; height: 18px;
-            border: 2px solid rgba(67,24,255,.2); border-top-color: var(--primary);
-            border-radius: 50%; animation: spin .6s linear infinite; flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(67, 24, 255, .2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .6s linear infinite;
+            flex-shrink: 0;
           }
-          .sd-preview { display: none; margin-top: 10px; border-radius: 10px; overflow: hidden; }
-          .sd-preview.show { display: block; }
-          .sd-preview img { width: 100%; max-height: 180px; object-fit: cover; display: block; }
+          
+          .sd-preview {
+            display: none;
+            margin-top: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+          }
+          
+          .sd-preview.show {
+            display: block;
+          }
+          
+          .sd-preview img {
+            width: 100%;
+            max-height: 180px;
+            object-fit: cover;
+            display: block;
+          }
+          
           .sd-preview-bar {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 7px 12px; background: var(--success-soft);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 7px 12px;
+            background: var(--success-soft);
           }
-          .sd-ok   { font-size: 12px; font-weight: 700; color: var(--success); display: flex; align-items: center; gap: 5px; }
-          .sd-redo { font-size: 11px; color: var(--text3); cursor: pointer; background: none; border: none; font-weight: 600; padding: 2px 8px; border-radius: 6px; }
-          .sd-redo:hover { color: var(--danger); background: var(--danger-soft); }
-
+          
+          .sd-ok {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--success);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+          
+          .sd-redo {
+            font-size: 11px;
+            color: var(--text3);
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 6px;
+          }
+          
+          .sd-redo:hover {
+            color: var(--danger);
+            background: var(--danger-soft);
+          }
+          
           .sd-duplicate {
-            display: none; align-items: center; gap: 8px;
-            background: var(--warning-soft); border-radius: 10px;
-            padding: 10px 14px; margin-top: 10px;
-            font-size: 12px; color: var(--warning); font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: var(--warning-soft);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--warning);
+            font-weight: 600;
           }
-          .sd-duplicate.show { display: flex; }
-
+          
+          .sd-duplicate.show {
+            display: flex;
+          }
+          
           .sd-error {
-            display: none; align-items: center; gap: 8px;
-            background: var(--danger-soft); border-radius: 10px;
-            padding: 10px 14px; margin-top: 10px;
-            font-size: 12px; color: var(--danger); font-weight: 600;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: var(--danger-soft);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--danger);
+            font-weight: 600;
           }
-          .sd-error.show { display: flex; }
-
+          
+          .sd-error.show {
+            display: flex;
+          }
+          
           /* HISTORY */
-          .history-item { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 12px 14px; margin-bottom: 8px; box-shadow: var(--shadow-sm); }
-          .hi-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-          .hi-title  { font-size: 13px; font-weight: 700; color: var(--text1); }
-          .hi-sub    { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); flex-wrap: wrap; }
-          .hi-note   { font-size: 11px; color: var(--danger); margin-top: 4px; }
-          .hi-points { font-weight: 700; font-size: 13px; }
-          .hi-points.credit { color: var(--success); }
-          .hi-points.debit  { color: var(--danger);  }
-
+          .history-item {
+            background: var(--card);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-sm);
+          }
+          
+          .hi-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+          }
+          
+          .hi-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text1);
+          }
+          
+          .hi-sub {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text2);
+            flex-wrap: wrap;
+          }
+          
+          .hi-note {
+            font-size: 11px;
+            color: var(--danger);
+            margin-top: 4px;
+          }
+          
+          .hi-points {
+            font-weight: 700;
+            font-size: 13px;
+          }
+          
+          .hi-points.credit {
+            color: var(--success);
+          }
+          
+          .hi-points.debit {
+            color: var(--danger);
+          }
+          
           /* BADGES */
-          .badge          { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-          .badge.pending  { background: var(--warning-soft); color: var(--warning); }
-          .badge.approved { background: var(--success-soft); color: var(--success); }
-          .badge.declined { background: var(--danger-soft);  color: var(--danger);  }
-
+          .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+          }
+          
+          .badge.pending {
+            background: var(--warning-soft);
+            color: var(--warning);
+          }
+          
+          .badge.approved {
+            background: var(--success-soft);
+            color: var(--success);
+          }
+          
+          .badge.declined {
+            background: var(--danger-soft);
+            color: var(--danger);
+          }
+          
           /* STATES */
-          .state-box   { text-align: center; padding: 50px 20px; color: var(--text3); }
-          .state-box i { font-size: 36px; opacity: .4; display: block; margin-bottom: 10px; }
-          .state-box p { font-size: 13px; }
-          .spinner { width: 26px; height: 26px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 10px; }
-          @keyframes spin { to { transform: rotate(360deg) } }
-
+          .state-box {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text3);
+          }
+          
+          .state-box i {
+            font-size: 36px;
+            opacity: .4;
+            display: block;
+            margin-bottom: 10px;
+          }
+          
+          .state-box p {
+            font-size: 13px;
+          }
+          
+          .spinner {
+            width: 26px;
+            height: 26px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            margin: 0 auto 10px;
+          }
+          
+          @keyframes spin {
+            to {
+              transform: rotate(360deg)
+            }
+          }
+          
           /* TOAST */
-          .toast { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); font-size: 13px; display: flex; align-items: center; gap: 8px; min-width: 240px; animation: utSlideIn .2s ease; }
-          @keyframes utSlideIn { from { opacity: 0; transform: translateX(20px) } to { opacity: 1; transform: translateX(0) } }
-          .toast.success { border-left: 4px solid var(--success); }
-          .toast.error   { border-left: 4px solid var(--danger);  }
-          .toast.info    { border-left: 4px solid var(--primary); }
+          .toast {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 14px;
+            box-shadow: var(--shadow);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 240px;
+            animation: utSlideIn .2s ease;
+          }
+          
+          @keyframes utSlideIn {
+            from {
+              opacity: 0;
+              transform: translateX(20px)
+            }
+            
+            to {
+              opacity: 1;
+              transform: translateX(0)
+            }
+          }
+          
+          .toast.success {
+            border-left: 4px solid var(--success);
+          }
+          
+          .toast.error {
+            border-left: 4px solid var(--danger);
+          }
+          
+          .toast.info {
+            border-left: 4px solid var(--primary);
+          }
         </style>
         
         <!-- HEADER -->
@@ -1270,19 +1669,25 @@
             <div class="chip active" onclick="utFilterCat('all',this)">All</div>
           </div>
           <div id="utTaskList">
-            <div class="state-box"><div class="spinner"></div><p>Loading tasks…</p></div>
+            <div class="state-box">
+              <div class="spinner"></div>
+              <p>Loading tasks…</p>
+            </div>
           </div>
         </div>
         
         <!-- HISTORY -->
         <div class="tab-panel" id="ut-panel-history">
           <div id="utHistoryList">
-            <div class="state-box"><div class="spinner"></div><p>Loading…</p></div>
+            <div class="state-box">
+              <div class="spinner"></div>
+              <p>Loading…</p>
+            </div>
           </div>
         </div>
         
       </div><!-- /page -->
-
+      
       
       <!-- PROFILE PAGE -->
       <div class="page" id="profile">
@@ -1329,346 +1734,268 @@
               <button class="btn btn-ghost">Cancel</button>
             </div>
           </div>
-          
-          <div class="section-header mb-6">
-            <div class="section-title">Settings</div>
-            <div class="section-sub">Manage your account preferences and security</div>
-          </div>
-          
-          <div class="grid-2">
-            <div style="display:flex;flex-direction:column;gap:16px;">
-              <!-- Security -->
-              <div class="card">
-                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔒 Security</div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Two-Factor Authentication</div>
-                    <div class="s-desc">Adds an extra layer of security</div>
-                  </div>
-                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Login Notifications</div>
-                    <div class="s-desc">Alert on new device login</div>
-                  </div>
-                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Transaction PIN</div>
-                    <div class="s-desc">Required for withdrawals</div>
-                  </div>
-                  <button class="btn btn-ghost btn-sm" onclick="showAlert('PIN change request initiated. Check your email.','info')">Change PIN</button>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Password</div>
-                    <div class="s-desc">Last changed 30 days ago</div>
-                  </div>
-                  <button class="btn btn-ghost btn-sm" onclick="showAlert('Password reset email sent to your inbox.','success')">Change</button>
-                </div>
-              </div>
-              
-              <!-- Notifications Settings -->
-              <div class="card">
-                <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:4px;">🔔 Notifications</div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Email Notifications</div>
-                    <div class="s-desc">Transaction alerts via email</div>
-                  </div>
-                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">SMS Alerts</div>
-                    <div class="s-desc">Text alerts for transactions</div>
-                  </div>
-                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Push Notifications</div>
-                    <div class="s-desc">Browser/app push alerts</div>
-                  </div>
-                  <div class="toggle on" onclick="this.classList.toggle('on')"></div>
-                </div>
-                <div class="settings-row">
-                  <div class="settings-info">
-                    <div class="s-title">Marketing Emails</div>
-                    <div class="s-desc">Promotions and offers</div>
-                  </div>
-                  <div class="toggle" onclick="this.classList.toggle('on')"></div>
-                </div>
-              </div>
-            </div>
-            
-          </div>
-        </div>
-        
-      </div><!-- /page-content -->
-    </div><!-- /main -->
-    
-    
-    <!-- ==== MOBILE BOTTOM NAV === -->
-    <nav class="mobile-nav" id="mobileNav">
-      <div class="mobile-nav-inner">
-        <!---
+        </div><!-- /page-content -->
+      </div><!-- /main -->
+      
+      
+      <!-- ==== MOBILE BOTTOM NAV === -->
+      <nav class="mobile-nav" id="mobileNav">
+        <div class="mobile-nav-inner">
+          <!---
       <a class="mnav-item nav-item" href="#referral">
         <span class="mnav-icon">◉</span>
         <span class="mnav-label">Referral</span>
        <!--- <span class="nav-badge"></span>---
       </a>--->
-        <button class="mnav-item nav-item" id="nav-more" onclick="openNavSheet()">
-        
-          <i class="mnav-icon ri-arrow-up-wide-line"></i>
-          <span class="mnav-label" id="pageTitle">Fluxmall</span>
-        </button>
-      </div>
-    </nav>
-    
-    <!-- ===== NAV SHEET (More) ===== -->
-    <div class="nav-sheet-backdrop" id="navSheetBackdrop" onclick="closeNavSheet()">
-      <div class="nav-sheet" onclick="event.stopPropagation()">
-        <div class="nav-sheet-handle"></div>
-        <div class="sidebar-logo" style="transform: scale(0.8);padding: 0;margin: 0;">
-          <div class="logo-icon"><i class="ri-safe-2-line"></i></div>
-          <div class="logo-text">Flux<span>Mall</span></div>
+          <button class="mnav-item nav-item" id="nav-more" onclick="openNavSheet()">
+          
+            <i class="mnav-icon ri-arrow-up-wide-line"></i>
+            <span class="mnav-label" id="pageTitle">Fluxmall</span>
+          </button>
         </div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;color:var(--text2);">All Pages | Exchange</div>
-        
-        <div class="nav-sheet-grid">
-          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#home"><span class="ns-icon"><i class="ri-home-5-line"></i></span><span class="ns-label">Overview</span></a>
-          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#wallet"><span class="ns-icon"><i class="ri-wallet-3-line"></i></span><span class="ns-label">Wallet</span></a>
-          <a class="nav-sheet-item" onclick="closeNavSheet();initTransactions();" href="#transactions"><span class="ns-icon"><i class="ri-arrow-up-down-line"></i></span><span class="ns-label">Transactions</span></a>
-          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#invest"><span class="ns-icon"><i class="ri-line-chart-line"></i></span><span class="ns-label">Investments</span></a>
-          <a class="nav-sheet-item" href="#deposit" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-arrow-down-circle-line"></i></span><span class="ns-label">Deposit</span></a>
-          <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon"><i class="ri-arrow-up-circle-line"></i></span><span class="ns-label">Withdraw</span></a>
-          <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-gift-line"></i></span><span class="ns-label">Referral</span></a>
-          <a class="nav-sheet-item" href="#tasks" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Tasks</span></a>
-          <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-notification-3-line"></i></span><span class="ns-label">Alerts</span></a>
-          <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-user-3-line"></i></span><span class="ns-label">Profile</span></a>
-          <div class="nav-sheet-item" style="color: red;" onclick="logoutUser();closeNavSheet()"><span class="ns-icon"><i class="ri-logout-box-r-line"></i></span><span class="ns-label">Logout</span></div>
+      </nav>
+      
+      <!-- ===== NAV SHEET (More) ===== -->
+      <div class="nav-sheet-backdrop" id="navSheetBackdrop" onclick="closeNavSheet()">
+        <div class="nav-sheet" onclick="event.stopPropagation()">
+          <div class="nav-sheet-handle"></div>
+          <div class="sidebar-logo" style="transform: scale(0.8);padding: 0;margin: 0;">
+            <div class="logo-icon"><i class="ri-safe-2-line"></i></div>
+            <div class="logo-text">Flux<span>Mall</span></div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;color:var(--text2);">All Pages | Exchange</div>
+          
+          <div class="nav-sheet-grid">
+            <a class="nav-sheet-item" onclick="closeNavSheet()" href="#home"><span class="ns-icon"><i class="ri-home-5-line"></i></span><span class="ns-label">Overview</span></a>
+            <a class="nav-sheet-item" onclick="closeNavSheet()" href="#wallet"><span class="ns-icon"><i class="ri-wallet-3-line"></i></span><span class="ns-label">Wallet</span></a>
+            <a class="nav-sheet-item" onclick="closeNavSheet();initTransactions();" href="#transactions"><span class="ns-icon"><i class="ri-arrow-up-down-line"></i></span><span class="ns-label">Transactions</span></a>
+            <a class="nav-sheet-item" onclick="closeNavSheet()" href="#invest"><span class="ns-icon"><i class="ri-line-chart-line"></i></span><span class="ns-label">Investments</span></a>
+            <a class="nav-sheet-item" href="#deposit" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-arrow-down-circle-line"></i></span><span class="ns-label">Deposit</span></a>
+            <a class="nav-sheet-item" onclick="closeNavSheet()" href="#withdraw"><span class="ns-icon"><i class="ri-arrow-up-circle-line"></i></span><span class="ns-label">Withdraw</span></a>
+            <a class="nav-sheet-item" href="#referral" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-gift-line"></i></span><span class="ns-label">Referral</span></a>
+            <a class="nav-sheet-item" href="#tasks" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-bar-chart-box-line"></i></span><span class="ns-label">Tasks</span></a>
+            <a class="nav-sheet-item" href="#notifications" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-notification-3-line"></i></span><span class="ns-label">Alerts</span></a>
+            <a class="nav-sheet-item" href="#profile" onclick="closeNavSheet()"><span class="ns-icon"><i class="ri-user-3-line"></i></span><span class="ns-label">Profile</span></a>
+            <div class="nav-sheet-item" style="color: red;" onclick="logoutUser();closeNavSheet()"><span class="ns-icon"><i class="ri-logout-box-r-line"></i></span><span class="ns-label">Logout</span></div>
+          </div>
         </div>
       </div>
-    </div>
-    
-    
-    <script src="script.js"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js')
-            .then(reg => console.log('[SW] Registered:', reg.scope))
-            .catch(err => console.log('[SW] Registration failed:', err));
+      
+      
+      <script src="script.js"></script>
+      <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+              .then(reg => console.log('[SW] Registered:', reg.scope))
+              .catch(err => console.log('[SW] Registration failed:', err));
+          });
+        }
+        
+        
+        let _confirmCb = null;
+        let _cancelCb = null;
+        
+        function _openModal(modal) {
+          modal.style.display = 'flex';
+          // double rAF so display:flex is painted before class triggers transition
+          requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('show')));
+        }
+        
+        function _closeModal(modal) {
+          modal.classList.remove('show');
+          const content = modal.querySelector('.modal-content');
+          content.addEventListener('transitionend', () => {
+            if (!modal.classList.contains('show')) modal.style.display = 'none';
+          }, { once: true });
+        }
+        
+        // Overlay clicks close the modal
+        document.getElementById('custom-alert-modal').addEventListener('click', function(e) {
+          if (e.target === this) _closeModal(this);
         });
-      }
-      
-      
-      let _confirmCb = null;
-      let _cancelCb = null;
-      
-      function _openModal(modal) {
-        modal.style.display = 'flex';
-        // double rAF so display:flex is painted before class triggers transition
-        requestAnimationFrame(() => requestAnimationFrame(() => modal.classList.add('show')));
-      }
-      
-      function _closeModal(modal) {
-        modal.classList.remove('show');
-        const content = modal.querySelector('.modal-content');
-        content.addEventListener('transitionend', () => {
-          if (!modal.classList.contains('show')) modal.style.display = 'none';
-        }, { once: true });
-      }
-      
-      // Overlay clicks close the modal
-      document.getElementById('custom-alert-modal').addEventListener('click', function(e) {
-        if (e.target === this) _closeModal(this);
-      });
-      document.getElementById('custom-confirm-modal').addEventListener('click', function(e) {
-        if (e.target === this) _closeModal(this);
-      });
-      
-      // Alert buttons
-      document.getElementById('alert-ok-button').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
-      document.getElementById('closeAlertBtn').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
-      
-      // Confirm buttons — ONE listener each, reads callback ref
-      document.getElementById('confirm-yes-button').addEventListener('click', () => {
-        _closeModal(document.getElementById('custom-confirm-modal'));
-        if (_confirmCb) {
-          const fn = _confirmCb;
-          _confirmCb = null;
-          fn();
-        }
-      });
-      document.getElementById('confirm-no-button').addEventListener('click', () => {
-        _closeModal(document.getElementById('custom-confirm-modal'));
-        if (_cancelCb) {
-          const fn = _cancelCb;
-          _cancelCb = null;
-          fn();
-        }
-      });
-      
-      // ── showAlert (called from script.js) ──
-      function showAlert(message, isSuccess, type = "success", desc = "Good") {
-        const el = document.getElementById('alert-message');
-        if (window.navigator?.vibrate) window.navigator.vibrate(100);
+        document.getElementById('custom-confirm-modal').addEventListener('click', function(e) {
+          if (e.target === this) _closeModal(this);
+        });
         
-        el.innerHTML = message;
-        el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
-        _openModal(document.getElementById('custom-alert-modal'));
-      }
-      
-      // ── showConfirm (called from script.js) ──
-      // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
-      function showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel }) {
-        document.getElementById('confirm-title').textContent = title || 'Confirm Details';
-        document.getElementById('confirm-message').innerHTML = message || 'Are you sure?';
-        document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
-        document.getElementById('confirm-no-button').textContent = noText || 'Recheck Details';
-        if (window.navigator?.vibrate) window.navigator.vibrate(100);
+        // Alert buttons
+        document.getElementById('alert-ok-button').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
+        document.getElementById('closeAlertBtn').addEventListener('click', () => _closeModal(document.getElementById('custom-alert-modal')));
         
-        const detailEl = document.getElementById('confirm-detail');
-        if (detail) {
-          detailEl.innerHTML = detail;
-          detailEl.style.display = 'block';
+        // Confirm buttons — ONE listener each, reads callback ref
+        document.getElementById('confirm-yes-button').addEventListener('click', () => {
+          _closeModal(document.getElementById('custom-confirm-modal'));
+          if (_confirmCb) {
+            const fn = _confirmCb;
+            _confirmCb = null;
+            fn();
+          }
+        });
+        document.getElementById('confirm-no-button').addEventListener('click', () => {
+          _closeModal(document.getElementById('custom-confirm-modal'));
+          if (_cancelCb) {
+            const fn = _cancelCb;
+            _cancelCb = null;
+            fn();
+          }
+        });
+        
+        // ── showAlert (called from script.js) ──
+        function showAlert(message, isSuccess, type = "success", desc = "Good") {
+          const el = document.getElementById('alert-message');
+          if (window.navigator?.vibrate) window.navigator.vibrate(100);
+          
+          el.innerHTML = message;
+          el.style.color = isSuccess ? 'var(--gold)' : 'var(--error)';
+          _openModal(document.getElementById('custom-alert-modal'));
         }
-        else { detailEl.style.display = 'none'; }
-        _confirmCb = onConfirm || null;
-        _cancelCb = onCancel || null;
-        _openModal(document.getElementById('custom-confirm-modal'));
-      }
-      
-      
-      // ===== NAVIGATION =====
-      const pageTitles = {
-        home: 'Overview',
-        wallet: 'My Wallet',
-        transactions: 'Transactions',
-        invest: 'Investments',
-        deposit: 'Deposit',
-        withdraw: 'Withdraw',
-        transfer: 'Transfer',
-        referral: 'Referral Program',
-        plans: 'Investment Plans',
-        notifications: 'Notifications',
-        support: 'Help & Support',
-        profile: 'My Profile'
-      };
-      
-      
-      // ===== SIDEBAR =====
-      function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('overlay').classList.toggle('active');
-      }
-      
-      function closeSidebar() {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('overlay').classList.remove('active');
-      }
-      
-      // ===== THEME =====
-      const _savedTheme = localStorage.getItem('fluxTheme');
-      const _sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      let isDark = _savedTheme ? _savedTheme === 'dark' : _sysDark;
-      
-      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      (function() {
-        const btn = document.getElementById('themeBtn');
-        if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
-        const st = document.getElementById('settingsThemeToggle');
-        if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
-      })();
-      
-      function toggleTheme() {
-        isDark = !isDark;
+        
+        // ── showConfirm (called from script.js) ──
+        // Usage: showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel })
+        function showConfirm({ title, message, detail, yesText, noText, onConfirm, onCancel }) {
+          document.getElementById('confirm-title').textContent = title || 'Confirm Details';
+          document.getElementById('confirm-message').innerHTML = message || 'Are you sure?';
+          document.getElementById('confirm-yes-button').textContent = yesText || 'Proceed';
+          document.getElementById('confirm-no-button').textContent = noText || 'Recheck Details';
+          if (window.navigator?.vibrate) window.navigator.vibrate(100);
+          
+          const detailEl = document.getElementById('confirm-detail');
+          if (detail) {
+            detailEl.innerHTML = detail;
+            detailEl.style.display = 'block';
+          }
+          else { detailEl.style.display = 'none'; }
+          _confirmCb = onConfirm || null;
+          _cancelCb = onCancel || null;
+          _openModal(document.getElementById('custom-confirm-modal'));
+        }
+        
+        
+        // ===== NAVIGATION =====
+        const pageTitles = {
+          home: 'Overview',
+          wallet: 'My Wallet',
+          transactions: 'Transactions',
+          invest: 'Investments',
+          deposit: 'Deposit',
+          withdraw: 'Withdraw',
+          transfer: 'Transfer',
+          referral: 'Referral Program',
+          plans: 'Investment Plans',
+          notifications: 'Notifications',
+          support: 'Help & Support',
+          profile: 'My Profile'
+        };
+        
+        
+        // ===== SIDEBAR =====
+        function toggleSidebar() {
+          document.getElementById('sidebar').classList.toggle('open');
+          document.getElementById('overlay').classList.toggle('active');
+        }
+        
+        function closeSidebar() {
+          document.getElementById('sidebar').classList.remove('open');
+          document.getElementById('overlay').classList.remove('active');
+        }
+        
+        // ===== THEME =====
+        const _savedTheme = localStorage.getItem('fluxTheme');
+        const _sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let isDark = _savedTheme ? _savedTheme === 'dark' : _sysDark;
+        
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        localStorage.setItem('fluxTheme', isDark ? 'dark' : 'light');
-        const btn = document.getElementById('themeBtn');
-        if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
-        const st = document.getElementById('settingsThemeToggle');
-        if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
-      }
-      
-      // ── TAB SWITCHER ─────────────────────────────────────────
-      window.switchTab = function(el) {
-        const parent = el.closest('.tabs');
-        if (!parent) return;
-        parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-      };
-      
-      // ===== COPY CODE =====
-      function copyCode(text) {
-        navigator.clipboard.writeText(text).catch(() => {});
-        showAlert('Copied to clipboard:\n' + text, '📋', 'success');
-      }
-      
-      // ===== QUICK AMOUNTS =====
-      function setAmount(id, val) {
-        const el = document.getElementById(id);
-        if (el) {
-          el.value = val;
-          el.focus();
+        (function() {
+          const btn = document.getElementById('themeBtn');
+          if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
+          const st = document.getElementById('settingsThemeToggle');
+          if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
+        })();
+        
+        function toggleTheme() {
+          isDark = !isDark;
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+          localStorage.setItem('fluxTheme', isDark ? 'dark' : 'light');
+          const btn = document.getElementById('themeBtn');
+          if (btn) btn.innerHTML = isDark ? '<i class="ri-moon-line"></i>' : '<i class="ri-sun-line"></i>';
+          const st = document.getElementById('settingsThemeToggle');
+          if (st) isDark ? st.classList.add('on') : st.classList.remove('on');
         }
-      }
-      
-      function openNavSheet() {
-        const bd = document.getElementById('navSheetBackdrop');
-        const sheet = bd.querySelector('.nav-sheet');
-        sheet.style.transform = '';
-        sheet.style.transition = '';
-        bd.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-      
-      function closeNavSheet() {
-        const bd = document.getElementById('navSheetBackdrop');
-        const sheet = bd.querySelector('.nav-sheet');
-        sheet.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
-        sheet.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-          bd.classList.remove('open');
+        
+        // ── TAB SWITCHER ─────────────────────────────────────────
+        window.switchTab = function(el) {
+          const parent = el.closest('.tabs');
+          if (!parent) return;
+          parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          el.classList.add('active');
+        };
+        
+        // ===== COPY CODE =====
+        function copyCode(text) {
+          navigator.clipboard.writeText(text).catch(() => {});
+          showAlert('Copied to clipboard:\n' + text, '📋', 'success');
+        }
+        
+        // ===== QUICK AMOUNTS =====
+        function setAmount(id, val) {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = val;
+            el.focus();
+          }
+        }
+        
+        function openNavSheet() {
+          const bd = document.getElementById('navSheetBackdrop');
+          const sheet = bd.querySelector('.nav-sheet');
           sheet.style.transform = '';
           sheet.style.transition = '';
-          document.body.style.overflow = '';
-        }, 360);
-      }
-      
-      
-      const userName = document.querySelectorAll(".userName");
-      const userId = document.querySelectorAll(".userId");
-      const userEmail = document.querySelectorAll(".email");
-      const tBalance = document.querySelectorAll(".balance");
-      
-      //  lucide.createIcons();
-      const navItems = document.querySelectorAll('.nav-item');
-      const allPages = document.querySelectorAll('.page');
-      
-      function switchPageByHash() {
-        const hash = window.location.hash || '#home';
-        const targetId = hash.substring(1);
-        const targetElement = document.getElementById(targetId);
-        if (targetElement) {
-          allPages.forEach(page => page.classList.add('hidden'));
-          navItems.forEach(item => item.classList.remove('active'));
-          targetElement.classList.remove('hidden');
-          navItems.forEach(item => {
-            if (item.getAttribute('href') === hash) item.classList.add('active');
-          });
-          document.getElementById('pageTitle').textContent = pageTitles[targetId] || targetId;
+          bd.classList.add('open');
+          document.body.style.overflow = 'hidden';
         }
-      }
+        
+        function closeNavSheet() {
+          const bd = document.getElementById('navSheetBackdrop');
+          const sheet = bd.querySelector('.nav-sheet');
+          sheet.style.transition = 'transform 0.35s cubic-bezier(0.32,0.72,0,1)';
+          sheet.style.transform = 'translateY(100%)';
+          setTimeout(() => {
+            bd.classList.remove('open');
+            sheet.style.transform = '';
+            sheet.style.transition = '';
+            document.body.style.overflow = '';
+          }, 360);
+        }
+        
+        
+        const userName = document.querySelectorAll(".userName");
+        const userId = document.querySelectorAll(".userId");
+        const userEmail = document.querySelectorAll(".email");
+        const tBalance = document.querySelectorAll(".balance");
+        
+        //  lucide.createIcons();
+        const navItems = document.querySelectorAll('.nav-item');
+        const allPages = document.querySelectorAll('.page');
+        
+        function switchPageByHash() {
+          const hash = window.location.hash || '#home';
+          const targetId = hash.substring(1);
+          const targetElement = document.getElementById(targetId);
+          if (targetElement) {
+            allPages.forEach(page => page.classList.add('hidden'));
+            navItems.forEach(item => item.classList.remove('active'));
+            targetElement.classList.remove('hidden');
+            navItems.forEach(item => {
+              if (item.getAttribute('href') === hash) item.classList.add('active');
+            });
+            document.getElementById('pageTitle').textContent = pageTitles[targetId] || targetId;
+          }
+        }
+        
+        window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
+        window.addEventListener('hashchange', switchPageByHash);
+      </script>
       
-      window.addEventListener('DOMContentLoaded', () => { switchPageByHash(); });
-      window.addEventListener('hashchange', switchPageByHash);
-    </script>
-    
 </body>
 
 </html>

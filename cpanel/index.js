@@ -239,6 +239,33 @@ document.addEventListener('click', (e) => {
   }
 });
 */
+const allPages = document.querySelectorAll('.page');
+// 1. Select all elements with the .page class
+let lastScrollTop = 0;
+const threshold = 15;
+
+allPages.forEach(page => {
+  page.addEventListener('scroll', () => {
+    const currentScroll = page.scrollTop;
+
+    // Accuracy Check: Ignore tiny jitters
+    if (Math.abs(currentScroll - lastScrollTop) < threshold) return;
+
+    // FIXED LOGIC:
+    // Scroll DOWN -> HIDE
+    // Scroll UP -> SHOW
+    if (currentScroll > lastScrollTop) {
+      sideBar?.classList.add('hide-scroll');
+    } else {
+      sideBar?.classList.remove('hide-scroll');
+    }
+
+    // Update position - ensures it stays positive
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+  }, { passive: true });
+});
+
+
 // Theme toggle (header button)
 const toggler = document.getElementById('theme-toggle');
 
@@ -261,8 +288,6 @@ if (toggler) {
 
 // ── Hash-based page switching ──────────────────────────────
 const navItems = document.querySelectorAll('.nav-item');
-const allPages = document.querySelectorAll('.page');
-
 function switchPageByHash() {
   const hash = window.location.hash || '#dashboard';
   //checkAdminSession()
