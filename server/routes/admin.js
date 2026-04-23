@@ -197,6 +197,23 @@ router.get('/tasks/submissions', requireAdmin, async (req, res) => {
   }
 });
 
+// ─── DELETE /api/admin/activity/clear-all ────────────────
+// Permanently delete all activity logs
+router.delete('/activity/clear-all', requireAdmin, async (req, res) => {
+  try {
+    // Deletes all documents in the Activity collection
+    await Activity.deleteMany({});
+    
+    res.json({ 
+      success: true, 
+      message: 'All activity logs cleared successfully.' 
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ─── PUT /api/admin/tasks/submissions/:id ─────────────────
 // Approve or decline a submission
 router.put('/tasks/submissions/:id', requireAdmin, async (req, res) => {

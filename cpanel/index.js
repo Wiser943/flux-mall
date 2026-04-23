@@ -4141,6 +4141,31 @@ function renderActivityPage() {
   });
 }
 
+async function clearAllActivity() {
+  showConfirm({
+    title: "Clear Logs",
+    msg: `Are you sure you want to permanently clear ALL activity logs? This cannot be undone.`,
+    type: "danger",
+    yesLabel: "Clear",
+    onYes: async () => {
+      const data = await api('/api/admin/activity/clear-all', { method: 'DELETE' });
+      if (data?.success) {
+        // Reset local data
+        _activity = [];
+        _aFiltered = [];
+        // Update UI elements
+        setText('tcActivity', 0);
+        renderActivityPage();
+        // Optional: show a success message
+        showToast('All activity logs have been cleared.', "success");
+      } else {
+        showToast(data?.error || 'Failed to clear activity logs.', "error");
+      }
+    },
+  });
+}
+
+
 // ═══════════════════════════════════════════════════════════
 // EXPORT CSV
 // ═══════════════════════════════════════════════════════════
@@ -4985,21 +5010,21 @@ async function atLoadTasks() {
   
   const data = await api('/api/admin/tasks');
   _atTasks = data?.tasks || [];
-
-    // Stats
-    const totalPending  = _atSubs.filter(s=>s.status==='pending').length;
-    const totalApproved = _atSubs.filter(s=>s.status==='approved').length;
-    const totalDeclined = _atSubs.filter(s=>s.status==='declined').length;
-    atSetText('atStatTasks',    _atTasks.length);
-    atSetText('atStatPending',  totalPending);
-    atSetText('atStatApproved', totalApproved);
-    atSetText('atStatDeclined', totalDeclined);
-    atSetText('atTcCatalog',    _atTasks.length);
-
-    // Populate category filter
-    const cats = [...new Set(_atTasks.map(t=>t.category).filter(Boolean))];
-    const catSel = document.getElementById('atCatFilter');
-    if(catSel){ catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c=>`<option value="${c}">${c}</option>`).join(''); }
+  
+  // Stats
+  const totalPending = _atSubs.filter(s => s.status === 'pending').length;
+  const totalApproved = _atSubs.filter(s => s.status === 'approved').length;
+  const totalDeclined = _atSubs.filter(s => s.status === 'declined').length;
+  atSetText('atStatTasks', _atTasks.length);
+  atSetText('atStatPending', totalPending);
+  atSetText('atStatApproved', totalApproved);
+  atSetText('atStatDeclined', totalDeclined);
+  atSetText('atTcCatalog', _atTasks.length);
+  
+  // Populate category filter
+  const cats = [...new Set(_atTasks.map(t => t.category).filter(Boolean))];
+  const catSel = document.getElementById('atCatFilter');
+  if (catSel) { catSel.innerHTML = '<option value="all">All Categories</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join(''); }
   
   atRenderCatalog(_atTasks);
 }
