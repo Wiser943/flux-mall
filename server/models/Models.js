@@ -140,7 +140,64 @@ const typingSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+const UserCampaignSchema = new mongoose.Schema({
+  // Creator info
+  creatorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  creatorName: { type: String },
+  
+  // Campaign content
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  instructions: { type: String, default: '' },
+  proofType: { type: String, enum: ['screenshot', 'url', 'text', 'none'], default: 'screenshot' },
+  taskLink: { type: String, default: '' },
+  platform: { type: String, default: '' },
+  category: { type: String, default: 'General' },
+  
+  // Reach & fees
+  targetReach: { type: Number, required: true, min: 1 }, // how many users creator wants to do the task
+  rewardPerUser: { type: Number, required: true, min: 1 }, // FEX reward paid to each doer
+  creationFee: { type: Number, default: 0 }, // one-time fee charged on creation
+  reachFeeTotal: { type: Number, default: 0 }, // targetReach * rewardPerUser (held in escrow)
+  totalCharged: { type: Number, default: 0 }, // creationFee + reachFeeTotal
+  
+  // Admin approval flow
+  adminStatus: { type: String, enum: ['pending', 'approved', 'declined'], default: 'pending' },
+  adminNote: { type: String, default: '' },
+  reviewedAt: { type: Date },
+  
+  // Live status (only relevant after admin approves)
+  active: { type: Boolean, default: false },
+  expiresAt: { type: Date },
+  
+  // Abuse tracking
+  totalDeclines: { type: Number, default: 0 }, // times creator declined valid submissions
+  warnedAt: { type: Date },
+  declineBanUntil: { type: Date }, // creator banned from creating until this date
+  
+}, { timestamps: true });
+
+const UserCampaignSubmissionSchema = new mongoose.Schema({
+  campaignId: { type: mongoose.Schema.Types.ObjectId, ref: 'UserCampaign', required: true },
+  doerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  proof: { type: String, default: '' },
+  status: { type: String, enum: ['pending', 'approved', 'declined'], default: 'pending' },
+  
+  // Creator review
+  creatorNote: { type: String, default: '' },
+  reviewedAt: { type: Date },
+  
+  // Payout tracking
+  rewarded: { type: Boolean, default: false },
+  rewardAmt: { type: Number, default: 0 },
+}, { timestamps: true });
+
+// Prevent double submissions
+UserCampaignSubmissionSchema.index({ campaignId: 1, doerId: 1 }, { unique: true });
+
 module.exports = {
+  UserCampaign = mongoose.model('UserCampaign', UserCampaignSchema),
+  UserCampaignSubmission = mongoose.model('UserCampaignSubmission', UserCampaignSubmissionSchema),
   Task: mongoose.model('Task', TaskSchema),
   TaskSubmission: mongoose.model('TaskSubmission', TaskSubmissionSchema),
   Deposit: mongoose.model('Deposit', depositSchema),

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+</head>
+
+<body>
+<!--
+  ══════════════════════════════════════════════════════════════════════════
+  ADMIN PANEL ADDITIONS — USER CAMPAIGNS FEATURE
+  ══════════════════════════════════════════════════════════════════════════
+
+  HOW TO INTEGRATE:
+
+  1. In admin.html, find the tasks sidebar nav item and ADD this new nav item:
+     <li><a class="nav-item" href="#campaigns"><i class='bx bx-megaphone'></i><span>User Campaigns</span></a></li>
+
+  2. Replace the broken third tasks tab button (the duplicate "User campaigns" one) with:
+     <button class="tab-btn" onclick="switchTab('tasks-usercampaigns',this)">
+       <i class="ri-megaphone-line"></i><span>User Campaigns</span>
+       <span class="tab-count" id="atTcUserCampaigns">0</span>
+     </button>
+
+  3. Add this tab panel inside the tasks tabs-wrap, after the submissions panel:
+  ══════════════════════════════════════════════════════════════════════════
+-->
+
+<!-- ══ USER CAMPAIGNS TAB PANEL (inside #tasks page tabs-wrap) ══ -->
+<div class="tab-panel" id="panel-tasks-usercampaigns">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="ri-search-line"></i>
+      <input class="search-input" type="text" placeholder="Search campaigns or creator…" oninput="atFilterUserCampaigns(this.value)">
+    </div>
+    <select class="filter-select" onchange="atFilterCampaignStatus(this.value)" id="atCampaignStatusFilter">
+      <option value="all">All Status</option>
+      <option value="pending">Pending Review</option>
+      <option value="approved">Approved</option>
+      <option value="declined">Declined</option>
+    </select>
+  </div>
+
+  <div id="atUserCampaignsGrid" class="tasks-grid">
+    <div class="state-box" style="grid-column:1/-1"><div class="spinner"></div><p>Loading campaigns…</p></div>
+  </div>
+</div>
+
+
+<!--
+  4. CAMPAIGN SETTINGS SECTION — paste inside the Settings page settings-grid,
+     after the existing Payment section label/grid, under "Platform Controls"
+-->
+
+<!-- ══ CAMPAIGN SETTINGS CARD (in Settings page) ══ -->
+<div class="section-card" id="card-campaigns" data-search-keywords="campaign user task creation fee referral shares minimum requirements decline ban">
+  <div class="section-header" onclick="toggleSection('card-campaigns')">
+    <div class="section-header-left">
+      <div class="section-icon blue"><i class="ri-megaphone-line"></i></div>
+      <div>
+        <div class="section-title-text">User Campaign Settings</div>
+        <div class="section-sub">Requirements & fees for user-created campaigns</div>
+      </div>
+    </div>
+    <i class="ri-arrow-down-s-line section-chevron"></i>
+  </div>
+  <div class="section-body">
+
+    <!-- Eligibility Requirements -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin-bottom:12px;">Eligibility Requirements</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Min. Referrals Required</label>
+        <div class="num-wrap">
+          <button class="num-btn" onclick="stepNum('campMinReferrals',-1)"><i class="ri-subtract-line"></i></button>
+          <input type="number" id="campMinReferrals" value="3" min="0">
+          <button class="num-btn" onclick="stepNum('campMinReferrals',1)"><i class="ri-add-line"></i></button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Min. Share Packages Owned</label>
+        <div class="num-wrap">
+          <button class="num-btn" onclick="stepNum('campMinShares',-1)"><i class="ri-subtract-line"></i></button>
+          <input type="number" id="campMinShares" value="2" min="0">
+          <button class="num-btn" onclick="stepNum('campMinShares',1)"><i class="ri-add-line"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fees -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin:16px 0 12px;">Fee Structure</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Campaign Creation Fee (FEX)</label>
+        <div class="input-adorn">
+          <span class="input-adorn-prefix">🪙</span>
+          <input type="number" id="campCreationFee" value="500" min="0">
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">One-time fee charged when user submits campaign</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Platform Fee on Reach Pool (%)</label>
+        <div class="input-adorn">
+          <input type="number" id="campReachFeePercent" value="10" min="0" max="50">
+          <span class="input-adorn-suffix">%</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">% charged on top of (targetReach × rewardPerUser)</div>
+      </div>
+    </div>
+
+    <!-- Abuse / Ban Settings -->
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin:16px 0 12px;">Decline Abuse Protection</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Max Declines Before Ban</label>
+        <div class="num-wrap">
+          <button class="num-btn" onclick="stepNum('campMaxDeclines',-1)"><i class="ri-subtract-line"></i></button>
+          <input type="number" id="campMaxDeclines" value="3" min="1">
+          <button class="num-btn" onclick="stepNum('campMaxDeclines',1)"><i class="ri-add-line"></i></button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Warning issued at half this value</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ban Duration (Days)</label>
+        <div class="num-wrap">
+          <button class="num-btn" onclick="stepNum('campBanDays',-1)"><i class="ri-subtract-line"></i></button>
+          <input type="number" id="campBanDays" value="7" min="1">
+          <button class="num-btn" onclick="stepNum('campBanDays',1)"><i class="ri-add-line"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-configure" onclick="saveCampaignSettings()">
+      <i class="ri-save-3-line"></i> Save Campaign Settings
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT — add to admin panel JS (index.js or inline script)
+     ══════════════════════════════════════════════════════════════════════ -->
+<script id="admin-campaigns-js">
+
+// ── Campaign data cache ──────────────────────────────────────────────────────
+let _atAllCampaigns = [];
+let _atCampaignFilter = { text: '', status: 'all' };
+
+// ── Load user campaigns ──────────────────────────────────────────────────────
+async function atLoadUserCampaigns() {
+  try {
+    const data = await api('/api/admin/campaigns');
+    _atAllCampaigns = data.campaigns || [];
+    document.getElementById('atTcUserCampaigns').textContent = _atAllCampaigns.filter(c => c.adminStatus === 'pending').length;
+    atRenderUserCampaigns();
+  } catch (e) {
+    document.getElementById('atUserCampaignsGrid').innerHTML =
+      `<div class="state-box" style="grid-column:1/-1"><i class="ri-error-warning-line"></i><p>Failed to load campaigns</p></div>`;
+  }
+}
+
+// ── Filter helpers ────────────────────────────────────────────────────────────
+function atFilterUserCampaigns(val) {
+  _atCampaignFilter.text = val.toLowerCase();
+  atRenderUserCampaigns();
+}
+function atFilterCampaignStatus(val) {
+  _atCampaignFilter.status = val;
+  atRenderUserCampaigns();
+}
+
+// ── Render grid ───────────────────────────────────────────────────────────────
+function atRenderUserCampaigns() {
+  const grid = document.getElementById('atUserCampaignsGrid');
+  let list = _atAllCampaigns;
+
+  if (_atCampaignFilter.status !== 'all')
+    list = list.filter(c => c.adminStatus === _atCampaignFilter.status);
+  if (_atCampaignFilter.text)
+    list = list.filter(c =>
+      c.title.toLowerCase().includes(_atCampaignFilter.text) ||
+      (c.creatorId?.username || '').toLowerCase().includes(_atCampaignFilter.text)
+    );
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="state-box" style="grid-column:1/-1"><i class="ri-inbox-line"></i><p>No campaigns found</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(c => {
+    const creator   = c.creatorId;
+    const subs      = c.submissionStats || {};
+    const statusCls = { pending: 'warning', approved: 'success', declined: 'danger' }[c.adminStatus] || 'warning';
+    const statusIcon = { pending: 'ri-time-line', approved: 'ri-checkbox-circle-line', declined: 'ri-close-circle-line' }[c.adminStatus];
+    const banBadge  = c.declineBanUntil && new Date(c.declineBanUntil) > new Date()
+      ? `<span class="atag" style="background:rgba(238,93,80,.12);color:#ee5d50;">🚫 Creator Banned</span>` : '';
+
+    return `
+    <div class="task-card-admin" style="background:var(--card-bg,#fff);border:1.5px solid var(--border);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 12px rgba(0,0,0,.04);">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div>
+          <div style="font-weight:800;font-size:15px;color:var(--text1);margin-bottom:3px;">${escHtml(c.title)}</div>
+          <div style="font-size:12px;color:var(--text3);">By <b>${escHtml(creator?.username || 'Unknown')}</b> · ${c.category || 'General'}</div>
+        </div>
+        <span class="badge ${statusCls}" style="flex-shrink:0;"><i class="${statusIcon}"></i> ${c.adminStatus}</span>
+      </div>
+
+      <div style="font-size:13px;color:var(--text2);line-height:1.6;">${escHtml(c.description)}</div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:11px;">
+        <span class="atag"><i class="ri-coin-line"></i> 🪙${c.rewardPerUser} / doer</span>
+        <span class="atag"><i class="ri-group-line"></i> ${c.targetReach} target reach</span>
+        <span class="atag"><i class="ri-money-dollar-circle-line"></i> 🪙${c.totalCharged} charged</span>
+        <span class="atag"><i class="ri-inbox-line"></i> ${subs.total || 0} submissions</span>
+        <span class="atag"><i class="ri-checkbox-circle-line" style="color:var(--success,#05cd99)"></i> ${subs.approved || 0} approved</span>
+        ${banBadge}
+      </div>
+
+      ${c.adminNote ? `<div style="background:var(--warning-soft,rgba(246,173,85,.1));border-left:3px solid var(--warning,#f6ad55);border-radius:0 8px 8px 0;padding:8px 12px;font-size:12px;color:var(--text2);">📝 ${escHtml(c.adminNote)}</div>` : ''}
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        ${c.adminStatus === 'pending' ? `
+          <button class="btn btn-primary btn-sm" onclick="atReviewCampaign('${c._id}','approved')"><i class="ri-checkbox-circle-line"></i> Approve</button>
+          <button class="btn btn-sm" style="background:var(--danger-soft,rgba(238,93,80,.1));color:#ee5d50;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;" onclick="atReviewCampaign('${c._id}','declined')"><i class="ri-close-circle-line"></i> Decline</button>
+        ` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="atViewCampaignSubs('${c._id}','${escHtml(c.title)}')"><i class="ri-eye-line"></i> View Submissions</button>
+        <button class="btn btn-sm" style="background:var(--danger-soft,rgba(238,93,80,.1));color:#ee5d50;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;" onclick="atDeleteCampaign('${c._id}','${escHtml(c.title)}')"><i class="ri-delete-bin-line"></i> Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Review (approve / decline) ────────────────────────────────────────────────
+async function atReviewCampaign(id, status) {
+  let note = '';
+  if (status === 'declined') {
+    note = prompt('Decline reason (optional, shown to user):') || '';
+  }
+
+  showConfirmModal(
+    status === 'approved' ? 'Approve Campaign?' : 'Decline Campaign?',
+    status === 'approved'
+      ? 'This will make the campaign live for all users. The creator has already been charged.'
+      : `This will decline the campaign and REFUND the creator.${note ? `\nReason: "${note}"` : ''}`,
+    async () => {
+      try {
+        await api(`/api/admin/campaigns/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ adminStatus: status, adminNote: note })
+        });
+        showToast(status === 'approved' ? 'Campaign approved & live!' : 'Campaign declined & creator refunded.', status === 'approved' ? 'success' : 'warning');
+        atLoadUserCampaigns();
+      } catch (e) {
+        showToast(e.message || 'Failed', 'error');
+      }
+    }
+  );
+}
+
+// ── Delete ─────────────────────────────────────────────────────────────────────
+async function atDeleteCampaign(id, title) {
+  showConfirmModal(
+    'Delete Campaign?',
+    `Delete "${title}"? Creator will be refunded if applicable. This cannot be undone.`,
+    async () => {
+      try {
+        await api(`/api/admin/campaigns/${id}`, { method: 'DELETE' });
+        showToast('Campaign deleted.', 'success');
+        atLoadUserCampaigns();
+      } catch (e) {
+        showToast(e.message || 'Failed', 'error');
+      }
+    }
+  );
+}
+
+// ── View submissions modal ─────────────────────────────────────────────────────
+async function atViewCampaignSubs(id, title) {
+  // Reuse admin submissions endpoint by showing a simple overlay
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+  modal.innerHTML = `
+    <div style="background:var(--card-bg,#fff);border-radius:20px;width:100%;max-width:720px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.2);">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+        <div><div style="font-weight:800;font-size:16px;">Campaign Submissions</div><div style="font-size:12px;color:var(--text3);">${escHtml(title)}</div></div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--text2);">✕</button>
+      </div>
+      <div id="atCampSubsInner" style="overflow-y:auto;padding:20px;">
+        <div class="state-box"><div class="spinner"></div><p>Loading…</p></div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  try {
+    // Use admin submissions endpoint filtered by campaignId — or fetch all and filter
+    const data = await api(`/api/admin/campaigns/${id}/submissions`);
+    const subs = data.submissions || [];
+    const inner = document.getElementById('atCampSubsInner');
+    if (!subs.length) { inner.innerHTML = '<div class="state-box"><i class="ri-inbox-line"></i><p>No submissions yet</p></div>'; return; }
+
+    inner.innerHTML = `<div class="table-wrap"><table>
+      <thead><tr><th>Doer</th><th>Proof</th><th>Status</th><th>Submitted</th></tr></thead>
+      <tbody>
+        ${subs.map(s => `
+          <tr>
+            <td>${escHtml(s.doerId?.username || '—')}</td>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              ${s.proof?.startsWith('http') ? `<a href="${escHtml(s.proof)}" target="_blank" style="color:var(--accent2)">🔗 View proof</a>` : escHtml(s.proof || '—')}
+            </td>
+            <td><span class="badge ${s.status === 'approved' ? 'success' : s.status === 'declined' ? 'danger' : 'warning'}">${s.status}</span></td>
+            <td style="font-size:12px;color:var(--text3);">${new Date(s.createdAt).toLocaleDateString()}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+  } catch (e) {
+    document.getElementById('atCampSubsInner').innerHTML = `<div class="state-box"><i class="ri-error-warning-line"></i><p>${e.message}</p></div>`;
+  }
+}
+
+// ── Campaign settings load/save ────────────────────────────────────────────────
+async function loadCampaignSettings() {
+  try {
+    const data = await api('/api/admin/campaigns/settings');
+    const s = data.settings || {};
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+    set('campMinReferrals',   s.minReferrals        || 3);
+    set('campMinShares',      s.minShares           || 2);
+    set('campCreationFee',    s.creationFee         || 500);
+    set('campReachFeePercent',s.reachFeePercent     || 10);
+    set('campMaxDeclines',    s.maxDeclineBeforeBan || 3);
+    set('campBanDays',        s.declineBanDays      || 7);
+  } catch (e) { console.warn('Campaign settings load failed:', e); }
+}
+
+async function saveCampaignSettings() {
+  const get = id => Number(document.getElementById(id)?.value) || 0;
+  try {
+    await api('/api/admin/campaigns/settings', {
+      method: 'PUT',
+      body: JSON.stringify({
+        minReferrals:        get('campMinReferrals'),
+        minShares:           get('campMinShares'),
+        creationFee:         get('campCreationFee'),
+        reachFeePercent:     get('campReachFeePercent'),
+        maxDeclineBeforeBan: get('campMaxDeclines'),
+        declineBanDays:      get('campBanDays'),
+      })
+    });
+    showToast('Campaign settings saved!', 'success');
+  } catch (e) {
+    showToast(e.message || 'Save failed', 'error');
+  }
+}
+
+// ── Admin campaigns endpoint for individual campaign submissions ──────────────
+// Add this route to admin server if not present:
+// GET /api/admin/campaigns/:id/submissions
+// (returns UserCampaignSubmission.find({ campaignId: id }).populate('doerId', 'username email'))
+// The above is included in campaign-backend-additions.js
+
+// ── Hook into existing page load ──────────────────────────────────────────────
+// Call these in your existing init/refreshAll functions:
+//   atLoadUserCampaigns();
+//   loadCampaignSettings();
+
+// ── Helper: escape HTML ───────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+// ── Helper: confirm modal (wraps your existing confirm system) ────────────────
+function showConfirmModal(title, msg, onYes) {
+  // Uses your existing confirmOverlay system from admin.html
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  document.getElementById('confirmYesBtn').textContent = 'Confirm';
+  window._pendingConfirmCb = onYes;
+  document.getElementById('confirmOverlay').classList.add('visible');
+}
+
+// Patch existing confirmYes to also handle campaign callbacks
+const _origConfirmYes = window.confirmYes;
+window.confirmYes = function() {
+  if (window._pendingConfirmCb) {
+    const fn = window._pendingConfirmCb;
+    window._pendingConfirmCb = null;
+    fn();
+    document.getElementById('confirmOverlay').classList.remove('visible');
+    return;
+  }
+  if (_origConfirmYes) _origConfirmYes();
+};
+
+// Auto-load on page navigation to tasks
+document.querySelectorAll('[href="#tasks"]').forEach(el => {
+  el.addEventListener('click', () => setTimeout(atLoadUserCampaigns, 100));
+});
+document.querySelectorAll('[href="#settings"]').forEach(el => {
+  el.addEventListener('click', () => setTimeout(loadCampaignSettings, 100));
+});
+</script>
+
+
+<!--
+  ══════════════════════════════════════════════════════════════════════════
+  CSS additions — add to your admin CSS (style-03.css or style-04.css)
+  ══════════════════════════════════════════════════════════════════════════
+-->
+<style id="admin-campaigns-css">
+/* Task admin card grid */
+.tasks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* Small tag chips inside campaign cards */
+.atag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg2, #f4f7fe);
+  color: var(--text2, #4a5568);
+}
+
+/* Badge colors — mirror your existing badge classes */
+.badge.warning { background: var(--warning-soft, rgba(246,173,85,.12)); color: var(--warning, #f6ad55); }
+.badge.success { background: var(--success-soft, rgba(5,205,153,.12));  color: var(--success, #05cd99); }
+.badge.danger  { background: var(--danger-soft,  rgba(238,93,80,.12));  color: var(--danger,  #ee5d50); }
+</style>
+
+</body>
+
+</html>

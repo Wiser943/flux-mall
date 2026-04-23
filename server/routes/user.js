@@ -16,6 +16,8 @@ const {
   TaskSubmission,
   ChatSession,
   ChatMessage,
+  UserCampaign,
+  UserCampaignSubmission,
   Typing,
 } = require('../models/Models');
 const { requireAuth } = require('../middleware/auth');
@@ -181,6 +183,412 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+// 2. USER ROUTES  — paste into user server file
+// ─── GET /api/user/campaigns/settings ────────────────────────────────────────
+// Returns eligibility requirements so the UI can show live gating info
+router.get('/campaigns/settings', requireAuth, async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'campaignSettings' });
+    const s = doc?.value || {};
+    res.json({
+      success: true,
+      settings: {
+        minReferrals:        s.minReferrals        || 3,
+        minShares:           s.minShares           || 2,
+        creationFee:         s.creationFee         || 500,   // FEX
+        reachFeePercent:     s.reachFeePercent     || 10,    // % on top of rewardPerUser * targetReach
+        maxDeclineWarning:   s.maxDeclineWarning   || 3,
+        declineBanDays:      s.declineBanDays      || 7,
+        maxDeclineBeforeBan: s.maxDeclineBeforeBan || 3,
+      }
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── GET /api/user/campaigns/eligibility ─────────────────────────────────────
+// Checks if logged-in user meets all requirements to create a campaign
+router.get('/campaigns/eligibility', requireAuth, async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'campaignSettings' });
+    const s = doc?.value || {};
+    const minReferrals = s.minReferrals || 3;
+    const minShares    = s.minShares    || 2;
+
+    const user = await User.findById(req.user._id).select('emailVerified ib referrerId');
+    const refCount   = await User.countDocuments({ referrerId: req.user._id.toString() });
+    const shareCount = await PurchasedShare.countDocuments({ userId: req.user._id });
+
+    // Check if creator is currently banned
+    const activeBan = await UserCampaign.findOne({
+      creatorId:     req.user._id,
+      declineBanUntil: { $gt: new Date() }
+    }).sort({ declineBanUntil: -1 });
+
+    const checks = {
+      verified:   { pass: !!user.emailVerified,           required: true,         label: 'Email verified' },
+      referrals:  { pass: refCount >= minReferrals,        required: minReferrals, actual: refCount,  label: `${minReferrals} referrals` },
+      shares:     { pass: shareCount >= minShares,         required: minShares,    actual: shareCount, label: `${minShares} share packages` },
+    };
+
+    const eligible = Object.values(checks).every(c => c.pass) && !activeBan;
+
+    res.json({
+      success: true,
+      eligible,
+      banned: !!activeBan,
+      banUntil: activeBan?.declineBanUntil || null,
+      checks,
+    });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── POST /api/user/campaigns ────────────────────────────────────────────────
+// Create a new user campaign (charges FEX, sends to admin for approval)
+router.post('/campaigns', requireAuth, async (req, res) => {
+  try {
+    if (!requireVerified(req, res)) return;
+
+    const { title, description, instructions, proofType, taskLink, platform,
+            category, targetReach, rewardPerUser, expiresAt } = req.body;
+
+    if (!title || !description || !targetReach || !rewardPerUser)
+      return res.status(400).json({ error: 'Title, description, target reach and reward per user are required.' });
+
+    // Load settings
+    const doc = await Settings.findOne({ key: 'campaignSettings' });
+    const s = doc?.value || {};
+    const minReferrals        = s.minReferrals        || 3;
+    const minShares           = s.minShares           || 2;
+    const creationFee         = s.creationFee         || 500;
+    const reachFeePercent     = s.reachFeePercent     || 10;
+    const declineBanDays      = s.declineBanDays      || 7;
+
+    // Eligibility checks
+    const user      = await User.findById(req.user._id);
+    const refCount  = await User.countDocuments({ referrerId: req.user._id.toString() });
+    const shareCount = await PurchasedShare.countDocuments({ userId: req.user._id });
+
+    if (!user.emailVerified)
+      return res.status(403).json({ error: 'Email verification required to create campaigns.' });
+    if (refCount < minReferrals)
+      return res.status(403).json({ error: `You need at least ${minReferrals} referrals. You have ${refCount}.` });
+    if (shareCount < minShares)
+      return res.status(403).json({ error: `You need at least ${minShares} share packages. You have ${shareCount}.` });
+
+    // Check ban
+    const activeBan = await UserCampaign.findOne({
+      creatorId:     req.user._id,
+      declineBanUntil: { $gt: new Date() }
+    }).sort({ declineBanUntil: -1 });
+    if (activeBan) {
+      const until = new Date(activeBan.declineBanUntil).toLocaleDateString();
+      return res.status(403).json({ error: `You are banned from creating campaigns until ${until} due to excessive declines.` });
+    }
+
+    // Calculate fees
+    const reachFeeTotal = Number(targetReach) * Number(rewardPerUser);
+    const surcharge     = Math.ceil(reachFeeTotal * reachFeePercent / 100);
+    const totalCharged  = creationFee + reachFeeTotal + surcharge;
+
+    if (user.ib < totalCharged)
+      return res.status(400).json({
+        error: `Insufficient FEX balance. Required: 🪙${totalCharged.toLocaleString()} (${creationFee} creation fee + ${reachFeeTotal} reach pool + ${surcharge} platform fee). You have 🪙${user.ib}.`
+      });
+
+    // Deduct FEX immediately (held in escrow until approved/declined)
+    await User.findByIdAndUpdate(req.user._id, { $inc: { ib: -totalCharged } });
+
+    const campaign = await UserCampaign.create({
+      creatorId:    req.user._id,
+      creatorName:  user.username,
+      title, description,
+      instructions: instructions || '',
+      proofType:    proofType    || 'screenshot',
+      taskLink:     taskLink     || '',
+      platform:     platform     || '',
+      category:     category     || 'General',
+      targetReach:  Number(targetReach),
+      rewardPerUser: Number(rewardPerUser),
+      creationFee,
+      reachFeeTotal,
+      totalCharged,
+      expiresAt:    expiresAt ? new Date(expiresAt) : null,
+      adminStatus:  'pending',
+    });
+
+    await Activity.create({
+      userId: req.user._id,
+      type: 'Campaign',
+      amount: totalCharged,
+      desc: `Campaign submitted for review: "${title}" — 🪙${totalCharged} FEX charged`,
+    });
+
+    await Notification.create({
+      userId: req.user._id,
+      title: '📋 Campaign Submitted',
+      message: `Your campaign "${title}" has been submitted for admin review. 🪙${totalCharged} FEX has been held. You'll be notified once reviewed.`,
+    });
+
+    res.json({ success: true, campaign, totalCharged });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── GET /api/user/campaigns/mine ─────────────────────────────────────────────
+// Campaigns created by the logged-in user
+router.get('/campaigns/mine', requireAuth, async (req, res) => {
+  try {
+    const campaigns = await UserCampaign.find({ creatorId: req.user._id }).sort({ createdAt: -1 });
+
+    // Attach submission counts
+    const counts = await UserCampaignSubmission.aggregate([
+      { $match: { campaignId: { $in: campaigns.map(c => c._id) } } },
+      { $group: { _id: '$campaignId',
+          total:    { $sum: 1 },
+          pending:  { $sum: { $cond: [{ $eq: ['$status', 'pending']   }, 1, 0] } },
+          approved: { $sum: { $cond: [{ $eq: ['$status', 'approved']  }, 1, 0] } },
+          declined: { $sum: { $cond: [{ $eq: ['$status', 'declined']  }, 1, 0] } },
+        }
+      }
+    ]);
+    const cm = {};
+    counts.forEach(c => cm[c._id.toString()] = c);
+
+    const enriched = campaigns.map(c => ({
+      ...c.toObject(),
+      submissionStats: cm[c._id.toString()] || { total: 0, pending: 0, approved: 0, declined: 0 },
+    }));
+
+    res.json({ success: true, campaigns: enriched });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── GET /api/user/campaigns/active ───────────────────────────────────────────
+// All live campaigns (admin-approved) available for other users to do
+// Excludes campaigns created by the current user
+router.get('/campaigns/active', requireAuth, async (req, res) => {
+  try {
+    const now = new Date();
+    const campaigns = await UserCampaign.find({
+      adminStatus: 'approved',
+      active: true,
+      creatorId: { $ne: req.user._id },
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
+    }).sort({ createdAt: -1 });
+
+    // Mark which ones the current user already submitted
+    const subs = await UserCampaignSubmission.find({ doerId: req.user._id })
+      .select('campaignId status');
+    const subMap = {};
+    subs.forEach(s => subMap[s.campaignId.toString()] = s.status);
+
+    const approvedCounts = await UserCampaignSubmission.aggregate([
+      { $match: { status: 'approved' } },
+      { $group: { _id: '$campaignId', count: { $sum: 1 } } }
+    ]);
+    const acMap = {};
+    approvedCounts.forEach(c => acMap[c._id.toString()] = c.count);
+
+    const enriched = campaigns.map(c => {
+      const cid = c._id.toString();
+      const filled = acMap[cid] || 0;
+      return {
+        ...c.toObject(),
+        userStatus: subMap[cid] || null,
+        spotsLeft: Math.max(0, c.targetReach - filled),
+        canSubmit: !subMap[cid] || subMap[cid] === 'declined',
+      };
+    });
+
+    res.json({ success: true, campaigns: enriched });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── GET /api/user/campaigns/:id/submissions ──────────────────────────────────
+// Creator reviews their own campaign's submissions
+router.get('/campaigns/:id/submissions', requireAuth, async (req, res) => {
+  try {
+    const campaign = await UserCampaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ error: 'Campaign not found.' });
+    if (campaign.creatorId.toString() !== req.user._id.toString())
+      return res.status(403).json({ error: 'Access denied.' });
+
+    const submissions = await UserCampaignSubmission.find({ campaignId: req.params.id })
+      .sort({ createdAt: -1 })
+      .populate('doerId', 'username email');
+
+    res.json({ success: true, submissions });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── PUT /api/user/campaigns/:id/submissions/:subId ───────────────────────────
+// Creator approves or declines a submission on their own campaign
+router.put('/campaigns/:id/submissions/:subId', requireAuth, async (req, res) => {
+  try {
+    const { status, note } = req.body;
+    if (!['approved', 'declined'].includes(status))
+      return res.status(400).json({ error: 'Status must be approved or declined.' });
+
+    const campaign = await UserCampaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ error: 'Campaign not found.' });
+    if (campaign.creatorId.toString() !== req.user._id.toString())
+      return res.status(403).json({ error: 'Only the campaign creator can review submissions.' });
+
+    const sub = await UserCampaignSubmission.findById(req.params.subId)
+      .populate('doerId', 'username email ib');
+    if (!sub)    return res.status(404).json({ error: 'Submission not found.' });
+    if (sub.status !== 'pending')
+      return res.status(400).json({ error: 'Submission already reviewed.' });
+
+    sub.status     = status;
+    sub.creatorNote = note || '';
+    sub.reviewedAt = new Date();
+
+    if (status === 'approved') {
+      sub.rewarded  = true;
+      sub.rewardAmt = campaign.rewardPerUser;
+
+      // Credit doer
+      await User.findByIdAndUpdate(sub.doerId._id, { $inc: { ib: campaign.rewardPerUser } });
+      await Activity.create({
+        userId: sub.doerId._id,
+        type:   'Campaign Reward',
+        amount: campaign.rewardPerUser,
+        desc:   `Task approved: "${campaign.title}"`,
+      });
+      await Notification.create({
+        userId: sub.doerId._id,
+        title:  '✅ Campaign Task Approved!',
+        message: `Your submission for "${campaign.title}" was approved! 🪙${campaign.rewardPerUser} FEX credited.`,
+      });
+
+    } else {
+      // declined — track abuse
+      const doc = await Settings.findOne({ key: 'campaignSettings' });
+      const s = doc?.value || {};
+      const maxDeclineBeforeBan = s.maxDeclineBeforeBan || 3;
+      const declineBanDays      = s.declineBanDays      || 7;
+
+      campaign.totalDeclines = (campaign.totalDeclines || 0) + 1;
+
+      // Count across ALL campaigns by this creator this cycle
+      const creatorDeclines = await UserCampaign.aggregate([
+        { $match: { creatorId: campaign.creatorId } },
+        { $group: { _id: null, total: { $sum: '$totalDeclines' } } }
+      ]);
+      const totalCreatorDeclines = (creatorDeclines[0]?.total || 0) + 1;
+
+      if (totalCreatorDeclines >= maxDeclineBeforeBan) {
+        // BAN
+        const banUntil = new Date(Date.now() + declineBanDays * 24 * 60 * 60 * 1000);
+        campaign.declineBanUntil = banUntil;
+
+        await Notification.create({
+          userId: campaign.creatorId,
+          title:  '🚫 Campaign Creation Banned',
+          message: `You have been banned from creating campaigns for ${declineBanDays} days due to repeatedly declining valid task submissions. Ban expires: ${banUntil.toLocaleDateString()}.`,
+        });
+
+        // Delete the campaign
+        await UserCampaignSubmission.deleteMany({ campaignId: campaign._id });
+        await campaign.save();
+        await UserCampaign.findByIdAndDelete(campaign._id);
+
+        return res.json({ success: true, banned: true, banUntil, message: 'Creator banned and campaign deleted.' });
+
+      } else if (totalCreatorDeclines >= Math.floor(maxDeclineBeforeBan / 2)) {
+        // WARN
+        campaign.warnedAt = new Date();
+        await Notification.create({
+          userId: campaign.creatorId,
+          title:  '⚠️ Campaign Warning',
+          message: `Warning: You have declined ${totalCreatorDeclines} task submissions. If you reach ${maxDeclineBeforeBan} total declines, you will be banned from creating campaigns for ${declineBanDays} days.`,
+        });
+      }
+
+      await Notification.create({
+        userId: sub.doerId._id,
+        title:  '❌ Campaign Task Declined',
+        message: `Your submission for "${campaign.title}" was declined.${note ? ` Reason: ${note}` : ''} No FEX was deducted.`,
+      });
+    }
+
+    await campaign.save();
+    await sub.save();
+
+    res.json({ success: true, submission: sub });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── POST /api/user/campaigns/:id/submit ─────────────────────────────────────
+// Submit proof for a campaign task (doer)
+router.post('/campaigns/:id/submit', requireAuth, async (req, res) => {
+  try {
+    const { proof } = req.body;
+    const campaign = await UserCampaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ error: 'Campaign not found.' });
+    if (!campaign.active || campaign.adminStatus !== 'approved')
+      return res.status(400).json({ error: 'This campaign is not accepting submissions.' });
+    if (campaign.creatorId.toString() === req.user._id.toString())
+      return res.status(400).json({ error: 'You cannot submit to your own campaign.' });
+
+    // Check expiry
+    if (campaign.expiresAt && new Date() > campaign.expiresAt)
+      return res.status(400).json({ error: 'This campaign has expired.' });
+
+    // Check spots
+    const approvedCount = await UserCampaignSubmission.countDocuments({
+      campaignId: campaign._id,
+      status: 'approved'
+    });
+    if (approvedCount >= campaign.targetReach)
+      return res.status(400).json({ error: 'This campaign has reached its maximum completions.' });
+
+    // Check existing
+    const existing = await UserCampaignSubmission.findOne({
+      campaignId: req.params.id,
+      doerId: req.user._id
+    });
+    if (existing) {
+      if (existing.status === 'pending')
+        return res.status(400).json({ error: 'You already submitted. Awaiting creator review.' });
+      if (existing.status === 'approved')
+        return res.status(400).json({ error: 'You already completed this campaign task.' });
+      // Resubmit after decline
+      existing.proof     = proof || '';
+      existing.status    = 'pending';
+      existing.creatorNote = '';
+      existing.reviewedAt  = null;
+      await existing.save();
+      return res.json({ success: true, submission: existing, message: 'Re-submitted for review!' });
+    }
+
+    if (campaign.proofType !== 'none' && !proof?.trim())
+      return res.status(400).json({ error: 'Proof is required for this campaign.' });
+
+    const sub = await UserCampaignSubmission.create({
+      campaignId: campaign._id,
+      doerId:     req.user._id,
+      proof:      proof || '',
+      rewardAmt:  campaign.rewardPerUser,
+    });
+
+    // Notify campaign creator
+    await Notification.create({
+      userId: campaign.creatorId,
+      title:  '📥 New Campaign Submission',
+      message: `Someone submitted proof for your campaign "${campaign.title}". Review it in your Tasks page.`,
+    });
+
+    res.json({ success: true, submission: sub, message: 'Submitted! Awaiting creator review.' });
+  } catch (err) {
+    if (err.code === 11000)
+      return res.status(400).json({ error: 'You already submitted this campaign task.' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // ─── GET /api/user/fex-rate ───────────────────────────────
 router.get('/fex-rate', requireAuth, async (req, res) => {
@@ -467,20 +875,20 @@ router.get('/my-investments', requireAuth, async (req, res) => {
 router.get('/tasks', requireAuth, async (req, res) => {
   try {
     const now = new Date();
-
+    
     // Only return active tasks that haven't expired
     const tasks = await Task.find({
       active: true,
       $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
     }).sort({ createdAt: -1 });
-
+    
     // Fetch user's own submissions so we can mark done/pending tasks
     const userSubmissions = await TaskSubmission.find({ userId: req.user._id })
       .select('taskId status proof');
-
+    
     const submissionMap = {};
     userSubmissions.forEach(s => { submissionMap[s.taskId.toString()] = s.status; });
-
+    
     // Attach completion counts and user status to each task
     const counts = await TaskSubmission.aggregate([
       { $match: { taskId: { $in: tasks.map(t => t._id) }, status: 'approved' } },
@@ -488,22 +896,22 @@ router.get('/tasks', requireAuth, async (req, res) => {
     ]);
     const countMap = {};
     counts.forEach(c => { countMap[c._id.toString()] = c.count; });
-
+    
     const enriched = tasks.map(t => {
-      const tid        = t._id.toString();
-      const completed  = countMap[tid] || 0;
-      const maxHit     = t.maxCompletions > 0 && completed >= t.maxCompletions;
+      const tid = t._id.toString();
+      const completed = countMap[tid] || 0;
+      const maxHit = t.maxCompletions > 0 && completed >= t.maxCompletions;
       const userStatus = submissionMap[tid] || null; // null = not submitted yet
-
+      
       return {
         ...t.toObject(),
         completedCount: completed,
-        maxReached:     maxHit,
-        userStatus,          // 'pending' | 'approved' | 'declined' | null
-        canSubmit:      !maxHit && (!userStatus || userStatus === 'declined'), // allow resubmit after decline
+        maxReached: maxHit,
+        userStatus, // 'pending' | 'approved' | 'declined' | null
+        canSubmit: !maxHit && (!userStatus || userStatus === 'declined'), // allow resubmit after decline
       };
     });
-
+    
     res.json({ success: true, tasks: enriched });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -517,7 +925,7 @@ router.get('/tasks/my-submissions', requireAuth, async (req, res) => {
     const submissions = await TaskSubmission.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
       .populate('taskId', 'title points category proofType platform taskLink');
-
+    
     res.json({ success: true, submissions });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -530,21 +938,21 @@ router.post('/tasks/:id/submit', requireAuth, async (req, res) => {
   try {
     const { proof } = req.body;
     const task = await Task.findById(req.params.id);
-
-    if (!task)          return res.status(404).json({ error: 'Task not found.' });
-    if (!task.active)   return res.status(400).json({ error: 'This task is no longer active.' });
-
+    
+    if (!task) return res.status(404).json({ error: 'Task not found.' });
+    if (!task.active) return res.status(400).json({ error: 'This task is no longer active.' });
+    
     // Check expiry
     if (task.expiresAt && new Date() > task.expiresAt)
       return res.status(400).json({ error: 'This task has expired.' });
-
+    
     // Check max completions
     if (task.maxCompletions > 0) {
       const approvedCount = await TaskSubmission.countDocuments({ taskId: task._id, status: 'approved' });
       if (approvedCount >= task.maxCompletions)
         return res.status(400).json({ error: 'This task has reached its maximum completions.' });
     }
-
+    
     // Check if user already submitted
     const existing = await TaskSubmission.findOne({ taskId: task._id, userId: req.user._id });
     if (existing) {
@@ -553,42 +961,42 @@ router.post('/tasks/:id/submit', requireAuth, async (req, res) => {
       if (existing.status === 'approved')
         return res.status(400).json({ error: 'You already completed this task.' });
       // If declined — allow re-submission by updating existing doc
-      existing.proof     = proof || '';
-      existing.status    = 'pending';
+      existing.proof = proof || '';
+      existing.status = 'pending';
       existing.adminNote = '';
-      existing.penalty   = 0;
+      existing.penalty = 0;
       existing.createdAt = new Date();
       await existing.save();
-
+      
       await Activity.create({
         userId: req.user._id,
-        type:   'Task',
+        type: 'Task',
         amount: 0,
-        desc:   `Re-submitted task: ${task.title}`,
+        desc: `Re-submitted task: ${task.title}`,
       });
-
+      
       return res.json({ success: true, submission: existing, message: 'Task re-submitted for review!' });
     }
-
+    
     // Require proof if task demands it
     if (task.proofType !== 'none' && !proof?.trim())
       return res.status(400).json({ error: 'Please provide proof to submit this task.' });
-
+    
     const submission = await TaskSubmission.create({
       taskId: task._id,
       userId: req.user._id,
-      proof:  proof || '',
+      proof: proof || '',
       status: 'pending',
       points: task.points,
     });
-
+    
     await Activity.create({
       userId: req.user._id,
-      type:   'Task',
+      type: 'Task',
       amount: 0,
-      desc:   `Submitted task: ${task.title}`,
+      desc: `Submitted task: ${task.title}`,
     });
-
+    
     res.json({ success: true, submission, message: 'Task submitted! Awaiting admin review.' });
   } catch (err) {
     // Duplicate key error = already submitted

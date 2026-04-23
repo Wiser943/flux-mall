@@ -17,6 +17,8 @@ const {
   ChatMessage,
   Typing,
   Task,
+  UserCampaign,
+  UserCampaignSubmission,
   TaskSubmission,
 } = require('../models/Models');
 const { requireAdmin } = require('../middleware/auth');
@@ -73,10 +75,14 @@ router.get('/analytics', requireAdmin, async (req, res) => {
     let withdrawSuccessV = 0;
     
     deposits.forEach(d => {
-      if (d.status === 'success') { successV += d.amount;
-        sCount++; }
-      else if (d.status === 'pending') { pendingV += d.amount;
-        pCount++; }
+      if (d.status === 'success') {
+        successV += d.amount;
+        sCount++;
+      }
+      else if (d.status === 'pending') {
+        pendingV += d.amount;
+        pCount++;
+      }
       else dCount++;
     });
     
@@ -204,9 +210,9 @@ router.delete('/activity/clear-all', requireAdmin, async (req, res) => {
     // Deletes all documents in the Activity collection
     await Activity.deleteMany({});
     
-    res.json({ 
-      success: true, 
-      message: 'All activity logs cleared successfully.' 
+    res.json({
+      success: true,
+      message: 'All activity logs cleared successfully.'
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -946,5 +952,162 @@ router.put('/chat/session/:id/block', requireAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
+// 3. ADMIN ROUTES — paste into admin server file
+// ─── GET /api/admin/campaigns ────────────────────────────────────────────────
+router.get('/campaigns', requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = {};
+    if (status && status !== 'all') filter.adminStatus = status;
+    
+    const campaigns = await UserCampaign.find(filter)
+      .sort({ createdAt: -1 })
+      .populate('creatorId', 'username email ib status');
+    
+    // Attach submission counts
+    const counts = await UserCampaignSubmission.aggregate([
+    {
+      $group: {
+        _id: '$campaignId',
+        total: { $sum: 1 },
+        pending: { $sum: { $cond: [{ $eq: ['$status', 'pending'] }, 1, 0] } },
+        approved: { $sum: { $cond: [{ $eq: ['$status', 'approved'] }, 1, 0] } },
+        declined: { $sum: { $cond: [{ $eq: ['$status', 'declined'] }, 1, 0] } },
+      }
+    }]);
+    const cm = {};
+    counts.forEach(c => cm[c._id.toString()] = c);
+    
+    const enriched = campaigns.map(c => ({
+      ...c.toObject(),
+      submissionStats: cm[c._id.toString()] || { total: 0, pending: 0, approved: 0, declined: 0 },
+    }));
+    
+    res.json({ success: true, campaigns: enriched });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── PUT /api/admin/campaigns/:id ────────────────────────────────────────────
+// Admin approves or declines a user campaign
+router.put('/campaigns/:id', requireAdmin, async (req, res) => {
+  try {
+    const { adminStatus, adminNote } = req.body;
+    if (!['approved', 'declined'].includes(adminStatus))
+      return res.status(400).json({ error: 'adminStatus must be approved or declined.' });
+    
+    const campaign = await UserCampaign.findById(req.params.id)
+      .populate('creatorId', 'username email ib');
+    if (!campaign) return res.status(404).json({ error: 'Campaign not found.' });
+    if (campaign.adminStatus !== 'pending')
+      return res.status(400).json({ error: 'Campaign already reviewed.' });
+    
+    campaign.adminStatus = adminStatus;
+    campaign.adminNote = adminNote || '';
+    campaign.reviewedAt = new Date();
+    
+    if (adminStatus === 'approved') {
+      campaign.active = true;
+      
+      await Notification.create({
+        userId: campaign.creatorId._id,
+        title: '✅ Campaign Approved!',
+        message: `Your campaign "${campaign.title}" has been approved and is now live for other users to complete!`,
+      });
+      
+    } else {
+      // Declined — refund the creator
+      campaign.active = false;
+      await User.findByIdAndUpdate(campaign.creatorId._id, { $inc: { ib: campaign.totalCharged } });
+      
+      await Activity.create({
+        userId: campaign.creatorId._id,
+        type: 'Campaign Refund',
+        amount: campaign.totalCharged,
+        desc: `Campaign declined by admin — 🪙${campaign.totalCharged} FEX refunded`,
+      });
+      
+      await Notification.create({
+        userId: campaign.creatorId._id,
+        title: '❌ Campaign Declined',
+        message: `Your campaign "${campaign.title}" was declined by admin.${adminNote ? ` Reason: ${adminNote}` : ''} 🪙${campaign.totalCharged} FEX has been refunded to your wallet.`,
+      });
+    }
+    
+    await campaign.save();
+    res.json({ success: true, campaign });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── DELETE /api/admin/campaigns/:id ─────────────────────────────────────────
+// Admin deletes a campaign (refunds creator if active/pending)
+router.delete('/campaigns/:id', requireAdmin, async (req, res) => {
+  try {
+    const campaign = await UserCampaign.findById(req.params.id);
+    if (!campaign) return res.status(404).json({ error: 'Campaign not found.' });
+    
+    // Refund creator if campaign was pending or active (fees were already charged)
+    if (['pending', 'approved'].includes(campaign.adminStatus) && campaign.totalCharged > 0) {
+      await User.findByIdAndUpdate(campaign.creatorId, { $inc: { ib: campaign.totalCharged } });
+      await Activity.create({
+        userId: campaign.creatorId,
+        type: 'Campaign Refund',
+        amount: campaign.totalCharged,
+        desc: `Campaign deleted by admin — 🪙${campaign.totalCharged} FEX refunded`,
+      });
+      await Notification.create({
+        userId: campaign.creatorId,
+        title: '🗑️ Campaign Deleted',
+        message: `Your campaign "${campaign.title}" was removed by admin. 🪙${campaign.totalCharged} FEX has been refunded.`,
+      });
+    }
+    
+    await UserCampaignSubmission.deleteMany({ campaignId: campaign._id });
+    await UserCampaign.findByIdAndDelete(req.params.id);
+    
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── GET /api/admin/campaigns/settings ───────────────────────────────────────
+router.get('/campaigns/settings', requireAdmin, async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'campaignSettings' });
+    res.json({ success: true, settings: doc?.value || {} });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// ─── PUT /api/admin/campaigns/settings ───────────────────────────────────────
+router.put('/campaigns/settings', requireAdmin, async (req, res) => {
+  try {
+    const {
+      minReferrals,
+      minShares,
+      creationFee,
+      reachFeePercent,
+      maxDeclineBeforeBan,
+      declineBanDays
+    } = req.body;
+    
+    await Settings.findOneAndUpdate({ key: 'campaignSettings' },
+    {
+      key: 'campaignSettings',
+      value: {
+        minReferrals: Number(minReferrals) || 3,
+        minShares: Number(minShares) || 2,
+        creationFee: Number(creationFee) || 500,
+        reachFeePercent: Number(reachFeePercent) || 10,
+        maxDeclineBeforeBan: Number(maxDeclineBeforeBan) || 3,
+        declineBanDays: Number(declineBanDays) || 7,
+      }
+    }, { upsert: true, new: true });
+    
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+
 
 module.exports = router;

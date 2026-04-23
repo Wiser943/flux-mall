@@ -3847,13 +3847,6 @@ window.filterDeposits = () => {
 
 
 
-
-
-
-
-
-
-
 window.viewDepositDetail = (i) => {
   const userName = i.userId?.username || i.userId?.toString().substring(0, 8) || '—';
   const fex = Number(i.amount);
