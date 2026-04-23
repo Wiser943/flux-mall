@@ -196,8 +196,8 @@ const UserCampaignSubmissionSchema = new mongoose.Schema({
 UserCampaignSubmissionSchema.index({ campaignId: 1, doerId: 1 }, { unique: true });
 
 module.exports = {
-  UserCampaign = mongoose.model('UserCampaign', UserCampaignSchema),
-  UserCampaignSubmission = mongoose.model('UserCampaignSubmission', UserCampaignSubmissionSchema),
+  UserCampaign: mongoose.model('UserCampaign', UserCampaignSchema),
+  UserCampaignSubmission: mongoose.model('UserCampaignSubmission', UserCampaignSubmissionSchema),
   Task: mongoose.model('Task', TaskSchema),
   TaskSubmission: mongoose.model('TaskSubmission', TaskSubmissionSchema),
   Deposit: mongoose.model('Deposit', depositSchema),
