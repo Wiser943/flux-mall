@@ -5696,4 +5696,4 @@ function atRenderPagination(total, page, onPage) {
 
 
 // Boot — check session
-//checkAdminSession();
+checkAdminSession();
