@@ -2258,31 +2258,6 @@ window.openBindBankModal = async () => {
     icon: false
   });
   
-  /*
-  showConfirm({
-    id: 'createBankModal',
-    title: 'Payments Configuration',
-    content: `
-      <div class="input-group"><label>Active Deposit Mode</label>
-        <select id="depositMode" onchange="togglePaymentFields()">
-          <option value="manual" ${p.mode==='manual'?'selected':''}>Manual Bank Transfer</option>
-          <option value="korapay" ${p.mode==='korapay'?'selected':''}>Korapay Automatic</option>
-        </select>
-      </div>
-      <div id="manualSettings">
-        <div class="input-group"><label>Bank Name</label><input type="text" id="adminBankName" value="${p.manual?.bankName||''}"></div>
-        <div class="input-group"><label>Account Number</label><input type="text" id="adminAccNum" value="${p.manual?.accountNumber||''}"></div>
-        <div class="input-group"><label>Account Name</label><input type="text" id="adminAccName" value="${p.manual?.accountName||''}"></div>
-      </div>
-      <div id="korapaySettings" style="display:none">
-        <div class="input-group"><label>Korapay Public Key</label><input type="text" id="koraPublicKey" value="${p.korapay?.publicKey||''}"></div>
-        <div class="input-group"><label>Secret Key</label><input type="password" id="koraSecretKey" value="${p.korapay?.secretKey||''}"></div>
-      </div>`,
-    buttons: [
-      { text: 'Cancel', class: 'btn-sec', onclick: "document.getElementById('createBankModal').remove()" },
-      { text: 'Configure', class: 'btn-submit', onclick: 'savePaymentSettings()' }
-    ]
-  });*/
   togglePaymentFields();
 };
 
@@ -3845,8 +3820,6 @@ window.filterDeposits = () => {
 
 */
 
-
-
 window.viewDepositDetail = (i) => {
   const userName = i.userId?.username || i.userId?.toString().substring(0, 8) || '—';
   const fex = Number(i.amount);
@@ -4319,8 +4292,6 @@ function showToast(msg, type = 'success') {
     setTimeout(() => t.remove(), 300);
   }, 3000);
 }
-
-
 
 
 // ── STATE ──────────────────────────────────────────────────
@@ -4959,18 +4930,9 @@ s2.textContent = '@keyframes toastIn{from{opacity:0;transform:translateY(10px)}t
 document.head.appendChild(s2);
 
 
-
-
-
-
-
-
-
 // ══════════════════════════════════════════════════════════
 // FLUX MALL — Admin Task Manager
 // ══════════════════════════════════════════════════════════
-
-
 const CAT_ICONS = { Social: 'ri-share-line', Survey: 'ri-questionnaire-line', Watch: 'ri-play-circle-line', Download: 'ri-download-line', Review: 'ri-star-line', General: 'ri-task-line' };
 const PLATFORM_META = {
   X: { icon: 'ri-twitter-x-line', color: '#000000', label: 'X (Twitter)' },
@@ -5714,4 +5676,4 @@ function atRenderPagination(total, page, onPage) {
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();
