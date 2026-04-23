@@ -1988,18 +1988,6 @@
     align-items: center;
   }
   
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
   .investment-header {
     padding: 20px 0;
     text-align: center;
@@ -2148,6 +2136,12 @@
     .invest-card {
       max-height: 340px;
     }
+    
+     .main-tabs.task .tab-btn i{font-size: 16px;
+}
+  .main-tabs.task .tab-btn span{
+    display: none;
+  }
   }
   
   .referral-block {
@@ -2725,3 +2719,5 @@
   .toast.info {
     border-left: 4px solid var(--primary);
   }
+  
+ 
