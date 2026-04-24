@@ -2394,7 +2394,7 @@ async function loadAdminMessages(sessionId) {
 }
 
 // ─── BUILD BUBBLE ─────────────────────────────────────────
-
+//new
 function buildAdminMsgBubble(msg, logo) {
   const isMe = msg.sender === 'admin';
   const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -2413,7 +2413,7 @@ function buildAdminMsgBubble(msg, logo) {
   if (msg.deleted) {
     bubbleContent = `<span style="font-style:italic;opacity:0.6;font-size:13px;">🚫 This message was deleted</span>`;
   } else if (msg.type === 'image' && msg.imageUrl) {
-    bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
+    bubbleContent = `<img src="${msg.imageUrl}" style="max-height:500px;max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
   } else if (msg.type === 'polar') {
     const answered = msg.polarAnswer;
     bubbleContent = `<div style="font-size:13px;margin-bottom:6px;font-weight:600;">❓ ${msg.polarQuestion}</div>
@@ -2452,7 +2452,7 @@ function buildAdminMsgBubble(msg, logo) {
     ${emojiBarHtml}
     <div>
       <div class="admin-bubble" data-msg-id="${msg._id}"
-        style="max-width:72%;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
+        style="width:72%;max-width:300px;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
         oncontextmenu="adminShowEmojiBar(event,'${emojiBarId}')"
         ontouchstart="adminHandleTouchStart(event,'${emojiBarId}')"
         ontouchend="adminHandleTouchEnd()">
@@ -2466,89 +2466,8 @@ function buildAdminMsgBubble(msg, logo) {
   return wrapper;
 }
 
-/*
-function buildAdminMsgBubble(msg, logo) {
-  const isMe    = msg.sender === 'admin';
-  const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
-  const wrapper = document.createElement('div');
-  wrapper.dataset.msgId = msg._id;
-  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
 
-  // Reply quote
-  let replyHtml = '';
-  if (msg.replyTo?.msgId) {
-    replyHtml = `
-      <div style="background:rgba(0,0,0,0.06);border-left:3px solid #4318ff;border-radius:6px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:#888;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">
-        <span style="font-weight:700;color:#4318ff;margin-right:6px;">${msg.replyTo.sender === 'admin' ? 'You' : 'User'}</span>${msg.replyTo.preview}
-      </div>`;
-  }
 
-  // Content
-  let bubbleContent = '';
-  if (msg.deleted) {
-    bubbleContent = `<span style="font-style:italic;opacity:0.6;font-size:13px;">🚫 This message was deleted</span>`;
-  } else if (msg.type === 'image' && msg.imageUrl) {
-    bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
-  } else if (msg.type === 'polar') {
-    const answered = msg.polarAnswer;
-    bubbleContent = `
-      <div style="font-size:13px;margin-bottom:6px;font-weight:600;">❓ ${msg.polarQuestion}</div>
-      ${answered
-        ? `<div style="padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.2);font-weight:700;color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered==='yes'?'✅ User answered: Yes':'❌ User answered: No'}</div>`
-        : '<div style="color:rgba(255,255,255,0.7);font-size:12px;">⏳ Awaiting answer...</div>'}`;
-  } else {
-    bubbleContent = `<span style="font-size:13px;line-height:1.5;word-break:break-word;">${msg.content}</span>`;
-  }
-
-  // Ticks for admin's own messages
-  let ticksHtml = '';
-  if (isMe && !msg.deleted) {
-    const tickColor = msg.read ? '#4fc3f7' : msg.delivered ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.4)';
-    ticksHtml = `<span style="font-size:11px;color:${tickColor};margin-left:4px;">${msg.read?'✓✓':msg.delivered?'✓✓':'✓'}</span>`;
-  }
-
-  const editedHtml = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.5;margin-left:4px;">edited</span>` : '';
-
-  // Reactions
-  const reactEntries = Object.entries(msg.reactions||{}).filter(([,v])=>v.length>0);
-  const reactionsHtml = reactEntries.length ? `
-    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
-      ${reactEntries.map(([emoji,users]) => `
-        <span onclick="adminToggleReaction('${msg._id}','${emoji}')" style="background:rgba(0,0,0,0.07);border-radius:12px;padding:2px 7px;font-size:12px;cursor:pointer;border:1px solid ${users.includes('admin')?'#4318ff':'transparent'};">
-          ${emoji} ${users.length}
-        </span>`).join('')}
-    </div>` : '';
-
-  // Emoji/action bar
-  const emojiBarId = `aebar-${msg._id}`;
-  const emojiBarHtml = msg.deleted ? '' : `
-    <div id="${emojiBarId}" style="display:none;position:absolute;${isMe?'right:0':'left:0'};bottom:calc(100% + 4px);background:#fff;border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);gap:6px;z-index:100;white-space:nowrap;">
-      ${ADMIN_EMOJIS.map(e => `<span onclick="adminToggleReaction('${msg._id}','${e}');adminHideEmojiBar('${emojiBarId}')" style="font-size:20px;cursor:pointer;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${e}</span>`).join('')}
-      <span onclick="adminStartReply('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Reply">↩️</span>
-      ${isMe && !msg.deleted ? `<span onclick="adminStartEdit('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Edit">✏️</span>
-      <span onclick="adminDeleteMsg('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Delete">🗑️</span>` : ''}
-    </div>`;
-
-  wrapper.innerHTML = `
-    ${emojiBarHtml}
-    <div>
-      <div class="admin-bubble" data-msg-id="${msg._id}"
-        style="max-width:72%;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
-        oncontextmenu="adminShowEmojiBar(event,'${emojiBarId}')"
-        ontouchstart="adminHandleTouchStart(event,'${emojiBarId}')"
-        ontouchend="adminHandleTouchEnd()"
-      >
-        ${replyHtml}${bubbleContent}
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:3px;padding:0 38px;">
-      <span style="font-size:10px;color:#aaa;">${time}</span>${editedHtml}${ticksHtml}
-    </div>
-    ${reactionsHtml}`;
-
-  return wrapper;
-}
-*/
 
 // ─── EMOJI BAR ────────────────────────────────────────────
 let adminLongPressTimer = null;
