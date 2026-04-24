@@ -488,8 +488,7 @@ function setupCharts() {
 //  SECTION 7 — ANALYTICS & DEPOSITS (API)
 // ══════════════════════════════════════════════════════════
 window.loadAnalytics = async () => {
- // const data = await api('/api/admin/analytics');
- let data="h";
+  const data = await api('/api/admin/analytics');
   alert('^');
   console.log(data)
 //  if (!data?.success) return;
