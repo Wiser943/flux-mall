@@ -4539,3 +4539,268 @@ loadPaymentModeBadge();
 
 // Boot — check session
 //checkAdminSession();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <style>
+      /* ── Chat responsive layout ───────────────────── */
+      #chatLayout {
+        display: flex;
+        height: calc(100vh - 150px);
+        border: 1px solid var(--primary);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+      }
+      
+      #chatSessionList {
+        width: 300px;
+        min-width: 260px;
+        border-right: 1px solid var(--border, #e0e5f2);
+        overflow-y: auto;
+        flex-shrink: 0;
+        transition: transform 0.25s ease;
+      }
+      
+      #chatWindow {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      
+      /* Mobile: stack panels, session list slides out */
+      @media (max-width: 700px) {
+        #chatLayout {
+          height: calc(100vh - 180px);
+          border-radius: 8px;
+        }
+        
+        #chatSessionList {
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          min-width: unset;
+          z-index: 10;
+          border-right: none;
+          transform: translateX(0);
+        }
+        
+        #chatSessionList.slide-out {
+          transform: translateX(-100%);
+          pointer-events: none;
+        }
+        
+        #chatWindow {
+          width: 100%;
+        }
+        
+        /* Back button — only visible on mobile */
+        #chatBackBtn {
+          display: flex !important;
+        }
+        
+        /* Hide block label text on mobile, show only icon */
+        #adminBlockLabel {
+          display: none;
+        }
+        
+        #adminBlockBtn {
+          padding: 6px 8px;
+        }
+        
+        /* Tighten header actions on mobile */
+        #adminChatHeader {
+          padding: 10px 7px;
+          gap: 6px;
+        }
+        
+        #adminChatHeader .action-btns {
+          gap: 0;
+        }
+      }
+    </style>
+
+
+
+
+
+
+
+
+
+
+
+      <div class="chat-main" id="chatMain">
+        
+        <!-- Empty state -->
+        <div class="chat-empty" id="chatEmpty">
+          <i class="ri-message-3-line"></i>
+          <h3>Select a conversation</h3>
+          <p>Choose a chat from the list to start supporting your users</p>
+        </div>
+        
+        <!-- Chat window (shown when a chat is active) -->
+        <div class="chat-window" id="chatWindow">
+          
+          <!-- Chat header -->
+          <div class="chat-header" id="chatHeader">
+            <button class="chat-header-back" onclick="closeMobileChat()">
+              <i class="ri-arrow-left-s-line"></i>
+            </button>
+            <div class="chat-header-avatar">
+              <div class="avatar-img initials" id="hdrAvatar">U</div>
+              <div class="online-dot" id="hdrOnlineDot"></div>
+            </div>
+            <div class="chat-header-info">
+              <div class="chat-header-name" id="hdrName">User</div>
+              <div class="chat-header-status" id="hdrStatus">offline</div>
+            </div>
+            <div class="chat-header-actions">
+              <button class="icon-btn" onclick="simulateTyping()" title="Simulate typing"><i class="ri-chat-3-line"></i></button>
+              <button class="icon-btn" onclick="toggleSearch()" title="Search messages" id="msgSearchBtn"><i class="ri-search-line"></i></button>
+              <button class="icon-btn" onclick="toggleUserPanel()" title="User info" id="uipToggleBtn"><i class="ri-user-line"></i></button>
+              <button class="icon-btn" id="moreBtn" title="More options" onclick="showMoreMenu()"><i class="ri-more-2-fill"></i></button>
+            </div>
+          </div>
+          
+          <!-- Message search bar (hidden by default) -->
+          <div style="display:none;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--header-bg);" id="msgSearchBar">
+            <div class="search-wrap">
+              <i class="ri-search-line search-icon"></i>
+              <input type="text" class="search-input" id="msgSearchInput" placeholder="Search in this chat..." oninput="searchInChat(this.value)">
+              <button class="search-clear-btn" id="msgSearchClear" onclick="closeMessageSearch()">✕</button>
+            </div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:5px;" id="msgSearchCount"></div>
+          </div>
+          
+          <!-- Session ended bar -->
+          <div class="session-ended-bar" id="sessionEndedBar">
+            <i class="ri-lock-line"></i>
+            Session ended by user
+            <button onclick="reopenSession()">Reopen</button>
+          </div>
+          
+          <!-- Messages -->
+          <div class="messages-area" id="messagesArea"></div>
+          
+          <!-- Typing indicator -->
+          <div class="typing-bubble" id="typingBubble" style="padding:0 20px 4px;">
+            <div class="typing-dots">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+          
+          <!-- Quick replies popup -->
+          <div class="quick-replies" id="quickReplies">
+            <div class="qr-header">Quick Replies</div>
+            <div class="qr-item" onclick="useQuickReply('Hello! How can I assist you today? 😊')"><i class="ri-chat-smile-line"></i> Greeting</div>
+            <div class="qr-item" onclick="useQuickReply('I understand your concern. Let me look into this for you right away.')"><i class="ri-empathize-line"></i> Empathy</div>
+            <div class="qr-item" onclick="useQuickReply('Your deposit has been confirmed and credited to your wallet.')"><i class="ri-bank-card-line"></i> Deposit confirmed</div>
+            <div class="qr-item" onclick="useQuickReply('Your withdrawal request is being processed. Please allow 30–60 minutes.')"><i class="ri-arrow-up-circle-line"></i> Withdrawal processing</div>
+            <div class="qr-item" onclick="useQuickReply('Please verify your account to unlock all features. Go to Profile → Verify.')"><i class="ri-shield-check-line"></i> Verify account</div>
+            <div class="qr-item" onclick="useQuickReply('Is there anything else I can help you with?')"><i class="ri-question-line"></i> Anything else?</div>
+            <div class="qr-item" onclick="useQuickReply('This issue has been resolved. Thank you for contacting Fluxmall Support! 🙏')"><i class="ri-checkbox-circle-line"></i> Resolved</div>
+          </div>
+          
+          <!-- Reply bar -->
+          <div class="reply-bar" id="replyBar">
+            <div class="reply-bar-inner">
+              <div class="reply-bar-sender" id="replyBarSender"></div>
+              <div class="reply-bar-text" id="replyBarText"></div>
+            </div>
+            <button class="reply-bar-close" onclick="cancelReply()"><i class="ri-close-line"></i></button>
+          </div>
+          
+          <!-- Emoji picker -->
+          <div class="emoji-picker" id="emojiPicker">
+            <div class="emoji-grid" id="emojiGrid"></div>
+          </div>
+          
+          <!-- Input area -->
+          <div class="input-area" id="inputArea">
+            <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
+              <i class="ri-flashlight-line"></i>
+            </button>
+            <div class="input-field-wrap">
+              <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
+              <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
+            </div>
+            <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
+          </div>
+          
+        </div><!-- /chat-window -->
+        
+        <!-- User info panel (desktop right panel) -->
+        <div class="user-info-panel hidden" id="userInfoPanel">
+          <div class="uip-header">
+            <span class="uip-title">User Info</span>
+            <button class="icon-btn" onclick="toggleUserPanel()"><i class="ri-close-line"></i></button>
+          </div>
+          <div class="uip-body">
+            <div class="uip-avatar-wrap">
+              <div class="uip-big-avatar" id="uipAvatar">U</div>
+              <div class="uip-name" id="uipName">Username</div>
+              <div class="uip-email" id="uipEmail">user@email.com</div>
+            </div>
+            
+            <div class="uip-stat-grid">
+              <div class="uip-stat">
+                <div class="uip-stat-val" id="uipBalance">₦0</div>
+                <div class="uip-stat-label">Balance</div>
+              </div>
+              <div class="uip-stat">
+                <div class="uip-stat-val" id="uipShares">0</div>
+                <div class="uip-stat-label">Shares</div>
+              </div>
+              <div class="uip-stat">
+                <div class="uip-stat-val" id="uipDeposits">0</div>
+                <div class="uip-stat-label">Deposits</div>
+              </div>
+              <div class="uip-stat">
+                <div class="uip-stat-val" id="uipReferrals">0</div>
+                <div class="uip-stat-label">Referrals</div>
+              </div>
+            </div>
+            
+            <div class="uip-section-label">Actions</div>
+            <button class="uip-action" onclick="toast('Navigating to user profile...','info')">
+              <i class="ri-user-line"></i> View full profile
+            </button>
+            <button class="uip-action" onclick="toast('Opening transaction history...','info')">
+              <i class="ri-history-line"></i> Transaction history
+            </button>
+            <button class="uip-action" onclick="resolveSession()">
+              <i class="ri-checkbox-circle-line"></i> Resolve & close
+            </button>
+            <button class="uip-action danger" onclick="toast('User has been flagged','error')">
+              <i class="ri-flag-line"></i> Flag user
+            </button>
+            <button class="uip-action danger" onclick="toast('User banned','error')">
+              <i class="ri-forbid-line"></i> Ban user
+            </button>
+          </div>
+        </div>
+      </div>
