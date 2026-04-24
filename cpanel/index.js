@@ -32,11 +32,6 @@ const settingsState = {};
 let unsavedChanges = 0;
 let confirmCallback = null;
 const depositAmounts = [1000, 2000, 3000, 5000, 10000, 20000, 50000];
-
-//for chat frature
-
-
-
 // ══════════════════════════════════════════════════════════
 //  SECTION 2 — CORE UTILITIES
 // ══════════════════════════════════════════════════════════
@@ -243,7 +238,7 @@ function switchPageByHash() {
   
   // Lazy-init pages on first visit
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
- // if (targetId === 'chats') initChatPage();
+  // if (targetId === 'chats') initChatPage();
   if (targetId === 'shares') refreshAll();
   if (targetId === 'tasks') refreshAll();
   
@@ -2236,20 +2231,20 @@ window.previewLogo = async (input) => {
 // ADMIN CHAT SYSTEM — Professional FB-style
 // ═══════════════════════════════════════════════════════════
 
-let activeSessionId      = null;
-let activeUserData       = null;   // full user object from session.userId
-let statusTickerTimer    = null;   // cycles status line in header
-let adminChatPollTimer   = null;
+let activeSessionId = null;
+let activeUserData = null; // full user object from session.userId
+let statusTickerTimer = null; // cycles status line in header
+let adminChatPollTimer = null;
 let adminTypingPollTimer = null;
-let adminTypingTimer     = null;
-let adminLastMsgCount    = 0;
-let adminSoundEnabled    = true;
-let adminSiteLogo        = '';
+let adminTypingTimer = null;
+let adminLastMsgCount = 0;
+let adminSoundEnabled = true;
+let adminSiteLogo = '';
 let adminChatSessionStatus = 'active';
-let adminAllMessages     = [];
-let adminReplyingTo      = null;
-let adminEditingMsgId    = null;
-const ADMIN_EMOJIS       = ['👍','❤️','😂','😮','😢','🔥'];
+let adminAllMessages = [];
+let adminReplyingTo = null;
+let adminEditingMsgId = null;
+const ADMIN_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
 
 // ─── GET SITE LOGO ────────────────────────────────────────
 async function getAdminSiteLogo() {
@@ -2262,37 +2257,39 @@ async function getAdminSiteLogo() {
 // ─── AUDIO ────────────────────────────────────────────────
 function playAdminChatSound() {
   try {
-    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
-    const osc  = ctx.createOscillator();
+    const ctx = new(window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
     osc.frequency.value = 660;
     gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
-  } catch(e) {}
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch (e) {}
 }
 
 // ─── LOAD SESSION LIST ────────────────────────────────────
 window.loadAdminChatSessions = async function() {
   const container = document.getElementById('chatSessionItems');
   if (!container) return;
-
+  
   const logo = await getAdminSiteLogo();
   const data = await api('/api/admin/chat/sessions');
   if (!data?.success) { container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;">Failed to load chats.</div>'; return; }
-
+  
   if (!data.sessions.length) {
     container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">No chats yet.</div>';
     return;
   }
-
+  
   container.innerHTML = '';
   data.sessions.forEach(s => {
-    const isActive  = s._id === activeSessionId;
+    const isActive = s._id === activeSessionId;
     const hasUnread = s.unreadAdmin > 0;
-    const timeStr   = s.lastMessageAt ? new Date(s.lastMessageAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
-    const ended     = s.status === 'ended';
+    const timeStr = s.lastMessageAt ? new Date(s.lastMessageAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+    const ended = s.status === 'ended';
     const div = document.createElement('div');
     div.style.cssText = `padding:12px 14px;cursor:pointer;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;background:${isActive?'rgba(67,24,255,0.06)':'transparent'};`;
     div.onclick = () => openAdminChatSession(s._id, s.username, s.status, s.userId);
@@ -2309,51 +2306,52 @@ window.loadAdminChatSessions = async function() {
       ${ended ? `<span style="background:#e74c3c;color:#fff;border-radius:10px;padding:2px 6px;font-size:10px;flex-shrink:0;">Ended</span>` : ''}`;
     container.appendChild(div);
   });
-
-  const totalUnread = data.sessions.reduce((a,s) => a + (s.unreadAdmin||0), 0);
+  
+  const totalUnread = data.sessions.reduce((a, s) => a + (s.unreadAdmin || 0), 0);
   const badge = document.getElementById('adminChatBadge');
-  if (badge) { badge.textContent = totalUnread; badge.style.display = totalUnread > 0 ? 'flex' : 'none'; }
+  if (badge) { badge.textContent = totalUnread;
+    badge.style.display = totalUnread > 0 ? 'flex' : 'none'; }
 };
 
 // ─── OPEN SESSION ─────────────────────────────────────────
 window.openAdminChatSession = async function(sessionId, username, status, userData) {
   activeSessionId = sessionId;
-  activeUserData  = userData || null;
+  activeUserData = userData || null;
   adminChatSessionStatus = status || 'active';
   adminAllMessages = [];
-  adminReplyingTo  = null;
+  adminReplyingTo = null;
   adminEditingMsgId = null;
-
+  
   const logo = await getAdminSiteLogo();
-
+  
   document.getElementById('chatWindowEmpty').style.display = 'none';
   const activeWin = document.getElementById('chatWindowActive');
   activeWin.style.display = 'flex';
-
+  
   // Mobile: slide session list out
   if (window.innerWidth <= 700) {
     document.getElementById('chatSessionList')?.classList.add('slide-out');
     const backBtn = document.getElementById('chatBackBtn');
     if (backBtn) backBtn.style.display = 'flex';
   }
-
+  
   document.getElementById('adminChatUsername').textContent = username;
   document.getElementById('adminChatUserLogo').src = logo;
-
+  
   // Update block button state
   updateBlockBtn(userData?.status);
-
+  
   // Start status ticker
   startStatusTicker(sessionId, status, userData?.status);
-
+  
   const inputBar = document.getElementById('adminChatInputBar');
   const polarBtn = document.getElementById('adminPolarBtn');
   if (inputBar) inputBar.style.display = status === 'ended' ? 'none' : 'flex';
   if (polarBtn) polarBtn.style.display = status === 'ended' ? 'none' : 'inline-block';
-
+  
   // Reset reply bar
   cancelAdminReply();
-
+  
   await loadAdminMessages(sessionId);
   startAdminChatPolling(sessionId);
   startAdminTypingPoll(sessionId);
@@ -2364,23 +2362,23 @@ window.openAdminChatSession = async function(sessionId, username, status, userDa
 async function loadAdminMessages(sessionId) {
   const container = document.getElementById('adminChatMessages');
   if (!container) return;
-
+  
   const data = await api(`/api/admin/chat/messages/${sessionId}`);
   if (!data?.success) return;
-
+  
   adminAllMessages = data.messages;
   container.innerHTML = '';
-
+  
   if (!data.messages.length) {
     container.innerHTML = '<div style="text-align:center;color:#aaa;padding:30px;font-size:13px;">No messages yet.</div>';
     adminLastMsgCount = 0;
     return;
   }
-
+  
   const logo = await getAdminSiteLogo();
   let lastDate = '';
   data.messages.forEach(msg => {
-    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+    const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
     if (dateStr !== lastDate) {
       const divider = document.createElement('div');
       divider.style.cssText = 'text-align:center;margin:12px 0;';
@@ -2396,6 +2394,79 @@ async function loadAdminMessages(sessionId) {
 }
 
 // ─── BUILD BUBBLE ─────────────────────────────────────────
+
+function buildAdminMsgBubble(msg, logo) {
+  const isMe = msg.sender === 'admin';
+  const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const wrapper = document.createElement('div');
+  wrapper.dataset.msgId = msg._id;
+  wrapper.style.cssText = `display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};gap:2px;margin-bottom:2px;position:relative;`;
+  
+  let replyHtml = '';
+  if (msg.replyTo?.msgId) {
+    replyHtml = `<div style="background:rgba(0,0,0,0.06);border-left:3px solid #4318ff;border-radius:6px;padding:5px 10px;margin-bottom:4px;font-size:11px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+      <span style="font-weight:700;color:#4318ff;margin-right:6px;">${msg.replyTo.sender==='admin'?'You':'User'}</span>${msg.replyTo.preview}
+    </div>`;
+  }
+  
+  let bubbleContent = '';
+  if (msg.deleted) {
+    bubbleContent = `<span style="font-style:italic;opacity:0.6;font-size:13px;">🚫 This message was deleted</span>`;
+  } else if (msg.type === 'image' && msg.imageUrl) {
+    bubbleContent = `<img src="${msg.imageUrl}" style="max-width:220px;border-radius:10px;cursor:pointer;" onclick="window.open('${msg.imageUrl}','_blank')">`;
+  } else if (msg.type === 'polar') {
+    const answered = msg.polarAnswer;
+    bubbleContent = `<div style="font-size:13px;margin-bottom:6px;font-weight:600;">❓ ${msg.polarQuestion}</div>
+      ${answered?`<div style="padding:6px 12px;border-radius:8px;background:rgba(255,255,255,0.2);font-weight:700;color:${answered==='yes'?'#10ac84':'#e74c3c'};">${answered==='yes'?'✅ User answered: Yes':'❌ User answered: No'}</div>`
+      :'<div style="color:rgba(255,255,255,0.7);font-size:12px;">⏳ Awaiting answer...</div>'}`;
+  } else {
+    bubbleContent = `<span style="font-size:13px;line-height:1.5;word-break:break-word;">${msg.content}</span>`;
+  }
+  
+  let ticksHtml = '';
+  if (isMe && !msg.deleted) {
+    const tickColor = msg.read ? '#4fc3f7' : 'rgba(255,255,255,0.4)';
+    ticksHtml = `<span style="font-size:11px;color:${tickColor};margin-left:4px;">${msg.read?'✓✓':'✓'}</span>`;
+  }
+  
+  const editedHtml = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.5;margin-left:4px;">edited</span>` : '';
+  const reactEntries = Object.entries(msg.reactions || {}).filter(([, v]) => v.length > 0);
+  const reactionsHtml = reactEntries.length ? `
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
+      ${reactEntries.map(([emoji,users]) => `
+        <span onclick="adminToggleReaction('${msg._id}','${emoji}')" style="background:rgba(0,0,0,0.07);border-radius:12px;padding:2px 7px;font-size:12px;cursor:pointer;border:1px solid ${users.includes('admin')?'#4318ff':'transparent'};">
+          ${emoji} ${users.length}
+        </span>`).join('')}
+    </div>` : '';
+  
+  const emojiBarId = `aebar-${msg._id}`;
+  const emojiBarHtml = msg.deleted ? '' : `
+    <div id="${emojiBarId}" style="display:none;position:absolute;${isMe?'right:0':'left:0'};bottom:calc(100% + 4px);background:#fff;border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);gap:6px;z-index:100;white-space:nowrap;">
+      ${ADMIN_EMOJIS.map(e => `<span onclick="adminToggleReaction('${msg._id}','${e}');adminHideEmojiBar('${emojiBarId}')" style="font-size:20px;cursor:pointer;">${e}</span>`).join('')}
+      <span onclick="adminStartReply('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Reply">↩️</span>
+      ${isMe&&!msg.deleted?`<span onclick="adminStartEdit('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;">✏️</span>
+      <span onclick="adminDeleteMsg('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;">🗑️</span>`:''}
+    </div>`;
+  
+  wrapper.innerHTML = `
+    ${emojiBarHtml}
+    <div>
+      <div class="admin-bubble" data-msg-id="${msg._id}"
+        style="max-width:72%;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
+        oncontextmenu="adminShowEmojiBar(event,'${emojiBarId}')"
+        ontouchstart="adminHandleTouchStart(event,'${emojiBarId}')"
+        ontouchend="adminHandleTouchEnd()">
+        ${replyHtml}${bubbleContent}
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:3px;padding:0 38px;">
+      <span style="font-size:10px;color:#aaa;">${time}</span>${editedHtml}${ticksHtml}
+    </div>
+    ${reactionsHtml}`;
+  return wrapper;
+}
+
+/*
 function buildAdminMsgBubble(msg, logo) {
   const isMe    = msg.sender === 'admin';
   const time    = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
@@ -2477,6 +2548,7 @@ function buildAdminMsgBubble(msg, logo) {
 
   return wrapper;
 }
+*/
 
 // ─── EMOJI BAR ────────────────────────────────────────────
 let adminLongPressTimer = null;
@@ -2488,8 +2560,10 @@ window.adminShowEmojiBar = function(e, barId) {
   if (bar) bar.style.display = 'flex';
 };
 window.adminHideEmojiBar = function(barId) {
-  const bar = document.getElementById(barId); if (bar) bar.style.display = 'none';
+  const bar = document.getElementById(barId);
+  if (bar) bar.style.display = 'none';
 };
+
 function adminHideAllEmojiBars() {
   document.querySelectorAll('[id^="aebar-"]').forEach(b => b.style.display = 'none');
 }
@@ -2504,7 +2578,7 @@ document.addEventListener('click', e => {
 
 // ─── REACTIONS ────────────────────────────────────────────
 window.adminToggleReaction = async function(msgId, emoji) {
-  const data = await api('/api/admin/chat/react', { method:'POST', body: JSON.stringify({ msgId, emoji }) });
+  const data = await api('/api/admin/chat/react', { method: 'POST', body: JSON.stringify({ msgId, emoji }) });
   if (data?.success) await loadAdminMessages(activeSessionId);
 };
 
@@ -2541,7 +2615,8 @@ window.adminStartEdit = function(msgId) {
   adminReplyingTo = null;
   adminEditingMsgId = msgId;
   const input = document.getElementById('adminChatInput');
-  if (input) { input.value = msg.content; input.focus(); }
+  if (input) { input.value = msg.content;
+    input.focus(); }
   const bar = document.getElementById('adminReplyBar');
   if (bar) bar.style.display = 'flex';
   document.getElementById('adminReplyBarSender').textContent = '✏️ Editing';
@@ -2551,7 +2626,7 @@ window.adminStartEdit = function(msgId) {
 // ─── DELETE ───────────────────────────────────────────────
 window.adminDeleteMsg = async function(msgId) {
   if (!confirm('Delete this message?')) return;
-  const data = await api(`/api/admin/chat/message/${msgId}`, { method:'DELETE' });
+  const data = await api(`/api/admin/chat/message/${msgId}`, { method: 'DELETE' });
   if (data?.success) await loadAdminMessages(activeSessionId);
 };
 
@@ -2559,26 +2634,27 @@ window.adminDeleteMsg = async function(msgId) {
 window.sendAdminMessage = async function() {
   if (adminChatSessionStatus === 'ended') return alert('Session ended.');
   const input = document.getElementById('adminChatInput');
-  const text  = input?.value.trim();
+  const text = input?.value.trim();
   if (!text || !activeSessionId) return;
-
+  
   // Handle edit
   if (adminEditingMsgId) {
     const data = await api(`/api/admin/chat/message/${adminEditingMsgId}`, {
       method: 'PUT',
       body: JSON.stringify({ content: text })
     });
-    if (data?.success) { cancelAdminReply(); await loadAdminMessages(activeSessionId); }
+    if (data?.success) { cancelAdminReply();
+      await loadAdminMessages(activeSessionId); }
     else alert(data?.error || 'Failed to edit.');
     return;
   }
-
+  
   input.value = '';
   const body = { sessionId: activeSessionId, content: text, type: 'text' };
   if (adminReplyingTo) body.replyTo = adminReplyingTo;
   cancelAdminReply();
-
-  const data = await api('/api/admin/chat/send', { method:'POST', body: JSON.stringify(body) });
+  
+  const data = await api('/api/admin/chat/send', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
     const logo = await getAdminSiteLogo();
     adminAllMessages.push(data.message);
@@ -2596,7 +2672,7 @@ window.onAdminInputKeydown = function(e) {
   if (e.key === 'Enter') { sendAdminMessage(); return; }
   clearTimeout(adminTypingTimer);
   adminTypingTimer = setTimeout(() => {
-    if (activeSessionId) api('/api/admin/chat/typing', { method:'POST', body: JSON.stringify({ sessionId: activeSessionId }) });
+    if (activeSessionId) api('/api/admin/chat/typing', { method: 'POST', body: JSON.stringify({ sessionId: activeSessionId }) });
   }, 300);
 };
 
@@ -2605,22 +2681,22 @@ window.sendAdminImage = async function(input) {
   const file = input.files[0];
   if (!file || !activeSessionId) return;
   if (adminChatSessionStatus === 'ended') return alert('Session ended.');
-
-  const keysRes  = await api('/api/admin/settings/apikeys');
+  
+  const keysRes = await api('/api/admin/settings/apikeys');
   const imgbbKey = keysRes?.apikeys?.imgbb;
   if (!imgbbKey) return alert('ImgBB key not set in Settings → API Keys.');
-
+  
   const formData = new FormData();
   formData.append('image', file);
-  const res    = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method:'POST', body:formData });
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, { method: 'POST', body: formData });
   const result = await res.json();
   if (!result.success) return alert('Image upload failed.');
-
-  const body = { sessionId: activeSessionId, type:'image', imageUrl: result.data.url, content:'📷 Image' };
+  
+  const body = { sessionId: activeSessionId, type: 'image', imageUrl: result.data.url, content: '📷 Image' };
   if (adminReplyingTo) body.replyTo = adminReplyingTo;
   cancelAdminReply();
-
-  const data = await api('/api/admin/chat/send', { method:'POST', body: JSON.stringify(body) });
+  
+  const data = await api('/api/admin/chat/send', { method: 'POST', body: JSON.stringify(body) });
   if (data?.success) {
     const logo = await getAdminSiteLogo();
     adminAllMessages.push(data.message);
@@ -2641,10 +2717,10 @@ window.togglePolarInput = function() {
 window.sendAdminPolar = async function() {
   const question = document.getElementById('polarQuestionInput')?.value.trim();
   if (!question || !activeSessionId) return;
-
+  
   const data = await api('/api/admin/chat/send', {
-    method:'POST',
-    body: JSON.stringify({ sessionId: activeSessionId, type:'polar', polarQuestion: question, content:`❓ ${question}` })
+    method: 'POST',
+    body: JSON.stringify({ sessionId: activeSessionId, type: 'polar', polarQuestion: question, content: `❓ ${question}` })
   });
   if (data?.success) {
     const logo = await getAdminSiteLogo();
@@ -2661,7 +2737,7 @@ window.sendAdminPolar = async function() {
 // ─── END / DELETE SESSION ─────────────────────────────────
 window.endAdminChatSession = async function() {
   if (!activeSessionId || !confirm('End this chat session?')) return;
-  const data = await api(`/api/admin/chat/session/${activeSessionId}/end`, { method:'PUT' });
+  const data = await api(`/api/admin/chat/session/${activeSessionId}/end`, { method: 'PUT' });
   if (data?.success) {
     adminChatSessionStatus = 'ended';
     document.getElementById('adminChatSessionStatus').textContent = '🔴 Session Ended';
@@ -2675,7 +2751,7 @@ window.endAdminChatSession = async function() {
 
 window.deleteAdminChatSession = async function() {
   if (!activeSessionId || !confirm('Delete entire chat? Cannot be undone.')) return;
-  const data = await api(`/api/admin/chat/session/${activeSessionId}`, { method:'DELETE' });
+  const data = await api(`/api/admin/chat/session/${activeSessionId}`, { method: 'DELETE' });
   if (data?.success) {
     activeSessionId = null;
     document.getElementById('chatWindowEmpty').style.display = 'flex';
@@ -2703,23 +2779,23 @@ function startAdminChatPolling(sessionId) {
     if (!activeSessionId) return;
     const data = await api(`/api/admin/chat/messages/${sessionId}`);
     if (!data?.success) return;
-
+    
     const hasChanges = data.messages.length !== adminLastMsgCount ||
-      JSON.stringify(data.messages.map(m=>m.reactions)) !== JSON.stringify(adminAllMessages.map(m=>m.reactions));
-
+      JSON.stringify(data.messages.map(m => m.reactions)) !== JSON.stringify(adminAllMessages.map(m => m.reactions));
+    
     if (hasChanges) {
       const newMsgs = data.messages.slice(adminLastMsgCount);
       const hasUserMsg = newMsgs.some(m => m.sender === 'user');
       const logo = await getAdminSiteLogo();
       adminAllMessages = data.messages;
-
+      
       // Full re-render to catch edits/deletes/reactions
       const container = document.getElementById('adminChatMessages');
       if (container) {
         container.innerHTML = '';
         let lastDate = '';
         data.messages.forEach(msg => {
-          const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
+          const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
           if (dateStr !== lastDate) {
             const divider = document.createElement('div');
             divider.style.cssText = 'text-align:center;margin:12px 0;';
@@ -2731,7 +2807,7 @@ function startAdminChatPolling(sessionId) {
         });
         container.scrollTop = container.scrollHeight;
       }
-
+      
       if (adminSoundEnabled && hasUserMsg) playAdminChatSound();
       adminLastMsgCount = data.messages.length;
       loadAdminChatSessions();
@@ -2756,27 +2832,31 @@ function sendBrowserNotif(username, message) {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
   if (document.visibilityState === 'visible') return;
   const notif = new Notification(`💬 ${username}`, {
-    body: message, icon: adminSiteLogo || '/favicon.ico',
-    tag: 'flux-chat', requireInteraction: true
+    body: message,
+    icon: adminSiteLogo || '/favicon.ico',
+    tag: 'flux-chat',
+    requireInteraction: true
   });
-  notif.onclick = () => { window.focus(); notif.close(); };
+  notif.onclick = () => { window.focus();
+    notif.close(); };
 }
 
 // ─── UNREAD BADGE POLLING ────────────────────────────────
 let lastKnownUnread = 0;
 
 setInterval(async () => {
-  const data  = await api('/api/admin/chat/unread');
+  const data = await api('/api/admin/chat/unread');
   const badge = document.getElementById('adminChatBadge');
   if (data?.unread > 0) {
-    if (badge) { badge.textContent = data.unread; badge.style.display = 'flex'; }
+    if (badge) { badge.textContent = data.unread;
+      badge.style.display = 'flex'; }
     if (data.unread > lastKnownUnread) {
       if (adminSoundEnabled) playAdminChatSound();
       const sessions = await api('/api/admin/chat/sessions');
       if (sessions?.sessions?.length) {
         const active = sessions.sessions
           .filter(s => s.unreadAdmin > 0)
-          .sort((a,b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt))[0];
+          .sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt))[0];
         if (active) sendBrowserNotif(active.username, active.lastMessage || 'New message');
       }
     }
@@ -2793,54 +2873,56 @@ async function loadChatSettings() {
   if (!data?.success) return;
   const s = data.settings;
   const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
-  const setVal   = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
-  setCheck('cs_available',          s.available !== false);
-  setCheck('cs_sound',              s.sound !== false);
-  setCheck('cs_allowImages',        s.allowImages !== false);
-  setCheck('cs_requireVerified',    !!s.requireVerified);
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setCheck('cs_available', s.available !== false);
+  setCheck('cs_sound', s.sound !== false);
+  setCheck('cs_allowImages', s.allowImages !== false);
+  setCheck('cs_requireVerified', !!s.requireVerified);
   setCheck('cs_officeHoursEnabled', !!s.officeHours?.enabled);
-  setVal('cs_autoReply',  s.autoReply);
-  setVal('cs_open',       s.officeHours?.open  || 9);
-  setVal('cs_close',      s.officeHours?.close || 18);
+  setVal('cs_autoReply', s.autoReply);
+  setVal('cs_open', s.officeHours?.open || 9);
+  setVal('cs_close', s.officeHours?.close || 18);
   setVal('cs_offlineMsg', s.officeHours?.offlineMsg);
-  setVal('cs_autoClose',  s.autoClose || 48);
-  setVal('cs_charLimit',  s.charLimit || 500);
+  setVal('cs_autoClose', s.autoClose || 48);
+  setVal('cs_charLimit', s.charLimit || 500);
   adminSoundEnabled = s.sound !== false;
 }
 
 window.saveChatSettings = async function() {
   const getCheck = id => document.getElementById(id)?.checked;
-  const getVal   = id => document.getElementById(id)?.value;
+  const getVal = id => document.getElementById(id)?.value;
   const body = {
-    available:       getCheck('cs_available'),
-    sound:           getCheck('cs_sound'),
-    allowImages:     getCheck('cs_allowImages'),
+    available: getCheck('cs_available'),
+    sound: getCheck('cs_sound'),
+    allowImages: getCheck('cs_allowImages'),
     requireVerified: getCheck('cs_requireVerified'),
-    autoReply:       getVal('cs_autoReply'),
-    autoClose:       parseInt(getVal('cs_autoClose')) || 48,
-    charLimit:       parseInt(getVal('cs_charLimit')) || 500,
+    autoReply: getVal('cs_autoReply'),
+    autoClose: parseInt(getVal('cs_autoClose')) || 48,
+    charLimit: parseInt(getVal('cs_charLimit')) || 500,
     officeHours: {
-      enabled:    getCheck('cs_officeHoursEnabled'),
-      open:       getVal('cs_open'),
-      close:      getVal('cs_close'),
+      enabled: getCheck('cs_officeHoursEnabled'),
+      open: getVal('cs_open'),
+      close: getVal('cs_close'),
       offlineMsg: getVal('cs_offlineMsg'),
     }
   };
-  const data = await api('/api/admin/chat/settings', { method:'PUT', body: JSON.stringify(body) });
-  if (data?.success) { adminSoundEnabled = body.sound;  // 5. Show Success Modal
-        showModal({
-            id: 'detailsPopup',
-            title: 'Configuration Alert',
-            content: `
+  const data = await api('/api/admin/chat/settings', { method: 'PUT', body: JSON.stringify(body) });
+  if (data?.success) {
+    adminSoundEnabled = body.sound; // 5. Show Success Modal
+    showModal({
+      id: 'detailsPopup',
+      title: 'Configuration Alert',
+      content: `
                 <strong>Configuration successfully saved</strong>
                 <p>✅ Chat settings saved.</p>
             `,
-            buttons: [{
-                text: 'Close',
-                class: 'btn-sec',
-                onclick: "document.getElementById('detailsPopup').remove()"
-            }]
-        }); }
+      buttons: [{
+        text: 'Close',
+        class: 'btn-sec',
+        onclick: "document.getElementById('detailsPopup').remove()"
+      }]
+    });
+  }
   else alert(data?.error || 'Error saving settings.');
 };
 
@@ -2872,15 +2954,15 @@ window.openChatUserProfile = function() {
 // Cycles: status → session ID → status → ...
 function startStatusTicker(sessionId, sessionStatus, userStatus) {
   if (statusTickerTimer) clearInterval(statusTickerTimer);
-
+  
   const el = document.getElementById('adminChatSessionStatus');
   if (!el) return;
-
+  
   const shortId = sessionId ? sessionId.toString().slice(-8).toUpperCase() : '--------';
-
+  
   const isBlocked = userStatus === 'blocked';
-  const isEnded   = sessionStatus === 'ended';
-
+  const isEnded = sessionStatus === 'ended';
+  
   const states = [
     // State 1: user status
     () => {
@@ -2897,10 +2979,10 @@ function startStatusTicker(sessionId, sessionStatus, userStatus) {
       el.innerHTML = `<span style="color:#aaa;display:flex;align-items:center;gap:4px;"><i class="ri-fingerprint-line"></i> ID: <code style="font-size:10px;background:rgba(0,0,0,0.06);padding:1px 5px;border-radius:4px;">${shortId}</code></span>`;
     }
   ];
-
+  
   let idx = 0;
   states[0](); // show immediately
-
+  
   statusTickerTimer = setInterval(() => {
     el.style.opacity = '0';
     setTimeout(() => {
@@ -2913,7 +2995,7 @@ function startStatusTicker(sessionId, sessionStatus, userStatus) {
 
 // ─── 3. BLOCK / UNBLOCK FROM CHAT ─────────────────────────
 function updateBlockBtn(userStatus) {
-  const btn   = document.getElementById('adminBlockBtn');
+  const btn = document.getElementById('adminBlockBtn');
   const label = document.getElementById('adminBlockLabel');
   if (!btn) return;
   const isBlocked = userStatus === 'blocked';
@@ -2921,21 +3003,21 @@ function updateBlockBtn(userStatus) {
   if (icon) icon.className = isBlocked ? 'ri-shield-check-line' : 'ri-forbid-line';
   if (label) label.textContent = isBlocked ? 'Unblock' : 'Block';
   btn.style.background = isBlocked ? '#e8f8f1' : '#fdecea';
-  btn.style.color      = isBlocked ? '#10ac84' : '#e74c3c';
+  btn.style.color = isBlocked ? '#10ac84' : '#e74c3c';
   btn.title = isBlocked ? 'Unblock user' : 'Block user';
 }
 
 window.toggleBlockFromChat = async function() {
   if (!activeSessionId) return;
   const isBlocked = activeUserData?.status === 'blocked';
-  const action    = isBlocked ? 'unblock' : 'block';
+  const action = isBlocked ? 'unblock' : 'block';
   if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} this user?`)) return;
-
+  
   const data = await api(`/api/admin/chat/session/${activeSessionId}/block`, {
     method: 'PUT',
     body: JSON.stringify({ block: !isBlocked })
   });
-
+  
   if (data?.success) {
     if (activeUserData) activeUserData.status = data.userStatus;
     updateBlockBtn(data.userStatus);
@@ -2981,14 +3063,14 @@ window.searchChatMessages = function(query) {
     const text = document.createTextNode(el.textContent);
     el.parentNode.replaceChild(text, el);
   });
-
+  
   if (!query.trim()) { if (resultsEl) resultsEl.textContent = ''; return; }
-
+  
   const q = query.toLowerCase();
   const bubbles = document.querySelectorAll('#adminChatMessages .admin-bubble');
   let matchCount = 0;
   let firstMatch = null;
-
+  
   bubbles.forEach(bubble => {
     const spans = bubble.querySelectorAll('span');
     spans.forEach(span => {
@@ -3006,12 +3088,12 @@ window.searchChatMessages = function(query) {
       }
     });
   });
-
+  
   if (resultsEl) {
     resultsEl.textContent = matchCount > 0 ? `${matchCount} result${matchCount > 1 ? 's' : ''} found` : 'No results found';
     resultsEl.style.color = matchCount > 0 ? '#10ac84' : '#e74c3c';
   }
-
+  
   // Scroll to first match
   if (firstMatch) firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
@@ -3020,7 +3102,7 @@ window.searchChatMessages = function(query) {
 function initScrollToBottom() {
   const container = document.getElementById('adminChatMessages');
   if (!container) return;
-
+  
   // Create the button if not exists
   let btn = document.getElementById('scrollToBottomBtn');
   if (!btn) {
@@ -3032,7 +3114,7 @@ function initScrollToBottom() {
     container.parentElement.style.position = 'relative';
     container.parentElement.appendChild(btn);
   }
-
+  
   container.onscroll = () => {
     const distFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
     btn.style.display = distFromBottom > 120 ? 'flex' : 'none';
@@ -3056,14 +3138,14 @@ window.openAdminChatSession = async function(sessionId, username, status, userDa
 function updateSeenLabel(messages) {
   // Remove existing seen labels
   document.querySelectorAll('.seen-label').forEach(el => el.remove());
-
+  
   // Find last admin message that was read
   const lastReadAdminMsg = [...messages].reverse().find(m => m.sender === 'admin' && m.read && !m.deleted);
   if (!lastReadAdminMsg) return;
-
+  
   const bubble = document.querySelector(`[data-msg-id="${lastReadAdminMsg._id}"]`);
   if (!bubble) return;
-
+  
   const label = document.createElement('div');
   label.className = 'seen-label';
   label.style.cssText = 'font-size:10px;color:#4fc3f7;text-align:right;padding:0 42px;margin-top:-4px;';
@@ -3085,6 +3167,7 @@ window.closeChatOnMobile = function() {
   activeSessionId = null;
 };
 
+
 window.addEventListener('resize', () => {
   if (window.innerWidth > 700) {
     document.getElementById('chatSessionList')?.classList.remove('slide-out');
@@ -3092,6 +3175,44 @@ window.addEventListener('resize', () => {
     if (backBtn) backBtn.style.display = 'none';
   }
 });
+
+
+//new
+// ══════════════════════════════════════════════════════════
+//  SECTION 15 — KEYBOARD SHORTCUTS & GLOBAL EVENTS
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  // / = focus settings search
+  if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+    const si = document.getElementById('settingsSearch');
+    if (si) {
+      e.preventDefault();
+      si.focus();
+    }
+  }
+  if (e.key === 'Escape') {
+    // Settings search
+    const si = document.getElementById('settingsSearch');
+    if (document.activeElement === si) {
+      clearSettingsSearch();
+      si.blur();
+      return;
+    }
+    // Confirm modal
+    closeConfirm();
+    // Ctx menus
+    hideCtx();
+    hideCtxMenu();
+    // Slide modal
+    closeSlideModal();
+    // Chat emoji / quick
+    closeEmoji();
+    closeQuickReplies();
+    cancelReply();
+    if (msgSearchActive) closeMessageSearch();
+  }
+});
+
 
 
 
