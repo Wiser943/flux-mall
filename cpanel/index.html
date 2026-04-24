@@ -767,7 +767,69 @@
   </main>
   
   <main class="page" id="chats">
-    <section id="chats" class="tab-content">
+            <div class="chat-lis">
+
+            <div class="chat-list-header">
+          <div class="chat-list-header-top">
+            <div class="chat-list-brand">
+              <div class="page-header-left">
+                <h1>Support</h1>
+                <p>Support, Admin chat panel </p>
+              </div>
+            </div>
+            <div class="chat-list-header-actions">
+              <button class="icon-btn" onclick="toggleSort()" title="Sort" id="sortBtn"><i class="ri-sort-desc"></i></button>
+              <button class="icon-btn" title="New conversation" onclick="toast('Feature coming soon', 'warning')"><i class="ri-add-line"></i></button>
+            </div>
+          </div>
+          
+          <div class="search-bar-wrap">
+            <i class="ri-search-line search-bar-icon"></i>
+            <input type="text" class="search-bar" id="chatSearch" placeholder="Search by name or message..." oninput="handleChatSearch(this.value)" autocomplete="off">
+            <button class="search-clear" id="searchClearBtn" onclick="clearChatSearch()" title="clear">✕</button>
+          </div>
+        </div>
+        
+        <!-- Filter tabs -->
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="setFilter('all', this)">All <span class="tab-badge" id="badge-all">5</span></button>
+          <button class="filter-tab" onclick="setFilter('unread', this)">Unread <span class="tab-badge" id="badge-unread">3</span></button>
+          <button class="filter-tab" onclick="setFilter('open', this)">Open</button>
+          <button class="filter-tab" onclick="setFilter('resolved', this)">Resolved</button>
+          <button class="filter-tab" onclick="setFilter('pinned', this)">Pinned</button>
+        </div>
+
+        <div class="no-chats" id="noChats">
+          <i class="ri-search-2-line"></i>
+          No chats found
+        </div>
+        
+        <!-- Stats footer -->
+        <div class="chat-list-footer">
+          <div class="sf-stat">
+            <span class="sf-stat-val" id="stat-open">8</span>
+            <span class="sf-stat-label">Open</span>
+          </div>
+          <div class="sf-divider"></div>
+          <div class="sf-stat">
+            <span class="sf-stat-val" id="stat-unread">3</span>
+            <span class="sf-stat-label">Unread</span>
+          </div>
+          <div class="sf-divider"></div>
+          <div class="sf-stat">
+            <span class="sf-stat-val" id="stat-resolved">24</span>
+            <span class="sf-stat-label">Resolved</span>
+          </div>
+        </div>
+
+        </div>
+    
+    
+    
+    
+    
+    
+    
       <div class="header-row">
         <h2>Live Chats</h2>
         <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
@@ -1018,8 +1080,6 @@
         </div>
         
       </div>
-    </section>
-    
     
   </main>
   

@@ -5166,4 +5166,4 @@ loadPaymentModeBadge();
 
 
 // Boot — check session
-checkAdminSession();
+//checkAdminSession();

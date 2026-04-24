@@ -31,6 +31,9 @@
           <button class="filter-tab" onclick="setFilter('pinned', this)">Pinned</button>
         </div>
         
+        
+        
+        
         <!-- Chat list -->
         <div class="chat-list" id="chatList"></div>
         
