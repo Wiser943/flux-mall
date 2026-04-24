@@ -2315,7 +2315,14 @@ window.loadAdminChatSessions = async function() {
   }
 };
 
+
+
+
+
 // ─── OPEN SESSION ─────────────────────────────────────────
+
+
+
 window.openAdminChatSession = async function(sessionId, username, status, userData) {
   activeSessionId = sessionId;
   activeUserData = userData || null;
@@ -3078,11 +3085,12 @@ function updateSeenLabel(messages) {
   bubble.after(label);
 }
 
+
 // Patch startAdminChatPolling to call updateSeenLabel
 const _origPollFn = startAdminChatPolling;
 
 // ─── MOBILE: Back to session list ─────────────────────────
-window.closeChatOnMobile = function() {
+window.closeChatOnMobile = () => {
   document.getElementById('chatSessionList')?.classList.remove('slide-out');
   document.getElementById('chatWindowActive').style.display = 'none';
   document.getElementById('chatWindowEmpty').style.display = 'flex';
@@ -3091,7 +3099,6 @@ window.closeChatOnMobile = function() {
   stopAdminChatPolling();
   activeSessionId = null;
 };
-
 
 window.addEventListener('resize', () => {
   if (window.innerWidth > 700) {

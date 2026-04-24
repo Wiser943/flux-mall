@@ -768,7 +768,7 @@
   
 
   <main class="page" id="chats">
-      <div class="chat-list" id="chatlis">
+      <div class="chat-list">
         <div class="chat-list-header">
           <div class="chat-list-header-top">
             <div class="chat-list-brand">
@@ -812,7 +812,87 @@
         <div class="chat-list" id="chatList"></div>-->
         </div>
         
-        
+                        <style>
+                    /* ── Chat responsive layout ───────────────────── */
+                    #chatLayout {
+                        display: flex;
+                        height: calc(100vh - 150px);
+                        border: 1px solid var(--primary);
+                        border-radius: 12px;
+                        overflow: hidden;
+                        position: relative;
+                    }
+                    
+                    #chatSessionList {
+                        width: 300px;
+                        min-width: 260px;
+                        border-right: 1px solid var(--border, #e0e5f2);
+                        overflow-y: auto;
+                        flex-shrink: 0;
+                        transition: transform 0.25s ease;
+                    }
+                    
+                    #chatWindow {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        min-width: 0;
+                    }
+                    
+                    /* Mobile: stack panels, session list slides out */
+                    @media (max-width: 700px) {
+                        #chatLayout {
+                            height: calc(100vh - 180px);
+                            border-radius: 8px;
+                        }
+                        
+                        #chatSessionList {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            bottom: 0;
+                            width: 100%;
+                            min-width: unset;
+                            z-index: 10;
+                            border-right: none;
+                            transform: translateX(0);
+                        }
+                        
+                        #chatSessionList.slide-out {
+                            transform: translateX(-100%);
+                            pointer-events: none;
+                        }
+                        
+                        #chatWindow {
+                            width: 100%;
+                        }
+                        
+                        /* Back button — only visible on mobile */
+                        #chatBackBtn {
+                            display: flex !important;
+                        }
+                        
+                        /* Hide block label text on mobile, show only icon */
+                        #adminBlockLabel {
+                            display: none;
+                        }
+                        
+                        #adminBlockBtn {
+                            padding: 6px 8px;
+                        }
+                        
+                        /* Tighten header actions on mobile */
+                        #adminChatHeader {
+                            padding: 10px 7px;
+                            gap: 6px;
+                        }
+                        
+                        #adminChatHeader .action-btns {
+                            gap: 0;
+                        }
+                    }
+                </style>
+
         
         
         
