@@ -798,7 +798,14 @@
           <button class="filter-tab" onclick="setFilter('resolved', this)">Resolved</button>
           <button class="filter-tab" onclick="setFilter('pinned', this)">Pinned</button>
         </div>
-
+        
+        <!-- Session List -->
+        <div id="chatSessionList">
+          <div id="chatSessionItems">
+            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
+          </div>
+        </div>
+        
         <div class="no-chats" id="noChats">
           <i class="ri-search-2-line"></i>
           No chats found
@@ -823,117 +830,8 @@
         </div>
 
         </div>
-    
-    
-    
-    
-    
-    
-    
-      <div class="header-row">
-        <h2>Live Chats</h2>
-        <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
-          <div class="search-box"></div>
-          <div style="display:flex;font-size:18pt;gap:15px;cursor:pointer;">
-            <i style="color:green;background:none;" onclick="openCreateNewsModal()" class="ri-megaphone-line"></i>
-            <i style="color:green;background:none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
-            <i style="color:green;background:none;" onclick="openChatModal()" class="ri-draggable"></i>
-          </div>
-        </div>
-      </div>
-      
-      <style>
-        /* ── Chat responsive layout ───────────────────── */
-        #chatLayout {
-          display: flex;
-          height: calc(100vh - 150px);
-          border: 1px solid var(--primary);
-          border-radius: 12px;
-          overflow: hidden;
-          position: relative;
-        }
-        
-        #chatSessionList {
-          width: 300px;
-          min-width: 260px;
-          border-right: 1px solid var(--border, #e0e5f2);
-          overflow-y: auto;
-          flex-shrink: 0;
-          transition: transform 0.25s ease;
-        }
-        
-        #chatWindow {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          min-width: 0;
-        }
-        
-        /* Mobile: stack panels, session list slides out */
-        @media (max-width: 700px) {
-          #chatLayout {
-            height: calc(100vh - 180px);
-            border-radius: 8px;
-          }
-          
-          #chatSessionList {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: 100%;
-            min-width: unset;
-            z-index: 10;
-            border-right: none;
-            transform: translateX(0);
-          }
-          
-          #chatSessionList.slide-out {
-            transform: translateX(-100%);
-            pointer-events: none;
-          }
-          
-          #chatWindow {
-            width: 100%;
-          }
-          
-          /* Back button — only visible on mobile */
-          #chatBackBtn {
-            display: flex !important;
-          }
-          
-          /* Hide block label text on mobile, show only icon */
-          #adminBlockLabel {
-            display: none;
-          }
-          
-          #adminBlockBtn {
-            padding: 6px 8px;
-          }
-          
-          /* Tighten header actions on mobile */
-          #adminChatHeader {
-            padding: 10px 7px;
-            gap: 6px;
-          }
-          
-          #adminChatHeader .action-btns {
-            gap: 0;
-          }
-        }
-      </style>
-      
-      <div id="chatLayout" class="table-container">
-        
-        <!-- Session List -->
-        <div id="chatSessionList">
-          <div id="chatSessionItems">
-            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
-          </div>
-        </div>
-        
-        <!-- Chat Window -->
-        <div id="chatWindow">
+    <!--chat window-->
+            <div id="chatWindow">
           
           <!-- Empty state -->
           <div id="chatWindowEmpty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;">
@@ -1078,8 +976,118 @@
           </div>
           
         </div>
-        
+
+    
+    
+    
+    
+    
+    
+      <div class="header-row">
+        <h2>Live Chats</h2>
+        <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
+          <div class="search-box"></div>
+          <div style="display:flex;font-size:18pt;gap:15px;cursor:pointer;">
+            <i style="color:green;background:none;" onclick="openCreateNewsModal()" class="ri-megaphone-line"></i>
+            <i style="color:green;background:none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
+            <i style="color:green;background:none;" onclick="openChatModal()" class="ri-draggable"></i>
+          </div>
+        </div>
       </div>
+      
+      <style>
+        /* ── Chat responsive layout ───────────────────── */
+        #chatLayout {
+          display: flex;
+          height: calc(100vh - 150px);
+          border: 1px solid var(--primary);
+          border-radius: 12px;
+          overflow: hidden;
+          position: relative;
+        }
+        
+        #chatSessionList {
+          width: 300px;
+          min-width: 260px;
+          border-right: 1px solid var(--border, #e0e5f2);
+          overflow-y: auto;
+          flex-shrink: 0;
+          transition: transform 0.25s ease;
+        }
+        
+        #chatWindow {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        
+        /* Mobile: stack panels, session list slides out */
+        @media (max-width: 700px) {
+          #chatLayout {
+            height: calc(100vh - 180px);
+            border-radius: 8px;
+          }
+          
+          #chatSessionList {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            min-width: unset;
+            z-index: 10;
+            border-right: none;
+            transform: translateX(0);
+          }
+          
+          #chatSessionList.slide-out {
+            transform: translateX(-100%);
+            pointer-events: none;
+          }
+          
+          #chatWindow {
+            width: 100%;
+          }
+          
+          /* Back button — only visible on mobile */
+          #chatBackBtn {
+            display: flex !important;
+          }
+          
+          /* Hide block label text on mobile, show only icon */
+          #adminBlockLabel {
+            display: none;
+          }
+          
+          #adminBlockBtn {
+            padding: 6px 8px;
+          }
+          
+          /* Tighten header actions on mobile */
+          #adminChatHeader {
+            padding: 10px 7px;
+            gap: 6px;
+          }
+          
+          #adminChatHeader .action-btns {
+            gap: 0;
+          }
+        }
+      </style>
+      <!---
+      <div id="chatLayout" class="table-container">
+        
+        <!-- Session List -->
+        <div id="chatSessionList">
+          <div id="chatSessionItems">
+            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
+          </div>
+        </div>
+        
+        <!-- Chat Window --
+        
+      </div>--->
     
   </main>
   
