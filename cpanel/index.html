@@ -122,10 +122,15 @@
     <!-- End of Navbar -->
     
     <main class="page active" id="dashboard">
-      <div class="header-row">
-        <button class="btn-export" onclick="exportCSV()">Export CSV <i class="ri-arrow-right-up-fill"></i></button>
-        <h2>System Analytics</h2>
+      <div class="page-header">
+        <div>
+          <h1>Dashboard</h1>
+          <div class="subtitle">Statistical session summary</div>
+        </div>
       </div>
+      
+      
+      
       <div class="stats-grid">
         <div class="stat-card"> <i class="ri-exchange-funds-line"></i>
           <h3>Total Success</h3>
@@ -176,25 +181,36 @@
           </tbody>
         </table>
       </div>
+      <style>
+        .table-container {
+          background: var(--card);
+          border-radius: 8px;
+          box-shadow: var(--shadow);
+          overflow: hidden;
+          margin-top: 20px;
+        }
+        
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        
+        th,
+        td {
+          padding: 16px 5px 16px 12px;
+          text-align: left;
+          border-bottom: 1px solid #f1f5f9;
+          font-size: 0.9rem;
+        }
+        
+        th {
+          background: #f8fafc;
+          color: #64748b;
+          font-weight: 600;
+        }
+      </style>
       
-      <div class="header">
-        <div class="left">
-          <h1>Dashboard</h1>
-          <ul class="breadcrumb">
-            <li><a href="#">
-                Analytics
-              </a></li>
-            /
-            <li><a href="#" class="active">Shop</a></li>
-          </ul>
-        </div>
-        <a href="#" class="report" onclick="exportCSV()">
-          <i class='bx bx-cloud-download'></i>
-          <span>Download CSV</span>
-        </a>
-      </div>
-      
-      <!-- Insights -->
+      <!-- Insights --
       <ul class="insights">
         <li>
           <i class='bx bx-calendar-check'></i>
@@ -230,7 +246,7 @@
           </span>
         </li>
       </ul>
-      <!-- End of Insights -->
+      <!-- End of Insights --
       
       <br>
       <div class="items-list">
@@ -275,39 +291,10 @@
         </div>
         <div class="item">
           <canvas class="activity-chart"></canvas>
-        </div>
+        </div>-->
       </div>
-      
-      <div class="bottom-container">
-        <div class="prog-status">
-          <div class="header">
-            <h4>learning Progress</h4>
-            <div class="tabs">
-              <a href="#" class="active">1Y</a>
-              <a href="#">6M</a>
-              <a href="#">3M</a>
-            </div>
-          </div>
-          
-          <div class="details">
-            <div class="item">
-              <h2>3.45</h2>
-              <p>Current GPA</p>
-            </div>
-            <div class="separator"></div>
-            <div class="item">
-              <h2>4.78</h2>
-              <p>Class Average GPA</p>
-            </div>
-          </div>
-          
-          <canvas class="prog-chart"></canvas>
-          
-        </div>
-      </div>
-      
-      
     </main>
+    
     <main class="page" id="transactions">
       <div class="page-header">
         <div>
