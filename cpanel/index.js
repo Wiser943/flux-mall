@@ -2309,8 +2309,10 @@ window.loadAdminChatSessions = async function() {
   
   const totalUnread = data.sessions.reduce((a, s) => a + (s.unreadAdmin || 0), 0);
   const badge = document.getElementById('adminChatBadge');
-  if (badge) { badge.textContent = totalUnread;
-    badge.style.display = totalUnread > 0 ? 'flex' : 'none'; }
+  if (badge) {
+    badge.textContent = totalUnread;
+    badge.style.display = totalUnread > 0 ? 'flex' : 'none';
+  }
 };
 
 // ─── OPEN SESSION ─────────────────────────────────────────
@@ -2452,7 +2454,7 @@ function buildAdminMsgBubble(msg, logo) {
     ${emojiBarHtml}
     <div>
       <div class="admin-bubble" data-msg-id="${msg._id}"
-        style="width:72%;max-width:300px;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 13px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
+        style="max-width:300px;background:${isMe?'#4318ff':'#fff'};color:${isMe?'#fff':'#333'};border-radius:${isMe?'16px 16px 4px 16px':'16px 16px 16px 4px'};padding:10px 12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);cursor:pointer;position:relative;"
         oncontextmenu="adminShowEmojiBar(event,'${emojiBarId}')"
         ontouchstart="adminHandleTouchStart(event,'${emojiBarId}')"
         ontouchend="adminHandleTouchEnd()">
@@ -2466,12 +2468,8 @@ function buildAdminMsgBubble(msg, logo) {
   return wrapper;
 }
 
-
-
-
 // ─── EMOJI BAR ────────────────────────────────────────────
 let adminLongPressTimer = null;
-
 window.adminShowEmojiBar = function(e, barId) {
   e.preventDefault();
   adminHideAllEmojiBars();
@@ -2534,8 +2532,10 @@ window.adminStartEdit = function(msgId) {
   adminReplyingTo = null;
   adminEditingMsgId = msgId;
   const input = document.getElementById('adminChatInput');
-  if (input) { input.value = msg.content;
-    input.focus(); }
+  if (input) {
+    input.value = msg.content;
+    input.focus();
+  }
   const bar = document.getElementById('adminReplyBar');
   if (bar) bar.style.display = 'flex';
   document.getElementById('adminReplyBarSender').textContent = '✏️ Editing';
@@ -2562,8 +2562,10 @@ window.sendAdminMessage = async function() {
       method: 'PUT',
       body: JSON.stringify({ content: text })
     });
-    if (data?.success) { cancelAdminReply();
-      await loadAdminMessages(activeSessionId); }
+    if (data?.success) {
+      cancelAdminReply();
+      await loadAdminMessages(activeSessionId);
+    }
     else alert(data?.error || 'Failed to edit.');
     return;
   }
@@ -2756,8 +2758,10 @@ function sendBrowserNotif(username, message) {
     tag: 'flux-chat',
     requireInteraction: true
   });
-  notif.onclick = () => { window.focus();
-    notif.close(); };
+  notif.onclick = () => {
+    window.focus();
+    notif.close();
+  };
 }
 
 // ─── UNREAD BADGE POLLING ────────────────────────────────
@@ -2767,8 +2771,10 @@ setInterval(async () => {
   const data = await api('/api/admin/chat/unread');
   const badge = document.getElementById('adminChatBadge');
   if (data?.unread > 0) {
-    if (badge) { badge.textContent = data.unread;
-      badge.style.display = 'flex'; }
+    if (badge) {
+      badge.textContent = data.unread;
+      badge.style.display = 'flex';
+    }
     if (data.unread > lastKnownUnread) {
       if (adminSoundEnabled) playAdminChatSound();
       const sessions = await api('/api/admin/chat/sessions');
