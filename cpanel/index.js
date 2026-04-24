@@ -378,7 +378,7 @@ async function initDashboard() {
     loadSettings(),
   ]);
   loadAdminChatSessions();
-  setupCharts();
+//  setupCharts();
   setInterval(async () => {
     await loadAnalytics();
     await renderApiUsers();
@@ -488,10 +488,11 @@ function setupCharts() {
 //  SECTION 7 — ANALYTICS & DEPOSITS (API)
 // ══════════════════════════════════════════════════════════
 window.loadAnalytics = async () => {
-  const data = await api('/api/admin/analytics');
+ // const data = await api('/api/admin/analytics');
+ let data="h";
   alert('^');
   console.log(data)
-  if (!data?.success) return;
+//  if (!data?.success) return;
   
   const s = data.stats;
   
@@ -506,7 +507,7 @@ window.loadAnalytics = async () => {
       <tr><td>Pending</td><td></td><td>${s.pCount}</td><td>₦${(s.pendingV).toLocaleString()}</td></tr>
       <tr><td>Declined</td><td></td><td>${s.dCount}</td><td>--</td></tr>`;
   }
-  
+  /*
   if (pieChart) {
     pieChart.data.datasets[0].data = [s.sCount, s.pCount, s.dCount];
     pieChart.update();
@@ -517,8 +518,11 @@ window.loadAnalytics = async () => {
   }
   
   allData = data.deposits;
-  renderDepositsPage()
+  renderDepositsPage()*/
 }
+
+    loadAnalytics();
+
 
 function renderDepositsPage() {
   const tbody = document.getElementById('depositTableBody');
