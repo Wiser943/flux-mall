@@ -460,12 +460,13 @@ function setupAnalyticsCharts() {
 
 // ─── CHARTS ───────────────────────────────────────────────
 let pieChart, barChart;
+
 function setupCharts() {
   const pCtx = document.getElementById('pieChart')?.getContext('2d');
   if (pCtx) {
     pieChart = new Chart(pCtx, {
       type: 'doughnut',
-      data: { labels: ['Success', 'Pending', 'Declined'], datasets: [{ data: [0,0,0], backgroundColor: ['#05cd99','#f6ad55','#ee5d50'] }] },
+      data: { labels: ['Success', 'Pending', 'Declined'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#05cd99', '#f6ad55', '#ee5d50'] }] },
       options: { plugins: { legend: { position: 'bottom' } } }
     });
   }
@@ -475,7 +476,7 @@ function setupCharts() {
       type: 'bar',
       data: {
         labels: ['Deposits', 'Withdrawals'],
-        datasets: [{ label: '₦ Value', data: [0,0], backgroundColor: ['#4318ff','#ee5d50'], borderRadius: 10 }]
+        datasets: [{ label: '₦ Value', data: [0, 0], backgroundColor: ['#4318ff', '#ee5d50'], borderRadius: 10 }]
       },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
@@ -486,18 +487,18 @@ function setupCharts() {
 // ══════════════════════════════════════════════════════════
 //  SECTION 7 — ANALYTICS & DEPOSITS (API)
 // ══════════════════════════════════════════════════════════
-
-async function loadAnalytics() {
-  const data = await api('/api/admin/analytics');alert('^');
+window.loadAnalytics = async () => {
+  const data = await api('/api/admin/analytics');
+  alert('^');
   console.log(data)
   if (!data?.success) return;
   
   const s = data.stats;
-
-  document.getElementById('statTotal').innerText   = `₦${(s.successV || 0).toLocaleString()}`;
+  
+  document.getElementById('statTotal').innerText = `₦${(s.successV || 0).toLocaleString()}`;
   document.getElementById('statPending').innerText = `₦${(s.pendingV || 0).toLocaleString()}`;
-  document.getElementById('statUsers').innerText   = s.totalUsers || 0;
-
+  document.getElementById('statUsers').innerText = s.totalUsers || 0;
+  
   const tbody = document.getElementById('analyticsTableBody');
   if (tbody) {
     tbody.innerHTML = `
@@ -505,12 +506,19 @@ async function loadAnalytics() {
       <tr><td>Pending</td><td></td><td>${s.pCount}</td><td>₦${(s.pendingV).toLocaleString()}</td></tr>
       <tr><td>Declined</td><td></td><td>${s.dCount}</td><td>--</td></tr>`;
   }
-
-  if (pieChart) { pieChart.data.datasets[0].data = [s.sCount, s.pCount, s.dCount]; pieChart.update(); }
-  if (barChart) { barChart.data.datasets[0].data = [s.successV, s.withdrawSuccessV]; barChart.update(); }
-
+  
+  if (pieChart) {
+    pieChart.data.datasets[0].data = [s.sCount, s.pCount, s.dCount];
+    pieChart.update();
+  }
+  if (barChart) {
+    barChart.data.datasets[0].data = [s.successV, s.withdrawSuccessV];
+    barChart.update();
+  }
+  
   allData = data.deposits;
-renderDepositsPage()}
+  renderDepositsPage()
+}
 
 function renderDepositsPage() {
   const tbody = document.getElementById('depositTableBody');
@@ -5693,105 +5701,105 @@ function atRenderPagination(total, page, onPage) {
 
 
 
-    // ── Sync the pill + subtitle text whenever toggle changes ─────
-    function syncMaintUI(isOn) {
-      const pill = document.getElementById('maintStatusPill');
-      const text = document.getElementById('maintStatusText');
-      const mirror = document.getElementById('tgl-maintenance');
-      
-      // Keep the hidden mirror in sync so fillSettings() can find it
-      if (mirror) mirror.value = isOn ? 'true' : 'false';
-      
-      if (pill) {
-        pill.textContent = isOn ? 'ON' : 'OFF';
-        pill.style.background = isOn ?
-          'rgba(238,93,80,0.12)' // red-soft when ON
-          :
-          'rgba(5,205,153,0.12)'; // green-soft when OFF
-        pill.style.color = isOn ?
-          '#ee5d50' // danger
-          :
-          '#05cd99'; // success
-      }
-      
-      if (text) {
-        text.textContent = isOn ?
-          '🔴 Platform is in maintenance' :
-          '🟢 Platform is live';
-      }
-    }
-    
-    // ── On page load — reflect current state from API ─────────────
-    // This runs AFTER loadSettings() has set maintenanceToggle.checked
-    // We use a MutationObserver to catch when loadSettings() sets the checkbox
-    const _maintObs = new MutationObserver(() => {});
-    document.addEventListener('DOMContentLoaded', () => {
-      // Poll briefly until the checkbox is set by loadSettings()
-      const poll = setInterval(() => {
-        const toggle = document.getElementById('maintenanceToggle');
-        if (!toggle) return;
-        // Once loadSettings() has run it will have set .checked
-        // We just sync the UI to match whatever state it is
-        syncMaintUI(toggle.checked);
-        clearInterval(poll);
-      }, 200);
-      
-      // Fallback — stop polling after 5s regardless
-      setTimeout(() => clearInterval(poll), 5000);
-    });
-    
-    // ── Payment mode quick-switcher ─────────────────────────────
-    // Loads current mode on page load and highlights the active pill.
-    // quickSetPaymentMode() saves instantly without opening the modal.
-    
-    async function loadPaymentModeBadge() {
-      const data = await api('/api/admin/settings');
-      const mode = data?.settings?.payment?.mode || 'manual';
-      updatePaymentPills(mode);
-    }
-    
-    function updatePaymentPills(mode) {
-      const badge = document.getElementById('paymentModeBadge');
-      const manual = document.getElementById('pillManual');
-      const kora = document.getElementById('pillKorapay');
-      if (!badge || !manual || !kora) return;
-      
-      const isManual = mode === 'manual';
-      
-      // Badge
-      badge.textContent = isManual ? 'Manual' : 'Korapay';
-      badge.style.background = isManual ? 'rgba(246,173,85,0.15)' : 'rgba(5,205,153,0.12)';
-      badge.style.color = isManual ? '#f6ad55' : '#05cd99';
-      
-      // Active pill
-      const activeStyle = 'border-color:green;background:rgba(67,24,255,0.08);color:green;';
-      const inactiveStyle = 'border-color:var(--border,#e0e5f2);background:var(--bg,#f4f7fe);color:var(--text2,#4a5568);';
-      manual.style.cssText += isManual ? activeStyle : inactiveStyle;
-      kora.style.cssText += isManual ? inactiveStyle : activeStyle;
-    }
-    
-    async function quickSetPaymentMode(mode) {
-      // Fetch existing payment config so we don't wipe manual/korapay keys
-      const data = await api('/api/admin/settings');
-      const existing = data?.settings?.payment || {};
-      
-      const config = { ...existing, mode };
-      
-      const res = await api('/api/admin/settings/payment', {
-        method: 'PUT',
-        body: JSON.stringify(config)
-      });
-      
-      if (res?.success) {
-        updatePaymentPills(mode);
-        showToast(`Switched to ${mode === 'manual' ? 'Manual Transfer' : 'Korapay'}`, 'success');
-      } else {
-        showToast('Failed to switch mode', 'error');
-      }
-    }
-    
-    // Run on load
-    loadPaymentModeBadge();
+// ── Sync the pill + subtitle text whenever toggle changes ─────
+function syncMaintUI(isOn) {
+  const pill = document.getElementById('maintStatusPill');
+  const text = document.getElementById('maintStatusText');
+  const mirror = document.getElementById('tgl-maintenance');
+  
+  // Keep the hidden mirror in sync so fillSettings() can find it
+  if (mirror) mirror.value = isOn ? 'true' : 'false';
+  
+  if (pill) {
+    pill.textContent = isOn ? 'ON' : 'OFF';
+    pill.style.background = isOn ?
+      'rgba(238,93,80,0.12)' // red-soft when ON
+      :
+      'rgba(5,205,153,0.12)'; // green-soft when OFF
+    pill.style.color = isOn ?
+      '#ee5d50' // danger
+      :
+      '#05cd99'; // success
+  }
+  
+  if (text) {
+    text.textContent = isOn ?
+      '🔴 Platform is in maintenance' :
+      '🟢 Platform is live';
+  }
+}
+
+// ── On page load — reflect current state from API ─────────────
+// This runs AFTER loadSettings() has set maintenanceToggle.checked
+// We use a MutationObserver to catch when loadSettings() sets the checkbox
+const _maintObs = new MutationObserver(() => {});
+document.addEventListener('DOMContentLoaded', () => {
+  // Poll briefly until the checkbox is set by loadSettings()
+  const poll = setInterval(() => {
+    const toggle = document.getElementById('maintenanceToggle');
+    if (!toggle) return;
+    // Once loadSettings() has run it will have set .checked
+    // We just sync the UI to match whatever state it is
+    syncMaintUI(toggle.checked);
+    clearInterval(poll);
+  }, 200);
+  
+  // Fallback — stop polling after 5s regardless
+  setTimeout(() => clearInterval(poll), 5000);
+});
+
+// ── Payment mode quick-switcher ─────────────────────────────
+// Loads current mode on page load and highlights the active pill.
+// quickSetPaymentMode() saves instantly without opening the modal.
+
+async function loadPaymentModeBadge() {
+  const data = await api('/api/admin/settings');
+  const mode = data?.settings?.payment?.mode || 'manual';
+  updatePaymentPills(mode);
+}
+
+function updatePaymentPills(mode) {
+  const badge = document.getElementById('paymentModeBadge');
+  const manual = document.getElementById('pillManual');
+  const kora = document.getElementById('pillKorapay');
+  if (!badge || !manual || !kora) return;
+  
+  const isManual = mode === 'manual';
+  
+  // Badge
+  badge.textContent = isManual ? 'Manual' : 'Korapay';
+  badge.style.background = isManual ? 'rgba(246,173,85,0.15)' : 'rgba(5,205,153,0.12)';
+  badge.style.color = isManual ? '#f6ad55' : '#05cd99';
+  
+  // Active pill
+  const activeStyle = 'border-color:green;background:rgba(67,24,255,0.08);color:green;';
+  const inactiveStyle = 'border-color:var(--border,#e0e5f2);background:var(--bg,#f4f7fe);color:var(--text2,#4a5568);';
+  manual.style.cssText += isManual ? activeStyle : inactiveStyle;
+  kora.style.cssText += isManual ? inactiveStyle : activeStyle;
+}
+
+async function quickSetPaymentMode(mode) {
+  // Fetch existing payment config so we don't wipe manual/korapay keys
+  const data = await api('/api/admin/settings');
+  const existing = data?.settings?.payment || {};
+  
+  const config = { ...existing, mode };
+  
+  const res = await api('/api/admin/settings/payment', {
+    method: 'PUT',
+    body: JSON.stringify(config)
+  });
+  
+  if (res?.success) {
+    updatePaymentPills(mode);
+    showToast(`Switched to ${mode === 'manual' ? 'Manual Transfer' : 'Korapay'}`, 'success');
+  } else {
+    showToast('Failed to switch mode', 'error');
+  }
+}
+
+// Run on load
+loadPaymentModeBadge();
 
 
 
