@@ -488,8 +488,10 @@ function setupCharts() {
 // ══════════════════════════════════════════════════════════
 
 async function loadAnalytics() {
-  const data = await api('/api/admin/analytics');
+  const data = await api('/api/admin/analytics');alert('^');
+  console.log(data)
   if (!data?.success) return;
+  
   const s = data.stats;
 
   document.getElementById('statTotal').innerText   = `₦${(s.successV || 0).toLocaleString()}`;
