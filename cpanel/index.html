@@ -292,1427 +292,1464 @@
         <div class="item">
           <canvas class="activity-chart"></canvas>
         </div>-->
+  </div>
+  </main>
+  
+  <main class="page" id="transactions">
+    <div class="page-header">
+      <div>
+        <h1>Transactions</h1>
+        <div class="subtitle">Deposits · Withdrawals · Activity log</div>
       </div>
-    </main>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="exportAllCSV()"><i class="ri-download-2-line"></i> Export</button>
+      </div>
+    </div>
     
-    <main class="page" id="transactions">
-      <div class="page-header">
-        <div>
-          <h1>Transactions</h1>
-          <div class="subtitle">Deposits · Withdrawals · Activity log</div>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
-          <button class="btn btn-primary btn-sm" onclick="exportAllCSV()"><i class="ri-download-2-line"></i> Export</button>
-        </div>
+    <!-- ── STAT STRIP ────────────────────────────────────── -->
+    <div class="stat-strip">
+      <div class="stat-card blue">
+        <div class="stat-val" id="statTotalDeposits">—</div>
+        <div class="stat-label">Total Deposits</div>
+        <i class="ri-arrow-down-circle-line stat-icon"></i>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-val" id="statApprovedDeposits">—</div>
+        <div class="stat-label">Approved</div>
+        <i class="ri-checkbox-circle-line stat-icon"></i>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-val" id="statPendingDeposits">—</div>
+        <div class="stat-label">Pending</div>
+        <i class="ri-time-line stat-icon"></i>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-val" id="statTotalWithdrawals">—</div>
+        <div class="stat-label">Withdrawals</div>
+        <i class="ri-arrow-up-circle-line stat-icon"></i>
+      </div>
+    </div>
+    
+    <!-- ── TABS CONTAINER ────────────────────────────────── -->
+    <div class="tabs-wrap">
+      <!-- Tab Buttons -->
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('deposits',this)">
+          <i class="ri-arrow-down-circle-line"></i>
+          <span>Deposits</span>
+          <span class="tab-count" id="tcDeposits">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('withdrawals',this)">
+          <i class="ri-arrow-up-circle-line"></i>
+          <span>Withdrawals</span>
+          <span class="tab-count" id="tcWithdrawals">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('activity',this)">
+          <i class="ri-list-check"></i>
+          <span>Activity</span>
+          <span class="tab-count" id="tcActivity">0</span>
+        </button>
       </div>
       
-      <!-- ── STAT STRIP ────────────────────────────────────── -->
-      <div class="stat-strip">
-        <div class="stat-card blue">
-          <div class="stat-val" id="statTotalDeposits">—</div>
-          <div class="stat-label">Total Deposits</div>
-          <i class="ri-arrow-down-circle-line stat-icon"></i>
-        </div>
-        <div class="stat-card green">
-          <div class="stat-val" id="statApprovedDeposits">—</div>
-          <div class="stat-label">Approved</div>
-          <i class="ri-checkbox-circle-line stat-icon"></i>
-        </div>
-        <div class="stat-card orange">
-          <div class="stat-val" id="statPendingDeposits">—</div>
-          <div class="stat-label">Pending</div>
-          <i class="ri-time-line stat-icon"></i>
-        </div>
-        <div class="stat-card red">
-          <div class="stat-val" id="statTotalWithdrawals">—</div>
-          <div class="stat-label">Withdrawals</div>
-          <i class="ri-arrow-up-circle-line stat-icon"></i>
-        </div>
-      </div>
-      
-      <!-- ── TABS CONTAINER ────────────────────────────────── -->
-      <div class="tabs-wrap">
-        <!-- Tab Buttons -->
-        <div class="tabs-header">
-          <button class="tab-btn active" onclick="switchTab('deposits',this)">
-            <i class="ri-arrow-down-circle-line"></i>
-            <span>Deposits</span>
-            <span class="tab-count" id="tcDeposits">0</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('withdrawals',this)">
-            <i class="ri-arrow-up-circle-line"></i>
-            <span>Withdrawals</span>
-            <span class="tab-count" id="tcWithdrawals">0</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('activity',this)">
-            <i class="ri-list-check"></i>
-            <span>Activity</span>
-            <span class="tab-count" id="tcActivity">0</span>
-          </button>
+      <!-- ══ DEPOSITS TAB ══════════════════════════════════ -->
+      <div class="tab-panel active" id="panel-deposits">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input type="text" class="search-input" placeholder="Search user, ref…" oninput="filterDeposits(this.value)">
+          </div>
+          <select class="filter-select" onchange="filterDepositStatus(this.value)">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="success">Approved</option>
+            <option value="declined">Declined</option>
+          </select>
         </div>
         
-        <!-- ══ DEPOSITS TAB ══════════════════════════════════ -->
-        <div class="tab-panel active" id="panel-deposits">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input type="text" class="search-input" placeholder="Search user, ref…" oninput="filterDeposits(this.value)">
-            </div>
-            <select class="filter-select" onchange="filterDepositStatus(this.value)">
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="success">Approved</option>
-              <option value="declined">Declined</option>
-            </select>
-          </div>
-          
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Amount</th>
-                  <th>Reference</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="depositTableBody">
-                <tr>
-                  <td colspan="6">
-                    <div class="state-box">
-                      <div class="spinner"></div>
-                      <p>Loading…</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="pagination" id="depositPagination" style="display:none;">
-            <span id="depositPageInfo"></span>
-            <div class="page-btns" id="depositPageBtns"></div>
-          </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Reference</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="depositTableBody">
+              <tr>
+                <td colspan="6">
+                  <div class="state-box">
+                    <div class="spinner"></div>
+                    <p>Loading…</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        
-        <!-- ══ WITHDRAWALS TAB ════════════════════════════════ -->
-        <div class="tab-panel" id="panel-withdrawals">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input type="text" class="search-input" placeholder="Search user, account…" oninput="filterWithdrawals(this.value)">
-            </div>
-            <select class="filter-select" onchange="filterWithdrawalStatus(this.value)">
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="success">Paid</option>
-              <option value="declined">Declined</option>
-            </select>
-          </div>
-          
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Amount (FEX)</th>
-                  <th>Naira Value</th>
-                  <th>Bank Details</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="withdrawTableBody">
-                <tr>
-                  <td colspan="7">
-                    <div class="state-box">
-                      <div class="spinner"></div>
-                      <p>Loading…</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="pagination" id="withdrawPagination" style="display:none;">
-            <span id="withdrawPageInfo"></span>
-            <div class="page-btns" id="withdrawPageBtns"></div>
-          </div>
-        </div>
-        
-        <!-- ══ ACTIVITY TAB ═══════════════════════════════════ -->
-        <div class="tab-panel" id="panel-activity">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input type="text" class="search-input" placeholder="Search description, type…" oninput="filterActivity(this.value)">
-            </div>
-            <select class="filter-select" onchange="filterActivityType(this.value)">
-              <option value="all">All Types</option>
-              <option value="Deposit">Deposit</option>
-              <option value="Withdrawal">Withdrawal</option>
-              <option value="Check-in">Check-in</option>
-              <option value="Shares">Investment</option>
-              <option value="Won spin">Spin Win</option>
-            </select>
-            <button class="filter-select" onclick="clearAllActivity()" style="background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
-              <i class="ri-delete-bin-7-line"></i> Clear Logs
-            </button>
-            
-          </div>
-          
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Description</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody id="activityTableBody">
-                <tr>
-                  <td colspan="5">
-                    <div class="state-box">
-                      <div class="spinner"></div>
-                      <p>Loading…</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="pagination" id="activityPagination">
-            <span id="activityPageInfo"></span>
-            <div class="page-btns" id="activityPageBtns"></div>
-          </div>
-        </div>
-      </div><!-- /tabs-wrap -->
-    </main><!-- /page -->
-    
-    
-    <main class="page" id="tasks">
-      <!-- HEADER -->
-      <div class="page-header">
-        <div>
-          <h1>Task Manager</h1>
-          <div class="subtitle">Create tasks · Review submissions · Reward users</div>
-        </div>
-        <div class="header-actions">
-          <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
-          <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()"><i class="ri-add-line"></i> New Task</button>
+        <div class="pagination" id="depositPagination" style="display:none;">
+          <span id="depositPageInfo"></span>
+          <div class="page-btns" id="depositPageBtns"></div>
         </div>
       </div>
       
-      <!-- STATS -->
-      <div class="stat-strip">
-        <div class="stat-card blue">
-          <div class="stat-val" id="atStatTasks">—</div>
-          <div class="stat-label">Total Tasks</div>
-          <i class="ri-task-line stat-icon"></i>
+      <!-- ══ WITHDRAWALS TAB ════════════════════════════════ -->
+      <div class="tab-panel" id="panel-withdrawals">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input type="text" class="search-input" placeholder="Search user, account…" oninput="filterWithdrawals(this.value)">
+          </div>
+          <select class="filter-select" onchange="filterWithdrawalStatus(this.value)">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="success">Paid</option>
+            <option value="declined">Declined</option>
+          </select>
         </div>
-        <div class="stat-card green">
-          <div class="stat-val" id="atStatApproved">—</div>
-          <div class="stat-label">Approved</div>
-          <i class="ri-checkbox-circle-line stat-icon"></i>
+        
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Amount (FEX)</th>
+                <th>Naira Value</th>
+                <th>Bank Details</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="withdrawTableBody">
+              <tr>
+                <td colspan="7">
+                  <div class="state-box">
+                    <div class="spinner"></div>
+                    <p>Loading…</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="stat-card orange">
-          <div class="stat-val" id="atStatPending">—</div>
-          <div class="stat-label">Pending Review</div>
-          <i class="ri-time-line stat-icon"></i>
-        </div>
-        <div class="stat-card red">
-          <div class="stat-val" id="atStatDeclined">—</div>
-          <div class="stat-label">Declined</div>
-          <i class="ri-close-circle-line stat-icon"></i>
+        <div class="pagination" id="withdrawPagination" style="display:none;">
+          <span id="withdrawPageInfo"></span>
+          <div class="page-btns" id="withdrawPageBtns"></div>
         </div>
       </div>
       
-      <!-- TABS -->
-      <div class="tabs-wrap">
-        <div class="tabs-header">
+      <!-- ══ ACTIVITY TAB ═══════════════════════════════════ -->
+      <div class="tab-panel" id="panel-activity">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input type="text" class="search-input" placeholder="Search description, type…" oninput="filterActivity(this.value)">
+          </div>
+          <select class="filter-select" onchange="filterActivityType(this.value)">
+            <option value="all">All Types</option>
+            <option value="Deposit">Deposit</option>
+            <option value="Withdrawal">Withdrawal</option>
+            <option value="Check-in">Check-in</option>
+            <option value="Shares">Investment</option>
+            <option value="Won spin">Spin Win</option>
+          </select>
+          <button class="filter-select" onclick="clearAllActivity()" style="background: var(--danger); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer;">
+            <i class="ri-delete-bin-7-line"></i> Clear Logs
+          </button>
           
-          <button class="tab-btn active" onclick="switchTab('tasks-catalog',this)">
-            <i class="ri-layout-grid-line"></i><span>Task Catalog</span>
-            <span class="tab-count" id="atTcCatalog">0</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('tasks-submissions',this)">
-            <i class="ri-inbox-line"></i><span>Submissions</span>
-            <span class="tab-count" id="atTcSubmissions">0</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('tasks-usercampaigns',this)">
-            <i class="ri-megaphone-line"></i><span>User Campaigns</span>
-            <span class="tab-count" id="atTcUserCampaigns">0</span>
-          </button>
         </div>
         
-        <!-- CATALOG TAB -->
-        <div class="tab-panel active" id="panel-tasks-catalog">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input class="search-input" type="text" placeholder="Search tasks…" oninput="atFilterCatalog(this.value)">
-            </div>
-            <select class="filter-select" onchange="atFilterCatalogStatus(this.value)">
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-            <select class="filter-select" onchange="atFilterCatalogCategory(this.value)" id="atCatFilter">
-              <option value="all">All Categories</option>
-            </select>
-          </div>
-          <div id="atTasksGrid" class="tasks-grid">
-            <div class="state-box" style="grid-column:1/-1">
-              <div class="spinner"></div>
-              <p>Loading tasks…</p>
-            </div>
-          </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="activityTableBody">
+              <tr>
+                <td colspan="5">
+                  <div class="state-box">
+                    <div class="spinner"></div>
+                    <p>Loading…</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        
-        <div class="tab-panel" id="panel-tasks-usercampaigns">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input class="search-input" type="text" placeholder="Search campaigns or creator…" oninput="atFilterUserCampaigns(this.value)">
-            </div>
-            <select class="filter-select" onchange="atFilterCampaignStatus(this.value)" id="atCampaignStatusFilter">
-              <option value="all">All Status</option>
-              <option value="pending">Pending Review</option>
-              <option value="approved">Approved</option>
-              <option value="declined">Declined</option>
-            </select>
-          </div>
-          
-          <div id="atUserCampaignsGrid" class="tasks-grid">
-            <div class="state-box" style="grid-column:1/-1">
-              <div class="spinner"></div>
-              <p>Loading campaigns…</p>
-            </div>
-          </div>
+        <div class="pagination" id="activityPagination">
+          <span id="activityPageInfo"></span>
+          <div class="page-btns" id="activityPageBtns"></div>
         </div>
-        
-        
-        <!-- SUBMISSIONS TAB -->
-        <div class="tab-panel" id="panel-tasks-submissions">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input class="search-input" type="text" placeholder="Search user or task…" oninput="atFilterSubmissions(this.value)">
-            </div>
-            <select class="filter-select" onchange="atFilterSubStatus(this.value)">
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="declined">Declined</option>
-            </select>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Task</th>
-                  <th>Points</th>
-                  <th>Proof</th>
-                  <th>Submitted</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="atSubTableBody">
-                <tr>
-                  <td colspan="7">
-                    <div class="state-box">
-                      <div class="spinner"></div>
-                      <p>Loading…</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="pagination" id="atSubPagination" style="display:none;">
-            <span id="atSubPageInfo"></span>
-            <div class="page-btns" id="atSubPageBtns"></div>
-          </div>
-        </div>
-        
-      </div><!-- /tabs-wrap -->
-    </main><!-- /page -->
+      </div>
+    </div><!-- /tabs-wrap -->
+  </main><!-- /page -->
+  
+  
+  <main class="page" id="tasks">
+    <!-- HEADER -->
+    <div class="page-header">
+      <div>
+        <h1>Task Manager</h1>
+        <div class="subtitle">Create tasks · Review submissions · Reward users</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openCreateTaskModal()"><i class="ri-add-line"></i> New Task</button>
+      </div>
+    </div>
     
-    <main class="page" id="shares">
-      <div class="page-header">
-        <div>
-          <h1>Investments</h1>
-          <div class="subtitle">Manage and Track user investments</div>
+    <!-- STATS -->
+    <div class="stat-strip">
+      <div class="stat-card blue">
+        <div class="stat-val" id="atStatTasks">—</div>
+        <div class="stat-label">Total Tasks</div>
+        <i class="ri-task-line stat-icon"></i>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-val" id="atStatApproved">—</div>
+        <div class="stat-label">Approved</div>
+        <i class="ri-checkbox-circle-line stat-icon"></i>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-val" id="atStatPending">—</div>
+        <div class="stat-label">Pending Review</div>
+        <i class="ri-time-line stat-icon"></i>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-val" id="atStatDeclined">—</div>
+        <div class="stat-label">Declined</div>
+        <i class="ri-close-circle-line stat-icon"></i>
+      </div>
+    </div>
+    
+    <!-- TABS -->
+    <div class="tabs-wrap">
+      <div class="tabs-header">
+        
+        <button class="tab-btn active" onclick="switchTab('tasks-catalog',this)">
+          <i class="ri-layout-grid-line"></i><span>Task Catalog</span>
+          <span class="tab-count" id="atTcCatalog">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('tasks-submissions',this)">
+          <i class="ri-inbox-line"></i><span>Submissions</span>
+          <span class="tab-count" id="atTcSubmissions">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('tasks-usercampaigns',this)">
+          <i class="ri-megaphone-line"></i><span>User Campaigns</span>
+          <span class="tab-count" id="atTcUserCampaigns">0</span>
+        </button>
+      </div>
+      
+      <!-- CATALOG TAB -->
+      <div class="tab-panel active" id="panel-tasks-catalog">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input class="search-input" type="text" placeholder="Search tasks…" oninput="atFilterCatalog(this.value)">
+          </div>
+          <select class="filter-select" onchange="atFilterCatalogStatus(this.value)">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select class="filter-select" onchange="atFilterCatalogCategory(this.value)" id="atCatFilter">
+            <option value="all">All Categories</option>
+          </select>
         </div>
-        <div class="header-actions">
-          <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
-          <button class="btn btn-primary btn-sm" onclick="openAddShareModal()"><i class="ri-add-line"></i> New Share</button>
+        <div id="atTasksGrid" class="tasks-grid">
+          <div class="state-box" style="grid-column:1/-1">
+            <div class="spinner"></div>
+            <p>Loading tasks…</p>
+          </div>
         </div>
       </div>
       
-      <!-- ── STAT STRIP ──────────────────────────────────────── -->
-      <div class="stat-strip">
-        <div class="stat-card blue">
-          <div class="stat-val" id="statTotalShares">—</div>
-          <div class="stat-label">Share Packages</div>
-          <i class="ri-stack-line stat-icon"></i>
+      <div class="tab-panel" id="panel-tasks-usercampaigns">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input class="search-input" type="text" placeholder="Search campaigns or creator…" oninput="atFilterUserCampaigns(this.value)">
+          </div>
+          <select class="filter-select" onchange="atFilterCampaignStatus(this.value)" id="atCampaignStatusFilter">
+            <option value="all">All Status</option>
+            <option value="pending">Pending Review</option>
+            <option value="approved">Approved</option>
+            <option value="declined">Declined</option>
+          </select>
         </div>
-        <div class="stat-card green">
-          <div class="stat-val" id="statActiveInvestments">—</div>
-          <div class="stat-label">Active Investments</div>
-          <i class="ri-line-chart-line stat-icon"></i>
-        </div>
-        <div class="stat-card orange">
-          <div class="stat-val" id="statTotalInvested">—</div>
-          <div class="stat-label">Total Invested (FEX)</div>
-          <i class="ri-coin-line stat-icon"></i>
-        </div>
-        <div class="stat-card red">
-          <div class="stat-val" id="statExpired">—</div>
-          <div class="stat-label">Expired</div>
-          <i class="ri-time-line stat-icon"></i>
+        
+        <div id="atUserCampaignsGrid" class="tasks-grid">
+          <div class="state-box" style="grid-column:1/-1">
+            <div class="spinner"></div>
+            <p>Loading campaigns…</p>
+          </div>
         </div>
       </div>
       
-      <!-- ── TABS ─────────────────────────────────────────────── -->
-      <div class="tabs-wrap">
-        <div class="tabs-header">
-          <button class="tab-btn active" onclick="switchTab('catalog',this)">
-            <i class="ri-layout-grid-line"></i><span>Share Catalog</span>
-            <span class="tab-count" id="tcCatalog">0</span>
-          </button>
-          <button class="tab-btn" onclick="switchTab('investments',this)">
-            <i class="ri-user-star-line"></i><span>User Investments</span>
-            <span class="tab-count" id="tcInvestments">0</span>
-          </button>
-        </div>
-        
-        <!-- ══ CATALOG TAB ═════════════════════════════════════ -->
-        <div class="tab-panel active" id="panel-catalog">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input class="search-input" type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
-            </div>
-            <select class="filter-select" onchange="sortCatalog(this.value)">
-              <option value="price-asc">Price: Low → High</option>
-              <option value="price-desc">Price: High → Low</option>
-              <option value="duration-asc">Duration: Short → Long</option>
-              <option value="name-asc">Name: A → Z</option>
-            </select>
-          </div>
-          
-          <!-- Share cards grid -->
-          <div id="sharesGrid" class="shares-grid">
-            <div class="state-box" style="grid-column:1/-1">
-              <div class="spinner"></div>
-              <p>Loading shares…</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- ══ INVESTMENTS TAB ══════════════════════════════════ -->
-        <div class="tab-panel" id="panel-investments">
-          <div class="toolbar">
-            <div class="search-box">
-              <i class="ri-search-line"></i>
-              <input class="search-input" type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
-            </div>
-            <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="expired">Expired</option>
-            </select>
-          </div>
-          
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Share Package</th>
-                  <th>Progress</th>
-                  <th>Daily Income</th>
-                  <th>Purchased</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="investmentsTableBody">
-                <tr>
-                  <td colspan="7">
-                    <div class="state-box">
-                      <div class="spinner"></div>
-                      <p>Loading…</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="pagination" id="investPagination" style="display:none;">
-            <span id="investPageInfo"></span>
-            <div class="page-btns" id="investPageBtns"></div>
-          </div>
-        </div>
-      </div><!-- /tabs-wrap -->
-    </main>
-    
-    <main class="page" id="chats">
-      <!-- ════════════════ SIDEBAR ════════════════ -->
-            <div class="chat-list" id="chatlis">
-        
-        <div class="chat-list-header">
-          <div class="chat-list-header-top">
-            <div class="chat-list-brand">
-              <div class="page-header-left">
-                <h1>Support</h1>
-                <p>Support, Admin chat panel </p>
-              </div>
-            </div>
-            <div class="chat-list-header-actions">
-              <button class="icon-btn" onclick="toggleSort()" title="Sort" id="sortBtn"><i class="ri-sort-desc"></i></button>
-              <button class="icon-btn" title="New conversation" onclick="toast('Feature coming soon', 'warning')"><i class="ri-add-line"></i></button>
-            </div>
-          </div>
-          
-          <div class="search-bar-wrap">
-            <i class="ri-search-line search-bar-icon"></i>
-            <input type="text" class="search-bar" id="chatSearch" placeholder="Search by name or message..." oninput="handleChatSearch(this.value)" autocomplete="off">
-            <button class="search-clear" id="searchClearBtn" onclick="clearChatSearch()" title="clear">✕</button>
-          </div>
-        </div>
-        
-        <!-- Filter tabs -->
-        <div class="filter-tabs">
-          <button class="filter-tab active" onclick="setFilter('all', this)">All <span class="tab-badge" id="badge-all">5</span></button>
-          <button class="filter-tab" onclick="setFilter('unread', this)">Unread <span class="tab-badge" id="badge-unread">3</span></button>
-          <button class="filter-tab" onclick="setFilter('open', this)">Open</button>
-          <button class="filter-tab" onclick="setFilter('resolved', this)">Resolved</button>
-          <button class="filter-tab" onclick="setFilter('pinned', this)">Pinned</button>
-        </div>
-        
-        <!-- Chat list -->
-        <div class="chat-list" id="chatList"></div>
-        
-        <div class="no-chats" id="noChats">
-          <i class="ri-search-2-line"></i>
-          No chats found
-        </div>
-        
-        <!-- Stats footer -->
-        <div class="chat-list-footer">
-          <div class="sf-stat">
-            <span class="sf-stat-val" id="stat-open">8</span>
-            <span class="sf-stat-label">Open</span>
-          </div>
-          <div class="sf-divider"></div>
-          <div class="sf-stat">
-            <span class="sf-stat-val" id="stat-unread">3</span>
-            <span class="sf-stat-label">Unread</span>
-          </div>
-          <div class="sf-divider"></div>
-          <div class="sf-stat">
-            <span class="sf-stat-val" id="stat-resolved">24</span>
-            <span class="sf-stat-label">Resolved</span>
-          </div>
-        </div>
-        
-      </div><!-- /sidebar -->
-
-      <!-- ════════════════ MAIN CHAT ════════════════ -->
-      <div class="chat-main" id="chatMain">
-        
-        <!-- Empty state -->
-        <div class="chat-empty" id="chatEmpty">
-          <i class="ri-message-3-line"></i>
-          <h3>Select a conversation</h3>
-          <p>Choose a chat from the list to start supporting your users</p>
-        </div>
-        
-        <!-- Chat window (shown when a chat is active) -->
-        <div class="chat-window" id="chatWindow">
-          
-          <!-- Chat header -->
-          <div class="chat-header" id="chatHeader">
-            <button class="chat-header-back" onclick="closeMobileChat()">
-              <i class="ri-arrow-left-s-line"></i>
-            </button>
-            <div class="chat-header-avatar">
-              <div class="avatar-img initials" id="hdrAvatar">U</div>
-              <div class="online-dot" id="hdrOnlineDot"></div>
-            </div>
-            <div class="chat-header-info">
-              <div class="chat-header-name" id="hdrName">User</div>
-              <div class="chat-header-status" id="hdrStatus">offline</div>
-            </div>
-            <div class="chat-header-actions">
-              <button class="icon-btn" onclick="simulateTyping()" title="Simulate typing"><i class="ri-chat-3-line"></i></button>
-              <button class="icon-btn" onclick="toggleSearch()" title="Search messages" id="msgSearchBtn"><i class="ri-search-line"></i></button>
-              <button class="icon-btn" onclick="toggleUserPanel()" title="User info" id="uipToggleBtn"><i class="ri-user-line"></i></button>
-              <button class="icon-btn" id="moreBtn" title="More options" onclick="showMoreMenu()"><i class="ri-more-2-fill"></i></button>
-            </div>
-          </div>
-          
-          <!-- Message search bar (hidden by default) -->
-          <div style="display:none;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--header-bg);" id="msgSearchBar">
-            <div class="search-wrap">
-              <i class="ri-search-line search-icon"></i>
-              <input type="text" class="search-input" id="msgSearchInput" placeholder="Search in this chat..." oninput="searchInChat(this.value)">
-              <button class="search-clear-btn" id="msgSearchClear" onclick="closeMessageSearch()">✕</button>
-            </div>
-            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:5px;" id="msgSearchCount"></div>
-          </div>
-          
-          <!-- Session ended bar -->
-          <div class="session-ended-bar" id="sessionEndedBar">
-            <i class="ri-lock-line"></i>
-            Session ended by user
-            <button onclick="reopenSession()">Reopen</button>
-          </div>
-          
-          <!-- Messages -->
-          <div class="messages-area" id="messagesArea"></div>
-          
-          <!-- Typing indicator -->
-          <div class="typing-bubble" id="typingBubble" style="padding:0 20px 4px;">
-            <div class="typing-dots">
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-              <div class="typing-dot"></div>
-            </div>
-          </div>
-          
-          <!-- Quick replies popup -->
-          <div class="quick-replies" id="quickReplies">
-            <div class="qr-header">Quick Replies</div>
-            <div class="qr-item" onclick="useQuickReply('Hello! How can I assist you today? 😊')"><i class="ri-chat-smile-line"></i> Greeting</div>
-            <div class="qr-item" onclick="useQuickReply('I understand your concern. Let me look into this for you right away.')"><i class="ri-empathize-line"></i> Empathy</div>
-            <div class="qr-item" onclick="useQuickReply('Your deposit has been confirmed and credited to your wallet.')"><i class="ri-bank-card-line"></i> Deposit confirmed</div>
-            <div class="qr-item" onclick="useQuickReply('Your withdrawal request is being processed. Please allow 30–60 minutes.')"><i class="ri-arrow-up-circle-line"></i> Withdrawal processing</div>
-            <div class="qr-item" onclick="useQuickReply('Please verify your account to unlock all features. Go to Profile → Verify.')"><i class="ri-shield-check-line"></i> Verify account</div>
-            <div class="qr-item" onclick="useQuickReply('Is there anything else I can help you with?')"><i class="ri-question-line"></i> Anything else?</div>
-            <div class="qr-item" onclick="useQuickReply('This issue has been resolved. Thank you for contacting Fluxmall Support! 🙏')"><i class="ri-checkbox-circle-line"></i> Resolved</div>
-          </div>
-          
-          <!-- Reply bar -->
-          <div class="reply-bar" id="replyBar">
-            <div class="reply-bar-inner">
-              <div class="reply-bar-sender" id="replyBarSender"></div>
-              <div class="reply-bar-text" id="replyBarText"></div>
-            </div>
-            <button class="reply-bar-close" onclick="cancelReply()"><i class="ri-close-line"></i></button>
-          </div>
-          
-          <!-- Emoji picker -->
-          <div class="emoji-picker" id="emojiPicker">
-            <div class="emoji-grid" id="emojiGrid"></div>
-          </div>
-          
-          <!-- Input area -->
-          <div class="input-area" id="inputArea">
-            <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
-              <i class="ri-flashlight-line"></i>
-            </button>
-            <div class="input-field-wrap">
-              <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
-              <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
-            </div>
-            <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
-          </div>
-          
-        </div><!-- /chat-window -->
-        
-        <!-- User info panel (desktop right panel) -->
-        <div class="user-info-panel hidden" id="userInfoPanel">
-          <div class="uip-header">
-            <span class="uip-title">User Info</span>
-            <button class="icon-btn" onclick="toggleUserPanel()"><i class="ri-close-line"></i></button>
-          </div>
-          <div class="uip-body">
-            <div class="uip-avatar-wrap">
-              <div class="uip-big-avatar" id="uipAvatar">U</div>
-              <div class="uip-name" id="uipName">Username</div>
-              <div class="uip-email" id="uipEmail">user@email.com</div>
-            </div>
-            
-            <div class="uip-stat-grid">
-              <div class="uip-stat">
-                <div class="uip-stat-val" id="uipBalance">₦0</div>
-                <div class="uip-stat-label">Balance</div>
-              </div>
-              <div class="uip-stat">
-                <div class="uip-stat-val" id="uipShares">0</div>
-                <div class="uip-stat-label">Shares</div>
-              </div>
-              <div class="uip-stat">
-                <div class="uip-stat-val" id="uipDeposits">0</div>
-                <div class="uip-stat-label">Deposits</div>
-              </div>
-              <div class="uip-stat">
-                <div class="uip-stat-val" id="uipReferrals">0</div>
-                <div class="uip-stat-label">Referrals</div>
-              </div>
-            </div>
-            
-            <div class="uip-section-label">Actions</div>
-            <button class="uip-action" onclick="toast('Navigating to user profile...','info')">
-              <i class="ri-user-line"></i> View full profile
-            </button>
-            <button class="uip-action" onclick="toast('Opening transaction history...','info')">
-              <i class="ri-history-line"></i> Transaction history
-            </button>
-            <button class="uip-action" onclick="resolveSession()">
-              <i class="ri-checkbox-circle-line"></i> Resolve & close
-            </button>
-            <button class="uip-action danger" onclick="toast('User has been flagged','error')">
-              <i class="ri-flag-line"></i> Flag user
-            </button>
-            <button class="uip-action danger" onclick="toast('User banned','error')">
-              <i class="ri-forbid-line"></i> Ban user
-            </button>
-          </div>
-        </div>
-        
-      </div><!-- /chat-main -->
       
-    </main>
-    
-    <main class="page" id="users">
-      <!-- ── MAIN ── -->
-      <div class="users-main">
-        <!-- Topbar -->
-        <div class="topbar">
-          <div class="topbar-title" style="font-size:1.3rem">
-            User Management
-            <span id="totalCount">0 users</span>
+      <!-- SUBMISSIONS TAB -->
+      <div class="tab-panel" id="panel-tasks-submissions">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input class="search-input" type="text" placeholder="Search user or task…" oninput="atFilterSubmissions(this.value)">
           </div>
-          <button class="icon-btn" onclick="exportCSV()" title="Export CSV"><i class="ri-download-2-line"></i></button>
-          <button class="btn btn-primary" onclick="openAddUser()">
-            <i class="ri-user-add-line"></i> <span>Add User</span>
-          </button>
+          <select class="filter-select" onchange="atFilterSubStatus(this.value)">
+            <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="declined">Declined</option>
+          </select>
         </div>
-        
-        <div class="user-content">
-          <div class="table-pane">
-            
-            <!-- Stats bar -->
-            <div class="stats-bar" id="statsBar">
-              <div class="stat-chip"><span class="stat-val" id="s-total">0</span><span class="stat-label">Total</span></div>
-              <div class="stat-chip"><span class="stat-val" id="s-verified">0</span><span class="stat-label">Verified</span></div>
-              <div class="stat-chip"><span class="stat-val" id="s-active">0</span><span class="stat-label">Active</span></div>
-              <div class="stat-chip"><span class="stat-val" id="s-banned">0</span><span class="stat-label">Banned</span></div>
-              <div class="stat-chip"><span class="stat-val" id="s-balance">₦0</span><span class="stat-label">Total Balance</span></div>
-            </div>
-            
-            <!-- Toolbar -->
-            <div class="toolbar">
-              <div class="search-box">
-                <i class="ri-search-line"></i>
-                <input type="text" class="search-input" id="searchInput" placeholder="Search by name, email, ID..." oninput="handleSearch(this.value)">
-                <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
-              </div>
-              <select class="filter-select" id="statusFilter" onchange="applyFilters()">
-                <option value="">All Status</option>
-                <option value="verified">Verified</option>
-                <option value="unverified">Unverified</option>
-                <option value="banned">Banned</option>
-              </select>
-              <select class="filter-select" id="sortFilter" onchange="applyFilters()">
-                <option value="newest">Newest</option>
-                <option value="oldest">Oldest</option>
-                <option value="balance-desc">Balance ↓</option>
-                <option value="balance-asc">Balance ↑</option>
-                <option value="name-asc">Name A–Z</option>
-              </select>
-              <button class="btn btn-outline" onclick="applyFilters()"><i class="ri-filter-line"></i> <span>Filter</span></button>
-            </div>
-            
-            <!-- Bulk bar -->
-            <div class="bulk-bar" id="bulkBar">
-              <span class="bulk-count" id="bulkCount">0 selected</span>
-              <button class="btn btn-outline" onclick="bulkVerify()"><i class="ri-shield-check-line"></i> Verify All</button>
-              <button class="btn btn-outline" onclick="bulkMessage()"><i class="ri-message-3-line"></i> Message</button>
-              <button class="btn btn-danger" onclick="bulkBan()"><i class="ri-forbid-line"></i> Ban All</button>
-              <button class="btn btn-danger" onclick="bulkDelete()"><i class="ri-delete-bin-line"></i> Delete</button>
-              <button class="btn btn-outline" onclick="clearSelection()"><i class="ri-close-line"></i> Clear</button>
-            </div>
-            
-            <!-- Mobile filter tabs -->
-            <div class="mobile-filter-row" id="mobileFilterRow">
-              <button class="mf-tab active" onclick="setMobileFilter('all',this)">All</button>
-              <button class="mf-tab" onclick="setMobileFilter('verified',this)">Verified</button>
-              <button class="mf-tab" onclick="setMobileFilter('unverified',this)">Unverified</button>
-              <button class="mf-tab" onclick="setMobileFilter('banned',this)">Banned</button>
-              <button class="mf-tab" onclick="setMobileFilter('active',this)">Active</button>
-            </div>
-            
-            <!-- Mobile card list -->
-            <div class="card-list" id="cardList"></div>
-            
-            <!-- Table -->
-            <div class="table-scroll">
-              <table id="userTable">
-                <thead>
-                  <tr>
-                    <th class="check-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
-                    <th onclick="sortBy('name')">User</th>
-                    <th onclick="sortBy('balance')">Balance</th>
-                    <th onclick="sortBy('shares')">Shares</th>
-                    <th onclick="sortBy('referrals')">Referrals</th>
-                    <th onclick="sortBy('status')">Status</th>
-                    <th onclick="sortBy('joined')">Joined</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-              </table>
-              <div class="empty-state" id="emptyState" style="display:none;">
-                <i class="ri-user-search-line"></i>
-                <p>No users found matching your search</p>
-              </div>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="pagination" id="pagination">
-              <span class="page-info" id="pageInfo">Showing 0–0 of 0</span>
-              <div class="page-btns" id="pageBtns"></div>
-            </div>
-            
-          </div><!-- /table-pane -->
-          
-          <!-- Detail Pane -->
-          <div class="detail-pane hidden" id="detailPane">
-            <div class="dp-header">
-              <span class="dp-title">User Profile</span>
-              <button class="icon-btn" onclick="closeDetail()"><i class="ri-close-line"></i></button>
-            </div>
-            <div class="dp-body" id="dpBody"></div>
-          </div>
-          
-        </div><!-- /content -->
-      </div><!-- /main -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Task</th>
+                <th>Points</th>
+                <th>Proof</th>
+                <th>Submitted</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="atSubTableBody">
+              <tr>
+                <td colspan="7">
+                  <div class="state-box">
+                    <div class="spinner"></div>
+                    <p>Loading…</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="atSubPagination" style="display:none;">
+          <span id="atSubPageInfo"></span>
+          <div class="page-btns" id="atSubPageBtns"></div>
+        </div>
+      </div>
       
-    </main>
+    </div><!-- /tabs-wrap -->
+  </main><!-- /page -->
+  
+  <main class="page" id="shares">
+    <div class="page-header">
+      <div>
+        <h1>Investments</h1>
+        <div class="subtitle">Manage and Track user investments</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm" onclick="refreshAll()"><i class="ri-refresh-line"></i> Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddShareModal()"><i class="ri-add-line"></i> New Share</button>
+      </div>
+    </div>
     
-    <main class="page" id="settings">
-      <div class="page-wrap">
-        <!-- ── PAGE HEADER ── -->
-        <div class="page-header">
-          <div class="page-header-left">
-            <h1>Settings</h1>
-            <p>Configure your platform preferences</p>
+    <!-- ── STAT STRIP ──────────────────────────────────────── -->
+    <div class="stat-strip">
+      <div class="stat-card blue">
+        <div class="stat-val" id="statTotalShares">—</div>
+        <div class="stat-label">Share Packages</div>
+        <i class="ri-stack-line stat-icon"></i>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-val" id="statActiveInvestments">—</div>
+        <div class="stat-label">Active Investments</div>
+        <i class="ri-line-chart-line stat-icon"></i>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-val" id="statTotalInvested">—</div>
+        <div class="stat-label">Total Invested (FEX)</div>
+        <i class="ri-coin-line stat-icon"></i>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-val" id="statExpired">—</div>
+        <div class="stat-label">Expired</div>
+        <i class="ri-time-line stat-icon"></i>
+      </div>
+    </div>
+    
+    <!-- ── TABS ─────────────────────────────────────────────── -->
+    <div class="tabs-wrap">
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('catalog',this)">
+          <i class="ri-layout-grid-line"></i><span>Share Catalog</span>
+          <span class="tab-count" id="tcCatalog">0</span>
+        </button>
+        <button class="tab-btn" onclick="switchTab('investments',this)">
+          <i class="ri-user-star-line"></i><span>User Investments</span>
+          <span class="tab-count" id="tcInvestments">0</span>
+        </button>
+      </div>
+      
+      <!-- ══ CATALOG TAB ═════════════════════════════════════ -->
+      <div class="tab-panel active" id="panel-catalog">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input class="search-input" type="text" placeholder="Search share name…" oninput="filterCatalog(this.value)">
           </div>
-          <div class="page-header-actions">
-            <button class="btn-reset" onclick="resetDefaults()">
-              <i class="ri-refresh-line"></i> Defaults
-            </button>
-            <button class="btn-save" onclick="saveAllSettings()">
-              <i class="ri-save-3-line"></i> Commit
-            </button>
+          <select class="filter-select" onchange="sortCatalog(this.value)">
+            <option value="price-asc">Price: Low → High</option>
+            <option value="price-desc">Price: High → Low</option>
+            <option value="duration-asc">Duration: Short → Long</option>
+            <option value="name-asc">Name: A → Z</option>
+          </select>
+        </div>
+        
+        <!-- Share cards grid -->
+        <div id="sharesGrid" class="shares-grid">
+          <div class="state-box" style="grid-column:1/-1">
+            <div class="spinner"></div>
+            <p>Loading shares…</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ══ INVESTMENTS TAB ══════════════════════════════════ -->
+      <div class="tab-panel" id="panel-investments">
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="ri-search-line"></i>
+            <input class="search-input" type="text" placeholder="Search user or share name…" oninput="filterInvestments(this.value)">
+          </div>
+          <select class="filter-select" onchange="filterInvestmentStatus(this.value)">
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="expired">Expired</option>
+          </select>
+        </div>
+        
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Share Package</th>
+                <th>Progress</th>
+                <th>Daily Income</th>
+                <th>Purchased</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="investmentsTableBody">
+              <tr>
+                <td colspan="7">
+                  <div class="state-box">
+                    <div class="spinner"></div>
+                    <p>Loading…</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination" id="investPagination" style="display:none;">
+          <span id="investPageInfo"></span>
+          <div class="page-btns" id="investPageBtns"></div>
+        </div>
+      </div>
+    </div><!-- /tabs-wrap -->
+  </main>
+  
+  <main class="page" id="chats">
+    <section id="chats" class="tab-content">
+      <div class="header-row">
+        <h2>Live Chats</h2>
+        <div style="display:flex;gap:10px;justify-content:center;align-items:center;">
+          <div class="search-box"></div>
+          <div style="display:flex;font-size:18pt;gap:15px;cursor:pointer;">
+            <i style="color:green;background:none;" onclick="openCreateNewsModal()" class="ri-megaphone-line"></i>
+            <i style="color:green;background:none;" onclick="loadAdminChatSessions()" class="ri-refresh-line"></i>
+            <i style="color:green;background:none;" onclick="openChatModal()" class="ri-draggable"></i>
+          </div>
+        </div>
+      </div>
+      
+      <style>
+        /* ── Chat responsive layout ───────────────────── */
+        #chatLayout {
+          display: flex;
+          height: calc(100vh - 150px);
+          border: 1px solid var(--primary);
+          border-radius: 12px;
+          overflow: hidden;
+          position: relative;
+        }
+        
+        #chatSessionList {
+          width: 300px;
+          min-width: 260px;
+          border-right: 1px solid var(--border, #e0e5f2);
+          overflow-y: auto;
+          flex-shrink: 0;
+          transition: transform 0.25s ease;
+        }
+        
+        #chatWindow {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        
+        /* Mobile: stack panels, session list slides out */
+        @media (max-width: 700px) {
+          #chatLayout {
+            height: calc(100vh - 180px);
+            border-radius: 8px;
+          }
+          
+          #chatSessionList {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            min-width: unset;
+            z-index: 10;
+            border-right: none;
+            transform: translateX(0);
+          }
+          
+          #chatSessionList.slide-out {
+            transform: translateX(-100%);
+            pointer-events: none;
+          }
+          
+          #chatWindow {
+            width: 100%;
+          }
+          
+          /* Back button — only visible on mobile */
+          #chatBackBtn {
+            display: flex !important;
+          }
+          
+          /* Hide block label text on mobile, show only icon */
+          #adminBlockLabel {
+            display: none;
+          }
+          
+          #adminBlockBtn {
+            padding: 6px 8px;
+          }
+          
+          /* Tighten header actions on mobile */
+          #adminChatHeader {
+            padding: 10px 7px;
+            gap: 6px;
+          }
+          
+          #adminChatHeader .action-btns {
+            gap: 0;
+          }
+        }
+      </style>
+      
+      <div id="chatLayout" class="table-container">
+        
+        <!-- Session List -->
+        <div id="chatSessionList">
+          <div id="chatSessionItems">
+            <div style="padding:20px;text-align:center;color:#aaa;font-size:13px;">Loading chats...</div>
           </div>
         </div>
         
-        <!-- ── SEARCH BAR ── -->
-        <div class="search-bar-wrap">
-          <i class="ri-search-line search-bar-icon"></i>
-          <input type="text" class="search-bar" id="settingsSearch" placeholder="Search settings… e.g. withdrawal, API, maintenance" oninput="handleSearch(this.value)" autocomplete="off">
-          <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
-        </div>
-        <div class="no-results" id="noResults">
-          <i class="ri-search-2-line"></i>
-          No settings found for "<span id="noResultsQuery"></span>"
-        </div>
-        
-        <!-- ══ SECTION LABEL ══ -->
-        <div class="section-label" data-search-label>Branding & Identity</div>
-        
-        <div class="settings-grid">
+        <!-- Chat Window -->
+        <div id="chatWindow">
           
-          <!-- BRANDING -->
-          <div class="section-card open full" id="card-branding" data-search-keywords="branding site name logo tagline description identity">
-            <div class="section-header" onclick="toggleSection('card-branding')">
-              <div class="section-header-left">
-                <div class="section-icon green"><i class="ri-store-2-line"></i></div>
-                <div>
-                  <div class="section-title-text">Branding</div>
-                  <div class="section-sub">Site name, logo and description</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <!-- Logo upload -->
-              <div class="logo-upload-area">
-                <div class="logo-preview" id="logoPreview">
-                  <i class="ri-image-add-line"></i>
-                </div>
-                <div class="logo-upload-info">
-                  <p>Square image, min 128×128px<br>PNG or JPG recommended</p>
-                  <label class="btn-upload" for="logoFileInput">
-                    <i class="ri-upload-2-line"></i> Upload logo
-                  </label>
-                  <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Site Name</label>
-                  <input type="text" class="form-input" id="siteName" placeholder="e.g. Fluxmall Exchange" value="Fluxmall Exchange">
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Tagline</label>
-                  <input type="text" class="form-input" id="siteTagline" placeholder="Short tagline" value="Setting Standards">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Site Description</label>
-                <textarea class="form-input" id="siteDesc" placeholder="Brief description of your platform...">A premier fintech investment platform built for the Nigerian market.</textarea>
-              </div>
-            </div>
+          <!-- Empty state -->
+          <div id="chatWindowEmpty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#aaa;">
+            <div style="font-size:48px;margin-bottom:12px;">💬</div>
+            <div style="font-size:15px;">Select a chat to open</div>
           </div>
           
-          <!-- SOCIAL LINKS -->
-          <div class="section-card" id="card-social" data-search-keywords="social links whatsapp telegram community">
-            <div class="section-header" onclick="toggleSection('card-social')">
-              <div class="section-header-left">
-                <div class="section-icon blue"><i class="ri-links-line"></i></div>
-                <div>
-                  <div class="section-title-text">Social Links</div>
-                  <div class="section-sub">WhatsApp, Telegram links</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="form-group">
-                <label class="form-label">WhatsApp Group</label>
-                <div class="input-adorn">
-                  <span class="input-adorn-prefix"><i class="ri-whatsapp-line"></i></span>
-                  <input type="url" id="whatsappLink" placeholder="https://chat.whatsapp.com/...">
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Telegram Channel</label>
-                <div class="input-adorn">
-                  <span class="input-adorn-prefix"><i class="ri-telegram-line"></i></span>
-                  <input type="url" id="telegramLink" placeholder="https://t.me/...">
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- POINTS ALLOCATION -->
-          <div class="section-card" id="card-points" data-search-keywords="points allocation referral commission checkin bonus rewards level">
-            <div class="section-header" onclick="toggleSection('card-points')">
-              <div class="section-header-left">
-                <div class="section-icon yellow"><i class="ri-coin-line"></i></div>
-                <div>
-                  <div class="section-title-text">Points Allocation</div>
-                  <div class="section-sub">Referral & check-in rewards</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="form-group">
-                <label class="form-label">Daily Check-in Bonus (₦)</label>
-                <div class="num-wrap">
-                  <button class="num-btn" onclick="stepNum('checkinBonus', -50)"><i class="ri-subtract-line"></i></button>
-                  <input type="number" id="checkinBonus" value="50" min="0">
-                  <button class="num-btn" onclick="stepNum('checkinBonus', 50)"><i class="ri-add-line"></i></button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Referral Commission Level 1 (%)</label>
-                <div class="num-wrap">
-                  <button class="num-btn" onclick="stepNum('refL1', -0.5)"><i class="ri-subtract-line"></i></button>
-                  <input type="number" id="refL1" value="5" min="0" max="100" step="0.5">
-                  <button class="num-btn" onclick="stepNum('refL1', 0.5)"><i class="ri-add-line"></i></button>
-                </div>
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Level 2 (%)</label>
-                  <div class="num-wrap">
-                    <button class="num-btn" onclick="stepNum('refL2', -0.5)"><i class="ri-subtract-line"></i></button>
-                    <input type="number" id="refL2" value="3" min="0" max="100" step="0.5">
-                    <button class="num-btn" onclick="stepNum('refL2', 0.5)"><i class="ri-add-line"></i></button>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Level 3 (%)</label>
-                  <div class="num-wrap">
-                    <button class="num-btn" onclick="stepNum('refL3', -0.5)"><i class="ri-subtract-line"></i></button>
-                    <input type="number" id="refL3" value="1" min="0" max="100" step="0.5">
-                    <button class="num-btn" onclick="stepNum('refL3', 0.5)"><i class="ri-add-line"></i></button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-        </div><!-- /settings-grid -->
-        
-        <!-- ══ SECTION LABEL ══ -->
-        <div class="section-label" data-search-label>Payments & Finance</div>
-        
-        <div class="settings-grid">
-          
-          <!-- DEPOSIT SETTINGS -->
-          <div class="section-card" id="card-deposit" data-search-keywords="deposit payment min max limit quick amounts fund wallet recharge">
-            <div class="section-header" onclick="toggleSection('card-deposit')">
-              <div class="section-header-left">
-                <div class="section-icon green"><i class="ri-bank-card-line"></i></div>
-                <div>
-                  <div class="section-title-text">Deposit Settings</div>
-                  <div class="section-sub">Limits and quick-select amounts</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Min Deposit (₦)</label>
-                  <div class="input-adorn">
-                    <span class="input-adorn-prefix">₦</span>
-                    <input type="number" id="minDeposit" value="1000">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Max Deposit (₦)</label>
-                  <div class="input-adorn">
-                    <span class="input-adorn-prefix">₦</span>
-                    <input type="number" id="maxDeposit" value="500000">
-                  </div>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Quick Select Amounts</label>
-                <div class="amount-tags" id="depositTags"></div>
-                <div class="add-tag-wrap">
-                  <input type="number" class="add-tag-input" id="newDepositTag" placeholder="Add amount e.g. 5000">
-                  <button class="btn-add-tag" onclick="addTag('depositTags', 'newDepositTag')">+ Add</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- WITHDRAWAL SETTINGS -->
-          <div class="section-card" id="card-withdraw" data-search-keywords="withdrawal cashout fee service charge min limit time window payout">
-            <div class="section-header" onclick="toggleSection('card-withdraw')">
-              <div class="section-header-left">
-                <div class="section-icon yellow"><i class="ri-arrow-up-circle-line"></i></div>
-                <div>
-                  <div class="section-title-text">Withdrawal Settings</div>
-                  <div class="section-sub">Limits, fees and timing</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">Min Withdrawal (₦)</label>
-                  <div class="input-adorn">
-                    <span class="input-adorn-prefix">₦</span>
-                    <input type="number" id="minWithdraw" value="500">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Service Fee (%)</label>
-                  <div class="input-adorn">
-                    <input type="number" id="withdrawFee" value="2" max="100">
-                    <span class="input-adorn-suffix">%</span>
-                  </div>
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Withdrawal Window</label>
-                <div class="form-row">
-                  <div class="select-wrap">
-                    <select class="form-input" id="withdrawStart">
-                      <option value="6">6:00 AM</option>
-                      <option value="7">7:00 AM</option>
-                      <option value="8">8:00 AM</option>
-                      <option value="9" selected>9:00 AM</option>
-                      <option value="10">10:00 AM</option>
-                    </select>
-                  </div>
-                  <div class="select-wrap">
-                    <select class="form-input" id="withdrawEnd">
-                      <option value="16">4:00 PM</option>
-                      <option value="17">5:00 PM</option>
-                      <option value="18" selected>6:00 PM</option>
-                      <option value="19">7:00 PM</option>
-                      <option value="20">8:00 PM</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          
-          <!-- ── Payment Mode Card ─────────────────────────────────── -->
-          <div class="section-card" style="border:1px solid var(--border,#e0e5f2);border-radius:16px;padding:20px;" data-search-keywords="deposit payment min max limit quick amounts fund wallet recharge">
+          <!-- Active chat -->
+          <div id="chatWindowActive" style="display:none;flex-direction:column;height:100%;">
             
-            <!-- Header -->
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:36px;height:36px;border-radius:10px;background:rgba(67,24,255,0.1);display:flex;align-items:center;justify-content:center;">
-                  <i class="ri-bank-card-line" style="color:#4318ff;font-size:18px;"></i>
-                </div>
-                <div>
-                  <div class="section-title-text">Payment Mode</div>
-                  <div class="section-sub">Switch between manual and Korapay</div>
-                </div>
+            <!-- ── Chat Header ─────────────────────────────── -->
+            <div id="adminChatHeader" style="padding:10px 8px;border-bottom:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:10px;">
+              
+              <!-- Back button — mobile only -->
+              <button id="chatBackBtn" onclick="closeChatOnMobile()" title="Back to chats" style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;flex-shrink:0;">
+                <i class="ri-arrow-left-line" style="font-size:20px;"></i>
+              </button>
+              
+              <!-- Avatar — clickable → user profile -->
+              <img id="adminChatUserLogo" src="" title="View profile" onclick="openChatUserProfile()" style="width:40px;height:40px;border-radius:50%;object-fit:cover;background:#eee;cursor:pointer;border:2px solid var(--primary);flex-shrink:0;">
+              
+              <!-- Name + ticker -->
+              <div style="flex:1;min-width:0;cursor:pointer;" onclick="openChatUserProfile()">
+                <div id="adminChatUsername" style="font-weight:700;font-size:14px;color:var(--text-main);line-height:1.3;"></div>
+                <div id="adminChatSessionStatus" style="font-size:10px;color:#aaa;transition:opacity 0.4s;line-height:1.3;"></div>
               </div>
-              <!-- Live mode badge — updates on load -->
-              <span id="paymentModeBadge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(5,205,153,0.12);color:#05cd99;">
-                Loading...
+              
+              <!-- Action icon buttons -->
+              <div style="display:flex;align-items:center;gap:2px;">
+                
+                <!-- Block / Unblock -->
+                <button id="adminBlockBtn" onclick="toggleBlockFromChat()" title="Block user" style="display:flex;align-items:center;gap:4px;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:12px;font-weight:600;background:#fdecea;color:#e74c3c;">
+                  <i class="ri-forbid-line" style="font-size:15px;"></i>
+                  <span id="adminBlockLabel">Block</span>
+                </button>
+                
+                <!-- Search -->
+                <button onclick="toggleChatSearch()" title="Search messages" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--text-muted,#aaa);cursor:pointer;">
+                  <i class="ri-search-line" style="font-size:18px;"></i>
+                </button>
+                
+                <!-- End session -->
+                <button onclick="endAdminChatSession()" style="display:none;" title="End session" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
+                  <i class="ri-stop-circle-line" style="font-size:18px;"></i>
+                </button>
+                
+                <!-- Delete chat -->
+                <button onclick="deleteAdminChatSession()" title="Delete chat" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
+                  <i class="ri-delete-bin-line" style="font-size:18px;"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- ── Search Bar ───────────────────────────────── -->
+            <div id="chatSearchBar" style="display:none;padding:8px 14px;background:var(--bg-color,#f4f7fe);border-bottom:1px solid var(--border,#e0e5f2);">
+              <div style="display:flex;align-items:center;gap:8px;background:var(--card-bg,#fff);border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:0 14px;">
+                <i class="ri-search-line" style="color:#aaa;font-size:16px;flex-shrink:0;"></i>
+                <input type="text" id="chatSearchInput" placeholder="Search messages..." oninput="searchChatMessages(this.value)" style="flex:1;border:none;outline:none;padding:8px 0;font-size:13px;background:transparent;">
+                <i class="ri-close-line" onclick="toggleChatSearch()" style="color:#aaa;font-size:18px;cursor:pointer;flex-shrink:0;"></i>
+              </div>
+              <div id="chatSearchResults" style="margin-top:5px;font-size:12px;padding-left:4px;"></div>
+            </div>
+            
+            <!-- ── Messages ─────────────────────────────────── -->
+            <div id="adminChatMessages" style="flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:4px;"></div>
+            
+            <!-- ── Typing Indicator ─────────────────────────── -->
+            <div id="adminTypingIndicator" style="display:none;padding:6px 16px;align-items:center;gap:8px;background:var(--bg-color,#f4f7fe);">
+              <i class="ri-more-line" style="color:#aaa;font-size:16px;"></i>
+              <span style="font-size:12px;color:#aaa;">User is typing</span>
+              <span style="display:flex;gap:3px;align-items:center;">
+                <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0s;display:inline-block;"></span>
+                <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.2s;display:inline-block;"></span>
+                <span style="width:5px;height:5px;background:#bbb;border-radius:50%;animation:typingDot 1.2s infinite 0.4s;display:inline-block;"></span>
               </span>
             </div>
             
-            <hr style="border:none;border-top:1px solid var(--border,#e0e5f2);margin:14px 0;">
-            
-            <!-- Quick toggle pills -->
-            <div style="display:flex;gap:8px;margin-bottom:16px;">
-              <button id="pillManual" onclick="quickSetPaymentMode('manual')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border,#e0e5f2);background:var(--bg,#f4f7fe);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text2,#4a5568);">
-                <i class="ri-building-line"></i> Manual Transfer
-              </button>
-              <button id="pillKorapay" onclick="quickSetPaymentMode('korapay')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border,#e0e5f2);background:var(--bg,#f4f7fe);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text2,#4a5568);">
-                <i class="ri-flashlight-line"></i> Korapay Auto
+            <!-- ── Reply / Edit Bar ─────────────────────────── -->
+            <div id="adminReplyBar" style="display:none;padding:8px 14px;background:var(--card-bg,#fff);border-top:2px solid var(--primary);flex-direction:row;align-items:center;gap:10px;">
+              <i class="ri-reply-line" style="color:var(--primary);font-size:18px;flex-shrink:0;"></i>
+              <div style="flex:1;min-width:0;">
+                <div id="adminReplyBarSender" style="font-size:11px;font-weight:700;color:var(--primary);"></div>
+                <div id="adminReplyBarText" style="font-size:12px;color:#aaa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+              </div>
+              <button onclick="cancelAdminReply()" style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,0.06);cursor:pointer;flex-shrink:0;">
+                <i class="ri-close-line" style="font-size:15px;color:#888;"></i>
               </button>
             </div>
             
-            <!-- Configure button -->
-            <button class="btn-configure" onclick="openBindBankModal()">
-              <i class="ri-settings-3-line"></i> Configure Payment Details
+            <!-- ── Polar Question Input ─────────────────────── -->
+            <div id="polarInputArea" style="display:none;padding:10px 8px;background:#fffde7;border-top:2px solid #f1c40f;">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+                <i class="ri-questionnaire-line" style="color:#f39c12;font-size:16px;"></i>
+                <span style="font-size:12px;color:#888;font-weight:600;">Polar Question — user answers Yes or No</span>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="polarQuestionInput" placeholder="e.g. Did you complete the transfer?" style="flex:1;padding:8px 12px;border:1px solid var(--border,#e0e5f2);border-radius:8px;font-size:13px;outline:none;">
+                <button onclick="sendAdminPolar()" style="display:flex;align-items:center;gap:5px;background:#f1c40f;color:#333;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;">
+                  <i class="ri-send-plane-line" style="font-size:14px;"></i> Send
+                </button>
+                <button onclick="togglePolarInput()" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;background:#eee;border:none;border-radius:8px;cursor:pointer;">
+                  <i class="ri-close-line" style="font-size:17px;color:#666;"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- ── Input Bar ────────────────────────────────── -->
+            <div id="adminChatInputBar" style="padding:10px 14px;border-top:1px solid var(--border,#e0e5f2);display:flex;align-items:center;gap:8px;">
+              <label for="adminImgInput" title="Send image" style="display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;cursor:pointer;color:var(--text-muted,#aaa);flex-shrink:0;transition:color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted,#aaa)'">
+                <i class="ri-image-2-line" style="font-size:20px;"></i>
+                <input type="file" id="adminImgInput" accept="image/*" style="display:none;" onchange="sendAdminImage(this)">
+              </label>
+              <!-- Polar question -->
+              <button id="adminPolarBtn" onclick="togglePolarInput()" title="Send polar question" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:var(--primary);cursor:pointer;">
+                <i class="ri-questionnaire-line" style="font-size:18px;"></i>
+              </button>
+              
+              <input type="text" id="adminChatInput" placeholder="Type a reply..." maxlength="500" style="flex:1;border:1px solid var(--border,#e0e5f2);border-radius:20px;padding:9px 15px;font-size:14px;outline:none;;color:var(--text-main);" onkeydown="onAdminInputKeydown(event)">
+              <button onclick="sendAdminMessage()" title="Send" style="display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:none;border-radius:50%;background:var(--primary,#4318ff);cursor:pointer;flex-shrink:0;">
+                <i class="ri-send-plane-fill" style="color:#fff;font-size:17px;"></i>
+              </button>
+            </div>
+            
+            <style>
+              @keyframes typingDot {
+                
+                0%,
+                60%,
+                100% {
+                  transform: translateY(0)
+                }
+                
+                30% {
+                  transform: translateY(-5px)
+                }
+              }
+              
+              #adminChatHeader button:hover {
+                opacity: 0.8;
+              }
+            </style>
+          </div>
+          
+        </div>
+        
+      </div>
+    </section>
+    
+    
+  </main>
+  
+  <main class="page" id="users">
+    <!-- ── MAIN ── -->
+    <div class="users-main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-title" style="font-size:1.3rem">
+          User Management
+          <span id="totalCount">0 users</span>
+        </div>
+        <button class="icon-btn" onclick="exportCSV()" title="Export CSV"><i class="ri-download-2-line"></i></button>
+        <button class="btn btn-primary" onclick="openAddUser()">
+          <i class="ri-user-add-line"></i> <span>Add User</span>
+        </button>
+      </div>
+      
+      <div class="user-content">
+        <div class="table-pane">
+          
+          <!-- Stats bar -->
+          <div class="stats-bar" id="statsBar">
+            <div class="stat-chip"><span class="stat-val" id="s-total">0</span><span class="stat-label">Total</span></div>
+            <div class="stat-chip"><span class="stat-val" id="s-verified">0</span><span class="stat-label">Verified</span></div>
+            <div class="stat-chip"><span class="stat-val" id="s-active">0</span><span class="stat-label">Active</span></div>
+            <div class="stat-chip"><span class="stat-val" id="s-banned">0</span><span class="stat-label">Banned</span></div>
+            <div class="stat-chip"><span class="stat-val" id="s-balance">₦0</span><span class="stat-label">Total Balance</span></div>
+          </div>
+          
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <div class="search-box">
+              <i class="ri-search-line"></i>
+              <input type="text" class="search-input" id="searchInput" placeholder="Search by name, email, ID..." oninput="handleSearch(this.value)">
+              <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+            </div>
+            <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+              <option value="">All Status</option>
+              <option value="verified">Verified</option>
+              <option value="unverified">Unverified</option>
+              <option value="banned">Banned</option>
+            </select>
+            <select class="filter-select" id="sortFilter" onchange="applyFilters()">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="balance-desc">Balance ↓</option>
+              <option value="balance-asc">Balance ↑</option>
+              <option value="name-asc">Name A–Z</option>
+            </select>
+            <button class="btn btn-outline" onclick="applyFilters()"><i class="ri-filter-line"></i> <span>Filter</span></button>
+          </div>
+          
+          <!-- Bulk bar -->
+          <div class="bulk-bar" id="bulkBar">
+            <span class="bulk-count" id="bulkCount">0 selected</span>
+            <button class="btn btn-outline" onclick="bulkVerify()"><i class="ri-shield-check-line"></i> Verify All</button>
+            <button class="btn btn-outline" onclick="bulkMessage()"><i class="ri-message-3-line"></i> Message</button>
+            <button class="btn btn-danger" onclick="bulkBan()"><i class="ri-forbid-line"></i> Ban All</button>
+            <button class="btn btn-danger" onclick="bulkDelete()"><i class="ri-delete-bin-line"></i> Delete</button>
+            <button class="btn btn-outline" onclick="clearSelection()"><i class="ri-close-line"></i> Clear</button>
+          </div>
+          
+          <!-- Mobile filter tabs -->
+          <div class="mobile-filter-row" id="mobileFilterRow">
+            <button class="mf-tab active" onclick="setMobileFilter('all',this)">All</button>
+            <button class="mf-tab" onclick="setMobileFilter('verified',this)">Verified</button>
+            <button class="mf-tab" onclick="setMobileFilter('unverified',this)">Unverified</button>
+            <button class="mf-tab" onclick="setMobileFilter('banned',this)">Banned</button>
+            <button class="mf-tab" onclick="setMobileFilter('active',this)">Active</button>
+          </div>
+          
+          <!-- Mobile card list -->
+          <div class="card-list" id="cardList"></div>
+          
+          <!-- Table -->
+          <div class="table-scroll">
+            <table id="userTable">
+              <thead>
+                <tr>
+                  <th class="check-cell"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                  <th onclick="sortBy('name')">User</th>
+                  <th onclick="sortBy('balance')">Balance</th>
+                  <th onclick="sortBy('shares')">Shares</th>
+                  <th onclick="sortBy('referrals')">Referrals</th>
+                  <th onclick="sortBy('status')">Status</th>
+                  <th onclick="sortBy('joined')">Joined</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+            <div class="empty-state" id="emptyState" style="display:none;">
+              <i class="ri-user-search-line"></i>
+              <p>No users found matching your search</p>
+            </div>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="pagination" id="pagination">
+            <span class="page-info" id="pageInfo">Showing 0–0 of 0</span>
+            <div class="page-btns" id="pageBtns"></div>
+          </div>
+          
+        </div><!-- /table-pane -->
+        
+        <!-- Detail Pane -->
+        <div class="detail-pane hidden" id="detailPane">
+          <div class="dp-header">
+            <span class="dp-title">User Profile</span>
+            <button class="icon-btn" onclick="closeDetail()"><i class="ri-close-line"></i></button>
+          </div>
+          <div class="dp-body" id="dpBody"></div>
+        </div>
+        
+      </div><!-- /content -->
+    </div><!-- /main -->
+    
+  </main>
+  
+  <main class="page" id="settings">
+    <div class="page-wrap">
+      <!-- ── PAGE HEADER ── -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <h1>Settings</h1>
+          <p>Configure your platform preferences</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn-reset" onclick="resetDefaults()">
+            <i class="ri-refresh-line"></i> Defaults
+          </button>
+          <button class="btn-save" onclick="saveAllSettings()">
+            <i class="ri-save-3-line"></i> Commit
+          </button>
+        </div>
+      </div>
+      
+      <!-- ── SEARCH BAR ── -->
+      <div class="search-bar-wrap">
+        <i class="ri-search-line search-bar-icon"></i>
+        <input type="text" class="search-bar" id="settingsSearch" placeholder="Search settings… e.g. withdrawal, API, maintenance" oninput="handleSearch(this.value)" autocomplete="off">
+        <button class="search-clear" id="searchClear" onclick="clearSearch()" title="Clear">✕</button>
+      </div>
+      <div class="no-results" id="noResults">
+        <i class="ri-search-2-line"></i>
+        No settings found for "<span id="noResultsQuery"></span>"
+      </div>
+      
+      <!-- ══ SECTION LABEL ══ -->
+      <div class="section-label" data-search-label>Branding & Identity</div>
+      
+      <div class="settings-grid">
+        
+        <!-- BRANDING -->
+        <div class="section-card open full" id="card-branding" data-search-keywords="branding site name logo tagline description identity">
+          <div class="section-header" onclick="toggleSection('card-branding')">
+            <div class="section-header-left">
+              <div class="section-icon green"><i class="ri-store-2-line"></i></div>
+              <div>
+                <div class="section-title-text">Branding</div>
+                <div class="section-sub">Site name, logo and description</div>
+              </div>
+            </div>
+            <i class="ri-arrow-down-s-line section-chevron"></i>
+          </div>
+          <div class="section-body">
+            <!-- Logo upload -->
+            <div class="logo-upload-area">
+              <div class="logo-preview" id="logoPreview">
+                <i class="ri-image-add-line"></i>
+              </div>
+              <div class="logo-upload-info">
+                <p>Square image, min 128×128px<br>PNG or JPG recommended</p>
+                <label class="btn-upload" for="logoFileInput">
+                  <i class="ri-upload-2-line"></i> Upload logo
+                </label>
+                <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Site Name</label>
+                <input type="text" class="form-input" id="siteName" placeholder="e.g. Fluxmall Exchange" value="Fluxmall Exchange">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tagline</label>
+                <input type="text" class="form-input" id="siteTagline" placeholder="Short tagline" value="Setting Standards">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Site Description</label>
+              <textarea class="form-input" id="siteDesc" placeholder="Brief description of your platform...">A premier fintech investment platform built for the Nigerian market.</textarea>
+            </div>
+          </div>
+        </div>
+        
+        <!-- SOCIAL LINKS -->
+        <div class="section-card" id="card-social" data-search-keywords="social links whatsapp telegram community">
+          <div class="section-header" onclick="toggleSection('card-social')">
+            <div class="section-header-left">
+              <div class="section-icon blue"><i class="ri-links-line"></i></div>
+              <div>
+                <div class="section-title-text">Social Links</div>
+                <div class="section-sub">WhatsApp, Telegram links</div>
+              </div>
+            </div>
+            <i class="ri-arrow-down-s-line section-chevron"></i>
+          </div>
+          <div class="section-body">
+            <div class="form-group">
+              <label class="form-label">WhatsApp Group</label>
+              <div class="input-adorn">
+                <span class="input-adorn-prefix"><i class="ri-whatsapp-line"></i></span>
+                <input type="url" id="whatsappLink" placeholder="https://chat.whatsapp.com/...">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telegram Channel</label>
+              <div class="input-adorn">
+                <span class="input-adorn-prefix"><i class="ri-telegram-line"></i></span>
+                <input type="url" id="telegramLink" placeholder="https://t.me/...">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- POINTS ALLOCATION -->
+        <div class="section-card" id="card-points" data-search-keywords="points allocation referral commission checkin bonus rewards level">
+          <div class="section-header" onclick="toggleSection('card-points')">
+            <div class="section-header-left">
+              <div class="section-icon yellow"><i class="ri-coin-line"></i></div>
+              <div>
+                <div class="section-title-text">Points Allocation</div>
+                <div class="section-sub">Referral & check-in rewards</div>
+              </div>
+            </div>
+            <i class="ri-arrow-down-s-line section-chevron"></i>
+          </div>
+          <div class="section-body">
+            <div class="form-group">
+              <label class="form-label">Daily Check-in Bonus (₦)</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('checkinBonus', -50)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="checkinBonus" value="50" min="0">
+                <button class="num-btn" onclick="stepNum('checkinBonus', 50)"><i class="ri-add-line"></i></button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Referral Commission Level 1 (%)</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('refL1', -0.5)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="refL1" value="5" min="0" max="100" step="0.5">
+                <button class="num-btn" onclick="stepNum('refL1', 0.5)"><i class="ri-add-line"></i></button>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Level 2 (%)</label>
+                <div class="num-wrap">
+                  <button class="num-btn" onclick="stepNum('refL2', -0.5)"><i class="ri-subtract-line"></i></button>
+                  <input type="number" id="refL2" value="3" min="0" max="100" step="0.5">
+                  <button class="num-btn" onclick="stepNum('refL2', 0.5)"><i class="ri-add-line"></i></button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Level 3 (%)</label>
+                <div class="num-wrap">
+                  <button class="num-btn" onclick="stepNum('refL3', -0.5)"><i class="ri-subtract-line"></i></button>
+                  <input type="number" id="refL3" value="1" min="0" max="100" step="0.5">
+                  <button class="num-btn" onclick="stepNum('refL3', 0.5)"><i class="ri-add-line"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </div><!-- /settings-grid -->
+      
+      <!-- ══ SECTION LABEL ══ -->
+      <div class="section-label" data-search-label>Payments & Finance</div>
+      
+      <div class="settings-grid">
+        
+        <!-- DEPOSIT SETTINGS -->
+        <div class="section-card" id="card-deposit" data-search-keywords="deposit payment min max limit quick amounts fund wallet recharge">
+          <div class="section-header" onclick="toggleSection('card-deposit')">
+            <div class="section-header-left">
+              <div class="section-icon green"><i class="ri-bank-card-line"></i></div>
+              <div>
+                <div class="section-title-text">Deposit Settings</div>
+                <div class="section-sub">Limits and quick-select amounts</div>
+              </div>
+            </div>
+            <i class="ri-arrow-down-s-line section-chevron"></i>
+          </div>
+          <div class="section-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Min Deposit (₦)</label>
+                <div class="input-adorn">
+                  <span class="input-adorn-prefix">₦</span>
+                  <input type="number" id="minDeposit" value="1000">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Max Deposit (₦)</label>
+                <div class="input-adorn">
+                  <span class="input-adorn-prefix">₦</span>
+                  <input type="number" id="maxDeposit" value="500000">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quick Select Amounts</label>
+              <div class="amount-tags" id="depositTags"></div>
+              <div class="add-tag-wrap">
+                <input type="number" class="add-tag-input" id="newDepositTag" placeholder="Add amount e.g. 5000">
+                <button class="btn-add-tag" onclick="addTag('depositTags', 'newDepositTag')">+ Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- WITHDRAWAL SETTINGS -->
+        <div class="section-card" id="card-withdraw" data-search-keywords="withdrawal cashout fee service charge min limit time window payout">
+          <div class="section-header" onclick="toggleSection('card-withdraw')">
+            <div class="section-header-left">
+              <div class="section-icon yellow"><i class="ri-arrow-up-circle-line"></i></div>
+              <div>
+                <div class="section-title-text">Withdrawal Settings</div>
+                <div class="section-sub">Limits, fees and timing</div>
+              </div>
+            </div>
+            <i class="ri-arrow-down-s-line section-chevron"></i>
+          </div>
+          <div class="section-body">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Min Withdrawal (₦)</label>
+                <div class="input-adorn">
+                  <span class="input-adorn-prefix">₦</span>
+                  <input type="number" id="minWithdraw" value="500">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Service Fee (%)</label>
+                <div class="input-adorn">
+                  <input type="number" id="withdrawFee" value="2" max="100">
+                  <span class="input-adorn-suffix">%</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Withdrawal Window</label>
+              <div class="form-row">
+                <div class="select-wrap">
+                  <select class="form-input" id="withdrawStart">
+                    <option value="6">6:00 AM</option>
+                    <option value="7">7:00 AM</option>
+                    <option value="8">8:00 AM</option>
+                    <option value="9" selected>9:00 AM</option>
+                    <option value="10">10:00 AM</option>
+                  </select>
+                </div>
+                <div class="select-wrap">
+                  <select class="form-input" id="withdrawEnd">
+                    <option value="16">4:00 PM</option>
+                    <option value="17">5:00 PM</option>
+                    <option value="18" selected>6:00 PM</option>
+                    <option value="19">7:00 PM</option>
+                    <option value="20">8:00 PM</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        
+        <!-- ── Payment Mode Card ─────────────────────────────────── -->
+        <div class="section-card" style="border:1px solid var(--border,#e0e5f2);border-radius:16px;padding:20px;" data-search-keywords="deposit payment min max limit quick amounts fund wallet recharge">
+          
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(67,24,255,0.1);display:flex;align-items:center;justify-content:center;">
+                <i class="ri-bank-card-line" style="color:#4318ff;font-size:18px;"></i>
+              </div>
+              <div>
+                <div class="section-title-text">Payment Mode</div>
+                <div class="section-sub">Switch between manual and Korapay</div>
+              </div>
+            </div>
+            <!-- Live mode badge — updates on load -->
+            <span id="paymentModeBadge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(5,205,153,0.12);color:#05cd99;">
+              Loading...
+            </span>
+          </div>
+          
+          <hr style="border:none;border-top:1px solid var(--border,#e0e5f2);margin:14px 0;">
+          
+          <!-- Quick toggle pills -->
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button id="pillManual" onclick="quickSetPaymentMode('manual')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border,#e0e5f2);background:var(--bg,#f4f7fe);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text2,#4a5568);">
+              <i class="ri-building-line"></i> Manual Transfer
+            </button>
+            <button id="pillKorapay" onclick="quickSetPaymentMode('korapay')" style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border,#e0e5f2);background:var(--bg,#f4f7fe);font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;color:var(--text2,#4a5568);">
+              <i class="ri-flashlight-line"></i> Korapay Auto
             </button>
           </div>
-          <!-- UTILITIES -->
-          <div class="section-card open" id="card-utils" data-search-keywords="utilities tools manage deposits shares users export csv report data">
-            <div class="section-header" onclick="toggleSection('card-utils')">
-              <div class="section-header-left">
-                <div class="section-icon yellow"><i class="ri-tools-line"></i></div>
-                <div>
-                  <div class="section-title-text">Utilities</div>
-                  <div class="section-sub">Data management tools</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="util-row">
-                <div class="util-info">
-                  <div class="util-title">Active Deposits</div>
-                  <div class="util-sub">View and manage pending deposits</div>
-                </div>
-                <a href="#transactions" class="btn-util" onclick="openUtil('deposits')">
-                  <i class="ri-external-link-line"></i> Manage
-                </a>
-              </div>
-              
-              <div class="util-row">
-                <div class="util-info">
-                  <div class="util-title">Active Shares</div>
-                  <div class="util-sub">View all active investment shares</div>
-                </div>
-                <a href="#shares" class="btn-util" onclick="openUtil('shares')">
-                  <i class="ri-external-link-line"></i> Manage
-                </a>
-              </div>
-              <div class="util-row">
-                <div class="util-info">
-                  <div class="util-title">Task System</div>
-                  <div class="util-sub">Validate and manage user tasks </div>
-                </div>
-                <a href="#tasks" class="btn-util" onclick="openUtil('tasks')">
-                  <i class="ri-external-link-line"></i> Manage
-                </a>
-              </div>
-              
-            </div>
-          </div>
           
-          
-          
+          <!-- Configure button -->
+          <button class="btn-configure" onclick="openBindBankModal()">
+            <i class="ri-settings-3-line"></i> Configure Payment Details
+          </button>
         </div>
-        
-        <!-- ══ SECTION LABEL ══ -->
-        <div class="section-label" data-search-label>Platform Controls</div>
-        
-        <div class="settings-grid">
-          
-          <!-- FEATURES TOGGLES -->
-          <div class="section-card" id="card-features" data-search-keywords="features flags toggle enable disable deposits withdrawals shares referral spin register signup">
-            <div class="section-header" onclick="toggleSection('card-features')">
-              <div class="section-header-left">
-                <div class="section-icon green"><i class="ri-toggle-line"></i></div>
-                <div>
-                  <div class="section-title-text">Feature Flags</div>
-                  <div class="section-sub">Enable or disable platform features</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Deposits</div>
-                  <div class="tgl-sub">Allow users to fund their wallets</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-deposits" checked onchange="onToggle('deposits', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Withdrawals</div>
-                  <div class="tgl-sub">Allow users to cash out</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-withdrawals" checked onchange="onToggle('withdrawals', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Share Purchases</div>
-                  <div class="tgl-sub">Allow buying investment shares</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-shares" checked onchange="onToggle('shares', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Referral System</div>
-                  <div class="tgl-sub">Enable referral commissions</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-referral" checked onchange="onToggle('referral', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Spin Wheel</div>
-                  <div class="tgl-sub">Lucky spin reward feature</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-spin" onchange="onToggle('spin', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">New Registrations</div>
-                  <div class="tgl-sub">Allow new users to sign up</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-register" checked onchange="onToggle('register', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              
-            </div>
-          </div>
-        </div>
-        
-        <!-- ══ CAMPAIGN SETTINGS CARD (in Settings page) ══ -->
-        <div class="section-card" id="card-campaigns" data-search-keywords="campaign user task creation fee referral shares minimum requirements decline ban">
-          <div class="section-header" onclick="toggleSection('card-campaigns')">
+        <!-- UTILITIES -->
+        <div class="section-card open" id="card-utils" data-search-keywords="utilities tools manage deposits shares users export csv report data">
+          <div class="section-header" onclick="toggleSection('card-utils')">
             <div class="section-header-left">
-              <div class="section-icon blue"><i class="ri-megaphone-line"></i></div>
+              <div class="section-icon yellow"><i class="ri-tools-line"></i></div>
               <div>
-                <div class="section-title-text">User Campaign Settings</div>
-                <div class="section-sub">Requirements & fees for user-created campaigns</div>
+                <div class="section-title-text">Utilities</div>
+                <div class="section-sub">Data management tools</div>
+              </div>
+            </div>
+            <i class="ri-arrow-down-s-line section-chevron"></i>
+          </div>
+          <div class="section-body">
+            <div class="util-row">
+              <div class="util-info">
+                <div class="util-title">Active Deposits</div>
+                <div class="util-sub">View and manage pending deposits</div>
+              </div>
+              <a href="#transactions" class="btn-util" onclick="openUtil('deposits')">
+                <i class="ri-external-link-line"></i> Manage
+              </a>
+            </div>
+            
+            <div class="util-row">
+              <div class="util-info">
+                <div class="util-title">Active Shares</div>
+                <div class="util-sub">View all active investment shares</div>
+              </div>
+              <a href="#shares" class="btn-util" onclick="openUtil('shares')">
+                <i class="ri-external-link-line"></i> Manage
+              </a>
+            </div>
+            <div class="util-row">
+              <div class="util-info">
+                <div class="util-title">Task System</div>
+                <div class="util-sub">Validate and manage user tasks </div>
+              </div>
+              <a href="#tasks" class="btn-util" onclick="openUtil('tasks')">
+                <i class="ri-external-link-line"></i> Manage
+              </a>
+            </div>
+            
+          </div>
+        </div>
+        
+        
+        
+      </div>
+      
+      <!-- ══ SECTION LABEL ══ -->
+      <div class="section-label" data-search-label>Platform Controls</div>
+      
+      <div class="settings-grid">
+        
+        <!-- FEATURES TOGGLES -->
+        <div class="section-card" id="card-features" data-search-keywords="features flags toggle enable disable deposits withdrawals shares referral spin register signup">
+          <div class="section-header" onclick="toggleSection('card-features')">
+            <div class="section-header-left">
+              <div class="section-icon green"><i class="ri-toggle-line"></i></div>
+              <div>
+                <div class="section-title-text">Feature Flags</div>
+                <div class="section-sub">Enable or disable platform features</div>
               </div>
             </div>
             <i class="ri-arrow-down-s-line section-chevron"></i>
           </div>
           <div class="section-body">
             
-            <!-- Eligibility Requirements -->
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin-bottom:12px;">Eligibility Requirements</div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Min. Referrals Required</label>
-                <div class="num-wrap">
-                  <button class="num-btn" onclick="stepNum('campMinReferrals',-1)"><i class="ri-subtract-line"></i></button>
-                  <input type="number" id="campMinReferrals" value="3" min="0">
-                  <button class="num-btn" onclick="stepNum('campMinReferrals',1)"><i class="ri-add-line"></i></button>
-                </div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">Deposits</div>
+                <div class="tgl-sub">Allow users to fund their wallets</div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Min. Share Packages Owned</label>
-                <div class="num-wrap">
-                  <button class="num-btn" onclick="stepNum('campMinShares',-1)"><i class="ri-subtract-line"></i></button>
-                  <input type="number" id="campMinShares" value="2" min="0">
-                  <button class="num-btn" onclick="stepNum('campMinShares',1)"><i class="ri-add-line"></i></button>
-                </div>
-              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tgl-deposits" checked onchange="onToggle('deposits', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
             </div>
             
-            <!-- Fees -->
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin:16px 0 12px;">Fee Structure</div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Campaign Creation Fee (FEX)</label>
-                <div class="input-adorn">
-                  <span class="input-adorn-prefix">🪙</span>
-                  <input type="number" id="campCreationFee" value="500" min="0">
-                </div>
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">One-time fee charged when user submits campaign</div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">Withdrawals</div>
+                <div class="tgl-sub">Allow users to cash out</div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Platform Fee on Reach Pool (%)</label>
-                <div class="input-adorn">
-                  <input type="number" id="campReachFeePercent" value="10" min="0" max="50">
-                  <span class="input-adorn-suffix">%</span>
-                </div>
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">% charged on top of (targetReach × rewardPerUser)</div>
-              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tgl-withdrawals" checked onchange="onToggle('withdrawals', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
             </div>
             
-            <!-- Abuse / Ban Settings -->
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin:16px 0 12px;">Decline Abuse Protection</div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Max Declines Before Ban</label>
-                <div class="num-wrap">
-                  <button class="num-btn" onclick="stepNum('campMaxDeclines',-1)"><i class="ri-subtract-line"></i></button>
-                  <input type="number" id="campMaxDeclines" value="3" min="1">
-                  <button class="num-btn" onclick="stepNum('campMaxDeclines',1)"><i class="ri-add-line"></i></button>
-                </div>
-                <div style="font-size:11px;color:var(--text3);margin-top:4px;">Warning issued at half this value</div>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">Share Purchases</div>
+                <div class="tgl-sub">Allow buying investment shares</div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Ban Duration (Days)</label>
-                <div class="num-wrap">
-                  <button class="num-btn" onclick="stepNum('campBanDays',-1)"><i class="ri-subtract-line"></i></button>
-                  <input type="number" id="campBanDays" value="7" min="1">
-                  <button class="num-btn" onclick="stepNum('campBanDays',1)"><i class="ri-add-line"></i></button>
-                </div>
-              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tgl-shares" checked onchange="onToggle('shares', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
             </div>
             
-            <button class="btn-configure" onclick="saveCampaignSettings()">
-              <i class="ri-save-3-line"></i> Save Campaign Settings
-            </button>
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">Referral System</div>
+                <div class="tgl-sub">Enable referral commissions</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tgl-referral" checked onchange="onToggle('referral', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">Spin Wheel</div>
+                <div class="tgl-sub">Lucky spin reward feature</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tgl-spin" onchange="onToggle('spin', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">New Registrations</div>
+                <div class="tgl-sub">Allow new users to sign up</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tgl-register" checked onchange="onToggle('register', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            
           </div>
         </div>
-        
-        <!-- ══ SECTION LABEL ══ -->
-        <div class="section-label" data-search-label>Utilities & Maintenance</div>
-        
-        <div class="settings-grid">
-          <!-- MAINTENANCE -->
-          <div class="section-card" id="card-maintenance" data-search-keywords="maintenance mode lock users upgrade downtime message">
-            <div class="section-header" onclick="toggleSection('card-maintenance')">
-              <div class="section-header-left">
-                <div class="section-icon red"><i class="ri-tools-fill"></i></div>
-                <div>
-                  <div class="section-title-text">Maintenance Mode</div>
-                  <div class="section-sub" style="font-size:12px;color:var(--text3,#a3adc2);" id="maintStatusText"></div>
-                </div>
+      </div>
+      
+      <!-- ══ CAMPAIGN SETTINGS CARD (in Settings page) ══ -->
+      <div class="section-card" id="card-campaigns" data-search-keywords="campaign user task creation fee referral shares minimum requirements decline ban">
+        <div class="section-header" onclick="toggleSection('card-campaigns')">
+          <div class="section-header-left">
+            <div class="section-icon blue"><i class="ri-megaphone-line"></i></div>
+            <div>
+              <div class="section-title-text">User Campaign Settings</div>
+              <div class="section-sub">Requirements & fees for user-created campaigns</div>
+            </div>
+          </div>
+          <i class="ri-arrow-down-s-line section-chevron"></i>
+        </div>
+        <div class="section-body">
+          
+          <!-- Eligibility Requirements -->
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin-bottom:12px;">Eligibility Requirements</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Min. Referrals Required</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('campMinReferrals',-1)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="campMinReferrals" value="3" min="0">
+                <button class="num-btn" onclick="stepNum('campMinReferrals',1)"><i class="ri-add-line"></i></button>
               </div>
-              <div style="display: flex; align-items: center;gap: 8px;">
-                
-                <span id="maintStatusPill" style="
+            </div>
+            <div class="form-group">
+              <label class="form-label">Min. Share Packages Owned</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('campMinShares',-1)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="campMinShares" value="2" min="0">
+                <button class="num-btn" onclick="stepNum('campMinShares',1)"><i class="ri-add-line"></i></button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Fees -->
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin:16px 0 12px;">Fee Structure</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Campaign Creation Fee (FEX)</label>
+              <div class="input-adorn">
+                <span class="input-adorn-prefix">🪙</span>
+                <input type="number" id="campCreationFee" value="500" min="0">
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">One-time fee charged when user submits campaign</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Platform Fee on Reach Pool (%)</label>
+              <div class="input-adorn">
+                <input type="number" id="campReachFeePercent" value="10" min="0" max="50">
+                <span class="input-adorn-suffix">%</span>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">% charged on top of (targetReach × rewardPerUser)</div>
+            </div>
+          </div>
+          
+          <!-- Abuse / Ban Settings -->
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3,#a3adc2);margin:16px 0 12px;">Decline Abuse Protection</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Max Declines Before Ban</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('campMaxDeclines',-1)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="campMaxDeclines" value="3" min="1">
+                <button class="num-btn" onclick="stepNum('campMaxDeclines',1)"><i class="ri-add-line"></i></button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px;">Warning issued at half this value</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ban Duration (Days)</label>
+              <div class="num-wrap">
+                <button class="num-btn" onclick="stepNum('campBanDays',-1)"><i class="ri-subtract-line"></i></button>
+                <input type="number" id="campBanDays" value="7" min="1">
+                <button class="num-btn" onclick="stepNum('campBanDays',1)"><i class="ri-add-line"></i></button>
+              </div>
+            </div>
+          </div>
+          
+          <button class="btn-configure" onclick="saveCampaignSettings()">
+            <i class="ri-save-3-line"></i> Save Campaign Settings
+          </button>
+        </div>
+      </div>
+      
+      <!-- ══ SECTION LABEL ══ -->
+      <div class="section-label" data-search-label>Utilities & Maintenance</div>
+      
+      <div class="settings-grid">
+        <!-- MAINTENANCE -->
+        <div class="section-card" id="card-maintenance" data-search-keywords="maintenance mode lock users upgrade downtime message">
+          <div class="section-header" onclick="toggleSection('card-maintenance')">
+            <div class="section-header-left">
+              <div class="section-icon red"><i class="ri-tools-fill"></i></div>
+              <div>
+                <div class="section-title-text">Maintenance Mode</div>
+                <div class="section-sub" style="font-size:12px;color:var(--text3,#a3adc2);" id="maintStatusText"></div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center;gap: 8px;">
+              
+              <span id="maintStatusPill" style="
         font-size:11px;font-weight:700;padding:3px 10px;
         border-radius:20px;background:var(--success-soft,rgba(5,205,153,0.12));
         color:var(--success,#05cd99);
       ">OFF</span>
-                <i class="ri-arrow-down-s-line section-chevron"></i>
-              </div>
+              <i class="ri-arrow-down-s-line section-chevron"></i>
             </div>
-            <div class="section-body">
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Enable Maintenance Mode</div>
-                  <div class="tgl-sub">Saves immediately on toggle.</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-maintenance" onchange="onToggle('maintenance', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
+          </div>
+          <div class="section-body">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">Enable Maintenance Mode</div>
+                <div class="tgl-sub">Saves immediately on toggle.</div>
               </div>
-              <div class="form-group">
-                <label class="form-label">Notice:</label>
-                <div style="
+              <label class="toggle">
+                <input type="checkbox" id="tgl-maintenance" onchange="onToggle('maintenance', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Notice:</label>
+              <div style="
       background:var(--warning-soft,rgba(246,173,85,0.12));
       border:1px solid rgba(246,173,85,0.3);
       border-radius:10px;padding:10px 12px;
       margin-bottom:14px;font-size:12px;
       color:var(--text2);line-height:1.6;
     ">
-                  ⚠️ When ON, all users are immediately locked out.
-                  Only admins can access the platform.
-                </div><!--
+                ⚠️ When ON, all users are immediately locked out.
+                Only admins can access the platform.
+              </div><!--
                 <textarea class="form-input" id="maintMsg" placeholder="We're currently upgrading the platform. We'll be back shortly." style="min-height:70px;"></textarea>--->
-              </div>
-            </div>
-          </div>
-          
-          <!-- FUTURE KIT -->
-          <div class="section-card danger-card" id="card-future" data-search-keywords="future kit upgrade license key update auto developer version">
-            <div class="section-header" onclick="toggleSection('card-future')">
-              <div class="section-header-left">
-                <div class="section-icon red"><i class="ri-rocket-2-line"></i></div>
-                <div>
-                  <div class="section-title-text">Future Kit Upgrade</div>
-                  <div class="section-sub">Get support kits from developer</div>
-                </div>
-              </div>
-              <i class="ri-arrow-down-s-line section-chevron"></i>
-            </div>
-            <div class="section-body">
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <div class="tgl-title">Auto-update Checks</div>
-                  <div class="tgl-sub">Check for new platform updates automatically</div>
-                </div>
-                <label class="toggle">
-                  <input type="checkbox" id="tgl-autoupdate" checked onchange="onToggle('autoUpdate', this.checked)">
-                  <span class="toggle-track"></span>
-                </label>
-              </div>
-              <div class="form-group">
-                <label class="form-label">License Key</label>
-                <div class="api-key-wrap">
-                  <input type="password" class="form-input" id="licenseKey" placeholder="FLXM-XXXX-XXXX-XXXX">
-                  <button class="btn-icon" onclick="togglePasswordField('licenseKey', this)"><i class="ri-eye-off-line"></i></button>
-                </div>
-              </div>
-              <button class="btn-configure" style="background:var(--danger);box-shadow:0 3px 14px rgba(239,68,68,0.2);" onclick="checkUpdates()">
-                <i class="ri-download-cloud-line"></i> Check for Updates
-              </button>
             </div>
           </div>
         </div>
         
-      </div><!-- /page-wrap -->
-    </main>
+        <!-- FUTURE KIT -->
+        <div class="section-card danger-card" id="card-future" data-search-keywords="future kit upgrade license key update auto developer version">
+          <div class="section-header" onclick="toggleSection('card-future')">
+            <div class="section-header-left">
+              <div class="section-icon red"><i class="ri-rocket-2-line"></i></div>
+              <div>
+                <div class="section-title-text">Future Kit Upgrade</div>
+                <div class="section-sub">Get support kits from developer</div>
+              </div>
+            </div>
+            <i class="ri-arrow-down-s-line section-chevron"></i>
+          </div>
+          <div class="section-body">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="tgl-title">Auto-update Checks</div>
+                <div class="tgl-sub">Check for new platform updates automatically</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="tgl-autoupdate" checked onchange="onToggle('autoUpdate', this.checked)">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">License Key</label>
+              <div class="api-key-wrap">
+                <input type="password" class="form-input" id="licenseKey" placeholder="FLXM-XXXX-XXXX-XXXX">
+                <button class="btn-icon" onclick="togglePasswordField('licenseKey', this)"><i class="ri-eye-off-line"></i></button>
+              </div>
+            </div>
+            <button class="btn-configure" style="background:var(--danger);box-shadow:0 3px 14px rgba(239,68,68,0.2);" onclick="checkUpdates()">
+              <i class="ri-download-cloud-line"></i> Check for Updates
+            </button>
+          </div>
+        </div>
+      </div>
+      
+    </div><!-- /page-wrap -->
+  </main>
   </div>
   
   <script src="index.js"></script>
