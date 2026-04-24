@@ -122,63 +122,63 @@
     <!-- End of Navbar -->
     
     <main class="page active" id="dashboard">
-                  <section id="analytics" class="tab-content active">
-                <div class="header-row">
-                    <button class="btn-export" onclick="exportCSV()">Export CSV <i class="ri-arrow-right-up-fill"></i></button>
-                    <h2>System Analytics</h2>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card"> <i class="ri-exchange-funds-line"></i>
-                        <h3>Total Success</h3>
-                        <p>
-                            <span id="statTotal" style="color:var(--success)">₦0.00</span>
-                        </p>
-                    </div>
-                    <div class="stat-card"> <i class="ri-exchange-line"></i>
-                        <h3>Pending Volume</h3>
-                        <p>
-                            <span id="statPending" style="color:#E65C08;">₦0.00</span>
-                        </p>
-                    </div>
-                    <div class="stat-card"> <i class="ri-group-line"></i>
-                        <h3>Active Users</h3>
-                        <p>
-                            <span id="statUsers">0</span>
-                        </p>
-                    </div>
-                </div>
-                
-                <div class="charts-grid">
-                    <div class="chart-card">
-                        <h3 style="margin-bottom: 20px;">Transaction Health</h3>
-                        <canvas id="pieChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <h3>Money Flow (In vs Out)</h3>
-                        <canvas id="barChart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="table-container">
-                    <h3 style="padding: 20px 10px 5px;">Summary by Status</h3>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th></th>
-                                <th>Count</th>
-                                <th>Volume</th>
-                            </tr>
-                        </thead>
-                        <tbody id="analyticsTableBody">
-                            <tr>
-                                <td colspan='6'>Syncing Database...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
+      <section id="analytics" class="tab-content active">
+        <div class="header-row">
+          <button class="btn-export" onclick="exportCSV()">Export CSV <i class="ri-arrow-right-up-fill"></i></button>
+          <h2>System Analytics</h2>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"> <i class="ri-exchange-funds-line"></i>
+            <h3>Total Success</h3>
+            <p>
+              <span id="statTotal" style="color:var(--success)">₦0.00</span>
+            </p>
+          </div>
+          <div class="stat-card"> <i class="ri-exchange-line"></i>
+            <h3>Pending Volume</h3>
+            <p>
+              <span id="statPending" style="color:#E65C08;">₦0.00</span>
+            </p>
+          </div>
+          <div class="stat-card"> <i class="ri-group-line"></i>
+            <h3>Active Users</h3>
+            <p>
+              <span id="statUsers">0</span>
+            </p>
+          </div>
+        </div>
+        
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3 style="margin-bottom: 20px;">Transaction Health</h3>
+            <canvas id="pieChart"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Money Flow (In vs Out)</h3>
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+        
+        <div class="table-container">
+          <h3 style="padding: 20px 10px 5px;">Summary by Status</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th></th>
+                <th>Count</th>
+                <th>Volume</th>
+              </tr>
+            </thead>
+            <tbody id="analyticsTableBody">
+              <tr>
+                <td colspan='6'>Syncing Database...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+      
       <div class="header">
         <div class="left">
           <h1>Dashboard</h1>

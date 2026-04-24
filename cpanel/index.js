@@ -390,7 +390,7 @@ async function initDashboard() {
 // ══════════════════════════════════════════════════════════
 //  SECTION 6 — ANALYTICS CHARTS
 // ══════════════════════════════════════════════════════════
-
+/*
 let pieChart, barChart;
 
 function setupAnalyticsCharts() {
@@ -456,7 +456,7 @@ function setupAnalyticsCharts() {
     });
   }
 }
-/*
+*/
 
 // ─── CHARTS ───────────────────────────────────────────────
 let pieChart, barChart;
@@ -481,43 +481,62 @@ function setupCharts() {
     });
   }
 }
-*/
+
 
 // ══════════════════════════════════════════════════════════
 //  SECTION 7 — ANALYTICS & DEPOSITS (API)
 // ══════════════════════════════════════════════════════════
 
 async function loadAnalytics() {
-  const data = await api('/api/admin/analytics');
-  if (!data?.success) return;
-  const s = data.stats;
-  
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
-  set('statTotal', `₦${(s.successV||0).toLocaleString()}`);
-  set('statPending', `₦${(s.pendingV||0).toLocaleString()}`);
-  set('statUsers', s.totalUsers || 0);
-  
-  const tbody = document.getElementById('analyticsTableBody');
-  if (tbody) {
-    tbody.innerHTML = `
-      <tr><td>Successful</td><td></td><td>${s.sCount}</td><td>₦${(s.successV).toLocaleString()}</td></tr>
-      <tr><td>Pending</td><td></td><td>${s.pCount}</td><td>₦${(s.pendingV).toLocaleString()}</td></tr>
-      <tr><td>Declined</td><td></td><td>${s.dCount}</td><td>--</td></tr>`;
-  }
-  
-  if (pieChart) {
-    pieChart.data.datasets[0].data = [s.sCount, s.pCount, s.dCount];
-    pieChart.update();
-  }
-  if (barChart) {
-    barChart.data.datasets[0].data = [s.successV, s.withdrawSuccessV];
-    barChart.update();
-  }
-  
-  allData = data.deposits;
-  renderDepositsPage()
-}
+  try {
+    const data = await api('/api/admin/analytics');
+    
+    if (!data?.success || !data.stats) return;
+    alert("hello");
+    const s = data.stats;
+    
+    // Helper to safely set text with fallback
+    const set = (id, v) => { 
+      const el = document.getElementById(id); 
+      if (el) el.innerText = v; 
+    };
 
+    // Use fallbacks (|| 0) before calling toLocaleString()
+    set('dStatTotal', `₦${(s.successV || 0).toLocaleString()}`);
+    set('dStatPending', `₦${(s.pendingV || 0).toLocaleString()}`);
+    set('dStatUsers', s.totalUsers || 0);
+    
+    const tbody = document.getElementById('analyticsTableBody');
+    if (tbody) {
+      // Added fallbacks here to prevent template literal crashes
+      tbody.innerHTML = `
+        <tr><td>Successful</td><td></td><td>${s.sCount || 0}</td><td>₦${(s.successV || 0).toLocaleString()}</td></tr>
+        <tr><td>Pending</td><td></td><td>${s.pCount || 0}</td><td>₦${(s.pendingV || 0).toLocaleString()}</td></tr>
+        <tr><td>Declined</td><td></td><td>${s.dCount || 0}</td><td>--</td></tr>`;
+    }
+    
+    // Check if charts exist and have datasets before updating
+    if (window.pieChart && pieChart.data?.datasets?.[0]) {
+      pieChart.data.datasets[0].data = [s.sCount || 0, s.pCount || 0, s.dCount || 0];
+      pieChart.update();
+    }
+
+    if (window.barChart && barChart.data?.datasets?.[0]) {
+      barChart.data.datasets[0].data = [s.successV || 0, s.withdrawSuccessV || 0];
+      barChart.update();
+    }
+    
+    // Ensure allData is defined globally or locally
+    allData = data.deposits || [];
+    if (typeof renderDepositsPage === 'function') {
+      renderDepositsPage();
+    }
+
+  } catch (error) {
+    console.error("Failed to load analytics:", error);
+    // Optional: show a small toast or UI notification to the user
+  }
+}
 
 function renderDepositsPage() {
   const tbody = document.getElementById('depositTableBody');
