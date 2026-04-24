@@ -122,6 +122,63 @@
     <!-- End of Navbar -->
     
     <main class="page active" id="dashboard">
+                  <section id="analytics" class="tab-content active">
+                <div class="header-row">
+                    <button class="btn-export" onclick="exportCSV()">Export CSV <i class="ri-arrow-right-up-fill"></i></button>
+                    <h2>System Analytics</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card"> <i class="ri-exchange-funds-line"></i>
+                        <h3>Total Success</h3>
+                        <p>
+                            <span id="statTotal" style="color:var(--success)">₦0.00</span>
+                        </p>
+                    </div>
+                    <div class="stat-card"> <i class="ri-exchange-line"></i>
+                        <h3>Pending Volume</h3>
+                        <p>
+                            <span id="statPending" style="color:#E65C08;">₦0.00</span>
+                        </p>
+                    </div>
+                    <div class="stat-card"> <i class="ri-group-line"></i>
+                        <h3>Active Users</h3>
+                        <p>
+                            <span id="statUsers">0</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3 style="margin-bottom: 20px;">Transaction Health</h3>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Money Flow (In vs Out)</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <h3 style="padding: 20px 10px 5px;">Summary by Status</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th></th>
+                                <th>Count</th>
+                                <th>Volume</th>
+                            </tr>
+                        </thead>
+                        <tbody id="analyticsTableBody">
+                            <tr>
+                                <td colspan='6'>Syncing Database...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
       <div class="header">
         <div class="left">
           <h1>Dashboard</h1>
@@ -1683,109 +1740,6 @@
   </div>
   
   <script src="index.js"></script>
-  
-  <script>
-    // ── Sync the pill + subtitle text whenever toggle changes ─────
-    function syncMaintUI(isOn) {
-      const pill = document.getElementById('maintStatusPill');
-      const text = document.getElementById('maintStatusText');
-      const mirror = document.getElementById('tgl-maintenance');
-      
-      // Keep the hidden mirror in sync so fillSettings() can find it
-      if (mirror) mirror.value = isOn ? 'true' : 'false';
-      
-      if (pill) {
-        pill.textContent = isOn ? 'ON' : 'OFF';
-        pill.style.background = isOn ?
-          'rgba(238,93,80,0.12)' // red-soft when ON
-          :
-          'rgba(5,205,153,0.12)'; // green-soft when OFF
-        pill.style.color = isOn ?
-          '#ee5d50' // danger
-          :
-          '#05cd99'; // success
-      }
-      
-      if (text) {
-        text.textContent = isOn ?
-          '🔴 Platform is in maintenance' :
-          '🟢 Platform is live';
-      }
-    }
-    
-    // ── On page load — reflect current state from API ─────────────
-    // This runs AFTER loadSettings() has set maintenanceToggle.checked
-    // We use a MutationObserver to catch when loadSettings() sets the checkbox
-    const _maintObs = new MutationObserver(() => {});
-    document.addEventListener('DOMContentLoaded', () => {
-      // Poll briefly until the checkbox is set by loadSettings()
-      const poll = setInterval(() => {
-        const toggle = document.getElementById('maintenanceToggle');
-        if (!toggle) return;
-        // Once loadSettings() has run it will have set .checked
-        // We just sync the UI to match whatever state it is
-        syncMaintUI(toggle.checked);
-        clearInterval(poll);
-      }, 200);
-      
-      // Fallback — stop polling after 5s regardless
-      setTimeout(() => clearInterval(poll), 5000);
-    });
-    
-    // ── Payment mode quick-switcher ─────────────────────────────
-    // Loads current mode on page load and highlights the active pill.
-    // quickSetPaymentMode() saves instantly without opening the modal.
-    
-    async function loadPaymentModeBadge() {
-      const data = await api('/api/admin/settings');
-      const mode = data?.settings?.payment?.mode || 'manual';
-      updatePaymentPills(mode);
-    }
-    
-    function updatePaymentPills(mode) {
-      const badge = document.getElementById('paymentModeBadge');
-      const manual = document.getElementById('pillManual');
-      const kora = document.getElementById('pillKorapay');
-      if (!badge || !manual || !kora) return;
-      
-      const isManual = mode === 'manual';
-      
-      // Badge
-      badge.textContent = isManual ? 'Manual' : 'Korapay';
-      badge.style.background = isManual ? 'rgba(246,173,85,0.15)' : 'rgba(5,205,153,0.12)';
-      badge.style.color = isManual ? '#f6ad55' : '#05cd99';
-      
-      // Active pill
-      const activeStyle = 'border-color:green;background:rgba(67,24,255,0.08);color:green;';
-      const inactiveStyle = 'border-color:var(--border,#e0e5f2);background:var(--bg,#f4f7fe);color:var(--text2,#4a5568);';
-      manual.style.cssText += isManual ? activeStyle : inactiveStyle;
-      kora.style.cssText += isManual ? inactiveStyle : activeStyle;
-    }
-    
-    async function quickSetPaymentMode(mode) {
-      // Fetch existing payment config so we don't wipe manual/korapay keys
-      const data = await api('/api/admin/settings');
-      const existing = data?.settings?.payment || {};
-      
-      const config = { ...existing, mode };
-      
-      const res = await api('/api/admin/settings/payment', {
-        method: 'PUT',
-        body: JSON.stringify(config)
-      });
-      
-      if (res?.success) {
-        updatePaymentPills(mode);
-        showToast(`Switched to ${mode === 'manual' ? 'Manual Transfer' : 'Korapay'}`, 'success');
-      } else {
-        showToast('Failed to switch mode', 'error');
-      }
-    }
-    
-    // Run on load
-    loadPaymentModeBadge();
-  </script>
-  
   <script id="admin-campaigns-js">
     // ── Campaign data cache ──────────────────────────────────────────────────────
     let _atAllCampaigns = [];
