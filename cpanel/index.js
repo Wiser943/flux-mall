@@ -5091,6 +5091,8 @@ function syncMaintUI(isOn) {
   }
 }
 
+loadAdminChatSessions()
+
 // ── On page load — reflect current state from API ─────────────
 // This runs AFTER loadSettings() has set maintenanceToggle.checked
 // We use a MutationObserver to catch when loadSettings() sets the checkbox
