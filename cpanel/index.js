@@ -243,7 +243,7 @@ const allPages = document.querySelectorAll('.page');
 
 // 1. Select all elements with the .page class
 let lastScrollTop = 0;
-const threshold = 20;
+const threshold = 15;
 
 allPages.forEach(page => {
   page.addEventListener('scroll', () => {
