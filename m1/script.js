@@ -574,11 +574,9 @@ window.payWithKorapay = async (amount, _key) => {
       '⏱ Valid for this session only';
     
     showConfirm({
-      title: 'Complete Transfer',
-      message: 'Proceed to your bank app to complete this transfer.',
+      title: 'Complete Bank Transfer',
+      message: 'Transfer the exact amount to the account below.',
       detail: `  
-        <h3 style="margin-top:0;color:var(--teal)">Complete Bank Transfer</h3>
-
         <strong style="font-size:1.4rem;color:var(--text1);">
           ₦${Number(amount).toLocaleString('en-NG', { minimumFractionDigits: 2 })}
         </strong>
@@ -587,11 +585,6 @@ window.payWithKorapay = async (amount, _key) => {
         </div>
 
         <div class="bank-details">
-          <div class="detail-row">
-            <p style="font-size:0.85rem;color:#666;margin:0 0 10px;">
-              Transfer the <strong>exact amount</strong> to this account:
-            </p>
-          </div>
           <div class="detail-row">
             <span>Bank:</span>
             <strong>${data.bankName || '—'}</strong>
