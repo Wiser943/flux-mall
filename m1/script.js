@@ -566,7 +566,7 @@ window.payWithKorapay = async (amount, _key) => {
     if (!data?.success) {
       return showAlert(data?.error || 'Could not initialize payment. Try again.', 'error', 'ri-close-line', 'Error');
     }
-    
+    console.log(data.bankName)
     // Step 3 — show our own custom modal with the bank details
     const fexToCredit = parseFloat((amount / FEX_RATE).toFixed(2));
     const expiryText = data.expiresAt ?

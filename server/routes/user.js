@@ -623,9 +623,6 @@ router.post('/convert-fex', requireAuth, async (req, res) => {
 });
 
 // ─── POST /api/user/initiate-korapay ─────────────────────
-// Calls Korapay Collect API server-side — returns virtual bank
-// account details so the frontend can show its OWN custom modal
-// instead of Korapay's default popup widget.
 router.post('/initiate-korapay', requireAuth, async (req, res) => {
   try {
     const { amount } = req.body;
@@ -634,12 +631,13 @@ router.post('/initiate-korapay', requireAuth, async (req, res) => {
     
     const secretKey = process.env.KORAPAY_SECRET_KEY;
     if (!secretKey)
-      return res.status(400).json({ error: 'Payment not configured.' });
+      return res.status(400).json({ error: 'Payment configuration missing.' });
     
     const reference = 'DEP_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
     const u = req.user;
     
-    const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/initialize', {
+    // CHANGE: Use the specific bank-transfer endpoint for direct account generation
+    const response = await fetch('https://api.korapay.com/merchant/api/v1/charges/bank-transfer', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${secretKey}`,
@@ -653,7 +651,7 @@ router.post('/initiate-korapay', requireAuth, async (req, res) => {
           name: u.username || 'User',
           email: u.email
         },
-        channels: ['bank_transfer'],
+        // notification_url is crucial for receiving the payment confirmation later
         notification_url: process.env.KORAPAY_WEBHOOK_URL || `${process.env.APP_URL}/api/webhook/korapay`
       })
     });
@@ -661,29 +659,62 @@ router.post('/initiate-korapay', requireAuth, async (req, res) => {
     const result = await response.json();
     
     if (!result.status || !result.data) {
-      console.error('[Korapay Init]', result);
-      return res.status(400).json({ error: result.message || 'Failed to initialize payment. Try again.' });
+      console.error('[Korapay Init Error Details]:', result);
+      return res.status(400).json({ 
+        error: result.message || 'Could not generate bank account.' 
+      });
     }
     
     const payData = result.data;
-    const bankTransfer = payData.payment_options?.bank_transfer;
-    
+
+    // The data structure for bank-transfer endpoint is direct
     res.json({
       success: true,
       reference: payData.reference,
       amount: payData.amount,
-      currency: payData.currency,
-      bankName: bankTransfer?.bank_name || null,
-      accountNumber: bankTransfer?.account_number || null,
-      accountName: bankTransfer?.account_name || u.username,
-      expiresAt: bankTransfer?.expires_at || null,
+      bankName: payData.bank_name,
+      accountNumber: payData.account_number,
+      accountName: payData.account_name,
+      expiryDate: payData.expiry_date, // Useful for showing a countdown
     });
     
   } catch (err) {
-    console.error('[Korapay Init Error]', err);
-    res.status(500).json({ error: err.message });
+    console.error('[Server Error]:', err);
+    res.status(500).json({ error: 'Internal server error occurred.' });
   }
 });
+
+// 1. THIS ROUTE NEEDS AUTH (The user is paying)
+router.post('/initiate-korapay', requireAuth, async (req, res) => {
+  // ... your existing code to generate the bank account ...
+});
+// 2. THIS ROUTE MUST BE PUBLIC (Korapay is calling this)
+// Note: We don't use 'requireAuth' here!
+router.post('/webhook-korapay', async (req, res) => {
+  try {
+    const payload = req.body;
+    const signature = req.headers['x-korapay-signature'];
+
+    // SECURITY: Verify the signature here using your Secret Key
+    // This ensures it's actually Korapay and not a hacker.
+    
+    if (payload.event === 'charge.success') {
+      const { reference, amount, status } = payload.data;
+
+      if (status === 'success') {
+        // Logic to credit the user's account in your database
+        console.log(`Credit user for reference: ${reference}`);
+      }
+    }
+
+    // Always tell Korapay you got the message
+    res.status(200).send('OK');
+  } catch (err) {
+    console.error('Webhook Error:', err);
+    res.status(500).send('Webhook Failed');
+  }
+});
+
 
 // ─── POST /api/user/deposit ───────────────────────────────
 // Deposits are stored in FEX coins — amount field = FEX units
