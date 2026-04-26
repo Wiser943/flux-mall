@@ -24,11 +24,12 @@ const { requireAuth } = require('../middleware/auth');
 
 // ─── TOP BANKS FOR AUTO-RESOLUTION ───────────────────────
 const TOP_BANKS = [
+  { code: '50515', name: 'Moniepoint' },
+  { code: '999991', name: 'Palmpay' },
+  { code: '999992', name: 'OPay' },
   { code: '058', name: 'GTBank' },
   { code: '057', name: 'Zenith Bank' },
   { code: '044', name: 'Access Bank' },
-  { code: '999992', name: 'OPay' },
-  { code: '50515', name: 'Moniepoint' },
   { code: '50211', name: 'Kuda Bank' },
   { code: '011', name: 'First Bank' },
   { code: '033', name: 'UBA' },
@@ -86,6 +87,26 @@ router.get('/deposit-amounts', requireAuth, async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ─── PUT /api/user/bank-details ────────────────────────────
 router.put('/bank-details', requireAuth, async (req, res) => {
   try {
@@ -132,23 +153,34 @@ router.post('/verify-account', requireAuth, async (req, res) => {
     const { accountNumber, bankCode } = req.body;
     if (!accountNumber || !bankCode)
       return res.status(400).json({ error: 'Account number and bank code required.' });
+    
     const secretKey = process.env.KORAPAY_SECRET_KEY;
-    if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
+    
     const response = await fetch('https://api.korapay.com/merchant/api/v1/misc/banks/resolve', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${secretKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ account_number: accountNumber, bank_code: bankCode })
+      // CHANGE: Korapay expects 'bank', 'account', and 'currency'
+      body: JSON.stringify({
+        account: accountNumber,
+        bank: bankCode,
+        currency: 'NG'
+      })
     });
+    
     const result = await response.json();
-    if (result.status && result.data?.account_name) {
+    
+    // Note: result.status might be a boolean true or string "true" depending on your library
+    if (result.status && (result.status === true || result.status === "true") && result.data?.account_name) {
       res.json({ success: true, accountName: result.data.account_name });
     } else {
-      res.status(400).json({ error: 'Could not verify account. Check number and bank.' });
+      console.error('[Verification Failed]:', result);
+      res.status(400).json({ error: result.message || 'Could not verify account. Check number and bank.' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ─── POST /api/user/resolve-account ──────────────────────
 router.post('/resolve-account', requireAuth, async (req, res) => {
@@ -156,17 +188,24 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
     const { accountNumber } = req.body;
     if (!accountNumber || accountNumber.length !== 10)
       return res.status(400).json({ error: 'Valid 10-digit account number required.' });
+
     const secretKey = process.env.KORAPAY_SECRET_KEY;
-    if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
+
     for (const bank of TOP_BANKS) {
       try {
         const response = await fetch('https://api.korapay.com/merchant/api/v1/misc/banks/resolve', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${secretKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ account_number: accountNumber, bank_code: bank.code })
+          // CHANGE: Fixed keys in the loop as well
+          body: JSON.stringify({ 
+            account: accountNumber, 
+            bank: bank.code,
+            currency: 'NG'
+          })
         });
+
         const result = await response.json();
-        if (result.status && result.data?.account_name) {
+        if (result.status && (result.status === true || result.status === "true") && result.data?.account_name) {
           return res.json({
             success: true,
             accountName: result.data.account_name,
@@ -175,7 +214,7 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
           });
         }
       } catch (e) {
-        continue;
+        continue; // Keep trying next bank
       }
     }
     res.status(404).json({ error: 'Bank not detected. Please select your bank manually.' });
@@ -183,6 +222,7 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 // 2. USER ROUTES  — paste into user server file
@@ -684,10 +724,6 @@ router.post('/initiate-korapay', requireAuth, async (req, res) => {
   }
 });
 
-// 1. THIS ROUTE NEEDS AUTH (The user is paying)
-router.post('/initiate-korapay', requireAuth, async (req, res) => {
-  // ... your existing code to generate the bank account ...
-});
 // 2. THIS ROUTE MUST BE PUBLIC (Korapay is calling this)
 // Note: We don't use 'requireAuth' here!
 router.post('/webhook-korapay', async (req, res) => {
