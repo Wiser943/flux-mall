@@ -731,7 +731,7 @@
             
             <div style="margin-bottom:15px;">
               <label style="display:block;font-size:14px;margin-bottom:5px;color:#707eae;">Bank Name</label>
-              <select id="bankSelect" onchange="handleBankSelect()" style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;background:white;font-size:15px;">
+              <select id="bankSelect" onchange="verifyAccount(document.getElementById('accNumber').value)" style="width:100%;padding:12px;border:1px solid #e0e5f2;border-radius:8px;background:white;font-size:15px;">
                 <option value="">-- Select Bank --</option>
                 <option value="058">GTBank</option>
                 <option value="057">Zenith Bank</option>

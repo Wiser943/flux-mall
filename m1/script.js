@@ -759,7 +759,7 @@ async function initBankSync() {
 }
 
 async function loadBanksDropdown() {
-  const select = document.getElementById('bankName');
+  const select = document.getElementById('bankSelect');
   if (!select) return;
   select.innerHTML = '<option value="">⏳ Loading banks...</option>';
   try {
@@ -794,7 +794,7 @@ window.handleAccNumberInput = (value) => {
   if (statusEl) statusEl.innerHTML = '';
   if (value.length !== 10) return;
   
-  const bankCode = document.getElementById('bankName')?.value;
+  const bankCode = document.getElementById('bankSelect')?.value;
   
   if (bankCode) { verifyAccount(value); return; }
   
@@ -807,7 +807,7 @@ window.handleAccNumberInput = (value) => {
       });
       if (data?.success) {
         if (accName) accName.value = data.accountName;
-        const bankSelect = document.getElementById('bankName');
+        const bankSelect = document.getElementById('bankSelect');
         if (bankSelect) bankSelect.value = data.bankCode;
         if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName} · ${data.bankName}</span>`;
       } else {
