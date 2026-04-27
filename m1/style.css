@@ -2231,16 +2231,16 @@
     font-weight: 600;
     cursor: pointer;
     border: 1.5px solid var(--border);
-    background: var(--card);
-    color: var(--text2);
+    background: var(--card2);
+    color: var(--text);
     white-space: nowrap;
     transition: all .15s;
   }
   
   .chip.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
+    background: var(--gold);
+    color: #f4f4f4;
+    border-color: var(--border-color);
   }
   
   /* TASK CARD */

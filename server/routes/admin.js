@@ -733,7 +733,7 @@ async function handleReferralCommission(depositorUid, depositAmount, tid) {
       user.emailVerified &&
       user.referrerId
     ) {
-      const referralBonus = config?.value?.referralBonus || 1714; // ~₦1200 at ₦0.7/FEX
+      const referralBonus = config?.value?.referralBonus || 840; // ~₦1200 at ₦0.7/FEX
       
       // Credit the referrer
       await User.findByIdAndUpdate(user.referrerId, {

@@ -170,8 +170,18 @@
         
         <!-- STAT CARDS -->
         <div class="grid-4 mb-6">
-          <span id="deposit-success-coun">
-          </span>
+          <div id="deposit-success-coun">nnn
+          </div>
+          <div class="stat-card green">
+            <div class="stat-icon green"><i class="ri-arrow-down-circle-line"></i></div>
+            <div class="stat-value">₦<span id="deposit-success-naira">0.00</span></div>
+            <div class="stat-label">Total Deposited</div>
+            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i>
+              <span id="deposit-success-count">None</span> in last session
+            </div>
+          </div>
+          
+
           <div class="stat-card green">
             <div class="stat-icon green"><i class="ri-arrow-down-circle-line"></i></div>
             <div class="stat-value">₦<span id="deposit-success-naira">0.00</span></div>
@@ -296,7 +306,7 @@
             <div class="stat-change up">↑ Active Plans x2</div>
           </div>
         </div>
-        
+        <!--
         <div class="grid-2 mb-8">
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">Virtual Account</div>
@@ -339,7 +349,7 @@
           </div>
         </div>
         
-        <!-- TRANSFER TAB -->
+        <!-- TRANSFER TAB --
         <div class="section-header mb-6">
           <div class="section-title">Internal Transfer</div>
           <div class="section-sub">Send funds to another Fluxmall Exchange user or between your wallets</div>
@@ -400,7 +410,7 @@
               <button class="btn btn-ghost btn-sm" onclick="showAlert('Funmi Adesanya selected as transfer recipient.','✅','success')">Select</button>
             </div>
           </div>
-        </div>
+        </div>-->
       </div>
       
       <!-- TRANSACTIONS PAGE -->
@@ -1054,9 +1064,7 @@
       <div class="notifications" id="notifWrap"></div>
       
       <div class="page" id="tasks">
-        
-        
-        <div id="utCampaignModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;overflow-y:auto;padding:16px;align-items:flex-start;justify-content:center;">
+        <div id="utCampaignModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;overflow-y:auto;padding:16px;align-items:flex-start;justify-content:center;">
           <div style="background:var(--card,#fff);border-radius:20px;width:100%;max-width:560px;margin:auto;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.25);">
             
             <!-- Header -->
@@ -1294,7 +1302,11 @@
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:18px;" class="userName">User</div>
               <div class="text-sm mb-4" style="margin-top:4px;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d9b8bdbcbbb8a0b6f7b3b8b4bcaa99beb4b8b0b5f7bab6b4">[email&#160;protected]</a></div>
               <span class="badge success">✦ Premium · Tier</span>
-              <div style="margin-top:16px;"><button style="display: none;" class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button><a class="btn btn-outline btn-sm" href="#support">Support</a></div>
+              <div style="margin-top:16px;"><button style="display: none;" class="btn btn-outline btn-sm" onclick="showAlert('Photo upload coming soon!','📷','info')">Change Photo</button>
+                <a class="btn btn-outline btn-sm" href="#support">Support</a>
+                <a class="btn btn-outline btn-sm" href="#support">Upgrade</a>
+                
+              </div>
             </div>
             
             
