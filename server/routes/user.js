@@ -128,19 +128,23 @@ router.put('/bank-details', requireAuth, async (req, res) => {
   }
 });
 
-// ─── GET /api/user/banks ──────────────────────────────────
 router.get('/banks', requireAuth, async (req, res) => {
   try {
     const secretKey = process.env.KORAPAY_SECRET_KEY;
-    if (!secretKey) return res.status(400).json({ error: 'Payment not configured.' });
     const response = await fetch('https://api.korapay.com/merchant/api/v1/misc/banks?countryCode=NG', {
       headers: { 'Authorization': `Bearer ${secretKey}`, 'Content-Type': 'application/json' }
     });
+
     const result = await response.json();
-    if (result.status) {
+
+    // LOG THIS to see the real error in your Render console
+    console.log("Kora Bank Response:", result); 
+
+    if (result.status === true || result.status === 'success') {
       res.json({ success: true, banks: result.data });
     } else {
-      res.status(400).json({ error: 'Failed to fetch banks.' });
+      // Send the actual message from Kora back to the frontend for debugging
+      res.status(400).json({ error: result.message || 'Failed to fetch banks.' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -190,6 +194,7 @@ router.post('/resolve-account', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Valid 10-digit account number required.' });
 
     const secretKey = process.env.KORAPAY_SECRET_KEY;
+
 
     for (const bank of TOP_BANKS) {
       try {
