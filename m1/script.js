@@ -1025,26 +1025,21 @@ async function loadTeamData() {
     return;
   }
   
-  // Variables to track totals
+  const REFERRAL_BONUS_NAIRA = 700;
   let totalReferred = users.length;
-  let totalBalances = 0;
+  let totalEarned = 0;
   let tableRows = '';
   
   users.forEach(u => {
     const date = u.createdAt ?
-      new Date(u.createdAt).toLocaleDateString('en-NG', { month: 'short', day: '2-digit', year: 'numeric' }) :
-      '—';
+      new Date(u.createdAt).toLocaleDateString('en-NG', { month: 'short', day: '2-digit', year: 'numeric' }) : '—';
     
-    const status = (u.status || 'pending').toLowerCase();
-    const isSuccess = status === 'active' || status === 'success';
-    const badgeClass = isSuccess ? 'success' : 'pending';
-    const statusText = isSuccess ? 'Active' : 'Pending';
+    const isCompleted = u.referralCompleted === true;
+    const badgeClass = isCompleted ? 'success' : 'pending';
+    const statusText = isCompleted ? 'Active' : 'Pending';
+    const earnedAmount = isCompleted ? REFERRAL_BONUS_NAIRA : 0;
     
-    // Calculate earned amount for this specific user
-    const earnedAmount = u.earned || (isSuccess ? 1200 : 0);
-    
-    // Add to the total balance
-    totalBalances += earnedAmount;
+    totalEarned += earnedAmount;
     
     const amountColor = earnedAmount > 0 ? 'var(--green)' : 'var(--yellow)';
     
@@ -1057,15 +1052,16 @@ async function loadTeamData() {
       </tr>`;
   });
   
-  document.querySelectorAll(".refStat").forEach((div) => {
-    div.innerHTML = `          <div class="stat-card yellow">
-            <div class="stat-icon yellow"><i class="ri-user-add-line"></i></div>
-            <div class="stat-value">🪙${totalBalances.toLocaleString()}</div>
-            <div class="stat-label">Referral Earnings</div>
-            <div class="stat-change up"><i class="ri-arrow-up-s-line"></i> ${totalReferred} user(s) reffered</div>
-          </div>
-`;
-  })
+  document.querySelectorAll('.refStat').forEach((div) => {
+    div.innerHTML = `
+      <div class="stat-card yellow">
+        <div class="stat-icon yellow"><i class="ri-user-add-line"></i></div>
+        <div class="stat-value">₦${totalEarned.toLocaleString()}</div>
+        <div class="stat-label">Referral Earnings</div>
+        <div class="stat-change up"><i class="ri-arrow-up-s-line"></i> ${totalReferred} user(s) referred</div>
+      </div>`;
+  });
+  
   teamContainer.innerHTML = `
     <div class="table-wrap">
       <table>
@@ -1078,7 +1074,6 @@ async function loadTeamData() {
       </table>
     </div>`;
 }
-
 // ─── REFERRAL LINK ────────────────────────────────────────
 function generateReferralLink() {
   if (!currentUserData) return;

@@ -763,6 +763,7 @@ router.post('/deposit', requireAuth, async (req, res) => {
   try {
     const { amount, method, refCode, status } = req.body;
     if (!amount || amount <= 0) return res.status(400).json({ error: 'Invalid amount.' });
+    
     const deposit = await Deposit.create({
       userId: req.user._id,
       amount: Number(amount),
@@ -770,16 +771,52 @@ router.post('/deposit', requireAuth, async (req, res) => {
       refCode,
       status: status || 'pending'
     });
+    
     if (status === 'success') {
       await User.findByIdAndUpdate(req.user._id, { $inc: { ib: Number(amount) } });
       await Activity.create({ userId: req.user._id, type: 'Deposit', amount, desc: 'From Korapay' });
+      
+      // ─── REFERRAL CREDIT ON FIRST DEPOSIT ───────────────
+      const depositor = await User.findById(req.user._id);
+      const previousSuccessfulDeposits = await Deposit.countDocuments({
+        userId: req.user._id,
+        status: 'success',
+        _id: { $ne: deposit._id }
+      });
+      
+      if (previousSuccessfulDeposits === 0 && depositor.emailVerified && depositor.referrerId) {
+        const config = await Settings.findOne({ key: 'config' });
+        const referralBonus = config?.value?.referralBonus || 1714;
+        
+        await User.findByIdAndUpdate(depositor.referrerId, {
+          $inc: { ib: referralBonus }
+        });
+        
+        await User.findByIdAndUpdate(req.user._id, {
+          referralCompleted: true
+        });
+        
+        await Activity.create({
+          userId: depositor.referrerId,
+          type: 'Referral',
+          amount: referralBonus,
+          desc: `Referral bonus — ${depositor.username} made their first deposit`
+        });
+        
+        await Notification.create({
+          userId: depositor.referrerId,
+          title: '🎉 Referral Bonus Credited!',
+          message: `${depositor.username} just made their first deposit! 🪙${referralBonus.toLocaleString()} FEX has been added to your balance.`
+        });
+      }
+      // ────────────────────────────────────────────────────
     }
+    
     res.json({ success: true, deposit });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 // ─── GET /api/user/deposits ───────────────────────────────
 router.get('/deposits', requireAuth, async (req, res) => {
   try {
@@ -1114,17 +1151,21 @@ router.post('/collect-earnings', requireAuth, async (req, res) => {
 router.get('/team', requireAuth, async (req, res) => {
   try {
     const uid = req.user._id.toString();
-    const level1 = await User.find({ referrerId: uid }).select('username email createdAt ib');
+    const level1 = await User.find({ referrerId: uid })
+      .select('username email createdAt ib referralCompleted emailVerified');
+    
     const level2Users = [];
     for (const l1 of level1) {
       const l2 = await User.find({ referrerId: l1._id.toString() }).select('username email');
       level2Users.push(...l2);
     }
+    
     const level3Users = [];
     for (const l2 of level2Users) {
       const l3 = await User.find({ referrerId: l2._id.toString() }).select('username email');
       level3Users.push(...l3);
     }
+    
     res.json({
       success: true,
       level1: { count: level1.length, users: level1 },
@@ -1135,7 +1176,6 @@ router.get('/team', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // ─── POST /api/user/spin ─────────────────────────────────
 router.post('/spin', requireAuth, async (req, res) => {
   try {

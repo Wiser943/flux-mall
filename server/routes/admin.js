@@ -312,7 +312,7 @@ router.get('/deposits', requireAdmin, async (req, res) => {
 });
 
 // ─── PUT /api/admin/deposits/:id ─────────────────────────
-// Approve or decline a deposit
+// ─── PUT /api/admin/deposits/:id ─────────────────────────
 router.put('/deposits/:id', requireAdmin, async (req, res) => {
   try {
     const { status } = req.body;
@@ -324,13 +324,21 @@ router.put('/deposits/:id', requireAdmin, async (req, res) => {
     
     if (status === 'success') {
       await User.findByIdAndUpdate(deposit.userId, { $inc: { ib: deposit.amount } });
-      await Notification.create({
+      
+      await Activity.create({
         userId: deposit.userId,
-        title: '💰 Wallet Credited',
-        message: `Wallet credited with ₦${Number(deposit.amount).toLocaleString()}`
+        type: 'Deposit',
+        amount: deposit.amount,
+        desc: 'Deposit approved by admin'
       });
       
-      // Handle referral commission
+      await Notification.create({
+        userId: deposit.userId,
+        title: '💰 Deposit Approved!',
+        message: `Your deposit of 🪙${Number(deposit.amount).toLocaleString()} FEX has been approved and credited to your wallet.`
+      });
+      
+      // Handle referral commission + first deposit flat bonus
       await handleReferralCommission(deposit.userId.toString(), deposit.amount, deposit._id.toString());
     }
     
@@ -338,7 +346,7 @@ router.put('/deposits/:id', requireAdmin, async (req, res) => {
       await Notification.create({
         userId: deposit.userId,
         title: '❌ Deposit Declined',
-        message: `Your deposit of ₦${Number(deposit.amount).toLocaleString()} was declined.`
+        message: `Your deposit of 🪙${Number(deposit.amount).toLocaleString()} FEX was declined. Please contact support.`
       });
     }
     
@@ -716,13 +724,52 @@ async function handleReferralCommission(depositorUid, depositAmount, tid) {
     const L3 = (rates[2] || 0) / 100;
     
     const user = await User.findById(depositorUid);
-    if (!user || user.hasDeposited) return;
+    if (!user) return;
     
+    // ─── FLAT REFERRAL BONUS ON FIRST DEPOSIT ─────────────
+    // Fires once: email verified + has referrer + not yet completed
+    if (
+      !user.referralCompleted &&
+      user.emailVerified &&
+      user.referrerId
+    ) {
+      const referralBonus = config?.value?.referralBonus || 1714; // ~₦1200 at ₦0.7/FEX
+      
+      // Credit the referrer
+      await User.findByIdAndUpdate(user.referrerId, {
+        $inc: { ib: referralBonus }
+      });
+      
+      // Mark referral as completed so it never fires again
+      await User.findByIdAndUpdate(depositorUid, {
+        referralCompleted: true
+      });
+      
+      await Activity.create({
+        userId: user.referrerId,
+        type: 'Referral',
+        amount: referralBonus,
+        desc: `Referral bonus — ${user.username} made their first deposit`
+      });
+      
+      await Notification.create({
+        userId: user.referrerId,
+        title: '🎉 Referral Bonus Credited!',
+        message: `${user.username} just made their first deposit! 🪙${Number(referralBonus).toLocaleString()} FEX has been added to your balance.`
+      });
+      
+      console.log(`✅ Flat referral bonus of 🪙${referralBonus} sent to referrer ${user.referrerId}`);
+    }
+    // ──────────────────────────────────────────────────────
+    
+    // ─── PERCENTAGE COMMISSION (existing logic) ────────────
+    // Only fires on the very first deposit (hasDeposited guard)
+    if (user.hasDeposited) return;
     await User.findByIdAndUpdate(depositorUid, { hasDeposited: true });
     
     const payReferrer = async (uid, bonus, level) => {
       await User.findByIdAndUpdate(uid, { $inc: { ib: bonus, refPoints: bonus } });
-      console.log(`✅ ${level} Bonus of ₦${bonus} sent to ${uid}`);
+      console.log(`✅ ${level} Bonus of 🪙${bonus} sent to ${uid}`);
     };
     
     if (user.referrerId) {
@@ -741,6 +788,8 @@ async function handleReferralCommission(depositorUid, depositAmount, tid) {
         }
       }
     }
+    // ──────────────────────────────────────────────────────
+    
   } catch (err) {
     console.error('Referral Commission Error:', err);
   }

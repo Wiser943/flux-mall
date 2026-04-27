@@ -7,9 +7,9 @@ const userSchema = new mongoose.Schema({
   role:     { type: String, default: 'user', enum: ['user', 'admin'] },
 
   // Wallet
-  ib:        { type: Number, default: 0 },
+  ib:        { type: Number, default: 1700 },
   refPoints: { type: Number, default: 0 },
-  freeSpins: { type: Number, default: 0 },
+  freeSpins: { type: Number, default: 1 },
 
   // Short User ID for referral links
   uid: { type: String, unique: true, sparse: true },
@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
   referrerId:      { type: String, default: null },
   referralAwarded: { type: Boolean, default: false },
   hasDeposited:    { type: Boolean, default: false },
+  referralCompleted: { type: Boolean, default: false },
 
   // Account Status
   status:          { type: String, default: 'Active', enum: ['Active', 'Banned'] },
