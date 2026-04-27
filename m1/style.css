@@ -2633,18 +2633,18 @@
   }
   
   .badge.pending {
-    background: var(--warning-soft);
-    color: var(--warning);
+    background: var(--yellow-bg);
+    color: var(--yellow);
   }
   
   .badge.approved {
-    background: var(--success-soft);
-    color: var(--success);
+    background: var(--green-bg);
+    color: var(--green);
   }
   
   .badge.declined {
-    background: var(--danger-soft);
-    color: var(--danger);
+    background: var(--red-bg);
+    color: var(--red);
   }
   
   /* STATES */
