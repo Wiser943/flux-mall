@@ -2309,8 +2309,7 @@ async function loadReferralTiers() {
             ${isCurrent ? `<span style="font-size:11px;color:var(--green);">• Current</span>` : ''}
             ${isReached && !isCurrent ? `<span style="font-size:11px;color:var(--text3);">• Passed</span>` : ''}
           </div>
-          <div class="text-xs">${maxLabel} active referrals</div>
-          ${claimBtn}
+          <div class="text-xs">${claimBtn}</div>
         </div>
         <div style="text-align:right;">
           <div style="font-weight:700;color:${color};">
