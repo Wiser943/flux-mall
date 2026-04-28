@@ -2297,7 +2297,7 @@ async function loadReferralTiers() {
     } else if (t.canClaim) {
       claimBtn = `<button class="btn btn-sm btn-primary" style="font-size:11px;margin-top:8px;" onclick="claimTierBonus(${t.level}, this)">🎁 Claim ₦${t.claimBonus.toLocaleString()}</button>`;
     } else {
-      claimBtn = `<div class="text xs" disabled style="opacity:0.5;">🔒 ${t.min} refs needed</div>`;
+      claimBtn = `<div class="text-xs" disabled style="opacity:0.5;">🔒 ${t.min} refs needed</div>`;
     }
     
     return `
@@ -2351,3 +2351,52 @@ window.claimTierBonus = async (level, btn) => {
     btn.innerText = `🎁 Claim`;
   }
 };
+
+
+
+
+
+/*        <div class="card mb-6">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:16px;">Referral Tiers</div>
+          <div class="ref-level">
+            <div class="ref-level-num">L1</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Starter</div>
+              <div class="text-xs">0–4 referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--accent2);">₦800/ref</div>
+            </div>
+          </div>
+          <div class="ref-level" style="border-color:rgba(108,99,255,0.3);background:var(--accent-glow)">
+            <div class="ref-level-num">L2</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Grower <span style="font-size:11px;color:var(--green);">• Current</span></div>
+              <div class="text-xs">5–14 referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--accent2);">₦1,200/ref</div>
+            </div>
+          </div>
+          <div class="ref-level">
+            <div class="ref-level-num">L3</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Champion</div>
+              <div class="text-xs">15–49 referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--accent2);">₦1,800/ref</div>
+            </div>
+          </div>
+          <div class="ref-level">
+            <div class="ref-level-num">L4</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Ambassador</div>
+              <div class="text-xs">50+ referrals</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:var(--yellow);">₦2,500/ref + Bonus</div>
+            </div>
+          </div>
+        </div>
+*/
