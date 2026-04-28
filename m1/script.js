@@ -2330,6 +2330,7 @@ async function loadReferralTiers() {
     </div>
     ${tiersHTML}`;
 }
+document.getElementById("statusBadge").innerHTML = currentTier.name
 
 // ─── CLAIM TIER BONUS ─────────────────────────────────────
 window.claimTierBonus = async (level, btn) => {
