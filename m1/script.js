@@ -975,7 +975,7 @@ async function loadMyInvestments() {
   const totalDailyProfit = activeInvestments.reduce((sum, d) => sum + Number(d.dailyIncome), 0);
   
   document.getElementById("totalActiveInvestment").innerHTML=`x${activeInvestments.length}`;
-  document.getElementById("totalDailyProfit").innerHTML=`🪙${totalDailyProfit.toLocaleString()} FEX`;
+  document.getElementById("totalDailyProfit").innerHTML=`🪙${totalDailyProfit.toLocaleString()}`;
   
   console.group('%c[FluxMall] Investment Summary', 'color:#05cd99;font-weight:700;font-size:13px;');
   console.log(`%c Total Active Plans   : ${activeInvestments.length}`, 'color:#f0f2f8;font-size:12px;');
