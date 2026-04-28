@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
   referralAwarded: { type: Boolean, default: false },
   hasDeposited:    { type: Boolean, default: false },
   referralCompleted: { type: Boolean, default: false },
+referralTierClaimed: { type: [Number], default: [] },
 
   // Account Status
   status:          { type: String, default: 'Active', enum: ['Active', 'Banned'] },

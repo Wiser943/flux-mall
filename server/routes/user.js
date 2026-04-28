@@ -1176,6 +1176,121 @@ router.get('/team', requireAuth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ─── REFERRAL TIER CONFIG ─────────────────────────────────
+const REFERRAL_TIERS = [
+  { level: 1, name: 'Starter', min: 0, max: 4, rewardPerRef: 800, claimBonus: 500, fexBonus: 714 },
+  { level: 2, name: 'Grower', min: 5, max: 14, rewardPerRef: 1200, claimBonus: 1000, fexBonus: 1428 },
+  { level: 3, name: 'Champion', min: 15, max: 49, rewardPerRef: 1800, claimBonus: 2000, fexBonus: 2857 },
+  { level: 4, name: 'Ambassador', min: 50, max: Infinity, rewardPerRef: 2500, claimBonus: 5000, fexBonus: 7142 },
+];
+
+function getTier(activeReferrals) {
+  return REFERRAL_TIERS.find(t => activeReferrals >= t.min && activeReferrals <= t.max) || REFERRAL_TIERS[0];
+}
+
+// ─── GET /api/user/referral-tier ─────────────────────────
+router.get('/referral-tier', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('emailVerified referralTierClaimed');
+    
+    // Count only active (completed) referrals
+    const activeReferrals = await User.countDocuments({
+      referrerId: req.user._id.toString(),
+      referralCompleted: true
+    });
+    
+    const currentTier = getTier(activeReferrals);
+    const claimedLevels = user.referralTierClaimed || [];
+    
+    const tiers = REFERRAL_TIERS.map(t => {
+      const isCurrentOrPast = activeReferrals >= t.min;
+      const isCurrent = currentTier.level === t.level;
+      const isClaimed = claimedLevels.includes(t.level);
+      const canClaim = isCurrentOrPast && !isClaimed && user.emailVerified;
+      
+      return {
+        ...t,
+        isCurrent,
+        isReached: isCurrentOrPast,
+        isClaimed,
+        canClaim,
+      };
+    });
+    
+    res.json({
+      success: true,
+      activeReferrals,
+      currentTier,
+      tiers,
+      emailVerified: user.emailVerified,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── POST /api/user/claim-tier-bonus ─────────────────────
+router.post('/claim-tier-bonus', requireAuth, async (req, res) => {
+  try {
+    if (!requireVerified(req, res)) return;
+    
+    const { level } = req.body;
+    if (!level) return res.status(400).json({ error: 'Level is required.' });
+    
+    const tier = REFERRAL_TIERS.find(t => t.level === Number(level));
+    if (!tier) return res.status(400).json({ error: 'Invalid tier level.' });
+    
+    const user = await User.findById(req.user._id).select('emailVerified referralTierClaimed referrerId');
+    
+    // Check already claimed
+    const claimedLevels = user.referralTierClaimed || [];
+    if (claimedLevels.includes(tier.level)) {
+      return res.status(400).json({ error: `You already claimed the ${tier.name} bonus.` });
+    }
+    
+    // Check user has enough active referrals to be at this tier
+    const activeReferrals = await User.countDocuments({
+      referrerId: req.user._id.toString(),
+      referralCompleted: true
+    });
+    
+    if (activeReferrals < tier.min) {
+      return res.status(403).json({
+        error: `You need at least ${tier.min} active referrals to claim this bonus. You have ${activeReferrals}.`
+      });
+    }
+    
+    // Credit the bonus
+    await User.findByIdAndUpdate(req.user._id, {
+      $inc: { ib: tier.fexBonus },
+      $push: { referralTierClaimed: tier.level }
+    });
+    
+    await Activity.create({
+      userId: req.user._id,
+      type: 'Tier Bonus',
+      amount: tier.fexBonus,
+      desc: `${tier.name} tier bonus claimed — 🪙${tier.fexBonus.toLocaleString()} FEX`
+    });
+    
+    await Notification.create({
+      userId: req.user._id,
+      title: `🏆 ${tier.name} Bonus Claimed!`,
+      message: `Congratulations! You claimed your ${tier.name} referral tier bonus of 🪙${tier.fexBonus.toLocaleString()} FEX (≈ ₦${tier.claimBonus.toLocaleString()})!`
+    });
+    
+    res.json({
+      success: true,
+      message: `🎉 ${tier.name} bonus of 🪙${tier.fexBonus.toLocaleString()} FEX credited!`,
+      fexBonus: tier.fexBonus
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // ─── POST /api/user/spin ─────────────────────────────────
 router.post('/spin', requireAuth, async (req, res) => {
   try {

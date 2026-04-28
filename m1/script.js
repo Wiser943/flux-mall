@@ -117,6 +117,7 @@ async function init() {
   updateVerificationUI();
   fetchUserHistory();
   pollNotifications();
+  loadReferralTiers()
   
   const today = new Date().toDateString();
   if (currentUserData.lastCheckIn === today) {
@@ -2262,3 +2263,92 @@ function utShowToast(msg, type = 'success') {
     setTimeout(() => t.remove(), 300);
   }, 4000);
 }
+
+
+
+// ─── REFERRAL TIERS ───────────────────────────────────────
+async function loadReferralTiers() {
+  const card = document.getElementById('referralTierCard');
+  if (!card) return;
+  
+  const data = await api('/api/user/referral-tier');
+  if (!data?.success) return;
+  
+  const { tiers, activeReferrals, currentTier, emailVerified } = data;
+  
+  const tierColors = {
+    1: 'var(--accent2)',
+    2: 'var(--green)',
+    3: '#f6ad55',
+    4: 'var(--yellow)',
+  };
+  
+  const tiersHTML = tiers.map(t => {
+    const isCurrent = t.isCurrent;
+    const isReached = t.isReached;
+    const color = tierColors[t.level];
+    const maxLabel = t.max === Infinity ? `${t.min}+` : `${t.min}–${t.max}`;
+    
+    let claimBtn = '';
+    if (!emailVerified) {
+      claimBtn = `<button class="btn btn-sm" disabled style="font-size:11px;opacity:0.5;margin-top:8px;">Verify email to claim</button>`;
+    } else if (t.isClaimed) {
+      claimBtn = `<button class="btn btn-sm" disabled style="font-size:11px;background:var(--green);color:#fff;margin-top:8px;opacity:0.7;">✅ Claimed</button>`;
+    } else if (t.canClaim) {
+      claimBtn = `<button class="btn btn-sm btn-primary" style="font-size:11px;margin-top:8px;" onclick="claimTierBonus(${t.level}, this)">🎁 Claim ₦${t.claimBonus.toLocaleString()}</button>`;
+    } else {
+      claimBtn = `<button class="btn btn-sm" disabled style="font-size:11px;opacity:0.5;margin-top:8px;">🔒 ${t.min} refs needed</button>`;
+    }
+    
+    return `
+      <div class="ref-level" style="${isCurrent ? 'border-color:rgba(108,99,255,0.3);background:var(--accent-glow);' : ''}">
+        <div class="ref-level-num" style="color:${color};">L${t.level}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;">
+            ${t.name}
+            ${isCurrent ? `<span style="font-size:11px;color:var(--green);">• Current</span>` : ''}
+            ${isReached && !isCurrent ? `<span style="font-size:11px;color:var(--text3);">• Passed</span>` : ''}
+          </div>
+          <div class="text-xs">${maxLabel} active referrals</div>
+          ${claimBtn}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700;color:${color};">
+            ₦${t.rewardPerRef.toLocaleString()}/ref
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">
+            Bonus: ₦${t.claimBonus.toLocaleString()}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+  
+  card.innerHTML = `
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px;">Referral Tiers</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:16px;">
+      You have <strong>${activeReferrals}</strong> active referral${activeReferrals !== 1 ? 's' : ''} · 
+      Current tier: <strong style="color:var(--accent2);">${currentTier.name}</strong>
+    </div>
+    ${tiersHTML}`;
+}
+
+// ─── CLAIM TIER BONUS ─────────────────────────────────────
+window.claimTierBonus = async (level, btn) => {
+  btn.disabled = true;
+  btn.innerText = 'Claiming...';
+  
+  const data = await api('/api/user/claim-tier-bonus', {
+    method: 'POST',
+    body: JSON.stringify({ level })
+  });
+  
+  if (data?.success) {
+    showAlert(data.message, 'success', 'ri-check-line', 'Bonus Claimed!');
+    refreshBalance();
+    loadReferralTiers(); // re-render to show claimed state
+  } else {
+    showAlert(data?.error || 'Could not claim bonus.', 'error', 'ri-close-line', 'Error');
+    btn.disabled = false;
+    btn.innerText = `🎁 Claim`;
+  }
+};
