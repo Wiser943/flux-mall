@@ -123,12 +123,12 @@ textarea {
     overflow: hidden;
     overflow-y: auto;
 }
-
+/*
 .sidebar {
     transition: transform 0.4s ease;
     z-index: 1000;
-    /* Ensure it stays above the .page content */
-}
+    /* Ensure it stays above the .page content *
+}*/
 
 .sidebar.hide-scroll {
     transform: translateY(400%);
@@ -359,70 +359,13 @@ textarea {
     padding: 8px 12px;
     border-radius: 25px;
 }
-
+/*
 .content main {
     width: 100%;
     padding: 36px 24px;
     max-height: calc(100vh - 56px);
 }
-
-.content main .insights {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    grid-gap: 24px;
-    margin-top: 36px;
-}
-
-.content main .insights li {
-    padding: 24px;
-    background: var(--card);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    grid-gap: 24px;
-    cursor: pointer;
-}
-
-.content main .insights li .bx {
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    font-size: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.content main .insights li:nth-child(1) .bx {
-    background: var(--light-primary);
-    color: var(--blue);
-}
-
-.content main .insights li:nth-child(2) .bx {
-    background: var(--light-warning);
-    color: var(--yellow);
-}
-
-.content main .insights li:nth-child(3) .bx {
-    background: var(--light-success);
-    color: var(--success);
-}
-
-.content main .insights li:nth-child(4) .bx {
-    background: var(--light-danger);
-    color: var(--danger);
-}
-
-.content main .insights li .info h3 {
-    font-size: 24px;
-    font-weight: 600;
-    color: var(--text);
-}
-
-.content main .insights li .info p {
-    color: var(--text);
-}
-
+*/
 
 .login-container {
     width: 100%;
@@ -597,23 +540,6 @@ textarea {
         width: 100%;
         left: 0;
     }
-    
-    
-    .content main .insights {
-        grid-template-columns: 1fr;
-    }
-    
-    .content main .bottom-data .header {
-        min-width: 340px;
-    }
-    
-    .content main .bottom-data .orders table {
-        min-width: 340px;
-    }
-    
-    .content main .bottom-data .reminders .task-list {
-        min-width: 340px;
-    }
 }
 
 /* ── PAGE HEADER ───────────────────────────────────────── */
@@ -782,7 +708,6 @@ textarea {
     cursor: pointer;
 }
 
-/* ── TABLE ─────────────────────────────────────────────── */
 /* ── TABLE ─────────────────────────────────────────────────── */
 .table-wrap {
     overflow-x: auto;
@@ -1123,9 +1048,7 @@ tbody td {
     .page-header h1 {
         font-size: 17px;
     }
-}
 
-@media (max-width: 400px) {
     .tab-btn span {
         display: none;
     }
@@ -1385,13 +1308,56 @@ tbody td {
     
     .shares-grid {
         grid-template-columns: 1fr;
+    }    .tasks-grid {
+        grid-template-columns: 1fr;
     }
+    
+    .toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .toolbar .search-box {
+        min-width: unset;
+    }
+    
     
     thead th:nth-child(4),
     tbody td:nth-child(4),
     thead th:nth-child(5),
     tbody td:nth-child(5) {
         display: none;
+    }
+    
+        .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .tabs-header {
+        gap: 2px;
+        padding: 4px 4px 0;
+    }
+    
+    .tab-btn {
+        font-size: 11px;
+        padding: 8px 4px;
+    }
+    
+    .filter-select,
+    .btn.btn-outline {
+        display: none
     }
 }
 
@@ -1772,62 +1738,6 @@ tbody td {
     }
 }
 
-@media(max-width:600px) {
-    .stat-strip {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .tasks-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .toolbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-    
-    .toolbar .search-box {
-        min-width: unset;
-    }
-    
-    thead th:nth-child(4),
-    tbody td:nth-child(4),
-    thead th:nth-child(5),
-    tbody td:nth-child(5) {
-        display: none;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-    
-    .header-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-    
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-    
-    .tabs-header {
-        gap: 2px;
-        padding: 4px 4px 0;
-    }
-    
-    .tab-btn {
-        font-size: 11px;
-        padding: 8px 4px;
-    }
-    
-    .filter-select,
-    .btn.btn-outline {
-        display: none
-    }
-}
 /* --- CHARTS --- */
 .charts-grid {
     display: grid;

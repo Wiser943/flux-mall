@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════
    LAYOUT
-══════════════════════════════════════ */
+══════════════════════════════════════ *
 .page-wrap {
   max-width: 960px;
   margin: 0 auto;
@@ -1537,32 +1537,9 @@ select.form-input {
   }
 }
 
-
-
-@media screen and (max-width: 768px) {
-  #dashboard.status .items-list {
-    flex-direction: column;
-  }
-  
-  #dashboard .status .items-list .item {
-    background: #e0f2fe;
-    width: 100%;
-    padding: 20px;
-    border-radius: 18px;
-  }
-  
-  #dashboard .bottom-container .prog-status {
-    width: 100%;
-  }
-}
-
-
-
-
 /* ══════════════════════════════════════
    CONFIRMATION MODAL
 ══════════════════════════════════════ */
-.modal-overlay,
 .confirm-overlay {
   position: fixed;
   inset: 0;
