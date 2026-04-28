@@ -964,9 +964,32 @@ async function loadMyInvestments() {
     container.innerHTML = "<p style='text-align:center;color:gray;'>No active investments yet.</p>";
     return;
   }
+  
+  // ─── INVESTMENT STATS CONSOLE LOG ─────────────────────
+  const now = new Date();
+  const activeInvestments = data.investments.filter(d => {
+    const daysPassed = Math.floor((now - new Date(d.purchaseDate)) / (1000 * 60 * 60 * 24));
+    return daysPassed < d.duration && d.status === 'active';
+  });
+  
+  const totalDailyProfit = activeInvestments.reduce((sum, d) => sum + Number(d.dailyIncome), 0);
+  
+  console.group('%c[FluxMall] Investment Summary', 'color:#05cd99;font-weight:700;font-size:13px;');
+  console.log(`%c Total Active Plans   : ${activeInvestments.length}`, 'color:#f0f2f8;font-size:12px;');
+  console.log(`%c Total Daily Profit   : 🪙${totalDailyProfit.toLocaleString()} FEX`, 'color:#05cd99;font-size:12px;font-weight:600;');
+  activeInvestments.forEach((d, i) => {
+    const daysPassed = Math.floor((now - new Date(d.purchaseDate)) / (1000 * 60 * 60 * 24));
+    const remaining = d.duration - daysPassed;
+    console.log(
+      `%c  [${i + 1}] ${d.shareName?.toUpperCase()} — Daily: 🪙${Number(d.dailyIncome).toLocaleString()} FEX · ${remaining} days left`,
+      'color:#a3adc2;font-size:11px;'
+    );
+  });
+  console.groupEnd();
+  // ──────────────────────────────────────────────────────
+  
   data.investments.forEach(d => {
     const purchaseDate = new Date(d.purchaseDate);
-    const now = new Date();
     const daysPassed = Math.floor(Math.abs(now - purchaseDate) / (1000 * 60 * 60 * 24));
     const remaining = d.duration - daysPassed;
     const progressPct = Math.min(100, (daysPassed / d.duration) * 100);
