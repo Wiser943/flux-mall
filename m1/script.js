@@ -2297,7 +2297,7 @@ async function loadReferralTiers() {
     } else if (t.canClaim) {
       claimBtn = `<button class="btn btn-sm btn-primary" style="font-size:11px;margin-top:8px;" onclick="claimTierBonus(${t.level}, this)">🎁 Claim ₦${t.claimBonus.toLocaleString()}</button>`;
     } else {
-      claimBtn = `<button class="btn btn-sm" disabled style="font-size:11px;opacity:0.5;margin-top:8px;">🔒 ${t.min} refs needed</button>`;
+      claimBtn = `<div class="text xs" disabled style="opacity:0.5;">🔒 ${t.min} refs needed</div>`;
     }
     
     return `
@@ -2309,7 +2309,7 @@ async function loadReferralTiers() {
             ${isCurrent ? `<span style="font-size:11px;color:var(--green);">• Current</span>` : ''}
             ${isReached && !isCurrent ? `<span style="font-size:11px;color:var(--text3);">• Passed</span>` : ''}
           </div>
-          <div class="text-xs">${claimBtn}</div>
+          ${claimBtn}
         </div>
         <div style="text-align:right;">
           <div style="font-weight:700;color:${color};">
