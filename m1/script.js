@@ -974,6 +974,9 @@ async function loadMyInvestments() {
   
   const totalDailyProfit = activeInvestments.reduce((sum, d) => sum + Number(d.dailyIncome), 0);
   
+  document.getElementById("totalActiveInvestment").innerHTML=`x${activeInvestments.length}`;
+  document.getElementById("totalDailyProfit").innerHTML=`🪙${totalDailyProfit.toLocaleString()} FEX`;
+  
   console.group('%c[FluxMall] Investment Summary', 'color:#05cd99;font-weight:700;font-size:13px;');
   console.log(`%c Total Active Plans   : ${activeInvestments.length}`, 'color:#f0f2f8;font-size:12px;');
   console.log(`%c Total Daily Profit   : 🪙${totalDailyProfit.toLocaleString()} FEX`, 'color:#05cd99;font-size:12px;font-weight:600;');
@@ -2355,7 +2358,7 @@ async function loadReferralTiers() {
     </div>
     ${tiersHTML}`;
 }
-document.getElementById("statusBadge").innerHTML = currentTier.name;
+document.getElementById("statusBadge").innerHTML = `${currentTier.name}`;
 
 // ─── CLAIM TIER BONUS ─────────────────────────────────────
 window.claimTierBonus = async (level, btn) => {
