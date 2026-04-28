@@ -130,6 +130,8 @@ async function init() {
 function renderUserUI() {
   const u = currentUserData;
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
+  document.querySelectorAll('.userEmail').forEach(el => el.innerHTML = u.email);
+
   document.querySelectorAll('.avtr').forEach(el => {
     el.innerHTML = u.username?.slice(0, 1).toUpperCase() || '??';
   });
