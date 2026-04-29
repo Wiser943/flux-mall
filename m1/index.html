@@ -664,7 +664,7 @@
                 <span class="qa-btn" onclick="setAmount('depositAmount','50000')">₦50,000</span>
               </div>
             </div>
-
+            
             <button id="rechargeBtn" class="btn btn-primary w-full"><i class="ri-bank-card-line"></i> Proceed to Payment</button>
           </div>
           
@@ -691,7 +691,7 @@
         </div>
         
         <div class="grid-2">
-          
+          <!---
           <div style="max-width:400px;margin:20px auto;padding:20px;border-radius:12px;background:#fff;box-shadow:0 4px 15px rgba(0,0,0,0.1);font-family:sans-serif;">
             <h3 style="margin-top:0;color:#2b3674;">🏦 Add Bank Account</h3>
             
@@ -726,7 +726,7 @@
             <button onclick="handleSave()" style="width:100%;padding:14px;background:#4318ff;color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;">
               Save Bank Details
             </button>
-          </div>
+          </div>-->
           
           <div class="card">
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:20px;">New Withdrawal</div>
@@ -748,36 +748,6 @@
           </div>
           
           <div id="savedBanksContainer"></div>
-          
-          <div style="display:flex;flex-direction:column;gap:16px;">
-            <div class="card">
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">Saved Banks</div>
-              <div class="txn-item" style="cursor:pointer;" onclick="showAlert('GTBank ****4921 selected as withdrawal destination.','🏦','success')">
-                <div class="txn-icon credit">🏦</div>
-                <div class="txn-info">
-                  <div class="txn-name">GTBank</div>
-                  <div class="txn-date">**** **** 4921</div>
-                </div>
-                <span class="badge success">Default</span>
-              </div>
-              <div class="txn-item" style="cursor:pointer;" onclick="showAlert('Access Bank ****7731 selected as withdrawal destination.','🏦','success')">
-                <div class="txn-icon credit">🏦</div>
-                <div class="txn-info">
-                  <div class="txn-name">Access Bank</div>
-                  <div class="txn-date">**** **** 7731</div>
-                </div>
-              </div>
-              <button class="btn btn-ghost btn-sm mt-4" style="margin-top:12px;" onclick="addNewBank()"><i class="ri-add-line"></i> Add New Bank</button>
-
-                <br /><br /><br />
-              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;">Withdrawal Limits</div>
-              <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
-                
-                <div class="flex-between"><span style="color:var(--text2)">Minimum</span><span style="font-weight:600;color:var(--green);">₦4,000</span></div>
-                <div class="flex-between"><span style="color:var(--text2)">Fee</span><span style="font-weight:600;">₦0 (Free)</span></div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       

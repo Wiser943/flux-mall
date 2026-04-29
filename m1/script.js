@@ -877,7 +877,7 @@ function addNewBank() {
     onCancel: function () {}
   });
 }
-
+renderSavedBanks();
 
 // ─── BANK SYNC ────────────────────────────────────────────
 async function initBankSync() {
