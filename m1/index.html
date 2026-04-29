@@ -744,10 +744,20 @@
               </div>
             </div>
             
-            <button class="btn btn-primary w-full" onclick="showAlert('Withdrawal request submitted successfully!','success')"><i class="ri-arrow-up-circle-line"></i> Withdraw Now</button>
+            <button id="withdrawBtn" class="btn btn-primary w-full" onclick="handleWithdrawalSubmit()"><i class="ri-arrow-up-circle-line"></i> Withdraw Now</button>
           </div>
           
           <div id="savedBanksContainer"></div>
+          <div class="card" style="max-height: 600px;">
+            <div class="flex-between mb-4">
+              <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Most Recent</div>
+              <a class="btn btn-ghost btn-sm" href="#transactions" onclick="initTransactions();">View All <i class="ri-arrow-right-line"></i></a>
+            </div>
+            <div id="withdrawList" style="overflow-y: scroll;">
+              <small class="loading">_No recent withdrawal</small>
+            </div>
+          </div>
+          
         </div>
       </div>
       
