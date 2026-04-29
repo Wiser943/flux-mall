@@ -131,7 +131,7 @@ function renderUserUI() {
   const u = currentUserData;
   document.querySelectorAll('.userName').forEach(el => el.innerHTML = u.username?.substring(0, 10));
   document.querySelectorAll('.userEmail').forEach(el => el.innerHTML = u.email);
-
+  
   document.querySelectorAll('.avtr').forEach(el => {
     el.innerHTML = u.username?.slice(0, 1).toUpperCase() || '??';
   });
@@ -736,15 +736,15 @@ window.updateWithdrawPreview = () => {
 function renderSavedBanks() {
   const container = document.getElementById('savedBanksContainer');
   if (!container) return;
-
-  const banks          = currentUserData.bankDetails ? [currentUserData.bankDetails] : [];
+  
+  const banks = currentUserData.bankDetails ? [currentUserData.bankDetails] : [];
   const isMasterLocked = window.paymentConfig?.globalBankLock || false;
-
-  const bankRows = banks.length
-    ? banks.map((b, i) => {
-        const masked    = '**** **** ' + String(b.accountNumber).slice(-4);
-        const isDefault = i === 0;
-        return `
+  
+  const bankRows = banks.length ?
+    banks.map((b, i) => {
+      const masked = '**** **** ' + String(b.accountNumber).slice(-4);
+      const isDefault = i === 0;
+      return `
           <div class="txn-item" style="cursor:pointer;"
                onclick="selectBank('${b.bankName}', '${masked}')">
             <div class="txn-icon credit">🏦</div>
@@ -754,16 +754,16 @@ function renderSavedBanks() {
             </div>
             ${isDefault ? '<span class="badge success">Default</span>' : ''}
           </div>`;
-      }).join('')
-    : `<div style="color:var(--text3);font-size:13px;padding:8px 0;">
+    }).join('') :
+    `<div style="color:var(--text3);font-size:13px;padding:8px 0;">
          No bank account saved yet.
        </div>`;
-
+  
   // If admin locked binding, Add button fires an alert instead
-  const addBtnHandler = isMasterLocked
-    ? `onclick="showAlert('Bank binding is currently disabled. Please contact support.','warning','ri-error-warning-line','Feature Disabled')"`
-    : `onclick="addNewBank()"`;
-
+  const addBtnHandler = isMasterLocked ?
+    `onclick="showAlert('Bank binding is currently disabled. Please contact support.','warning','ri-error-warning-line','Feature Disabled')"` :
+    `onclick="addNewBank()"`;
+  
   container.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:16px;">
       <div class="card">
@@ -821,7 +821,7 @@ function addNewBank() {
     );
     return;
   }
-
+  
   showConfirm({
     title: 'Bind Bank Account',
     message: 'Please use accurate details to avoid issues with payouts.',
@@ -834,7 +834,7 @@ function addNewBank() {
         <label>Account Number</label>
         <input type="text" id="newAccNumber" placeholder="Enter 10-digit account number"
                maxlength="10" inputmode="numeric"
-               oninput="this.value=this.value.replace(/\\D/g,'')">
+               oninput="this.value=this.value.replace(/\\D/g'','')">
       </div>
       <div class="form-group">
         <label>Account Name</label>
@@ -843,24 +843,24 @@ function addNewBank() {
     `,
     yesText: 'Bind Account',
     noText: 'Cancel',
-    onConfirm: async function () {
+    onConfirm: async function() {
       if (_addBankInFlight) return;
-
-      const bankName  = document.getElementById('newBankName')?.value.trim();
+      
+      const bankName = document.getElementById('newBankName')?.value.trim();
       const accNumber = document.getElementById('newAccNumber')?.value.trim();
-      const accName   = document.getElementById('newAccName')?.value.trim();
-
-      if (!bankName)                   return showAlert('Please enter a bank name.',                  'warning', 'ri-close-line', 'Invalid Input');
-      if (!/^\d{10}$/.test(accNumber)) return showAlert('Account number must be exactly 10 digits.',  'warning', 'ri-close-line', 'Invalid Input');
-      if (!accName)                    return showAlert('Please enter your account name.',             'warning', 'ri-close-line', 'Invalid Input');
-
+      const accName = document.getElementById('newAccName')?.value.trim();
+      
+      if (!bankName) return showAlert('Please enter a bank name.', 'warning', 'ri-close-line', 'Invalid Input');
+      if (!/^\d{10}$/.test(accNumber)) return showAlert('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
+      if (!accName) return showAlert('Please enter your account name.', 'warning', 'ri-close-line', 'Invalid Input');
+      
       _addBankInFlight = true;
       try {
         const data = await api('/api/user/bank-details', {
           method: 'PUT',
           body: JSON.stringify({ bankName, accountNumber: accNumber, accountName: accName })
         });
-
+        
         if (data?.success) {
           showAlert('Bank account bound successfully!', 'info', 'ri-check-line', 'Success');
           currentUserData.bankDetails = { bankName, accountNumber: accNumber, accountName: accName };
@@ -872,27 +872,27 @@ function addNewBank() {
         showAlert('Something went wrong. Please try again.', 'warning', 'ri-close-line', 'Error');
       } finally {
         _addBankInFlight = false;
+        ''
       }
     },
-    onCancel: function () {}
+    onCancel: function() {}
   });
 }
-renderSavedBanks();
 
 // ─── BANK SYNC ────────────────────────────────────────────
 async function initBankSync() {
   const u = currentUserData;
-
+  
   // await loadBanksDropdown(); // Paused — Korapay integration issues
-
+  
   if (u.bankDetails?.accountNumber) {
-    const b  = u.bankDetails;
+    const b = u.bankDetails;
     const an = document.getElementById('accNumber');
     const ac = document.getElementById('accName');
     const bn = document.getElementById('bankName');
-
+    
     if (an) an.value = b.accountNumber || '';
-    if (ac) ac.value = b.accountName   || '';
+    if (ac) ac.value = b.accountName || '';
     if (bn) {
       const match = Array.from(bn.options).find(
         o => o.text === b.bankName || o.value === b.bankCode
@@ -900,25 +900,25 @@ async function initBankSync() {
       if (match) bn.value = match.value;
     }
   }
-
+  
   // Admin global bank lock — still active
   const isMasterLocked = window.paymentConfig?.globalBankLock || false;
-  const saveBtn        = document.getElementById('saveBtn');
-
+  const saveBtn = document.getElementById('saveBtn');
+  
   if (isMasterLocked && u.bankDetails?.accountNumber) {
     ['bankName', 'accNumber', 'accName'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.disabled = true;
     });
     if (saveBtn) {
-      saveBtn.disabled      = true;
-      saveBtn.innerText     = 'Contact support';
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Contact support';
       saveBtn.style.display = 'none';
     }
     const msg = document.getElementById('status-msg');
     if (msg) msg.innerText = 'This feature is currently unavailable';
   }
-
+  
   // Render the saved banks card on init
   renderSavedBanks();
 }
@@ -1026,20 +1026,20 @@ async function verifyAccount(accountNumber) {
 // ─── MANUAL SAVE BANK DETAILS ─────────────────────────────
 window.handleSave = async () => {
   const bankSelect = document.getElementById('bankName');
-  const bankCode   = bankSelect?.value;
-  const bankLabel  = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
-  const aNum       = document.getElementById('accNumber')?.value.trim();
-  const aName      = document.getElementById('accName')?.value.trim();
-
-  if (!bankCode)               return showAlert('Please select a bank.',                     'warning', 'ri-close-line', 'Invalid Input');
-  if (!/^\d{10}$/.test(aNum))  return showAlert('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (!aName)                  return showAlert('Please enter your account name.',            'warning', 'ri-close-line', 'Not Verified');
-
+  const bankCode = bankSelect?.value;
+  const bankLabel = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
+  const aNum = document.getElementById('accNumber')?.value.trim();
+  const aName = document.getElementById('accName')?.value.trim();
+  
+  if (!bankCode) return showAlert('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (!/^\d{10}$/.test(aNum)) return showAlert('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (!aName) return showAlert('Please enter your account name.', 'warning', 'ri-close-line', 'Not Verified');
+  
   const data = await api('/api/user/bank-details', {
     method: 'PUT',
     body: JSON.stringify({ bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName })
   });
-
+  
   if (data?.success) {
     showAlert('Bank details saved successfully!', 'info', 'ri-check-line', 'Success');
     currentUserData.bankDetails = { bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName };
@@ -1159,8 +1159,8 @@ async function loadMyInvestments() {
   
   const totalDailyProfit = activeInvestments.reduce((sum, d) => sum + Number(d.dailyIncome), 0);
   
-  document.getElementById("totalActiveInvestment").innerHTML=`x${activeInvestments.length}`;
-  document.getElementById("totalDailyProfit").innerHTML=`🪙${totalDailyProfit.toLocaleString()}`;
+  document.getElementById("totalActiveInvestment").innerHTML = `x${activeInvestments.length}`;
+  document.getElementById("totalDailyProfit").innerHTML = `🪙${totalDailyProfit.toLocaleString()}`;
   
   console.group('%c[FluxMall] Investment Summary', 'color:#05cd99;font-weight:700;font-size:13px;');
   console.log(`%c Total Active Plans   : ${activeInvestments.length}`, 'color:#f0f2f8;font-size:12px;');
