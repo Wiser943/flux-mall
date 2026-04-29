@@ -168,13 +168,17 @@ async function loadWithdrawals() {
       `₦${Number(d.nairaAmount).toLocaleString()}` :
       `₦${(Number(d.amount) * rate).toLocaleString()}`;
     list.innerHTML += `
-      <div class="history-item">
-        <div class="tx-details">
-          <span class="tx-amount">🪙 ${Number(d.amount).toLocaleString()}</span>
-          <span class="tx-date">${nairaStr} · ${dateStr}</span>
-        </div>
-        <span class="badge ${badgeClass}">${d.status}</span>
-      </div>`;
+      <div class="txn-item">
+        <div class="txn-icon debit">
+        <i class="ri-arrow-up-line"></i>
+      </div>
+            <div class="txn-info">
+        <div class="txn-name" style="font-size:12px">${nairaStr} </div>
+        <div class="txn-date">${d.status}</div>
+      </div>
+      <div class="txn-amount debit">🪙${Number(d.amount).toLocaleString()}
+      </div>
+     </div>`;
   });
 }
 
@@ -1434,7 +1438,7 @@ window.fetchUserHistory = async () => {
         <i class="${typeConfig.icon}"></i>
       </div>
       <div class="txn-info">
-        <div class="txn-name" style="font-size:10px">${item.desc}</div>
+        <div class="txn-name" style="font-size:12px">${item.desc}</div>
         <div class="txn-date">${date}</div>
       </div>
       <div class="txn-amount ${typeConfig.class}">
