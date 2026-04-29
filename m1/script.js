@@ -647,10 +647,6 @@ window.confirmKorapayDeposit = async (reference, fexAmount) => {
   }
 };
 
-function addNewBank() {
-  
-}
-
 
 // ─── WITHDRAWAL ───────────────────────────────────────────
 window.handleWithdrawalSubmit = async () => {
@@ -731,77 +727,250 @@ window.updateWithdrawPreview = () => {
   }
 };
 
-// ─── BANK SYNC ───────────────────────────────────────────
+
+// ─── SAVED BANKS UI ───────────────────────────────────────
+/**
+ * Renders the saved banks card into #savedBanksContainer.
+ * Call on page load and after any successful bank save.
+ */
+function renderSavedBanks() {
+  const container = document.getElementById('savedBanksContainer');
+  if (!container) return;
+
+  const banks          = currentUserData.bankDetails ? [currentUserData.bankDetails] : [];
+  const isMasterLocked = window.paymentConfig?.globalBankLock || false;
+
+  const bankRows = banks.length
+    ? banks.map((b, i) => {
+        const masked    = '**** **** ' + String(b.accountNumber).slice(-4);
+        const isDefault = i === 0;
+        return `
+          <div class="txn-item" style="cursor:pointer;"
+               onclick="selectBank('${b.bankName}', '${masked}')">
+            <div class="txn-icon credit">🏦</div>
+            <div class="txn-info">
+              <div class="txn-name">${b.bankName}</div>
+              <div class="txn-date">${masked}</div>
+            </div>
+            ${isDefault ? '<span class="badge success">Default</span>' : ''}
+          </div>`;
+      }).join('')
+    : `<div style="color:var(--text3);font-size:13px;padding:8px 0;">
+         No bank account saved yet.
+       </div>`;
+
+  // If admin locked binding, Add button fires an alert instead
+  const addBtnHandler = isMasterLocked
+    ? `onclick="showAlert('Bank binding is currently disabled. Please contact support.','warning','ri-error-warning-line','Feature Disabled')"`
+    : `onclick="addNewBank()"`;
+
+  container.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;">
+          Saved Banks
+        </div>
+
+        ${bankRows}
+
+        <button class="btn btn-ghost btn-sm" style="margin-top:12px;" ${addBtnHandler}>
+          <i class="ri-add-line"></i> Add New Bank
+        </button>
+
+        <br /><br />
+
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;">
+          Withdrawal Limits
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+          <div class="flex-between">
+            <span style="color:var(--text2)">Minimum</span>
+            <span style="font-weight:600;color:var(--green);">₦4,000</span>
+          </div>
+          <div class="flex-between">
+            <span style="color:var(--text2)">Fee</span>
+            <span style="font-weight:600;">₦0 (Free)</span>
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+}
+
+/** Called when user taps a saved bank row */
+function selectBank(bankName, masked) {
+  showAlert(
+    `${bankName} ${masked} selected as withdrawal destination.`,
+    'info', 'ri-bank-line', 'Bank Selected'
+  );
+}
+
+
+
+// ─── ADD NEW BANK ─────────────────────────────────────────
+let _addBankInFlight = false; // prevents double-submit
+
+function addNewBank() {
+  // Hard-stop if admin has disabled binding
+  const isMasterLocked = window.paymentConfig?.globalBankLock || false;
+  if (isMasterLocked) {
+    showAlert(
+      'Bank binding is currently disabled. Please contact support.',
+      'warning', 'ri-error-warning-line', 'Feature Disabled'
+    );
+    return;
+  }
+
+  showConfirm({
+    title: 'Bind Bank Account',
+    message: 'Please use accurate details to avoid issues with payouts.',
+    detail: `
+      <div class="form-group">
+        <label>Bank Name</label>
+        <input type="text" id="newBankName" placeholder="e.g. First Bank">
+      </div>
+      <div class="form-group">
+        <label>Account Number</label>
+        <input type="text" id="newAccNumber" placeholder="Enter 10-digit account number"
+               maxlength="10" inputmode="numeric"
+               oninput="this.value=this.value.replace(/\\D/g,'')">
+      </div>
+      <div class="form-group">
+        <label>Account Name</label>
+        <input type="text" id="newAccName" placeholder="Enter your account name">
+      </div>
+    `,
+    yesText: 'Bind Account',
+    noText: 'Cancel',
+    onConfirm: async function () {
+      if (_addBankInFlight) return;
+
+      const bankName  = document.getElementById('newBankName')?.value.trim();
+      const accNumber = document.getElementById('newAccNumber')?.value.trim();
+      const accName   = document.getElementById('newAccName')?.value.trim();
+
+      if (!bankName)                   return showAlert('Please enter a bank name.',                  'warning', 'ri-close-line', 'Invalid Input');
+      if (!/^\d{10}$/.test(accNumber)) return showAlert('Account number must be exactly 10 digits.',  'warning', 'ri-close-line', 'Invalid Input');
+      if (!accName)                    return showAlert('Please enter your account name.',             'warning', 'ri-close-line', 'Invalid Input');
+
+      _addBankInFlight = true;
+      try {
+        const data = await api('/api/user/bank-details', {
+          method: 'PUT',
+          body: JSON.stringify({ bankName, accountNumber: accNumber, accountName: accName })
+        });
+
+        if (data?.success) {
+          showAlert('Bank account bound successfully!', 'info', 'ri-check-line', 'Success');
+          currentUserData.bankDetails = { bankName, accountNumber: accNumber, accountName: accName };
+          renderSavedBanks(); // refresh card immediately
+        } else {
+          showAlert(data?.error || 'Error saving bank details.', 'error', 'ri-close-line', 'Error');
+        }
+      } catch (err) {
+        showAlert('Something went wrong. Please try again.', 'warning', 'ri-close-line', 'Error');
+      } finally {
+        _addBankInFlight = false;
+      }
+    },
+    onCancel: function () {}
+  });
+}
+
+
+// ─── BANK SYNC ────────────────────────────────────────────
 async function initBankSync() {
   const u = currentUserData;
-  await loadBanksDropdown();
+
+  // await loadBanksDropdown(); // Paused — Korapay integration issues
+
   if (u.bankDetails?.accountNumber) {
-    const b = u.bankDetails;
+    const b  = u.bankDetails;
     const an = document.getElementById('accNumber');
     const ac = document.getElementById('accName');
-    if (an) an.value = b.accountNumber || '';
-    if (ac) ac.value = b.accountName || '';
     const bn = document.getElementById('bankName');
+
+    if (an) an.value = b.accountNumber || '';
+    if (ac) ac.value = b.accountName   || '';
     if (bn) {
-      const match = Array.from(bn.options).find(o => o.text === b.bankName || o.value === b.bankCode);
+      const match = Array.from(bn.options).find(
+        o => o.text === b.bankName || o.value === b.bankCode
+      );
       if (match) bn.value = match.value;
     }
   }
+
+  // Admin global bank lock — still active
   const isMasterLocked = window.paymentConfig?.globalBankLock || false;
-  const saveBtn = document.getElementById('saveBtn');
+  const saveBtn        = document.getElementById('saveBtn');
+
   if (isMasterLocked && u.bankDetails?.accountNumber) {
-    ['bankName', 'accNumber', 'accName'].forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+    ['bankName', 'accNumber', 'accName'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = true;
+    });
     if (saveBtn) {
-      saveBtn.disabled = true;
-      saveBtn.innerText = 'Contact support';
+      saveBtn.disabled      = true;
+      saveBtn.innerText     = 'Contact support';
       saveBtn.style.display = 'none';
     }
     const msg = document.getElementById('status-msg');
     if (msg) msg.innerText = 'This feature is currently unavailable';
   }
+
+  // Render the saved banks card on init
+  renderSavedBanks();
 }
 
+
+// ─── BANKS DROPDOWN ───────────────────────────────────────
+/*
 async function loadBanksDropdown() {
+  // Paused — Korapay integration issues
   const select = document.getElementById('bankSelect');
   if (!select) return;
-  select.innerHTML = '<option value="">⏳ Loading banks...</option>';
+  select.innerHTML = '<option value="">Loading banks...</option>';
   try {
     const data = await api('/api/user/banks');
     if (!data?.success || !data.banks?.length) {
-      select.innerHTML = '<option value="">❌ Could not load banks</option>';
+      select.innerHTML = '<option value="">Could not load banks</option>';
       return;
     }
     select.innerHTML = '<option value="">-- Select your Bank --</option>';
     data.banks.forEach(bank => {
-      const opt = document.createElement('option');
-      opt.value = bank.code;
-      opt.text = bank.name;
+      const opt        = document.createElement('option');
+      opt.value        = bank.code;
+      opt.text         = bank.name;
       opt.dataset.name = bank.name;
       select.appendChild(opt);
     });
     const accNum = document.getElementById('accNumber')?.value;
     if (accNum?.length === 10) handleAccNumberInput(accNum);
   } catch (err) {
-    select.innerHTML = '<option value="">❌ Could not load banks</option>';
+    select.innerHTML = '<option value="">Could not load banks</option>';
   }
 }
+*/
 
-// ─── ACCOUNT NUMBER AUTO-VERIFY ──────────────────────────
+
+// ─── ACCOUNT NUMBER AUTO-VERIFY ───────────────────────────
+/*
 let verifyTimer = null;
 
 window.handleAccNumberInput = (value) => {
+  // Paused — Korapay integration issues
   clearTimeout(verifyTimer);
   const statusEl = document.getElementById('verifyStatus');
-  const accName = document.getElementById('accName');
-  if (accName) accName.value = '';
+  const accName  = document.getElementById('accName');
+  if (accName)  accName.value = '';
   if (statusEl) statusEl.innerHTML = '';
   if (value.length !== 10) return;
-  
+
   const bankCode = document.getElementById('bankSelect')?.value;
-  
   if (bankCode) { verifyAccount(value); return; }
-  
-  if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">🔍 Detecting bank...</span>';
+
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">Detecting bank...</span>';
   verifyTimer = setTimeout(async () => {
     try {
       const data = await api('/api/user/resolve-account', {
@@ -809,62 +978,78 @@ window.handleAccNumberInput = (value) => {
         body: JSON.stringify({ accountNumber: value })
       });
       if (data?.success) {
-        if (accName) accName.value = data.accountName;
+        if (accName)  accName.value = data.accountName;
         const bankSelect = document.getElementById('bankSelect');
         if (bankSelect) bankSelect.value = data.bankCode;
-        if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName} · ${data.bankName}</span>`;
+        if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">${data.accountName} · ${data.bankName}</span>`;
       } else {
-        if (statusEl) statusEl.innerHTML = `<span style="color:orange">⚠️ ${data?.error || 'Could not detect bank. Please select manually.'}</span>`;
+        if (statusEl) statusEl.innerHTML = `<span style="color:orange">${data?.error || 'Could not detect bank. Please select manually.'}</span>`;
       }
     } catch (err) {
-      if (statusEl) statusEl.innerHTML = '<span style="color:red">❌ Connection error</span>';
+      if (statusEl) statusEl.innerHTML = '<span style="color:red">Connection error</span>';
     }
   }, 700);
 };
+*/
 
+
+// ─── ACCOUNT VERIFICATION ─────────────────────────────────
+/*
 async function verifyAccount(accountNumber) {
+  // Paused — Korapay integration issues
   const bankSelect = document.getElementById('bankName');
-  const statusEl = document.getElementById('verifyStatus');
-  const accName = document.getElementById('accName');
-  const bankCode = bankSelect?.value;
+  const statusEl   = document.getElementById('verifyStatus');
+  const accName    = document.getElementById('accName');
+  const bankCode   = bankSelect?.value;
+
   if (!bankCode) {
-    if (statusEl) statusEl.innerHTML = '<span style="color:orange">⚠️ Please select a bank first</span>';
+    if (statusEl) statusEl.innerHTML = '<span style="color:orange">Please select a bank first</span>';
     return;
   }
-  if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">🔍 Verifying account...</span>';
+  if (statusEl) statusEl.innerHTML = '<span style="color:var(--primary)">Verifying account...</span>';
+
   const data = await api('/api/user/verify-account', {
     method: 'POST',
     body: JSON.stringify({ accountNumber, bankCode })
   });
   if (data?.success) {
-    if (accName) accName.value = data.accountName;
-    if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">✅ ${data.accountName}</span>`;
+    if (accName)  accName.value = data.accountName;
+    if (statusEl) statusEl.innerHTML = `<span style="color:#10ac84">${data.accountName}</span>`;
   } else {
-    if (accName) accName.value = '';
-    if (statusEl) statusEl.innerHTML = `<span style="color:red">❌ ${data?.error || 'Verification failed'}</span>`;
+    if (accName)  accName.value = '';
+    if (statusEl) statusEl.innerHTML = `<span style="color:red">${data?.error || 'Verification failed'}</span>`;
   }
 }
+*/
 
+
+// ─── MANUAL SAVE BANK DETAILS ─────────────────────────────
 window.handleSave = async () => {
   const bankSelect = document.getElementById('bankName');
-  const bankCode = bankSelect?.value;
-  const bankLabel = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
-  const aNum = document.getElementById('accNumber').value.trim();
-  const aName = document.getElementById('accName').value.trim();
-  if (!bankCode) return showAlert('Please select a bank.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (aNum.length !== 10) return showAlert('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
-  if (!aName) return showAlert('Account not verified yet.', 'warning', 'ri-close-line', 'Not Verified');
+  const bankCode   = bankSelect?.value;
+  const bankLabel  = bankSelect?.options[bankSelect.selectedIndex]?.dataset?.name || '';
+  const aNum       = document.getElementById('accNumber')?.value.trim();
+  const aName      = document.getElementById('accName')?.value.trim();
+
+  if (!bankCode)               return showAlert('Please select a bank.',                     'warning', 'ri-close-line', 'Invalid Input');
+  if (!/^\d{10}$/.test(aNum))  return showAlert('Account number must be exactly 10 digits.', 'warning', 'ri-close-line', 'Invalid Input');
+  if (!aName)                  return showAlert('Please enter your account name.',            'warning', 'ri-close-line', 'Not Verified');
+
   const data = await api('/api/user/bank-details', {
     method: 'PUT',
     body: JSON.stringify({ bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName })
   });
+
   if (data?.success) {
-    showAlert('✅ Bank details saved successfully!', 'info', 'ri-check-line', 'Success');
+    showAlert('Bank details saved successfully!', 'info', 'ri-check-line', 'Success');
     currentUserData.bankDetails = { bankName: bankLabel, bankCode, accountNumber: aNum, accountName: aName };
+    renderSavedBanks();
   } else {
     showAlert(data?.error || 'Error saving bank details.', 'error', 'ri-close-line', 'Error');
   }
 };
+
+
 
 // ─── DEPOSIT AMOUNTS ─────────────────────────────────────
 const amountListDiv = document.getElementById('amountGrid');

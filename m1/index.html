@@ -743,36 +743,11 @@
                 <span class="qa-btn" onclick="setAmount('withdrawAmount','20000')">₦20,000</span>
               </div>
             </div>
-            <div class="form-group">
-              <label>Bank</label>
-              <select>
-                <option>— Select Bank —</option>
-                <option>GTBank</option>
-                <option>Access Bank</option>
-                <option>First Bank</option>
-                <option>UBA</option>
-                <option>Zenith Bank</option>
-                <option>Wema Bank</option>
-                <option>OPay</option>
-                <option>Moniepoint</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Account Number</label>
-              <input type="text" placeholder="Enter 10-digit account number">
-            </div>
-            <div class="form-group">
-              <label>Account Name</label>
-              <input type="text" placeholder="Auto-filled after verification" readonly style="background:var(--bg3);color:var(--text3);">
-            </div>
-            <div class="form-group">
-              <label>Transaction PIN</label>
-              <input type="password" placeholder="Enter your 4-digit PIN" maxlength="4">
-            </div>
+            
             <button class="btn btn-primary w-full" onclick="showAlert('Withdrawal request submitted successfully!','success')"><i class="ri-arrow-up-circle-line"></i> Withdraw Now</button>
           </div>
           
-          
+          <div id="savedBanksContainer"></div>
           
           <div style="display:flex;flex-direction:column;gap:16px;">
             <div class="card">
@@ -792,9 +767,9 @@
                   <div class="txn-date">**** **** 7731</div>
                 </div>
               </div>
-              <button class="btn btn-ghost btn-sm mt-4" style="margin-top:12px;" onclick="addNewBank();showAlert('Add bank feature is coming soon!','info')"><i class="ri-add-line"></i> Add New Bank</button>
+              <button class="btn btn-ghost btn-sm mt-4" style="margin-top:12px;" onclick="addNewBank()"><i class="ri-add-line"></i> Add New Bank</button>
 
-<br /><br /><br />
+                <br /><br /><br />
               <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:12px;">Withdrawal Limits</div>
               <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
                 
