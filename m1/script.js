@@ -1420,8 +1420,11 @@ window.fetchUserHistory = async () => {
     withdrawal: { icon: 'ri-arrow-up-line', class: 'debit' },
   };
   
+  // Show only the 5 most recent entries
+  const recent = data.activity.slice(0, 5);
+  
   list.innerHTML = '';
-  data.activity.forEach(item => {
+  recent.forEach(item => {
     const date = new Date(item.createdAt).toLocaleDateString();
     const typeConfig = config[item.type] || { icon: 'ri-exchange-line', class: 'credit' };
     const div = document.createElement('div');
