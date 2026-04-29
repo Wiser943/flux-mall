@@ -655,7 +655,7 @@ window.handleWithdrawalSubmit = async () => {
   const u = currentUserData;
   
   if (!u.bankDetails?.accountNumber)
-    return showAlert('Please bind your Bank Account in the Profile section first.', 'warning', 'ri-close-line', 'Bank Required');
+    return showAlert('Please Bind your Bank Account first.', 'warning', 'ri-close-line', 'Bank Required');
   if (!u.emailVerified)
     return showAlert('❌ Verification Required! Verify your account first.', 'error', 'ri-close', 'Verify First');
   if (!fexAmount || fexAmount <= 0)
@@ -786,11 +786,11 @@ function renderSavedBanks() {
         <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
           <div class="flex-between">
             <span style="color:var(--text2)">Minimum</span>
-            <span style="font-weight:600;color:var(--green);">₦4,000</span>
+            <span style="font-weight:600;color:var(--green);">🪙3,000</span>
           </div>
           <div class="flex-between">
             <span style="color:var(--text2)">Fee</span>
-            <span style="font-weight:600;">₦0 (Free)</span>
+            <span style="font-weight:600;">2%</span>
           </div>
         </div>
 
