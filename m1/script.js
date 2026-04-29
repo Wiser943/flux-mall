@@ -2542,8 +2542,9 @@ async function loadReferralTiers() {
       Current tier: <strong style="color:var(--accent2);">${currentTier.name}</strong>
     </div>
     ${tiersHTML}`;
+  document.getElementById("statusBadge").innerHTML = `${currentTier.name}`;
+  
 }
-document.getElementById("statusBadge").innerHTML = `${currentTier.name}`;
 
 // ─── CLAIM TIER BONUS ─────────────────────────────────────
 window.claimTierBonus = async (level, btn) => {
