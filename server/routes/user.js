@@ -837,7 +837,7 @@ router.post('/withdraw', requireAuth, async (req, res) => {
     const config = await Settings.findOne({ key: 'config' });
     
     const fexRate = config?.value?.fexRate || 0.7;
-    const minWithdraw = config?.value?.minWithdraw || 2000;
+    const minWithdraw = config?.value?.minWithdraw || 3000;
     const withdrawFee = config?.value?.withdrawFee || 0;
     
     if (!user.bankDetails?.accountNumber)
