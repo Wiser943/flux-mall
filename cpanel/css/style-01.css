@@ -708,7 +708,8 @@ textarea {
     cursor: pointer;
 }
 
-/* ── TABLE ─────────────────────────────────────────────────── */
+/* ── TABLE CONSOLIDATED ────────────────────────────────────── */
+
 .table-wrap {
     overflow-x: auto;
 }
@@ -719,78 +720,73 @@ table {
     font-size: 13px;
 }
 
+/* Header Styles */
 thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     padding: 10px 14px;
-    text-align: left;
-    font-size: 10px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    
+    color: var(--text3);
+    font-size: .7rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text3);
-    border-bottom: 1px solid var(--border);
+    letter-spacing: .07em;
+    text-align: left;
+    
     white-space: nowrap;
-    background: var(--bg);
+    user-select: none;
+    cursor: pointer;
+    transition: color var(--ease);
 }
 
+thead th:hover {
+    color: var(--accent);
+}
+
+thead th:first-child {
+    padding-left: 20px;
+}
+
+/* Sorting Indicators */
+thead th.sort-asc::after { content: ' ↑'; }
+thead th.sort-desc::after { content: ' ↓'; }
+
+/* Row Styles */
 tbody tr {
     border-bottom: 1px solid var(--border);
-    transition: background 0.12s;
+    transition: background var(--ease);
+    cursor: pointer;
 }
 
 tbody tr:last-child {
     border-bottom: none;
 }
 
+/* Row States: Hover & Selection */
 tbody tr:hover {
-    background: rgba(67, 24, 255, 0.02);
+    background: var(--row-hover); /* Priority given to your variable */
 }
 
-tbody td {
+tbody tr.selected, 
+tbody tr.active-row {
+    background: var(--row-selected);
+}
+
+/* Cell Styles */
+td {
     padding: 11px 14px;
+    font-size: .84rem;
+    color: var(--text);
     vertical-align: middle;
 }
 
-
-.table-wrap {
-    overflow-x: auto;
+td:first-child {
+    padding-left: 20px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-}
-
-thead th {
-    padding: 10px 12px;
-    text-align: left;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text3);
-    border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    background: var(--bg);
-}
-
-tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background 0.12s;
-}
-
-tbody tr:last-child {
-    border-bottom: none;
-}
-
-tbody tr:hover {
-    background: rgba(67, 24, 255, 0.02);
-}
-
-tbody td {
-    padding: 10px 12px;
-    vertical-align: middle;
-}
 
 /* ── BADGES ────────────────────────────────────────────── */
 .badge {
