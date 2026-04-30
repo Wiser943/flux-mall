@@ -981,7 +981,7 @@ td:first-child {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 12px;
     border-top: 1px solid var(--border);
     font-size: 12px;
     color: var(--text3);
@@ -1272,12 +1272,12 @@ td:first-child {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 12px;
     border-top: 1px solid var(--border);
     font-size: 12px;
     color: var(--text3);
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 8px;overflow: auto;
 }
 
 .page-btns {
