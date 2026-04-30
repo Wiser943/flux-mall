@@ -432,7 +432,7 @@ function renderDepositsPage() {
       <td>
         <div class="action-group">
           ${i.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
+            <button class="btn btn-success btn-sm d-btn" onclick="event.stopPropagation(); approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
               <i class="ri-check-line"></i> Approve
             </button>
             <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); declineDeposit('${i._id}')">
