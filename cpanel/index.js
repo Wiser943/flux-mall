@@ -4633,12 +4633,12 @@ function atRenderSubsPage() {
           </div>
         </div>
       </td>
+      <td>${proofHtml}</td>
       <td>
         <div style="font-weight:700;font-size:12px;">${s.taskId?.title||'—'}</div>
         <div style="font-size:11px;color:var(--text3);">${s.taskId?.category||''}</div>
       </td>
       <td><span style="font-weight:700;color:var(--primary);">🪙${Number(pts).toLocaleString()}</span></td>
-      <td>${proofHtml}</td>
       <td style="font-size:11px;color:var(--text3);white-space:nowrap;">${date}</td>
       <td>${atStatusBadge(s.status)}</td>
       <td>
