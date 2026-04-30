@@ -380,14 +380,12 @@ window.loadAnalytics = async () => {
   setupCharts();
   renderDepositsPage()
 }
-
 loadAnalytics();
 
 
 function renderDepositsPage() {
   // 1. FIXED: Removed the parentheses from the ID
   const tbody = document.getElementById('depositTableBody'); 
-  
   if (!tbody) {
       console.error("Table body not found!");
       return;
@@ -398,27 +396,23 @@ function renderDepositsPage() {
     hidePagination('deposit');
     return;
   }
-  
   const slice = paginate(_dFiltered, dPage, PER_PAGE);
 
   // 2. Map the data to rows
   tbody.innerHTML = slice.map(i => {
-    // Safety checks for nested data
     const uObj = i.userId || {};
     const userId = uObj._id || i.userId || 'N/A';
     const userName = uObj.username || 'User';
-    
     const date = i.createdAt 
         ? new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) 
         : 'Now';
 
-    const ref = (i.refCode || '').substring(0, 10);
     const fex = Number(i.amount) || 0;
     const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
     
-    // Using a cleaner data-attribute approach for the click event can prevent string breaks
+    // PASSING THE ID ONLY: Much safer than passing a whole JSON object
     return `
-    <tr onclick='viewDepositDetail(${JSON.stringify(i).replace(/'/g, "&apos;")})'>
+    <tr onclick="viewDepositDetail('${i._id}')">
       <td>
         <div class="user-chip">
           <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
@@ -432,7 +426,7 @@ function renderDepositsPage() {
         <div class="amt-fex">🪙 ${fex.toLocaleString()}</div>
         <div class="amt-naira">≈ ₦${naira}</div>
       </td>
-      <td><code style="font-size:11px;color:var(--text3);">${ref}…</code></td>
+      <td><code style="font-size:11px;color:var(--text3);">${(i.refCode || '').substring(0, 10)}…</code></td>
       <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
       <td>${statusBadge(i.status)}</td>
       <td>
@@ -452,7 +446,7 @@ function renderDepositsPage() {
         </div>
       </td>
     </tr>`;
-  }).join('');
+}).join('');
   
   renderPagination('deposit', _dFiltered.length, dPage, (p) => {
     dPage = p;
@@ -460,24 +454,77 @@ function renderDepositsPage() {
   });
 }
 
+window.viewDepositDetail = (id) => {
+  // Find the specific deposit item from your filtered data
+  const i = _dFiltered.find(item => item._id === id);
+  if (!i) return;
 
-window.approveDeposit = async (id, userId, amount, username) => {
+  const uObj = i.userId || {};
+  const userId = uObj._id || i.userId || '';
+  const userName = uObj.username || userId.toString().substring(0, 8) || '—';
+  const fex = Number(i.amount) || 0;
+  const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+  
+  const isPending = i.status === 'pending';
+
   showConfirm({
-    title: 'Approve this Deposit?',
-    msg: 'Approve deposit.Are you certain of this action?',
+    title: '<h3>Deposit Detail</h3>',
+    msg: `
+    <div class="dp-section">Transaction Info</div>
+    <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${userName}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(i.status)}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Amount (FEX)</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Approx. Value</span><span class="dp-info-val">₦${naira}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Reference</span><span class="dp-info-val">${i.refCode || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</span></div>`,
+    
     type: 'warning',
-    yesLabel: 'Approve',
+    yesLabel: isPending ? 'Approve Now' : 'Close',
     onYes: async () => {
-      const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-      if (data?.success) {
-        showToast('Deposit approved — user credited!', 'success');
-        loadDeposits();
-      } else {
-        showToast(data?.error || 'Error approving deposit.', 'error');
+      if (isPending) {
+        // Skip the second confirmation by calling the API part directly
+        await executeApproval(i._id); 
       }
     },
+    icon: false
   });
 };
+
+// This is called from the table button (shows confirm)
+window.approveDeposit = async (id) => {
+  showConfirm({
+    title: 'Approve this Deposit?',
+    msg: 'Are you sure you want to credit this user?',
+    type: 'warning',
+    yesLabel: 'Approve',
+    onYes: () => executeApproval(id)
+  });
+};
+
+// This handles the actual API call and UI refresh
+async function executeApproval(id) {
+  try {
+    const data = await api(`/api/admin/deposits/${id}`, { 
+        method: 'PUT', 
+        body: JSON.stringify({ status: 'success' }) 
+    });
+
+    if (data?.success) {
+      showToast('Deposit approved — user credited!', 'success');
+      // IMPORTANT: Ensure this function re-fetches data and calls renderDepositsPage()
+      if (typeof loadDeposits === 'function') {
+          loadDeposits(); 
+      } else {
+          renderDepositsPage(); 
+      }
+    } else {
+      showToast(data?.error || 'Error approving deposit.', 'error');
+    }
+  } catch (err) {
+    showToast('Network error during approval', 'error');
+    console.error(err);
+  }
+}
 
 window.declineDeposit = async (id) => {
   showConfirm({
@@ -3274,43 +3321,6 @@ window.filterDeposits = () => {
 
 
 */
-
-window.viewDepositDetail = (i) => {
-  // 1. Clean up the data variables
-  const uObj = i.userId || {};
-  const userId = uObj._id || i.userId || '';
-  const userName = uObj.username || userId.toString().substring(0, 8) || '—';
-  const fex = Number(i.amount) || 0;
-  const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
-  
-  const isPending = i.status === 'pending';
-
-  showConfirm({
-    title: '<h3>Deposit Detail</h3>',
-    msg: `
-    <div class="dp-section">Transaction Info</div>
-    <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${userName}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(i.status)}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Amount (FEX)</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Approx. Value</span><span class="dp-info-val">₦${naira}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Reference</span><span class="dp-info-val">${i.refCode || '—'}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Method</span><span class="dp-info-val">${i.method || 'Bank Transfer'}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</span></div>`,
-    
-    type: 'warning',
-    
-    // 2. FIXED: yesLabel should just be a string
-    yesLabel: isPending ? 'Approve Now' : 'Approved',
-    
-    // 3. FIXED: Pass all required arguments to approveDeposit
-    onYes: () => {
-      if (isPending) {
-        approveDeposit(i._id, userId, i.amount, userName);
-      }
-    },
-    icon: false
-  });
-};
 
 
 // ═══════════════════════════════════════════════════════════
