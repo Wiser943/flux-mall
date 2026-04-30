@@ -385,24 +385,40 @@ loadAnalytics();
 
 
 function renderDepositsPage() {
-  const tbody = document.getElementById('(depositTableBody)');
-  if (!tbody) return;
-  if (!_dFiltered.length) {
+  // 1. FIXED: Removed the parentheses from the ID
+  const tbody = document.getElementById('depositTableBody'); 
+  
+  if (!tbody) {
+      console.error("Table body not found!");
+      return;
+  }
+
+  if (!_dFiltered || !_dFiltered.length) {
     setEmpty('depositTableBody', 6, 'No deposits found');
     hidePagination('deposit');
     return;
   }
   
   const slice = paginate(_dFiltered, dPage, PER_PAGE);
+
+  // 2. Map the data to rows
   tbody.innerHTML = slice.map(i => {
-    const date = i.createdAt ? new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Now';
-    const userId = i.userId?._id || i.userId || '';
-    const userName = i.userId?.username || userId.toString().substring(0, 8);
+    // Safety checks for nested data
+    const uObj = i.userId || {};
+    const userId = uObj._id || i.userId || 'N/A';
+    const userName = uObj.username || 'User';
+    
+    const date = i.createdAt 
+        ? new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) 
+        : 'Now';
+
     const ref = (i.refCode || '').substring(0, 10);
-    const fex = Number(i.amount);
+    const fex = Number(i.amount) || 0;
     const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
     
-    return `<tr onclick="viewDepositDetail(${JSON.stringify(i).replace(/"/g,'&quot;')})">
+    // Using a cleaner data-attribute approach for the click event can prevent string breaks
+    return `
+    <tr onclick='viewDepositDetail(${JSON.stringify(i).replace(/'/g, "&apos;")})'>
       <td>
         <div class="user-chip">
           <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
@@ -422,14 +438,14 @@ function renderDepositsPage() {
       <td>
         <div class="action-group">
           ${i.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
+            <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveDeposit('${i._id}','${userId}','${i.amount}','${userName}')">
               <i class="ri-check-line"></i> Approve
             </button>
-            <button class="btn btn-danger btn-sm" onclick="declineDeposit('${i._id}')">
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); declineDeposit('${i._id}')">
               <i class="ri-close-line"></i>
             </button>
           ` : `
-            <button class="btn btn-danger btn-sm" onclick="deleteDeposit('${i._id}')">
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteDeposit('${i._id}')">
               <i class="ri-delete-bin-line"></i>
             </button>
           `}
@@ -443,6 +459,7 @@ function renderDepositsPage() {
     renderDepositsPage();
   });
 }
+
 
 window.approveDeposit = async (id, userId, amount, username) => {
   showConfirm({
