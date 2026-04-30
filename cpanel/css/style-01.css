@@ -123,6 +123,7 @@ textarea {
     overflow: hidden;
     overflow-y: auto;
 }
+
 /*
 .sidebar {
     transition: transform 0.4s ease;
@@ -359,6 +360,7 @@ textarea {
     padding: 8px 12px;
     border-radius: 25px;
 }
+
 /*
 .content main {
     width: 100%;
@@ -751,8 +753,13 @@ thead th:first-child {
 }
 
 /* Sorting Indicators */
-thead th.sort-asc::after { content: ' ↑'; }
-thead th.sort-desc::after { content: ' ↓'; }
+thead th.sort-asc::after {
+    content: ' ↑';
+}
+
+thead th.sort-desc::after {
+    content: ' ↓';
+}
 
 /* Row Styles */
 tbody tr {
@@ -767,10 +774,11 @@ tbody tr:last-child {
 
 /* Row States: Hover & Selection */
 tbody tr:hover {
-    background: var(--row-hover); /* Priority given to your variable */
+    background: var(--row-hover);
+    /* Priority given to your variable */
 }
 
-tbody tr.selected, 
+tbody tr.selected,
 tbody tr.active-row {
     background: var(--row-selected);
 }
@@ -1026,6 +1034,12 @@ td:first-child {
 
 /* ── RESPONSIVE ────────────────────────────────────────── */
 @media (max-width: 600px) {
+    .user-chip .avatar {
+        display: none
+    }
+    
+    ;
+
     .stat-strip {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1044,7 +1058,7 @@ td:first-child {
     .page-header h1 {
         font-size: 17px;
     }
-
+    
     .tab-btn span {
         display: none;
     }
@@ -1304,7 +1318,9 @@ td:first-child {
     
     .shares-grid {
         grid-template-columns: 1fr;
-    }    .tasks-grid {
+    }
+    
+    .tasks-grid {
         grid-template-columns: 1fr;
     }
     
@@ -1326,7 +1342,7 @@ td:first-child {
         display: none;
     }
     
-        .form-row {
+    .form-row {
         grid-template-columns: 1fr;
     }
     
@@ -1783,6 +1799,7 @@ td:first-child {
 .stat-card p i {
     font-size: 22px;
 }
+
 @media(max-width:400px) {
     .tab-btn span {
         display: none;
@@ -1814,13 +1831,12 @@ td:first-child {
         padding: 20px;
         height: 350px;
         width: 350px;
-    }.stats-grid {
-    gap: 6px;
-    margin-bottom: 15px;
-}
-
+    }
+    
+    .stats-grid {
+        gap: 6px;
+        margin-bottom: 15px;
+    }
+    
     
 }
-
-
-
