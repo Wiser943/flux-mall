@@ -3276,26 +3276,42 @@ window.filterDeposits = () => {
 */
 
 window.viewDepositDetail = (i) => {
-  const userName = i.userId?.username || i.userId?.toString().substring(0, 8) || '—';
-  const fex = Number(i.amount);
-  const naira = (fex * 0.7).toLocaleString();
+  // 1. Clean up the data variables
+  const uObj = i.userId || {};
+  const userId = uObj._id || i.userId || '';
+  const userName = uObj.username || userId.toString().substring(0, 8) || '—';
+  const fex = Number(i.amount) || 0;
+  const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
+  
+  const isPending = i.status === 'pending';
+
   showConfirm({
     title: '<h3>Deposit Detail</h3>',
-    msg: `   <div class="dp-section">Transaction Info</div>
+    msg: `
+    <div class="dp-section">Transaction Info</div>
     <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${userName}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(i.status)}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Amount (FEX)</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Approx. Value</span><span class="dp-info-val">₦${naira}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Reference</span><span class="dp-info-val">${i.refCode || '—'}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Method</span><span class="dp-info-val">${i.method || 'Bank Transfer'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</span></div>`,
     
-    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</span>
-    </div>`,
     type: 'warning',
-    yesLabel: 'Approve',
-    onYes: () => approveDeposit(i._id),
+    
+    // 2. FIXED: yesLabel should just be a string
+    yesLabel: isPending ? 'Approve Now' : 'Approved',
+    
+    // 3. FIXED: Pass all required arguments to approveDeposit
+    onYes: () => {
+      if (isPending) {
+        approveDeposit(i._id, userId, i.amount, userName);
+      }
+    },
     icon: false
   });
 };
+
 
 // ═══════════════════════════════════════════════════════════
 // WITHDRAWALS
