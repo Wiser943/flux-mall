@@ -476,7 +476,7 @@ window.viewDepositDetail = (id) => {
     <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${i.createdAt ? new Date(i.createdAt).toLocaleString() : '—'}</span></div>`,
     
     type: 'warning',
-    yesLabel: isPending ? 'Approve Now' : 'Close',
+    yesLabel: isPending ? 'Approve Now' : 'Sanctioned',
     onYes: async () => {
       if (isPending) {
         // Skip the second confirmation by calling the API part directly
