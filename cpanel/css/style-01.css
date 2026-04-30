@@ -1334,12 +1334,12 @@ td:first-child {
         min-width: unset;
     }
     
-    .d-btn,
+    
     thead th:nth-child(4),
     tbody td:nth-child(4)
   /*  thead th:nth-child(5),
     tbody td:nth-child(5) */{
-        display: none!important;
+        display: none;
     }
     
     .form-row {
