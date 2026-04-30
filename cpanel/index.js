@@ -223,25 +223,53 @@ if (toggler) {
 const navItems = document.querySelectorAll('.nav-item');
 
 function switchPageByHash() {
-  const hash = window.location.hash || '#dashboard';
-  //checkAdminSession()
-  const targetId = hash.substring(1);
+  const fullHash = window.location.hash || '#dashboard';
+  
+  // 1. Get the main page ID (removes #, /, and query params)
+  const targetId = fullHash.substring(1).replace(/^\//, '').split(/[?&]/)[0];
   const target = document.getElementById(targetId);
+  
   if (!target) return;
   
+  // 2. Clear previous active states
   allPages.forEach(p => p.classList.remove('active'));
   navItems.forEach(i => i.classList.remove('active'));
+  
+  // 3. Show the target page
   target.classList.add('active');
+  
+  // 4. Highlight the correct sidebar link (FIXED for #user vs #/user)
   navItems.forEach(i => {
-    if (i.getAttribute('href') === hash) i.classList.add('active');
+    const href = i.getAttribute('href');
+    if (!href) return;
+    
+    // Remove # and / from both to compare the "naked" ID
+    const cleanHref = href.substring(1).replace(/^\//, '');
+    
+    if (cleanHref === targetId) {
+      i.classList.add('active');
+    }
   });
   
-  // Lazy-init pages on first visit
-  if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
-  // if (targetId === 'chats') initChatPage();
-  if (targetId === 'shares') refreshAll();
-  if (targetId === 'tasks') refreshAll();
+  // 5. Handle Tab Switching (e.g., #/transactions?type=deposits)
+  if (fullHash.includes('?')) {
+    const queryString = fullHash.split('?')[1];
+    const params = new URLSearchParams(queryString);
+    const tabName = params.get('type');
+    
+    if (tabName) {
+      const tabBtn = document.querySelector(`.tab-btn[onclick*="'${tabName}'"]`);
+      // We pass 'false' as the 3rd argument to switchTab so it doesn't 
+      // infinitely loop the hash change
+      if (tabBtn) {
+        switchTab(tabName, tabBtn, false);
+      }
+    }
+  }
   
+  // 6. Lazy-init calls
+  if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
+  if (targetId === 'transactions') loadTransactions();
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -385,28 +413,28 @@ loadAnalytics();
 
 function renderDepositsPage() {
   // 1. FIXED: Removed the parentheses from the ID
-  const tbody = document.getElementById('depositTableBody'); 
+  const tbody = document.getElementById('depositTableBody');
   if (!tbody) {
-      console.error("Table body not found!");
-      return;
+    console.error("Table body not found!");
+    return;
   }
-
+  
   if (!_dFiltered || !_dFiltered.length) {
     setEmpty('depositTableBody', 6, 'No deposits found');
     hidePagination('deposit');
     return;
   }
   const slice = paginate(_dFiltered, dPage, PER_PAGE);
-
+  
   // 2. Map the data to rows
   tbody.innerHTML = slice.map(i => {
     const uObj = i.userId || {};
     const userId = uObj._id || i.userId || 'N/A';
     const userName = uObj.username || 'User';
-    const date = i.createdAt 
-        ? new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) 
-        : 'Now';
-
+    const date = i.createdAt ?
+      new Date(i.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) :
+      'Now';
+    
     const fex = Number(i.amount) || 0;
     const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
     
@@ -443,7 +471,7 @@ function renderDepositsPage() {
         </div>
       </td>
     </tr>`;
-}).join('');
+  }).join('');
   
   renderPagination('deposit', _dFiltered.length, dPage, (p) => {
     dPage = p;
@@ -455,7 +483,7 @@ window.viewDepositDetail = (id) => {
   // Find the specific deposit item from your filtered data
   const i = _dFiltered.find(item => item._id === id);
   if (!i) return;
-
+  
   const uObj = i.userId || {};
   const userId = uObj._id || i.userId || '';
   const userName = uObj.username || userId.toString().substring(0, 8) || '—';
@@ -463,7 +491,7 @@ window.viewDepositDetail = (id) => {
   const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
   
   const isPending = i.status === 'pending';
-
+  
   showConfirm({
     title: '<h3>Deposit Detail</h3>',
     msg: `
@@ -480,7 +508,7 @@ window.viewDepositDetail = (id) => {
     onYes: async () => {
       if (isPending) {
         // Skip the second confirmation by calling the API part directly
-        await executeApproval(i._id); 
+        await executeApproval(i._id);
       }
     },
     icon: false
@@ -501,18 +529,18 @@ window.approveDeposit = async (id) => {
 // This handles the actual API call and UI refresh
 async function executeApproval(id) {
   try {
-    const data = await api(`/api/admin/deposits/${id}`, { 
-        method: 'PUT', 
-        body: JSON.stringify({ status: 'success' }) 
+    const data = await api(`/api/admin/deposits/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'success' })
     });
-
+    
     if (data?.success) {
       showToast('Deposit approved — user credited!', 'success');
       // IMPORTANT: Ensure this function re-fetches data and calls renderDepositsPage()
       if (typeof loadDeposits === 'function') {
-          loadDeposits(); 
+        loadDeposits();
       } else {
-          renderDepositsPage(); 
+        renderDepositsPage();
       }
     } else {
       showToast(data?.error || 'Error approving deposit.', 'error');
@@ -1608,13 +1636,35 @@ function fillSettings(data) {
   }
 }
 
-function switchTab(name, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('panel-' + name).classList.add('active');
+window.switchTab = function(name, btn,updateUrl=true) {
+  
+  if (updateUrl) {
+  const currentHash = window.location.hash.split('?')[0] || '#dashboard';
+  window.location.hash = `${currentHash}?type=${name}`;
 }
-
+  // 1. UPDATE THE URL (The missing piece)
+  const currentHash = window.location.hash.split('?')[0] || '#dashboard';
+  window.location.hash = `${currentHash}?type=${name}`;
+  
+  // 2. Handle Buttons
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    const foundBtn = document.querySelector(`.tab-btn[onclick*="'${name}'"]`);
+    if (foundBtn) foundBtn.classList.add('active');
+  }
+  
+  // 3. Handle Panels
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  const targetPanel = document.getElementById('panel-' + name);
+  if (targetPanel) {
+    targetPanel.classList.add('active');
+  }
+  
+  // 4. Trigger Data Loading
+  if (name === 'deposits') renderDepositsPage();
+}
 
 async function loadApiKeys() {
   const data = await api('/api/admin/settings/apikeys');
