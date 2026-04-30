@@ -385,7 +385,7 @@ loadAnalytics();
 
 
 function renderDepositsPage() {
-  const tbody = document.getElementById('depositTableBody');
+  const tbody = document.getElementById('(depositTableBody)');
   if (!tbody) return;
   if (!_dFiltered.length) {
     setEmpty('depositTableBody', 6, 'No deposits found');
@@ -402,7 +402,7 @@ function renderDepositsPage() {
     const fex = Number(i.amount);
     const naira = (fex * 0.7).toLocaleString('en-NG', { minimumFractionDigits: 2 });
     
-    return `<tr>
+    return `<tr onclick="viewDepositDetail(${JSON.stringify(i).replace(/"/g,'&quot;')})">
       <td>
         <div class="user-chip">
           <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
@@ -429,9 +429,6 @@ function renderDepositsPage() {
               <i class="ri-close-line"></i>
             </button>
           ` : `
-            <button class="btn btn-ghost btn-sm" onclick="viewDepositDetail(${JSON.stringify(i).replace(/"/g,'&quot;')})">
-              <i class="ri-eye-line"></i>
-            </button>
             <button class="btn btn-danger btn-sm" onclick="deleteDeposit('${i._id}')">
               <i class="ri-delete-bin-line"></i>
             </button>
