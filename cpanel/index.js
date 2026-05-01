@@ -269,7 +269,9 @@ function switchPageByHash() {
   
   // 6. Lazy-init calls
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
-  if (targetId === 'transactions') loadTransactions();
+  if (targetId === 'transactions') { loadDeposits();
+    loadWithdrawals();
+    loadActivity() }
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -407,6 +409,7 @@ window.loadAnalytics = async () => {
   //  allData = data.deposits;
   setupCharts();
   renderDepositsPage()
+  renderWithdrawalsPage()
 }
 loadAnalytics();
 
@@ -3477,9 +3480,9 @@ window.approveWithdrawal = (id) => {
 // The actual API logic
 async function executeWithdrawalApproval(id) {
   try {
-    const data = await api(`/api/admin/withdrawals/${id}`, { 
-      method: 'PUT', 
-      body: JSON.stringify({ status: 'success' }) 
+    const data = await api(`/api/admin/withdrawals/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'success' })
     });
     
     if (data?.success) {
@@ -3529,7 +3532,7 @@ window.viewWithdrawalDetail = (id) => {
   // Find the item in your global filtered array
   const w = _wFiltered.find(item => item._id === id);
   if (!w) return;
-
+  
   const fex = Number(w.amount);
   const rate = w.fexRate || 0.7;
   const net = Number(w.netAmount || (fex * rate));
