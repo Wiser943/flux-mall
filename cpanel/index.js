@@ -495,7 +495,6 @@ window.viewDepositDetail = (id) => {
   showConfirm({
     title: '<h3>Deposit Detail</h3>',
     msg: `
-    <div class="dp-section">Transaction Info</div>
     <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${userName}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(i.status)}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Amount (FEX)</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
@@ -3539,7 +3538,6 @@ window.viewWithdrawalDetail = (id) => {
   showConfirm({
     title: '<h3>Withdrawal Detail</h3>',
     msg: `
-    <div class="dp-section">Transaction Info</div>
     <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${w.username || '—'}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(w.status)}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">FEX Amount</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
