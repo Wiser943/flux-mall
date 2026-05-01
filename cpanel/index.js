@@ -266,18 +266,23 @@ function switchPageByHash() {
       }
     }
   }
-  if(targetId){
-    checkAdminSession();refreshAll();
+  if (targetId) {
+    checkAdminSession();
+    //refreshAll();
   }
   // 6. Lazy-init calls
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
-  /*
+  
   if (targetId === 'transactions') {
     loadDeposits();
     loadWithdrawals();
     loadActivity()
-  }*/
-
+  }
+  if (targetId === 'tasks') {
+    loadInvestments();
+    loadShares();
+    renderInvestmentsPage()
+  }
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -515,7 +520,7 @@ window.viewDepositDetail = (id) => {
     yesLabel: isPending ? 'Approve Now' : 'Sanctioned',
     onYes: async () => {
       if (isPending && typeof closeModal === 'function') closeModal();
-            setTimeout( async() => {
+      setTimeout(async () => {
         await approveDeposit(i._id);
       }, 300);
     },
@@ -530,27 +535,29 @@ window.approveDeposit = async (id) => {
     msg: 'Are you sure you want to credit this user?',
     type: 'warning',
     yesLabel: 'Approve',
-    onYes: async() => {try {
-  const data = await api(`/api/admin/deposits/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify({ status: 'success' })
-  });
-  
-  if (data?.success) {
-    showToast('Deposit approved — user credited!', 'success');
-    // IMPORTANT: Ensure this function re-fetches data and calls renderDepositsPage()
-    if (typeof loadDeposits === 'function') {
-      loadDeposits();
-    } else {
-      renderDepositsPage();
+    onYes: async () => {
+      try {
+        const data = await api(`/api/admin/deposits/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: 'success' })
+        });
+        
+        if (data?.success) {
+          showToast('Deposit approved — user credited!', 'success');
+          // IMPORTANT: Ensure this function re-fetches data and calls renderDepositsPage()
+          if (typeof loadDeposits === 'function') {
+            loadDeposits();
+          } else {
+            renderDepositsPage();
+          }
+        } else {
+          showToast(data?.error || 'Error approving deposit.', 'error');
+        }
+      } catch (err) {
+        showToast('Network error during approval', 'error');
+        console.error(err);
+      }
     }
-  } else {
-    showToast(data?.error || 'Error approving deposit.', 'error');
-  }
-} catch (err) {
-  showToast('Network error during approval', 'error');
-  console.error(err);
-}}
   });
 };
 
@@ -585,32 +592,6 @@ window.deleteDeposit = async (id) => {
 
 
 
-// ══════════════════════════════════════════════════════════
-//  SECTION 8 — WITHDRAWALS (API)
-// ══════════════════════════════════════════════════════════
-
-async function loadWithdrawals() {
-  const data = await api('/api/admin/withdrawals');
-  if (!data?.success) return;
-  const tbody = document.getElementById('withdrawTableBody');
-  if (!tbody) return;
-  tbody.innerHTML = data.withdrawals.map(w => `
-    <tr>
-      <td>${new Date(w.createdAt).toLocaleDateString()}</td>
-      <td>${w.username||w.userId?.toString().substring(0,7)}</td>
-      <td>₦${Number(w.amount).toLocaleString()}</td>
-      <td>₦${Number(w.netAmount).toLocaleString()}</td>
-      <td>${w.bankDetails?.bankName||'--'}</td>
-      <td>${w.bankDetails?.accountNumber||'--'}</td>
-      <td><span class="status-badge ${w.status}">${w.status}</span></td>
-      <td>
-        ${w.status === 'pending' ? `
-          <button class="btn-action" style="background:var(--success)" onclick="approveWithdrawal('${w._id}')">Pay</button>
-          <button class="btn-action" style="background:var(--danger)"  onclick="declineWithdrawal('${w._id}')">✖</button>
-        ` : `<button class="btn-action" style="color:var(--danger);background:transparent" onclick="deleteWithdrawal('${w._id}')">✖</button>`}
-      </td>
-    </tr>`).join('');
-}
 
 // ══════════════════════════════════════════════════════════
 //  SECTION 9 — USER MANAGEMENT (API + Mock UI)
@@ -3475,13 +3456,7 @@ window.approveWithdrawal = (id) => {
     msg: 'Mark this withdrawal as paid? This cannot be undone.',
     type: 'info',
     yesLabel: 'Confirm Payment',
-    onYes: () => executeWithdrawalApproval(id)
-  });
-};
-
-// The actual API logic
-async function executeWithdrawalApproval(id) {
-  try {
+    onYes: async() =>{ try {
     const data = await api(`/api/admin/withdrawals/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ status: 'success' })
@@ -3495,8 +3470,10 @@ async function executeWithdrawalApproval(id) {
     }
   } catch (err) {
     showToast('Network error', 'error');
-  }
-}
+  }}
+  });
+};
+
 
 window.declineWithdrawal = async (id) => {
   showConfirm({
@@ -3554,12 +3531,13 @@ window.viewWithdrawalDetail = (id) => {
     <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</span></div>`,
     
     type: 'warning',
-    yesLabel: isPending ? 'Confirm Payment Sent' : 'Close',
-    onYes: () => {
-      if (isPending) {
-        // Skip the extra "Are you sure" and go straight to the action
-        executeWithdrawalApproval(w._id);
-      }
+    yesLabel: isPending ? 'Confirm Payment Sent' : 'Sanctioned',
+    onYes: async() => {
+        if (isPending && typeof closeModal === 'function') closeModal();
+            setTimeout( async() => {
+        await approveWithdrawal(w._id);
+      }, 300);
+      
     },
     icon: false
   });
