@@ -274,6 +274,10 @@ function switchPageByHash() {
     loadWithdrawals();
     loadActivity()
   }
+  if (targetId === 'tasks') {
+    loadShares();
+    loadInvestments();
+  }
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -510,10 +514,14 @@ window.viewDepositDetail = (id) => {
     type: 'warning',
     yesLabel: isPending ? 'Approve Now' : 'Sanctioned',
     onYes: async () => {
-      if (isPending) {
-        // Skip the second confirmation by calling the API part directly
-        await executeApproval(i._id);
-      }
+      // 1. Close the current "Details" modal first
+      if (isPending && typeof closeModal === 'function') closeModal();
+      
+      // 2. Wait 300ms for the animation to finish, then open the "Confirm Delete" modal
+      setTimeout(() => {
+        await approveDeposit(i._id);
+      }, 300);
+      
     },
     icon: false
   });
@@ -4350,7 +4358,7 @@ window.viewInvestmentDetail = (id) => {
       </div>`,
     type: 'warning',
     yesLabel: 'Delete Investment',
-        // THIS PART IS THE FIX
+    // THIS PART IS THE FIX
     onYes: () => {
       // 1. Close the current "Details" modal first
       if (typeof closeModal === 'function') closeModal();
@@ -4377,7 +4385,7 @@ window.deleteInvestment = async function(id, username) {
         showToast(`Investment removed for ${username}`, 'warning');
         if (typeof loadInvestments === 'function') loadInvestments();
         // Close any open modals
-        if (typeof closeModal === 'function') closeModal(); 
+        if (typeof closeModal === 'function') closeModal();
       } else {
         showToast(res?.error || 'Error removing investment', 'error');
       }
