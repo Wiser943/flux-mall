@@ -4108,9 +4108,6 @@ function renderInvestmentsPage() {
       </td>
       <td>
         <div class="action-group">
-          <button class="btn btn-ghost btn-sm">
-            <i class="ri-eye-line"></i>
-          </button>
           <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteInvestment('${inv._id}','${username}')">
             <i class="ri-delete-bin-line"></i>
           </button>
@@ -4353,16 +4350,22 @@ window.viewInvestmentDetail = (id) => {
       </div>`,
     type: 'warning',
     yesLabel: 'Delete Investment',
+        // THIS PART IS THE FIX
     onYes: () => {
-      // Direct call to delete function
-      deleteInvestment(inv._id, username);
+      // 1. Close the current "Details" modal first
+      if (typeof closeModal === 'function') closeModal();
+      
+      // 2. Wait 300ms for the animation to finish, then open the "Confirm Delete" modal
+      setTimeout(() => {
+        deleteInvestment(inv._id, username);
+      }, 300);
     },
     icon: false
   });
 };
 
 
-async function deleteInvestment(id, username) {
+window.deleteInvestment = async function(id, username) {
   showConfirm({
     title: 'Remove Investment?',
     msg: `Remove <strong>${username}</strong>'s investment? This cannot be undone.`,
@@ -4372,13 +4375,16 @@ async function deleteInvestment(id, username) {
       const res = await api(`/api/admin/purchased-shares/${id}`, { method: 'DELETE' });
       if (res?.success) {
         showToast(`Investment removed for ${username}`, 'warning');
-        loadInvestments();
+        if (typeof loadInvestments === 'function') loadInvestments();
+        // Close any open modals
+        if (typeof closeModal === 'function') closeModal(); 
       } else {
         showToast(res?.error || 'Error removing investment', 'error');
       }
     }
   });
 }
+
 
 // ═══════════════════════════════════════════════════════════
 // IMGBB UPLOAD (reuses your existing function if available)
