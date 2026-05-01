@@ -1636,12 +1636,12 @@ function fillSettings(data) {
   }
 }
 
-window.switchTab = function(name, btn,updateUrl=true) {
+window.switchTab = function(name, btn, updateUrl = true) {
   
   if (updateUrl) {
-  const currentHash = window.location.hash.split('?')[0] || '#dashboard';
-  window.location.hash = `${currentHash}?type=${name}`;
-}
+    const currentHash = window.location.hash.split('?')[0] || '#dashboard';
+    window.location.hash = `${currentHash}?type=${name}`;
+  }
   // 1. UPDATE THE URL (The missing piece)
   const currentHash = window.location.hash.split('?')[0] || '#dashboard';
   window.location.hash = `${currentHash}?type=${name}`;
@@ -3405,7 +3405,8 @@ function filterWithdrawalStatus(status) {
 function renderWithdrawalsPage() {
   const tbody = document.getElementById('withdrawTableBody');
   if (!tbody) return;
-  if (!_wFiltered.length) {
+  
+  if (!_wFiltered || !_wFiltered.length) {
     setEmpty('withdrawTableBody', 7, 'No withdrawals found');
     hidePagination('withdraw');
     return;
@@ -3414,18 +3415,17 @@ function renderWithdrawalsPage() {
   const slice = paginate(_wFiltered, wPage, PER_PAGE);
   tbody.innerHTML = slice.map(w => {
     const date = w.createdAt ? new Date(w.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-    const userName = w.username || w.userId?.toString().substring(0, 8) || '—';
+    const userName = w.username || w.userId?.username || '—';
     const fex = Number(w.amount);
-    const net = Number(w.netAmount || (fex * 0.7));
+    const net = Number(w.netAmount || (fex * (w.fexRate || 0.7)));
     const rate = w.fexRate || 0.7;
     
-    return `<tr>
+    return `
+    <tr onclick="viewWithdrawalDetail('${w._id}')" style="cursor:pointer">
       <td>
         <div class="user-chip">
           <div class="avatar" style="background:${avatarColor(userName)}">${initials(userName)}</div>
-          <div>
-            <div class="username">${userName}</div>
-          </div>
+          <div><div class="username">${userName}</div></div>
         </div>
       </td>
       <td>
@@ -3437,10 +3437,7 @@ function renderWithdrawalsPage() {
         ${w.fee ? `<div class="amt-naira">fee: ₦${Number(w.fee).toLocaleString()}</div>` : ''}
       </td>
       <td>
-        <div class="bank-tag">
-          <i class="ri-bank-line"></i>
-          ${w.bankDetails?.bankName || '—'}
-        </div>
+        <div class="bank-tag"><i class="ri-bank-line"></i> ${w.bankDetails?.bankName || '—'}</div>
         <div class="amt-naira" style="margin-top:3px;">${w.bankDetails?.accountNumber || '—'} · ${w.bankDetails?.accountName || ''}</div>
       </td>
       <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
@@ -3448,17 +3445,17 @@ function renderWithdrawalsPage() {
       <td>
         <div class="action-group">
           ${w.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w._id}')">
+            <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveWithdrawal('${w._id}')">
               <i class="ri-money-dollar-circle-line"></i> Pay
             </button>
-            <button class="btn btn-danger btn-sm" onclick="declineWithdrawal('${w._id}')">
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); declineWithdrawal('${w._id}')">
               <i class="ri-close-line"></i>
             </button>
           ` : `
-            <button class="btn btn-ghost btn-sm" onclick="viewWithdrawalDetail(${JSON.stringify(w).replace(/"/g,'&quot;')})">
+            <button class="btn btn-ghost btn-sm">
               <i class="ri-eye-line"></i>
             </button>
-            <button class="btn btn-danger btn-sm" onclick="deleteWithdrawal('${w._id}')">
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteWithdrawal('${w._id}')">
               <i class="ri-delete-bin-line"></i>
             </button>
           `}
@@ -3473,21 +3470,35 @@ function renderWithdrawalsPage() {
   });
 }
 
-window.approveWithdrawal = async (id) => {
+// Called from the table button
+window.approveWithdrawal = (id) => {
   showConfirm({
     title: 'Confirm Payment Sent?',
     msg: 'Mark this withdrawal as paid? This cannot be undone.',
     type: 'info',
     yesLabel: 'Confirm Payment',
-    onYes: async () => {
-      await api(`/api/admin/withdrawals/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'success' }) });
-      loadWithdrawals();
-    }
+    onYes: () => executeWithdrawalApproval(id)
   });
 };
 
-
-
+// The actual API logic
+async function executeWithdrawalApproval(id) {
+  try {
+    const data = await api(`/api/admin/withdrawals/${id}`, { 
+      method: 'PUT', 
+      body: JSON.stringify({ status: 'success' }) 
+    });
+    
+    if (data?.success) {
+      showToast('Withdrawal marked as paid!', 'success');
+      loadWithdrawals(); // Refreshes data and table
+    } else {
+      showToast(data?.error || 'Error updating status', 'error');
+    }
+  } catch (err) {
+    showToast('Network error', 'error');
+  }
+}
 
 window.declineWithdrawal = async (id) => {
   showConfirm({
@@ -3521,27 +3532,38 @@ window.deleteWithdrawal = async (id) => {
 };
 
 
-window.viewWithdrawalDetail = (w) => {
+window.viewWithdrawalDetail = (id) => {
+  // Find the item in your global filtered array
+  const w = _wFiltered.find(item => item._id === id);
+  if (!w) return;
+
   const fex = Number(w.amount);
   const rate = w.fexRate || 0.7;
-  const net = Number(fex * rate || 0.7);
+  const net = Number(w.netAmount || (fex * rate));
+  const isPending = w.status === 'pending';
   
   showConfirm({
     title: '<h3>Withdrawal Detail</h3>',
-    msg: `<div class="dp-section">Transaction Info</div>
+    msg: `
+    <div class="dp-section">Transaction Info</div>
     <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${w.username || '—'}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(w.status)}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">FEX Amount</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Naira Payout</span><span class="dp-info-val">₦${net.toLocaleString()}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Rate</span><span class="dp-info-val">₦${rate}/FEX</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Fee</span><span class="dp-info-val">₦${Number(w.fee || 0).toLocaleString()}</span></div>
+    <div class="dp-section">Bank Details</div>
     <div class="dp-info-row"><span class="dp-info-key">Bank</span><span class="dp-info-val">${w.bankDetails?.bankName || '—'}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Account</span><span class="dp-info-val">${w.bankDetails?.accountNumber || '—'}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Account name</span><span class="dp-info-val">${w.bankDetails?.accountName || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Name</span><span class="dp-info-val">${w.bankDetails?.accountName || '—'}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</span></div>`,
+    
     type: 'warning',
-    yesLabel: 'Mark Paid',
-    onYes: () => approveWithdrawal(w._id),
+    yesLabel: isPending ? 'Confirm Payment Sent' : 'Close',
+    onYes: () => {
+      if (isPending) {
+        // Skip the extra "Are you sure" and go straight to the action
+        executeWithdrawalApproval(w._id);
+      }
+    },
     icon: false
   });
 };
