@@ -518,7 +518,7 @@ window.viewDepositDetail = (id) => {
       if (isPending && typeof closeModal === 'function') closeModal();
       
       // 2. Wait 300ms for the animation to finish, then open the "Confirm Delete" modal
-      setTimeout(() => {
+      setTimeout( async() => {
         await approveDeposit(i._id);
       }, 300);
       
