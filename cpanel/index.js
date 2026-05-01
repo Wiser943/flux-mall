@@ -266,18 +266,18 @@ function switchPageByHash() {
       }
     }
   }
-  
+  if(targetId){
+    checkAdminSession();refreshAll();
+  }
   // 6. Lazy-init calls
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
+  /*
   if (targetId === 'transactions') {
     loadDeposits();
     loadWithdrawals();
     loadActivity()
-  }
-  if (targetId === 'tasks') {
-    loadShares();
-    loadInvestments();
-  }
+  }*/
+
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -514,14 +514,10 @@ window.viewDepositDetail = (id) => {
     type: 'warning',
     yesLabel: isPending ? 'Approve Now' : 'Sanctioned',
     onYes: async () => {
-      // 1. Close the current "Details" modal first
       if (isPending && typeof closeModal === 'function') closeModal();
-      
-      // 2. Wait 300ms for the animation to finish, then open the "Confirm Delete" modal
-      setTimeout( async() => {
+            setTimeout( async() => {
         await approveDeposit(i._id);
       }, 300);
-      
     },
     icon: false
   });
@@ -534,34 +530,30 @@ window.approveDeposit = async (id) => {
     msg: 'Are you sure you want to credit this user?',
     type: 'warning',
     yesLabel: 'Approve',
-    onYes: () => executeApproval(id)
+    onYes: async() => {try {
+  const data = await api(`/api/admin/deposits/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ status: 'success' })
+  });
+  
+  if (data?.success) {
+    showToast('Deposit approved — user credited!', 'success');
+    // IMPORTANT: Ensure this function re-fetches data and calls renderDepositsPage()
+    if (typeof loadDeposits === 'function') {
+      loadDeposits();
+    } else {
+      renderDepositsPage();
+    }
+  } else {
+    showToast(data?.error || 'Error approving deposit.', 'error');
+  }
+} catch (err) {
+  showToast('Network error during approval', 'error');
+  console.error(err);
+}}
   });
 };
 
-// This handles the actual API call and UI refresh
-async function executeApproval(id) {
-  try {
-    const data = await api(`/api/admin/deposits/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ status: 'success' })
-    });
-    
-    if (data?.success) {
-      showToast('Deposit approved — user credited!', 'success');
-      // IMPORTANT: Ensure this function re-fetches data and calls renderDepositsPage()
-      if (typeof loadDeposits === 'function') {
-        loadDeposits();
-      } else {
-        renderDepositsPage();
-      }
-    } else {
-      showToast(data?.error || 'Error approving deposit.', 'error');
-    }
-  } catch (err) {
-    showToast('Network error during approval', 'error');
-    console.error(err);
-  }
-}
 
 window.declineDeposit = async (id) => {
   showConfirm({
