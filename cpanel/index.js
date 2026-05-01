@@ -3445,16 +3445,10 @@ function renderWithdrawalsPage() {
       <td>
         <div class="action-group">
           ${w.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="event.stopPropagation(); approveWithdrawal('${w._id}')">
-              <i class="ri-money-dollar-circle-line"></i> Pay
-            </button>
             <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); declineWithdrawal('${w._id}')">
               <i class="ri-close-line"></i>
             </button>
           ` : `
-            <button class="btn btn-ghost btn-sm">
-              <i class="ri-eye-line"></i>
-            </button>
             <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteWithdrawal('${w._id}')">
               <i class="ri-delete-bin-line"></i>
             </button>
