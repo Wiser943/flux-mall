@@ -269,9 +269,11 @@ function switchPageByHash() {
   
   // 6. Lazy-init calls
   if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
-  if (targetId === 'transactions') { loadDeposits();
+  if (targetId === 'transactions') {
+    loadDeposits();
     loadWithdrawals();
-    loadActivity() }
+    loadActivity()
+  }
 }
 
 window.addEventListener('DOMContentLoaded', switchPageByHash);
@@ -4045,7 +4047,9 @@ function applyInvestmentFilters(term, status) {
 
 function renderInvestmentsPage() {
   const tbody = document.getElementById('investmentsTableBody');
-  if (!_invFiltered.length) {
+  if (!tbody) return;
+  
+  if (!_invFiltered || !_invFiltered.length) {
     setEmpty('investmentsTableBody', 7, 'No investments found');
     hidePagination('invest');
     return;
@@ -4055,6 +4059,10 @@ function renderInvestmentsPage() {
   tbody.innerHTML = slice.map(inv => {
     const username = inv.userId?.username || inv.username || '—';
     const email = inv.userId?.email || '—';
+    
+    // Applying your requested logic: slice(0,8) if > 7
+    const truncatedEmail = email.length > 7 ? email.slice(0, 8) + "..." : email;
+    
     const pct = progressPct(inv);
     const left = daysLeft(inv);
     const expired = isExpired(inv);
@@ -4063,13 +4071,14 @@ function renderInvestmentsPage() {
       '—';
     const earned = Math.floor((inv.duration - left) * (inv.dailyIncome || 0));
     
-    return `<tr>
+    return `
+    <tr onclick="viewInvestmentDetail('${inv._id}')" style="cursor:pointer">
       <td>
         <div class="user-chip">
           <div class="avatar" style="background:${avatarColor(username)}">${initials(username)}</div>
           <div>
             <div class="username">${username}</div>
-            <div class="user-sub">${email}</div>
+            <div class="user-sub">${truncatedEmail}</div>
           </div>
         </div>
       </td>
@@ -4099,10 +4108,10 @@ function renderInvestmentsPage() {
       </td>
       <td>
         <div class="action-group">
-          <button class="btn btn-ghost btn-sm" onclick="viewInvestmentDetail(${JSON.stringify(inv).replace(/"/g,'&quot;')})">
+          <button class="btn btn-ghost btn-sm">
             <i class="ri-eye-line"></i>
           </button>
-          <button class="btn btn-danger btn-sm" onclick="deleteInvestment('${inv._id}','${username}')">
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteInvestment('${inv._id}','${username}')">
             <i class="ri-delete-bin-line"></i>
           </button>
         </div>
@@ -4115,6 +4124,7 @@ function renderInvestmentsPage() {
     renderInvestmentsPage();
   });
 }
+
 
 // ═══════════════════════════════════════════════════════════
 // CRUD — SHARES
@@ -4288,10 +4298,11 @@ async function deleteShare(id, name) {
   });
 }
 
-// ═══════════════════════════════════════════════════════════
-// CRUD — PURCHASED SHARES (User Investments)
-// ═══════════════════════════════════════════════════════════
-function viewInvestmentDetail(inv) {
+window.viewInvestmentDetail = (id) => {
+  // Find the item in your global filtered array
+  const inv = _invFiltered.find(x => x._id === id);
+  if (!inv) return;
+  
   const username = inv.userId?.username || inv.username || '—';
   const pct = progressPct(inv);
   const left = daysLeft(inv);
@@ -4299,7 +4310,8 @@ function viewInvestmentDetail(inv) {
   
   showConfirm({
     title: 'Investment Details',
-    msg: `      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:10px;">
+    msg: `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:var(--bg);border-radius:10px;">
         <div class="avatar" style="width:40px;height:40px;font-size:14px;background:${avatarColor(username)}">${initials(username)}</div>
         <div>
           <div style="font-weight:700;font-size:14px;">${username}</div>
@@ -4309,45 +4321,46 @@ function viewInvestmentDetail(inv) {
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Package</div>
-          <div style="font-weight:700;">${inv.shareName||'—'}</div>
+        <div class="dp-info-row" style="background:var(--bg); border-radius:10px; padding:10px;">
+           <span class="dp-info-key">Package</span>
+           <span class="dp-info-val">${inv.shareName||'—'}</span>
         </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Price Paid</div>
-          <div style="font-weight:700;">🪙${Number(inv.pricePaid||0).toLocaleString()} FEX</div>
+        <div class="dp-info-row" style="background:var(--bg); border-radius:10px; padding:10px;">
+           <span class="dp-info-key">Price Paid</span>
+           <span class="dp-info-val">🪙${Number(inv.pricePaid||0).toLocaleString()}</span>
         </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Daily Income</div>
-          <div style="font-weight:700;color:var(--success);">🪙${Number(inv.dailyIncome||0).toLocaleString()}/day</div>
+        <div class="dp-info-row" style="background:var(--bg); border-radius:10px; padding:10px;">
+           <span class="dp-info-key">Daily Income</span>
+           <span class="dp-info-val" style="color:var(--success)">🪙${Number(inv.dailyIncome||0).toLocaleString()}</span>
         </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Earned So Far</div>
-          <div style="font-weight:700;color:var(--primary);">🪙${earned.toLocaleString()} FEX</div>
+        <div class="dp-info-row" style="background:var(--bg); border-radius:10px; padding:10px;">
+           <span class="dp-info-key">Earned</span>
+           <span class="dp-info-val" style="color:var(--primary)">🪙${earned.toLocaleString()}</span>
         </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Days Left</div>
-          <div style="font-weight:700;">${isExpired(inv) ? 'Completed' : left+' of '+inv.duration}</div>
+        <div class="dp-info-row" style="background:var(--bg); border-radius:10px; padding:10px;">
+           <span class="dp-info-key">Time Left</span>
+           <span class="dp-info-val">${isExpired(inv) ? 'Completed' : left+' / '+inv.duration + ' days'}</span>
         </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px 12px;">
-          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:3px;">Purchased</div>
-          <div style="font-weight:700;font-size:12px;">${inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</div>
+        <div class="dp-info-row" style="background:var(--bg); border-radius:10px; padding:10px;">
+           <span class="dp-info-key">Purchased</span>
+           <span class="dp-info-val">${inv.purchaseDate ? new Date(inv.purchaseDate).toLocaleDateString() : '—'}</span>
         </div>
       </div>
 
       <div style="margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text2);">Progress — ${pct}%</div>
       <div class="progress-bar" style="height:8px;">
         <div class="progress-fill" style="width:${pct}%;background:${isExpired(inv)?'var(--text3)':'var(--success)'}"></div>
-      </div>
-    </div>`,
+      </div>`,
     type: 'warning',
-    yesLabel: 'Remove Investment',
-    onYes: async () => {
-      deleteInvestment('${inv._id}', '${username}')
+    yesLabel: 'Delete Investment',
+    onYes: () => {
+      // Direct call to delete function
+      deleteInvestment(inv._id, username);
     },
     icon: false
   });
-}
+};
+
 
 async function deleteInvestment(id, username) {
   showConfirm({
