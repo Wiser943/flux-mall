@@ -15,7 +15,7 @@ const COLORS = ['#4CAF7D', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899',
   '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac'
 ];
 
-const PER_PAGE = 10;
+const PER_PAGE = 15;
 
 let UM_USERS = []; // user management list (from API)
 let filtered = [];
@@ -493,6 +493,11 @@ function renderDepositsPage() {
   });
 }
 
+
+
+
+
+
 window.viewDepositDetail = (id) => {
   // Find the specific deposit item from your filtered data
   const i = _dFiltered.find(item => item._id === id);
@@ -870,7 +875,7 @@ function renderTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = '';
     if (empty) empty.style.display = 'flex';
-    renderPagination();
+  //  renderPagination();
     renderCards();
     return;
   }
@@ -917,38 +922,11 @@ function renderTable() {
     </tr>`;
   }).join('');
   
-  renderPagination();
+  //renderPagination();
   renderCards();
 }
 
-function renderPagination() {
-  const total = filtered.length;
-  const pages = Math.ceil(total / PER_PAGE);
-  const start = (page - 1) * PER_PAGE + 1;
-  const end = Math.min(page * PER_PAGE, total);
-  const info = document.getElementById('pageInfo');
-  if (info) info.textContent = total === 0 ? 'No results' : `Showing ${start}–${end} of ${total}`;
-  
-  const btns = document.getElementById('pageBtns');
-  if (!btns) return;
-  let html = `<button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}><i class="ri-arrow-left-s-line"></i></button>`;
-  for (let i = 1; i <= pages; i++) {
-    if (i === 1 || i === pages || Math.abs(i - page) <= 1) {
-      html += `<button class="page-btn ${i===page?'active':''}" onclick="goPage(${i})">${i}</button>`;
-    } else if (Math.abs(i - page) === 2) {
-      html += `<button class="page-btn" disabled>…</button>`;
-    }
-  }
-  html += `<button class="page-btn" onclick="goPage(${page+1})" ${page===pages?'disabled':''}><i class="ri-arrow-right-s-line"></i></button>`;
-  btns.innerHTML = html;
-}
 
-function goPage(p) {
-  const pages = Math.ceil(filtered.length / PER_PAGE);
-  if (p < 1 || p > pages) return;
-  page = p;
-  renderTable();
-}
 
 function setMobileFilter(f, btn) {
   mobileFilter = f;
@@ -3456,21 +3434,23 @@ window.approveWithdrawal = (id) => {
     msg: 'Mark this withdrawal as paid? This cannot be undone.',
     type: 'info',
     yesLabel: 'Confirm Payment',
-    onYes: async() =>{ try {
-    const data = await api(`/api/admin/withdrawals/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ status: 'success' })
-    });
-    
-    if (data?.success) {
-      showToast('Withdrawal marked as paid!', 'success');
-      loadWithdrawals(); // Refreshes data and table
-    } else {
-      showToast(data?.error || 'Error updating status', 'error');
+    onYes: async () => {
+      try {
+        const data = await api(`/api/admin/withdrawals/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ status: 'success' })
+        });
+        
+        if (data?.success) {
+          showToast('Withdrawal marked as paid!', 'success');
+          loadWithdrawals(); // Refreshes data and table
+        } else {
+          showToast(data?.error || 'Error updating status', 'error');
+        }
+      } catch (err) {
+        showToast('Network error', 'error');
+      }
     }
-  } catch (err) {
-    showToast('Network error', 'error');
-  }}
   });
 };
 
@@ -3532,12 +3512,13 @@ window.viewWithdrawalDetail = (id) => {
     
     type: 'warning',
     yesLabel: isPending ? 'Confirm Payment Sent' : 'Sanctioned',
-    onYes: async() => {
-        if (isPending && typeof closeModal === 'function') closeModal();
-            setTimeout( async() => {
-        await approveWithdrawal(w._id);
-      }, 300);
-      
+    onYes: async () => {
+      if (isPending && typeof closeModal === 'function') {
+        closeModal();
+        setTimeout(async () => {
+          await approveWithdrawal(w._id);
+        }, 300);
+      }
     },
     icon: false
   });
@@ -3732,90 +3713,6 @@ function statusBadge(s) {
   const cls = map[s] || 'pending';
   const dot = { success: '🟢', pending: '🟡', declined: '🔴' } [cls] || '⚪';
   return `<span class="badge ${cls}">${dot} ${(s||'pending').charAt(0).toUpperCase() + (s||'pending').slice(1)}</span>`;
-}
-
-function paginate(arr, page, per) {
-  const start = (page - 1) * per;
-  return arr.slice(start, start + per);
-}
-
-function renderPagination(prefix, total, page, onPage) {
-  const totalPages = Math.ceil(total / PER_PAGE);
-  const start = (page - 1) * PER_PAGE + 1;
-  const end = Math.min(page * PER_PAGE, total);
-  const wrap = document.getElementById(prefix + 'Pagination');
-  const info = document.getElementById(prefix + 'PageInfo');
-  const btns = document.getElementById(prefix + 'PageBtns');
-  if (!wrap) return;
-  
-  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'flex';
-  if (info) info.textContent = `${start}–${end} of ${total}`;
-  
-  // Build page buttons
-  const range = [];
-  let s = Math.max(1, page - 2);
-  let e = Math.min(totalPages, s + 4);
-  if (e - s < 4) s = Math.max(1, e - 4);
-  for (let i = s; i <= e; i++) range.push(i);
-  
-  btns.innerHTML = `
-    <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
-    ${range.map(p => `<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
-    <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
-}
-
-function hidePagination(prefix) {
-  const wrap = document.getElementById(prefix + 'Pagination');
-  if (wrap) wrap.style.display = 'none';
-}
-
-function setLoading(tbodyId, cols) {
-  const el = document.getElementById(tbodyId);
-  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><div class="spinner"></div><p>Loading…</p></div></td></tr>`;
-}
-
-function setEmpty(tbodyId, cols, msg) {
-  const el = document.getElementById(tbodyId);
-  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-inbox-line"></i><p>${msg}</p></div></td></tr>`;
-}
-
-function setError(tbodyId, cols, msg) {
-  const el = document.getElementById(tbodyId);
-  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-error-warning-line" style="color:var(--danger)"></i><p>${msg}</p></div></td></tr>`;
-}
-
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-// ── TOAST ──────────────────────────────────────────────────
-let _toastWrap = null;
-const toast = showToast;
-
-function showToast(msg, type = 'success') {
-  if (!_toastWrap) {
-    _toastWrap = document.createElement('div');
-    _toastWrap.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:9999999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;height:40px;overflow:hidden;justify-content:flex-start; width:max-content'
-    document.body.appendChild(_toastWrap);
-  }
-  const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
-  const t = document.createElement('div');
-  t.style.cssText = `
-    background:${colors[type]||'#4318ff'};color:#fff;
-    padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;
-    box-shadow:0 4px 16px rgba(0,0,0,0.15);
-    animation:toastIn 0.22s ease;
-    pointer-events:auto;
-  `;
-  t.textContent = msg;
-  _toastWrap.appendChild(t);
-  setTimeout(() => {
-    t.style.opacity = '0';
-    t.style.transition = 'opacity 0.3s';
-    setTimeout(() => t.remove(), 300);
-  }, 3000);
 }
 
 
@@ -4396,40 +4293,16 @@ async function uploadToImgBB(file, statusEl) {
   }
 }
 
-// ═══════════════════════════════════════════════════════════
-// UI HELPERS
-// ═══════════════════════════════════════════════════════════
-function paginate(arr, page, per) {
-  return arr.slice((page - 1) * per, page * per);
+
+// ui helpers consolidated 
+function setError(tbodyId, cols, msg) {
+  const el = document.getElementById(tbodyId);
+  if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-error-warning-line" style="color:var(--danger)"></i><p>${msg}</p></div></td></tr>`;
 }
 
-function renderPagination(prefix, total, page, onPage) {
-  const totalPages = Math.ceil(total / INV_PER_PAGE);
-  const wrap = document.getElementById(prefix + 'Pagination');
-  const info = document.getElementById(prefix + 'PageInfo');
-  const btns = document.getElementById(prefix + 'PageBtns');
-  if (!wrap) return;
-  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'flex';
-  const start = (page - 1) * INV_PER_PAGE + 1;
-  const end = Math.min(page * INV_PER_PAGE, total);
-  if (info) info.textContent = `${start}–${end} of ${total}`;
-  
-  const range = [];
-  let s = Math.max(1, page - 2),
-    e = Math.min(totalPages, s + 4);
-  if (e - s < 4) s = Math.max(1, e - 4);
-  for (let i = s; i <= e; i++) range.push(i);
-  
-  btns.innerHTML = `
-    <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
-    ${range.map(p=>`<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
-    <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
-}
-
-function hidePagination(prefix) {
-  const el = document.getElementById(prefix + 'Pagination');
-  if (el) el.style.display = 'none';
+function setText(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
 }
 
 function setLoading(tbodyId, cols) {
@@ -4442,10 +4315,6 @@ function setEmpty(tbodyId, cols, msg) {
   if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-inbox-line"></i><p>${msg}</p></div></td></tr>`;
 }
 
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
 
 // ── TOAST ──────────────────────────────────────────────────
 let _tw = null;
@@ -4453,7 +4322,7 @@ let _tw = null;
 function showToast(msg, type = 'success') {
   if (!_tw) {
     _tw = document.createElement('div');
-    _tw.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:max-content';
+    _tw.style.cssText = 'position:fixed;bottom:74px;left:50%;transform:translateX(-50%);z-index:99999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;width:max-content';
     document.body.appendChild(_tw);
   }
   const colors = { success: '#05cd99', warning: '#f6ad55', error: '#ee5d50' };
@@ -4512,11 +4381,11 @@ async function atLoadTasks() {
   const totalPending = _atSubs.filter(s => s.status === 'pending').length;
   const totalApproved = _atSubs.filter(s => s.status === 'approved').length;
   const totalDeclined = _atSubs.filter(s => s.status === 'declined').length;
-  atSetText('atStatTasks', _atTasks.length);
-  atSetText('atStatPending', totalPending);
-  atSetText('atStatApproved', totalApproved);
-  atSetText('atStatDeclined', totalDeclined);
-  atSetText('atTcCatalog', _atTasks.length);
+  setText('atStatTasks', _atTasks.length);
+  setText('atStatPending', totalPending);
+  setText('atStatApproved', totalApproved);
+  setText('atStatDeclined', totalDeclined);
+  setText('atTcCatalog', _atTasks.length);
   
   // Populate category filter
   const cats = [...new Set(_atTasks.map(t => t.category).filter(Boolean))];
@@ -4628,12 +4497,12 @@ async function atLoadSubmissions() {
   const data = await api('/api/admin/tasks/submissions?limit=500');
   _atSubs = data?.submissions || [];
   _atSubFiltered = [..._atSubs];
-  atSetText('atTcSubmissions', _atSubs.length);
+  setText('atTcSubmissions', _atSubs.length);
   
   // Update stat counts after subs load
-  atSetText('atStatPending', _atSubs.filter(s => s.status === 'pending').length);
-  atSetText('atStatApproved', _atSubs.filter(s => s.status === 'approved').length);
-  atSetText('atStatDeclined', _atSubs.filter(s => s.status === 'declined').length);
+  setText('atStatPending', _atSubs.filter(s => s.status === 'pending').length);
+  setText('atStatApproved', _atSubs.filter(s => s.status === 'approved').length);
+  setText('atStatDeclined', _atSubs.filter(s => s.status === 'declined').length);
   
   _atSubPage = 1;
   atRenderSubsPage();
@@ -4704,7 +4573,7 @@ function atRenderSubsPage() {
       </td>
       <td><span style="font-weight:700;color:var(--primary);">🪙${Number(pts).toLocaleString()}</span></td>
       <td style="font-size:11px;color:var(--text3);white-space:nowrap;">${date}</td>
-      <td>${atStatusBadge(s.status)}</td>
+      <td>${statusBadge(s.status)}</td>
       <td>
         <div class="action-group">
           ${s.status==='pending' ? `
@@ -5073,7 +4942,7 @@ function atViewSubDetail(s) {
           <div style="font-weight:700;">${uname}</div>
           <div style="font-size:11px;color:var(--text3);">${s.userId?.email||'—'}</div>
         </div>
-        <div style="margin-left:auto;">${atStatusBadge(s.status)}</div>
+        <div style="margin-left:auto;">${statusBadge(s.status)}</div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
@@ -5178,45 +5047,6 @@ function atSelectPlatform(chip, prefix) {
   if (hidden) hidden.value = chip.dataset.val;
 }
 
-// ══════════════════════════════════════════════════════════
-// UI HELPERS
-// ══════════════════════════════════════════════════════════
-function atStatusBadge(s) {
-  const map = { approved: 'success', pending: 'pending', declined: 'declined' };
-  const dot = { approved: '🟢', pending: '🟡', declined: '🔴' };
-  const cls = map[s] || 'pending';
-  return `<span class="badge ${cls}">${dot[s]||'⚪'} ${(s||'pending').charAt(0).toUpperCase()+(s||'pending').slice(1)}</span>`;
-}
-
-function atSetText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-function atRenderPagination(total, page, onPage) {
-  const totalPages = Math.ceil(total / AT_PER);
-  const wrap = document.getElementById('atSubPagination');
-  const info = document.getElementById('atSubPageInfo');
-  const btns = document.getElementById('atSubPageBtns');
-  if (!wrap) return;
-  if (totalPages <= 1) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'flex';
-  const start = (page - 1) * AT_PER + 1,
-    end = Math.min(page * AT_PER, total);
-  if (info) info.textContent = `${start}–${end} of ${total}`;
-  const range = [];
-  let s = Math.max(1, page - 2),
-    e = Math.min(totalPages, s + 4);
-  if (e - s < 4) s = Math.max(1, e - 4);
-  for (let i = s; i <= e; i++) range.push(i);
-  btns.innerHTML = `
-    <button ${page<=1?'disabled':''} onclick="(${onPage.toString()})(${page-1})"><i class="ri-arrow-left-s-line"></i></button>
-    ${range.map(p=>`<button class="${p===page?'active':''}" onclick="(${onPage.toString()})(${p})">${p}</button>`).join('')}
-    <button ${page>=totalPages?'disabled':''} onclick="(${onPage.toString()})(${page+1})"><i class="ri-arrow-right-s-line"></i></button>`;
-}
-
-
-
 // ── Sync the pill + subtitle text whenever toggle changes ─────
 function syncMaintUI(isOn) {
   const pill = document.getElementById('maintStatusPill');
@@ -5246,10 +5076,6 @@ function syncMaintUI(isOn) {
 }
 
 loadAdminChatSessions()
-
-// ── On page load — reflect current state from API ─────────────
-// This runs AFTER loadSettings() has set maintenanceToggle.checked
-// We use a MutationObserver to catch when loadSettings() sets the checkbox
 const _maintObs = new MutationObserver(() => {});
 document.addEventListener('DOMContentLoaded', () => {
   // Poll briefly until the checkbox is set by loadSettings()
@@ -5261,8 +5087,6 @@ document.addEventListener('DOMContentLoaded', () => {
     syncMaintUI(toggle.checked);
     clearInterval(poll);
   }, 200);
-  
-  // Fallback — stop polling after 5s regardless
   setTimeout(() => clearInterval(poll), 5000);
 });
 
@@ -5281,9 +5105,7 @@ function updatePaymentPills(mode) {
   const manual = document.getElementById('pillManual');
   const kora = document.getElementById('pillKorapay');
   if (!badge || !manual || !kora) return;
-  
   const isManual = mode === 'manual';
-  
   // Badge
   badge.textContent = isManual ? 'Manual' : 'Korapay';
   badge.style.background = isManual ? 'rgba(246,173,85,0.15)' : 'rgba(5,205,153,0.12)';
@@ -5318,8 +5140,96 @@ async function quickSetPaymentMode(mode) {
 
 // Run on load
 loadPaymentModeBadge();
-
-
-
 // Boot — check session
 //checkAdminSession();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ══════════════════════════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════════════════════════
+
+
+/**
+ * Universal Multi-Page Pagination
+ * Compatible with: renderPagination(prefix, total, page, callback)
+ */
+function renderPagination(prefix, total, page, onPage, limit = 15) {
+  const totalPages = Math.ceil(total / limit);
+  const wrap = document.getElementById(`${prefix}Pagination`);
+  const info = document.getElementById(`${prefix}PageInfo`);
+  const btns = document.getElementById(`${prefix}PageBtns`);
+
+  if (!wrap) return;
+
+  // 1. Visibility: Hide if 0 or 1 page
+  if (totalPages <= 1) {
+    wrap.style.display = 'none';
+    if (info) info.textContent = total === 0 ? 'No results' : '';
+    return;
+  }
+  wrap.style.display = 'flex';
+
+  // 2. Info: "1–15 of 100"
+  if (info) {
+    const start = (page - 1) * limit + 1;
+    const end = Math.min(page * limit, total);
+    info.textContent = `${start}–${end} of ${total}`;
+  }
+
+  if (!btns) return;
+
+  // 3. Button Range Logic (Shows 5 buttons)
+  let s = Math.max(1, page - 2);
+  let e = Math.min(totalPages, s + 4);
+  if (e - s < 4) s = Math.max(1, e - 4);
+  s = Math.max(1, s);
+
+  // 4. Build HTML
+  // Stringifying the callback allows arrow functions to work in onclick
+  const cb = `(${onPage.toString()})`;
+
+  let html = `
+    <button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="${cb}(${page - 1})">
+      <i class="ri-arrow-left-s-line"></i>
+    </button>`;
+
+  for (let i = s; i <= e; i++) {
+    html += `
+      <button class="page-btn ${i === page ? 'active' : ''}" onclick="${cb}(${i})">
+        ${i}
+      </button>`;
+  }
+
+  html += `
+    <button class="page-btn" ${page >= totalPages ? 'disabled' : ''} onclick="${cb}(${page + 1})">
+      <i class="ri-arrow-right-s-line"></i>
+    </button>`;
+
+  btns.innerHTML = html;
+}
+
+/**
+ * Slices your array to show only the items for the current page.
+ * @param {Array} arr - The full list of data (e.g., _wFiltered)
+ * @param {number} page - The current page number
+ * @param {number} limit - Items per page (defaults to 15 to match the UI)
+ */
+function paginate(arr, page, limit = 15) {
+  const start = (page - 1) * limit;
+  const end = page * limit;
+  return arr.slice(start, end);
+}
