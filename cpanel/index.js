@@ -5167,7 +5167,7 @@ loadPaymentModeBadge();
  * Universal Multi-Page Pagination
  * Compatible with: renderPagination(prefix, total, page, callback)
  */
-function renderPagination(prefix, total, page, onPage, limit = 2) {
+function renderPagination(prefix, total, page, onPage, limit = 15) {
   const totalPages = Math.ceil(total / limit);
   const wrap = document.getElementById(`${prefix}Pagination`);
   const info = document.getElementById(`${prefix}PageInfo`);
@@ -5228,7 +5228,7 @@ function renderPagination(prefix, total, page, onPage, limit = 2) {
  * @param {number} page - The current page number
  * @param {number} limit - Items per page (defaults to 15 to match the UI)
  */
-function paginate(arr, page, limit = 2) {
+function paginate(arr, page, limit = 15) {
   const start = (page - 1) * limit;
   const end = page * limit;
   return arr.slice(start, end);
