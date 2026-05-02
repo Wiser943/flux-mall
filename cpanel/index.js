@@ -15,7 +15,7 @@ const COLORS = ['#4CAF7D', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899',
   '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac'
 ];
 
-const PER_PAGE = 2;
+const PER_PAGE = 15;
 
 let UM_USERS = []; // user management list (from API)
 let filtered = [];
@@ -5167,7 +5167,7 @@ loadPaymentModeBadge();
  * Universal Multi-Page Pagination
  * Compatible with: renderPagination(prefix, total, page, callback)
  */
-function renderPagination(prefix, total, page, onPage, limit = 15) {
+function renderPagination(prefix, total, page, onPage, limit = 2) {
   const totalPages = Math.ceil(total / limit);
   const wrap = document.getElementById(`${prefix}Pagination`);
   const info = document.getElementById(`${prefix}PageInfo`);
@@ -5228,7 +5228,7 @@ function renderPagination(prefix, total, page, onPage, limit = 15) {
  * @param {number} page - The current page number
  * @param {number} limit - Items per page (defaults to 15 to match the UI)
  */
-function paginate(arr, page, limit = 15) {
+function paginate(arr, page, limit = 2) {
   const start = (page - 1) * limit;
   const end = page * limit;
   return arr.slice(start, end);
