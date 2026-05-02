@@ -98,7 +98,6 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
   transition: all var(--ease);
-  
 }
 
 .detail-pane.hidden {
@@ -185,6 +184,8 @@
   background: var(--danger);
 }
 
+/* NOTE: .filter-select base styles are defined in styles-clean.css.
+   Only the extra properties unique to this file are kept below. */
 .filter-select {
   padding: 8px 12px;
   background: var(--input-bg);
@@ -205,6 +206,9 @@
   border-color: var(--gl);
 }
 
+/* NOTE: .btn base styles (display, gap, padding, border-radius, font-size,
+   font-weight, transition) are defined in styles-clean.css.
+   Properties below that differ or extend it are kept. */
 .btn {
   display: flex;
   align-items: center;
@@ -217,6 +221,8 @@
   white-space: nowrap;
 }
 
+/* NOTE: .btn-primary background/color defined in styles-clean.css.
+   The box-shadow and hover transform below are unique to this file. */
 .btn-primary {
   background: var(--green);
   color: #fff;
@@ -238,6 +244,8 @@
   color: var(--accent);
 }
 
+/* NOTE: .btn-danger base defined in styles-clean.css.
+   This version uses a border-only style instead of background fill. */
 .btn-danger {
   border: 1px solid rgba(239, 68, 68, .3);
   color: var(--danger);
@@ -293,7 +301,6 @@
   border-radius: 4px;
 }
 
-
 /* Checkbox */
 .check-cell {
   width: 40px;
@@ -347,7 +354,10 @@ input[type=checkbox] {
   font-family: monospace;
 }
 
-/* Status badges */
+/* NOTE: .badge base styles defined in styles-clean.css.
+   The states below (.verified, .unverified, .banned, .active, .inactive)
+   are unique to this file and use border outlines, unlike the filled
+   versions in styles-clean.css. */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -465,12 +475,13 @@ tbody tr:hover .row-actions {
   font-size: .84rem;
 }
 
-
 .page-info {
   font-size: .78rem;
   color: var(--muted);
 }
 
+/* NOTE: .page-btns defined in styles-clean.css — kept here as
+   this file uses .page-btn (different class name) for its own variant. */
 .page-btns {
   display: flex;
   gap: 4px;
@@ -729,8 +740,6 @@ select.form-input {
   cursor: pointer;
 }
 
-
-
 /* ══════════════════════════════════════
    THEME FAB
 ══════════════════════════════════════ */
@@ -815,12 +824,11 @@ select.form-input {
 @keyframes cardIn {
   from {
     opacity: 0;
-    transform: translateY(6px)
+    transform: translateY(6px);
   }
-  
   to {
     opacity: 1;
-    transform: translateY(0)
+    transform: translateY(0);
   }
 }
 
@@ -992,7 +1000,7 @@ select.form-input {
   color: var(--accent);
 }
 
-/*for dashboards analytics*/
+/* for dashboards analytics */
 .items-list {
   display: flex;
   align-items: center;
@@ -1006,120 +1014,91 @@ select.form-input {
   border-radius: 18px;
 }
 
-/* ══════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════ */
-@media(max-width:900px) {
-  .left-nav {
-    display: none;
-  }
-  
-  .detail-pane {
-    position: fixed;
-    inset: 0;
-    z-index: 4000;
-    width: 100%;
-    min-width: 0;
-    max-width: 100%;
-    transform: translateX(100%);
-    transition: transform .32s cubic-bezier(.25, .46, .45, .94);
-    overflow-y: auto;
-    padding-bottom: 50px;
-  }
-  
-  .detail-pane.mobile-open {
-    transform: translateX(0);
-  }
-  
-  .detail-pane.hidden {
-    transform: translateX(100%);
-  }
+.items-list .item:nth-child(2) {
+  background: #fffbeb;
 }
 
-@media(max-width:700px) {
-  .table-scroll {
-    display: none !important;
-  }
-  
-  .items-list {
-    flex-direction: column;
-  }
-  
-  .items-list .item {
-    width: 100%;
-  }
-  
-  .card-list {
-    display: block;
-  }
-  
-  .mobile-filter-row {
-    display: flex;
-  }
-  
-  .toolbar {
-    padding: 10px 12px;
-    gap: 8px;
-    flex-wrap: nowrap;
-  }
-  
-  .filter-select {
-    display: none;
-  }
-  
-  .topbar {
-    padding: 0 12px;
-  }
-  
-  .topbar-title span {
-    display: none;
-  }
-  
-  .btn span {
-    display: none;
-  }
-  
-  .btn {
-    padding: 7px 10px;
-  }
-  
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    padding: 0;
-  }
-  
-  .stat-chip {
-    min-width: 0;
-    padding: 0 5px;
-    height: 55px;
-  }
-  
-  .stat-val {
-    font-size: .9rem;
-  }
-  
-  .stat-label {
-    font-size: .58rem;
-  }
-  
-  .bulk-bar {
-    padding: 8px 12px;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  
-  .pagination {
-    padding: 10px 12px;
-  }
-  #users,
-#transactions,
-#shares,
-#settings,
-#dashboard,
-#tasks {
-  padding: 10px 12px 20px 12px;
+.items-list .item:nth-child(3) {
+  background: #bfdbfe;
 }
+
+.items-list .item:nth-child(4) {
+  background: #031224;
+  padding: 10px;
+}
+
+.items-list .item .info {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+/* NOTE: .items-list .item .info h5 was defined twice — merged into one rule */
+.items-list .item .info h5 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.items-list .item .info p {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.items-list .item .info > i {
+  font-size: 20px;
+  padding: 10px;
+  background: #031224;
+  color: #f1f3f2;
+  border-radius: 50%;
+}
+
+.items-list .item .progress {
+  position: relative;
+  height: 10px;
+  background: #b7c0cd;
+  border-radius: 10px;
+}
+
+.items-list .item .progress .bar {
+  width: 92%;
+  height: 10px;
+  background: #031224;
+  border-radius: 10px;
+}
+
+.items-list .item .progress::before {
+  content: "92%";
+  position: absolute;
+  top: -40px;
+  right: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.items-list .item:nth-child(2) .progress {
+  background: #d6d3d1;
+}
+
+.items-list .item:nth-child(2) .progress .bar {
+  width: 65%;
+}
+
+.items-list .item:nth-child(2) .progress::before {
+  content: "65%";
+}
+
+.items-list .item:nth-child(3) .progress {
+  background: #94a3b8;
+}
+
+.items-list .item:nth-child(3) .progress .bar {
+  width: 80%;
+}
+
+.items-list .item:nth-child(3) .progress::before {
+  content: "80%";
 }
 
 /* Context menu */
@@ -1211,6 +1190,8 @@ select.form-input {
   border-right: none;
 }
 
+/* NOTE: .stat-val and .stat-label also exist in styles-clean.css with
+   different values. These override them for this specific component context. */
 .stat-val {
   font-family: 'Syne', sans-serif;
   font-size: 1.1rem;
@@ -1226,98 +1207,120 @@ select.form-input {
   white-space: nowrap;
 }
 
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media(max-width:900px) {
+  .left-nav {
+    display: none;
+  }
 
+  .detail-pane {
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    transform: translateX(100%);
+    transition: transform .32s cubic-bezier(.25, .46, .45, .94);
+    overflow-y: auto;
+    padding-bottom: 50px;
+  }
 
+  .detail-pane.mobile-open {
+    transform: translateX(0);
+  }
 
-
-
-.items-list .item:nth-child(2) {
-  background: #fffbeb;
+  .detail-pane.hidden {
+    transform: translateX(100%);
+  }
 }
 
-.items-list .item:nth-child(3) {
-  background: #bfdbfe;
-}
+@media(max-width:700px) {
+  .table-scroll {
+    display: none !important;
+  }
 
-.items-list .item:nth-child(4) {
-  background: #031224;
-  padding: 10px;
-}
+  .items-list {
+    flex-direction: column;
+  }
 
-.items-list .item .info {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 40px;
-}
+  .items-list .item {
+    width: 100%;
+  }
 
-.items-list .item .info h5 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
+  .card-list {
+    display: block;
+  }
 
-.items-list .item .info p {
-  font-size: 12px;
-  font-weight: 500;
-}
+  .mobile-filter-row {
+    display: flex;
+  }
 
-.items-list .item .info>i {
-  font-size: 20px;
-  padding: 10px;
-  background: #031224;
-  color: #f1f3f2;
-  border-radius: 50%;
-}
+  .toolbar {
+    padding: 10px 12px;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
 
-.items-list .item .progress {
-  position: relative;
-  height: 10px;
-  background: #b7c0cd;
-  border-radius: 10px;
-}
+  .filter-select {
+    display: none;
+  }
 
-.items-list .item .progress .bar {
-  width: 92%;
-  height: 10px;
-  background: #031224;
-  border-radius: 10px;
-}
+  .topbar {
+    padding: 0 12px;
+  }
 
-.items-list .item .progress::before {
-  content: "92%";
-  position: absolute;
-  top: -40px;
-  right: 0;
-  font-size: 22px;
-  font-weight: 600;
-}
+  .topbar-title span {
+    display: none;
+  }
 
-.items-list .item:nth-child(2) .progress {
-  background: #d6d3d1;
-}
+  .btn span {
+    display: none;
+  }
 
-.items-list .item:nth-child(2) .progress .bar {
-  width: 65%;
-}
+  .btn {
+    padding: 7px 10px;
+  }
 
-.items-list .item:nth-child(2) .progress::before {
-  content: "65%";
-}
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0;
+  }
 
+  .stat-chip {
+    min-width: 0;
+    padding: 0 5px;
+    height: 55px;
+  }
 
-.items-list .item:nth-child(3) .progress {
-  background: #94a3b8;
-}
+  .stat-val {
+    font-size: .9rem;
+  }
 
-.items-list .item:nth-child(3) .progress .bar {
-  width: 80%;
-}
+  .stat-label {
+    font-size: .58rem;
+  }
 
-.items-list .item:nth-child(3) .progress::before {
-  content: "80%";
-}
+  .bulk-bar {
+    padding: 8px 12px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
 
-.items-list .item .info h5 {
-  font-size: 15px;
+  /* NOTE: .pagination padding override — base defined in styles-clean.css */
+  .pagination {
+    padding: 10px 12px;
+  }
+
+  #users,
+  #transactions,
+  #shares,
+  #settings,
+  #dashboard,
+  #tasks {
+    padding: 10px 12px 20px 12px;
+  }
 }

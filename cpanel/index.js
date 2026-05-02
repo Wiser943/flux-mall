@@ -271,7 +271,7 @@ function switchPageByHash() {
     //refreshAll();
   }
   // 6. Lazy-init calls
-  if (targetId === 'users' && UM_USERS.length === 0) initUserManagement();
+  if (targetId === 'users' && UM_USERS.length === 0) loadUMUsers();
   
   if (targetId === 'transactions') {
     loadDeposits();
@@ -576,7 +576,8 @@ window.declineDeposit = async (id) => {
     onYes: async () => {
       const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
       if (data?.success) {
-        loadDeposits();showToast("Successfully declined", 'success');
+        loadDeposits();
+        showToast("Successfully declined", 'success');
       }
       else showToast(data?.error || 'Error.', 'error');
     }
@@ -602,10 +603,7 @@ window.deleteDeposit = async (id) => {
 
 
 // ══════════════════════════════════════════════════════════
-//  SECTION 9 — USER MANAGEMENT (API + Mock UI)
-// ══════════════════════════════════════════════════════════
-
-// ── Load users from API ────────────────────────────────────
+//  SECTION 9 — USER MANAGEMENT (API)
 async function renderApiUsers() {
   const tbody = document.getElementById('userTableBody');
   if (!tbody) return;
@@ -746,15 +744,6 @@ window.copyAndMove = (uid) => {
   if (el) el.value = uid;
 };
 
-// ── User Management UI (table + cards) ────────────────────
-function initUserManagement() {
-  // Populate UM_USERS from API users or use empty array
-  // The table/card UI will be populated when renderApiUsers runs
-  // For the rich UI (table, cards, detail pane), we use UM_USERS
-  // which gets populated below from the API
-  loadUMUsers();
-}
-
 async function loadUMUsers() {
   const data = await api('/api/admin/users');
   if (!data?.success) return;
@@ -781,7 +770,7 @@ async function loadUMUsers() {
   
   filtered = [...UM_USERS];
   updateUMStats();
-  renderTable();
+  renderUserTable();
 }
 
 function updateUMStats() {
@@ -849,7 +838,7 @@ function applyFilters() {
   });
   
   page = 1;
-  renderTable();
+  renderUserTable();
 }
 
 function sortBy(col) {
@@ -865,10 +854,10 @@ function sortBy(col) {
     if (typeof va === 'string') return sortDir * va.localeCompare(vb);
     return sortDir * (vb - va);
   });
-  renderTable();
+  renderUserTable();
 }
 
-function renderTable() {
+function renderUserTable() {
   const tbody = document.getElementById('tableBody');
   const empty = document.getElementById('emptyState');
   if (!tbody) return;
@@ -994,7 +983,7 @@ function toggleSelect(id, checked) {
   if (checked) selected.add(id);
   else selected.delete(id);
   updateBulkBar();
-  renderTable();
+  renderUserTable();
 }
 
 function toggleSelectAll(el) {
@@ -1002,7 +991,7 @@ function toggleSelectAll(el) {
   const slice = filtered.slice(start, start + PER_PAGE);
   slice.forEach(u => { el.checked ? selected.add(u.id) : selected.delete(u.id); });
   updateBulkBar();
-  renderTable();
+  renderUserTable();
 }
 
 function updateBulkBar() {
@@ -1015,7 +1004,7 @@ function updateBulkBar() {
 function clearSelection() {
   selected.clear();
   updateBulkBar();
-  renderTable();
+  renderUserTable();
 }
 
 // ── Detail Pane ────────────────────────────────────────────
@@ -1062,7 +1051,7 @@ function openDetail(id) {
     <button class="dp-action danger" onclick="confirmBan('${u.id}')"><i class="ri-forbid-line"></i> ${u.status==='banned'?'Unban User':'Ban User'}</button>
     <button class="dp-action danger" onclick="confirmDelete('${u.id}')"><i class="ri-delete-bin-line"></i> Delete Account</button>`;
   
-  renderTable();
+  renderUserTable();
 }
 
 function closeDetail() {
@@ -1072,7 +1061,7 @@ function closeDetail() {
     dp.classList.add('hidden');
     dp.classList.remove('mobile-open');
   }
-  renderTable();
+  renderUserTable();
 }
 
 // ── User Modals ────────────────────────────────────────────
@@ -3702,23 +3691,6 @@ function exportAllCSV() {
   showToast('CSV exported ✓', 'success');
 }
 
-// ═══════════════════════════════════════════════════════════
-// UI HELPERS
-// ═══════════════════════════════════════════════════════════
-function statusBadge(s) {
-  const map = {
-    success: 'success',
-    approved: 'success',
-    pending: 'pending',
-    declined: 'declined',
-    failed: 'declined'
-  };
-  const cls = map[s] || 'pending';
-  const dot = { success: '🟢', pending: '🟡', declined: '🔴' } [cls] || '⚪';
-  return `<span class="badge ${cls}">${dot} ${(s||'pending').charAt(0).toUpperCase() + (s||'pending').slice(1)}</span>`;
-}
-
-
 // ── STATE ──────────────────────────────────────────────────
 let _shares = []; // share catalog
 let _investments = []; // all purchased shares across all users
@@ -4296,8 +4268,84 @@ async function uploadToImgBB(file, statusEl) {
   }
 }
 
+// ═══════════════════════════════════════════════════════════
+// UI HELPERS consolidated
 
-// ui helpers consolidated 
+function renderPagination(prefix, total, page, onPage, limit = 15) {
+  const totalPages = Math.ceil(total / limit);
+  const wrap = document.getElementById(`${prefix}Pagination`);
+  const info = document.getElementById(`${prefix}PageInfo`);
+  const btns = document.getElementById(`${prefix}PageBtns`);
+  
+  if (!wrap) return;
+  
+  // 1. Visibility: Hide if 0 or 1 page
+  if (totalPages <= 1) {
+    wrap.style.display = 'none';
+    if (info) info.textContent = total === 0 ? 'No results' : '';
+    return;
+  }
+  wrap.style.display = 'flex';
+  
+  // 2. Info: "1–15 of 100"
+  if (info) {
+    const start = (page - 1) * limit + 1;
+    const end = Math.min(page * limit, total);
+    info.textContent = `${start}–${end} of ${total}`;
+  }
+  
+  if (!btns) return;
+  // 3. Button Range Logic (Shows 5 buttons)
+  let s = Math.max(1, page - 2);
+  let e = Math.min(totalPages, s + 4);
+  if (e - s < 4) s = Math.max(1, e - 4);
+  s = Math.max(1, s);
+  
+  // 4. Build HTML
+  // Stringifying the callback allows arrow functions to work in onclick
+  const cb = `(${onPage.toString()})`;
+  let html = `
+    <button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="${cb}(${page - 1})">
+      <i class="ri-arrow-left-s-line"></i>
+    </button>`;
+  for (let i = s; i <= e; i++) {
+    html += `
+      <button class="page-btn ${i === page ? 'active' : ''}" onclick="${cb}(${i})">
+        ${i}
+      </button>`;
+  }
+  html += `
+    <button class="page-btn" ${page >= totalPages ? 'disabled' : ''} onclick="${cb}(${page + 1})">
+      <i class="ri-arrow-right-s-line"></i>
+    </button>`;
+  btns.innerHTML = html;
+}
+
+
+function paginate(arr, page, limit = 15) {
+  const start = (page - 1) * limit;
+  const end = page * limit;
+  return arr.slice(start, end);
+}
+
+function hidePagination(prefix) {
+  const wrap = document.getElementById(`${prefix}Pagination`);
+  if (wrap) wrap.style.display = 'none';
+}
+
+function statusBadge(s) {
+  const map = {
+    success: 'success',
+    approved: 'success',
+    pending: 'pending',
+    declined: 'declined',
+    failed: 'declined'
+  };
+  const cls = map[s] || 'pending';
+  const dot = { success: '🟢', pending: '🟡', declined: '🔴' } [cls] || '⚪';
+  return `<span class="badge ${cls}">${dot} ${(s||'pending').charAt(0).toUpperCase() + (s||'pending').slice(1)}</span>`;
+}
+
 function setError(tbodyId, cols, msg) {
   const el = document.getElementById(tbodyId);
   if (el) el.innerHTML = `<tr><td colspan="${cols}"><div class="state-box"><i class="ri-error-warning-line" style="color:var(--danger)"></i><p>${msg}</p></div></td></tr>`;
@@ -5145,104 +5193,3 @@ async function quickSetPaymentMode(mode) {
 loadPaymentModeBadge();
 // Boot — check session
 //checkAdminSession();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ══════════════════════════════════════════════════════════
-// UI HELPERS
-// ══════════════════════════════════════════════════════════
-
-
-/**
- * Universal Multi-Page Pagination
- * Compatible with: renderPagination(prefix, total, page, callback)
- */
-function renderPagination(prefix, total, page, onPage, limit = 15) {
-  const totalPages = Math.ceil(total / limit);
-  const wrap = document.getElementById(`${prefix}Pagination`);
-  const info = document.getElementById(`${prefix}PageInfo`);
-  const btns = document.getElementById(`${prefix}PageBtns`);
-  
-  if (!wrap) return;
-  
-  // 1. Visibility: Hide if 0 or 1 page
-  if (totalPages <= 1) {
-    wrap.style.display = 'none';
-    if (info) info.textContent = total === 0 ? 'No results' : '';
-    return;
-  }
-  wrap.style.display = 'flex';
-  
-  // 2. Info: "1–15 of 100"
-  if (info) {
-    const start = (page - 1) * limit + 1;
-    const end = Math.min(page * limit, total);
-    info.textContent = `${start}–${end} of ${total}`;
-  }
-  
-  if (!btns) return;
-  
-  // 3. Button Range Logic (Shows 5 buttons)
-  let s = Math.max(1, page - 2);
-  let e = Math.min(totalPages, s + 4);
-  if (e - s < 4) s = Math.max(1, e - 4);
-  s = Math.max(1, s);
-  
-  // 4. Build HTML
-  // Stringifying the callback allows arrow functions to work in onclick
-  const cb = `(${onPage.toString()})`;
-  
-  let html = `
-    <button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="${cb}(${page - 1})">
-      <i class="ri-arrow-left-s-line"></i>
-    </button>`;
-  
-  for (let i = s; i <= e; i++) {
-    html += `
-      <button class="page-btn ${i === page ? 'active' : ''}" onclick="${cb}(${i})">
-        ${i}
-      </button>`;
-  }
-  
-  html += `
-    <button class="page-btn" ${page >= totalPages ? 'disabled' : ''} onclick="${cb}(${page + 1})">
-      <i class="ri-arrow-right-s-line"></i>
-    </button>`;
-  
-  btns.innerHTML = html;
-}
-
-/**
- * Slices your array to show only the items for the current page.
- * @param {Array} arr - The full list of data (e.g., _wFiltered)
- * @param {number} page - The current page number
- * @param {number} limit - Items per page (defaults to 15 to match the UI)
- */
-function paginate(arr, page, limit = 15) {
-  const start = (page - 1) * limit;
-  const end = page * limit;
-  return arr.slice(start, end);
-}
-
-
-/**
- * Hides the pagination wrapper for a specific page.
- * @param {string} prefix - The ID prefix (e.g., 'withdraw', 'atSub')
- */
-function hidePagination(prefix) {
-  const wrap = document.getElementById(`${prefix}Pagination`);
-  if (wrap) wrap.style.display = 'none';
-}
