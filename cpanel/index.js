@@ -575,7 +575,9 @@ window.declineDeposit = async (id) => {
     yesLabel: 'Decline',
     onYes: async () => {
       const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
-      if (data?.success) loadDeposits();
+      if (data?.success) {
+        loadDeposits();showToast("Successfull deleted", 'success');
+      }
       else showToast(data?.error || 'Error.', 'error');
     }
   });
@@ -589,7 +591,8 @@ window.deleteDeposit = async (id) => {
     yesLabel: 'Delete',
     onYes: async () => {
       await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
-      loadAnalytics();
+      loadDeposits();
+      showToast("Successfull deleted", 'success');
     }
   });
 };
@@ -875,7 +878,7 @@ function renderTable() {
   if (filtered.length === 0) {
     tbody.innerHTML = '';
     if (empty) empty.style.display = 'flex';
-  //  renderPagination();
+    //  renderPagination();
     renderCards();
     return;
   }
@@ -5172,9 +5175,9 @@ function renderPagination(prefix, total, page, onPage, limit = 15) {
   const wrap = document.getElementById(`${prefix}Pagination`);
   const info = document.getElementById(`${prefix}PageInfo`);
   const btns = document.getElementById(`${prefix}PageBtns`);
-
+  
   if (!wrap) return;
-
+  
   // 1. Visibility: Hide if 0 or 1 page
   if (totalPages <= 1) {
     wrap.style.display = 'none';
@@ -5182,43 +5185,43 @@ function renderPagination(prefix, total, page, onPage, limit = 15) {
     return;
   }
   wrap.style.display = 'flex';
-
+  
   // 2. Info: "1–15 of 100"
   if (info) {
     const start = (page - 1) * limit + 1;
     const end = Math.min(page * limit, total);
     info.textContent = `${start}–${end} of ${total}`;
   }
-
+  
   if (!btns) return;
-
+  
   // 3. Button Range Logic (Shows 5 buttons)
   let s = Math.max(1, page - 2);
   let e = Math.min(totalPages, s + 4);
   if (e - s < 4) s = Math.max(1, e - 4);
   s = Math.max(1, s);
-
+  
   // 4. Build HTML
   // Stringifying the callback allows arrow functions to work in onclick
   const cb = `(${onPage.toString()})`;
-
+  
   let html = `
     <button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="${cb}(${page - 1})">
       <i class="ri-arrow-left-s-line"></i>
     </button>`;
-
+  
   for (let i = s; i <= e; i++) {
     html += `
       <button class="page-btn ${i === page ? 'active' : ''}" onclick="${cb}(${i})">
         ${i}
       </button>`;
   }
-
+  
   html += `
     <button class="page-btn" ${page >= totalPages ? 'disabled' : ''} onclick="${cb}(${page + 1})">
       <i class="ri-arrow-right-s-line"></i>
     </button>`;
-
+  
   btns.innerHTML = html;
 }
 
