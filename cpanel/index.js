@@ -15,7 +15,7 @@ const COLORS = ['#4CAF7D', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899',
   '#14b8a6', '#f97316', '#ef4444', '#22c55e', '#6366f1', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac', '#4318ff', '#05cd99', '#ee5d50', '#f6ad55', '#4299e1', '#9f7aea', '#ed64a6', '#38b2ac'
 ];
 
-const PER_PAGE = 15;
+const PER_PAGE = 2;
 
 let UM_USERS = []; // user management list (from API)
 let filtered = [];
@@ -5232,4 +5232,14 @@ function paginate(arr, page, limit = 15) {
   const start = (page - 1) * limit;
   const end = page * limit;
   return arr.slice(start, end);
+}
+
+
+/**
+ * Hides the pagination wrapper for a specific page.
+ * @param {string} prefix - The ID prefix (e.g., 'withdraw', 'atSub')
+ */
+function hidePagination(prefix) {
+  const wrap = document.getElementById(`${prefix}Pagination`);
+  if (wrap) wrap.style.display = 'none';
 }
