@@ -576,7 +576,7 @@ window.declineDeposit = async (id) => {
     onYes: async () => {
       const data = await api(`/api/admin/deposits/${id}`, { method: 'PUT', body: JSON.stringify({ status: 'declined' }) });
       if (data?.success) {
-        loadDeposits();showToast("Successfull deleted", 'success');
+        loadDeposits();showToast("Successfully declined", 'success');
       }
       else showToast(data?.error || 'Error.', 'error');
     }
@@ -592,7 +592,7 @@ window.deleteDeposit = async (id) => {
     onYes: async () => {
       await api(`/api/admin/deposits/${id}`, { method: 'DELETE' });
       loadDeposits();
-      showToast("Successfull deleted", 'success');
+      showToast("Successfully deleted", 'success');
     }
   });
 };
