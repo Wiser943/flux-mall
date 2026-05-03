@@ -1191,7 +1191,7 @@
       align-items: flex-end;
       gap: 8px;
       flex-shrink: 0;
-      position: relative;
+      position: relative;z-index: 90000000000!important;
     }
     
     /* Reply bar above input */

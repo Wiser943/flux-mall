@@ -795,11 +795,10 @@
       
       <!-- Filter tabs -->
       <div class="filter-tabs">
-        <button class="filter-tab active" onclick="setFilter('all', this)">All <span class="tab-badge" id="badge-all">5</span></button>
-        <button class="filter-tab" onclick="setFilter('unread', this)">Unread <span class="tab-badge" id="badge-unread">3</span></button>
+        <button class="filter-tab active" onclick="setFilter('all', this)">All <span class="tab-badge" id="badge-all"></span></button>
+        <button class="filter-tab" onclick="setFilter('unread', this)">Unread <span class="tab-badge" id="badge-unread"></span></button>
         <button class="filter-tab" onclick="setFilter('open', this)">Open</button>
         <button class="filter-tab" onclick="setFilter('resolved', this)">Resolved</button>
-        <button class="filter-tab" onclick="setFilter('pinned', this)">Pinned</button>
       </div>
       
       <!-- Chat list -->
@@ -811,7 +810,7 @@
       </div>
       
       <!-- Stats footer -->
-      <div class="sidebar-footer">
+      <div class="chat-list-footer">
         <div class="sf-stat">
           <span class="sf-stat-val" id="stat-open">8</span>
           <span class="sf-stat-label">Open</span>
@@ -861,6 +860,14 @@
             <button class="icon-btn" onclick="toggleSearch()" title="Search messages" id="msgSearchBtn"><i class="ri-search-line"></i></button>
             <button class="icon-btn" onclick="toggleUserPanel()" title="User info" id="uipToggleBtn"><i class="ri-user-line"></i></button>
             <button class="icon-btn" id="moreBtn" title="More options" onclick="showMoreMenu()"><i class="ri-more-2-fill"></i></button>
+                                                <button onclick="endAdminChatSession()" style="display:none;" title="End session" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
+                                      <i class="ri-stop-circle-line" style="font-size:18px;"></i>
+                                    </button>
+                                    
+                                    <!-- Delete chat -->
+                                    <button onclick="deleteAdminChatSession()" title="Delete chat" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
+                                      <i class="ri-delete-bin-line" style="font-size:18px;"></i>
+                                    </button>
           </div>
         </div>
         

@@ -5451,34 +5451,7 @@ window.saveChatSettings = async function() {
   } else { alert(data?.error || 'Error saving settings.'); }
 };
 
-// ─── THEME ────────────────────────────────────────────────
-function initTheme() {
-  const saved = localStorage.getItem('fm_chat_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-}
 
-function toggleTheme() {
-  const curr = document.documentElement.getAttribute('data-theme');
-  const next = curr === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('fm_chat_theme', next);
-}
-
-// ─── TOAST ────────────────────────────────────────────────
-function toast(msg, type = 'success') {
-  const container = document.getElementById('toast');
-  if (!container) return;
-  const icons = { success:'ri-check-circle-line', error:'ri-error-warning-line', info:'ri-information-line' };
-  const el = document.createElement('div');
-  el.className = `toast-item ${type}`;
-  el.innerHTML = `<i class="${icons[type] || icons.info}"></i><span>${msg}</span>`;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transition = '0.25s';
-    setTimeout(() => el.remove(), 250);
-  }, 2800);
-}
 
 // ─── HELPERS ──────────────────────────────────────────────
 function now() {
