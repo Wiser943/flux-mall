@@ -808,17 +808,6 @@
             <i class="ri-search-2-line"></i>
             No chats found
           </div>
-                      <div class="input-area" id="inputArea">
-              <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
-                <i class="ri-flashlight-line"></i>
-              </button>
-              <div class="input-field-wrap">
-                <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
-                <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
-              </div>
-              <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
-            </div>
-            
           <!-- Stats footer -->
           <div class="chat-list-footer">
             <div class="sf-stat">
@@ -932,6 +921,16 @@
             </div>
             
             <!-- Input area -->
+                      <div class="input-area" id="inputArea">
+              <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
+                <i class="ri-flashlight-line"></i>
+              </button>
+              <div class="input-field-wrap">
+                <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
+                <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
+              </div>
+              <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
+            </div>
 
           </div><!-- /chat-window -->
           

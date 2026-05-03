@@ -1255,7 +1255,7 @@
       border: 1px solid var(--border);
       border-radius: var(--r);
       overflow: hidden;
-      display: none;
+      display: none;z-index: 2000px;
       box-shadow: var(--shadow);
     }
     
@@ -1401,7 +1401,7 @@
       width: 280px;
       display: none;
       box-shadow: var(--shadow);
-      z-index: 30;
+      z-index: 3000;
       animation: fadeUp 0.18s ease;
     }
     
