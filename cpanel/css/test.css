@@ -650,6 +650,7 @@
       flex-direction: column;
       height: 100%;
       flex: 1;
+      z-index: 900000000!important;
     }
     
     .chat-window.active {
@@ -666,7 +667,6 @@
       gap: 12px;
       flex-shrink: 0;
       position: relative;
-      z-index: 5;
     }
     
     .chat-header-back {
@@ -1255,7 +1255,6 @@
       overflow: hidden;
       display: none;
       box-shadow: var(--shadow);
-      z-index: 20;
     }
     
     .quick-replies.visible {
@@ -1500,60 +1499,8 @@
       background: var(--border);
       margin: 4px 0;
     }
-    
-    /* ══════════════════════════════════════
-   TOAST
-══════════════════════════════════════ */
-    #toast {
-      position: fixed;
-      top: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      pointer-events: none;
-      min-width: min(90vw, 300px);
-    }
-    
-    .toast-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: var(--r-sm);
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: white;
-      animation: toastIn 0.25s ease;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    }
-    
-    @keyframes toastIn {
-      from {
-        opacity: 0;
-        transform: translateY(-8px) translateX(-50%) scale(0.95)
-      }
-      
-      to {
-        opacity: 1;
-        transform: translateY(0) translateX(-50%) scale(1)
-      }
-    }
-    
-    .toast-item.success {
-      background: var(--green);
-    }
-    
-    .toast-item.error {
-      background: var(--danger);
-    }
-    
-    .toast-item.info {
-      background: var(--blue);
-    }
-    
+
+
     /* ══════════════════════════════════════
    SESSION ENDED BANNER
 ══════════════════════════════════════ */
@@ -1603,7 +1550,7 @@
       .chat-main {
         position: absolute;
         inset: 0;
-        z-index: 100;
+        z-index: 1000;
         transform: translateX(100%);
         transition: transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       }
@@ -1645,48 +1592,7 @@
       }
     }
     
-    /* ══════════════════════════════════════
-   THEME TOGGLE BTN
-══════════════════════════════════════ */
-    .theme-fab {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 999;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      color: var(--accent);
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow);
-      transition: transform var(--ease), border-color var(--ease);
-    }
-    
-    .theme-fab:hover {
-      transform: scale(1.1);
-      border-color: var(--accent);
-    }
-    
-    .theme-fab .i-moon {
-      display: block;
-    }
-    
-    .theme-fab .i-sun {
-      display: none;
-    }
-    
-    [data-theme="light"] .theme-fab .i-moon {
-      display: none;
-    }
-    
-    [data-theme="light"] .theme-fab .i-sun {
-      display: block;
-    }
+
     
     /* Scrollbar for messages */
     @media (max-width: 768px) {
