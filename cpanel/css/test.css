@@ -1,4 +1,4 @@
-    /* ══════════════════════════════════════
+/* ══════════════════════════════════════
    VARIABLES
 ══════════════════════════════════════ */
 
@@ -104,7 +104,7 @@
     }
     
     /* ══════════════════════════════════════
-   APP SHELL — Desktop: sidebar + main
+   APP SHELL
 ══════════════════════════════════════ */
     .app {
       display: flex;
@@ -114,7 +114,7 @@
     }
     
     /* ══════════════════════════════════════
-   SIDEBAR (Chat List)
+   SIDEBAR
 ══════════════════════════════════════ */
     .sideba {
       width: 340px;
@@ -129,7 +129,6 @@
       z-index: 10;
     }
     
-    /* Sidebar header */
     .sidebar-header {
       padding: 14px 16px 10px;
       border-bottom: 1px solid var(--border);
@@ -207,7 +206,6 @@
       background: var(--green-pale);
     }
     
-    /* Search bar */
     .search-wrap {
       position: relative;
     }
@@ -272,7 +270,6 @@
       background: var(--danger);
     }
     
-    /* Filter tabs */
     .filter-tabs {
       display: flex;
       gap: 4px;
@@ -322,7 +319,6 @@
       border: 2px solid var(--sidebar-bg);
     }
     
-    /* Chat list */
     .chat-list {
       flex: 1;
       overflow-y: auto;
@@ -343,7 +339,6 @@
       border-radius: 4px;
     }
     
-    /* Chat item */
     .chat-item {
       display: flex;
       align-items: center;
@@ -374,7 +369,6 @@
       border-radius: 0 3px 3px 0;
     }
     
-    /* Avatar */
     .chat-avatar {
       position: relative;
       flex-shrink: 0;
@@ -417,7 +411,6 @@
       display: block;
     }
     
-    /* Chat info */
     .chat-info {
       flex: 1;
       min-width: 0;
@@ -497,7 +490,6 @@
       display: flex;
     }
     
-    /* Muted icon */
     .muted-icon {
       color: var(--text-muted);
       font-size: 0.75rem;
@@ -512,7 +504,6 @@
       background: var(--text-muted);
     }
     
-    /* Pinned */
     .pin-icon {
       color: var(--text-muted);
       font-size: 0.7rem;
@@ -523,7 +514,6 @@
       display: block;
     }
     
-    /* Typing preview */
     .typing-preview {
       font-size: 0.78rem;
       color: var(--accent);
@@ -539,7 +529,6 @@
       display: block;
     }
     
-    /* Search highlight */
     mark.hl {
       background: rgba(76, 175, 125, 0.3);
       color: var(--accent);
@@ -547,7 +536,6 @@
       padding: 0 1px;
     }
     
-    /* No results */
     .no-chats {
       display: none;
       text-align: center;
@@ -566,7 +554,6 @@
       display: block;
     }
     
-    /* Sidebar footer stats */
     .sidebar-footer {
       padding: 10px 16px;
       border-top: 1px solid var(--border);
@@ -615,7 +602,6 @@
       position: relative;
     }
     
-    /* Empty state */
     .chat-empty {
       flex: 1;
       display: flex;
@@ -645,20 +631,21 @@
       max-width: 280px;
     }
     
-    /* ── CHAT WINDOW ── */
+    /* ── CHAT WINDOW ──
+       Key: use flex column so messages-area can flex-grow
+       and the input stays pinned to the bottom naturally.
+    */
     .chat-window {
       display: none;
       flex-direction: column;
-      height: 100%;
-      flex: 1;
-      z-index: 900000000 !important;
+      height: 100%;       /* fill parent .chat-main */
+      overflow: hidden;   /* children manage their own scroll */
     }
     
     .chat-window.active {
       display: flex;
     }
     
-    /* Chat header */
     .chat-header {
       background: var(--header-bg);
       border-bottom: 1px solid var(--border);
@@ -666,7 +653,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      flex-shrink: 0;
+      flex-shrink: 0;   /* never shrink */
       position: relative;
     }
     
@@ -734,7 +721,6 @@
       gap: 2px;
     }
     
-    /* User info panel (right side on desktop) */
     .user-info-panel {
       width: 260px;
       min-width: 260px;
@@ -885,10 +871,15 @@
       background: rgba(239, 68, 68, 0.05);
     }
     
-    /* ── MESSAGES AREA ── */
+    /* ══════════════════════════════════════
+   MESSAGES AREA — the scrollable body
+   flex:1 + overflow-y:auto is the fix.
+   No height, no position tricks needed.
+══════════════════════════════════════ */
     .messages-area {
-      flex: 1;
-      overflow-y: auto;
+      flex: 1;              /* grow to fill remaining space between header and input */
+      min-height: 0;        /* critical: lets flex child shrink below content height */
+      overflow-y: auto;     /* scroll here, not on a parent */
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
@@ -896,7 +887,6 @@
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
       background: var(--chat-bg);
-      /* Subtle pattern */
       background-image: radial-gradient(circle, rgba(76, 175, 125, 0.03) 1px, transparent 1px);
       background-size: 24px 24px;
     }
@@ -914,7 +904,6 @@
       border-radius: 4px;
     }
     
-    /* Date separator */
     .date-sep {
       display: flex;
       align-items: center;
@@ -942,7 +931,6 @@
       border: 1px solid var(--border);
     }
     
-    /* Message bubble */
     .msg-wrap {
       display: flex;
       margin: 2px 0;
@@ -950,28 +938,13 @@
     }
     
     @keyframes msgIn {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
     
-    .msg-wrap.out {
-      justify-content: flex-end;
-    }
-    
-    .msg-wrap.in {
-      justify-content: flex-start;
-    }
-    
-    .msg-wrap.continuation {
-      margin-top: 1px;
-    }
+    .msg-wrap.out { justify-content: flex-end; }
+    .msg-wrap.in  { justify-content: flex-start; }
+    .msg-wrap.continuation { margin-top: 1px; }
     
     .bubble {
       max-width: 72%;
@@ -996,7 +969,6 @@
       color: var(--text);
     }
     
-    /* First bubble in group gets tail */
     .msg-wrap.out:not(.continuation) .bubble::after {
       content: '';
       position: absolute;
@@ -1026,7 +998,6 @@
       color: var(--text);
     }
     
-    /* Bubble sender label (for inbound) */
     .bubble-sender {
       font-size: 0.7rem;
       font-weight: 700;
@@ -1035,7 +1006,6 @@
       display: block;
     }
     
-    /* Message meta (time + status) */
     .bubble-meta {
       display: flex;
       align-items: center;
@@ -1058,7 +1028,6 @@
       color: var(--green-light);
     }
     
-    /* Reply quote inside bubble */
     .bubble-reply {
       background: rgba(0, 0, 0, 0.12);
       border-left: 3px solid var(--accent);
@@ -1083,7 +1052,6 @@
       text-overflow: ellipsis;
     }
     
-    /* Image bubble */
     .bubble-img {
       max-width: 220px;
       border-radius: 10px;
@@ -1097,7 +1065,6 @@
       display: block;
     }
     
-    /* Emoji-only message */
     .bubble.emoji-only .bubble-text {
       font-size: 2rem;
       line-height: 1.2;
@@ -1113,7 +1080,6 @@
       display: none;
     }
     
-    /* System message */
     .sys-msg {
       text-align: center;
       margin: 8px 0;
@@ -1129,7 +1095,6 @@
       padding: 3px 12px;
     }
     
-    /* Typing indicator */
     .typing-bubble {
       display: none;
       align-items: flex-end;
@@ -1160,43 +1125,32 @@
       animation: typeDot 1.4s infinite;
     }
     
-    .typing-dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .typing-dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
     
     @keyframes typeDot {
-      
-      0%,
-      60%,
-      100% {
-        transform: translateY(0);
-        opacity: 0.4
-      }
-      
-      30% {
-        transform: translateY(-5px);
-        opacity: 1
-      }
+      0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+      30%           { transform: translateY(-5px); opacity: 1;   }
     }
     
-
+    /* ══════════════════════════════════════
+   INPUT AREA — pinned to bottom naturally
+   via flex column on .chat-window.
+   NO position:absolute, NO bottom offset.
+══════════════════════════════════════ */
     .input-area {
-  background: var(--header-bg);
-  border-top: 1px solid var(--border);
-  padding: 10px;
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  flex-shrink: 0;bottom: 500px;
-  width: 100%;
-  position: relative;z-index: 90000000;
-}
-
-    /* Reply bar above input */
+      background: var(--header-bg);
+      border-top: 1px solid var(--border);
+      padding: 10px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      flex-shrink: 0;   /* never shrink — messages area takes leftover space */
+      position: relative;
+      z-index: 10;
+      width: 100%;
+    }
+    
     .reply-bar {
       position: absolute;
       bottom: 100%;
@@ -1245,7 +1199,6 @@
       color: var(--danger);
     }
     
-    /* Quick replies */
     .quick-replies {
       position: absolute;
       bottom: 100%;
@@ -1255,7 +1208,8 @@
       border: 1px solid var(--border);
       border-radius: var(--r);
       overflow: hidden;
-      display: none;z-index: 2000px;
+      display: none;
+      z-index: 20;
       box-shadow: var(--shadow);
     }
     
@@ -1285,9 +1239,7 @@
       gap: 8px;
     }
     
-    .qr-item:last-child {
-      border-bottom: none;
-    }
+    .qr-item:last-child { border-bottom: none; }
     
     .qr-item:hover {
       background: var(--green-pale);
@@ -1344,9 +1296,7 @@
       scrollbar-width: none;
     }
     
-    .msg-input::-webkit-scrollbar {
-      display: none;
-    }
+    .msg-input::-webkit-scrollbar { display: none; }
     
     .msg-input::placeholder {
       color: var(--text-muted);
@@ -1389,10 +1339,9 @@
       transform: scale(0.96);
     }
     
-    /* ── EMOJI PICKER ── */
     .emoji-picker {
       position: absolute;
-      bottom: 370px;
+      bottom: calc(100% + 8px);
       right: 60px;
       background: var(--card);
       border: 1px solid var(--border);
@@ -1401,7 +1350,7 @@
       width: 280px;
       display: none;
       box-shadow: var(--shadow);
-      z-index: 3000;
+      z-index: 30;
       animation: fadeUp 0.18s ease;
     }
     
@@ -1410,15 +1359,8 @@
     }
     
     @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
     
     .emoji-grid {
@@ -1442,7 +1384,7 @@
     }
     
     /* ══════════════════════════════════════
-   CONTEXT MENU (right-click on bubble)
+   CONTEXT MENU
 ══════════════════════════════════════ */
     .context-menu {
       position: fixed;
@@ -1484,24 +1426,15 @@
       text-align: center;
     }
     
-    .ctx-item.danger {
-      color: var(--danger);
-    }
-    
-    .ctx-item.danger i {
-      color: var(--danger);
-    }
-    
-    .ctx-item.danger:hover {
-      background: rgba(239, 68, 68, 0.06);
-    }
+    .ctx-item.danger { color: var(--danger); }
+    .ctx-item.danger i { color: var(--danger); }
+    .ctx-item.danger:hover { background: rgba(239, 68, 68, 0.06); }
     
     .ctx-divider {
       height: 1px;
       background: var(--border);
       margin: 4px 0;
     }
-    
     
     /* ══════════════════════════════════════
    SESSION ENDED BANNER
@@ -1539,7 +1472,7 @@
     }
     
     /* ══════════════════════════════════════
-   MOBILE — Full-screen chat overlay
+   MOBILE
 ══════════════════════════════════════ */
     @media (max-width: 768px) {
       .sideba {
@@ -1568,8 +1501,10 @@
       .user-info-panel {
         display: none !important;
       }
-      .input-area {bottom: 200px;
-}
+
+      .messages-area {
+        padding: 12px 14px;
+      }
     }
     
     @media (min-width: 769px) {
@@ -1578,7 +1513,6 @@
       }
     }
     
-    /* Large desktop — show user info panel */
     @media (min-width: 1100px) {
       .user-info-panel {
         display: flex;
@@ -1593,14 +1527,5 @@
     @media (max-width: 1099px) {
       .user-info-panel {
         display: none !important;
-      }
-    }
-    
-    
-    
-    /* Scrollbar for messages */
-    @media (max-width: 768px) {
-      .messages-area {
-        padding: 12px 14px;
       }
     }
