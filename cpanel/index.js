@@ -4348,7 +4348,6 @@ function playAdminChatSound() {
 function init() {
   loadAdminChatSessions();
   buildEmojiGrid();
-  initTheme();
 
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.context-menu')) hideCtxMenu();
@@ -5000,7 +4999,7 @@ function initScrollToBottom() {
     btn = document.createElement('button');
     btn.id = 'scrollToBottomBtn';
     btn.innerHTML = '↓';
-    btn.style.cssText = 'display:none;position:absolute;bottom:80px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--primary,#4318ff);color:#fff;border:none;cursor:pointer;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:50;align-items:center;justify-content:center;';
+    btn.style.cssText = 'display:none;position:absolute;bottom:80px;right:16px;width:36px;height:36px;border-radius:50%;background:var(--primary,#4318ff);color:#fff;border:none;cursor:pointer;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:5000;align-items:center;justify-content:center;';
     btn.onclick = () => { container.scrollTop = container.scrollHeight; };
     if (container.parentElement) {
       container.parentElement.style.position = 'relative';

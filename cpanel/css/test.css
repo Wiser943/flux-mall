@@ -1,6 +1,7 @@
     /* ══════════════════════════════════════
    VARIABLES
 ══════════════════════════════════════ */
+
     :root {
       --green: #2E7D52;
       --green-light: #4CAF7D;
@@ -650,7 +651,7 @@
       flex-direction: column;
       height: 100%;
       flex: 1;
-      z-index: 900000000!important;
+      z-index: 900000000 !important;
     }
     
     .chat-window.active {
@@ -1168,7 +1169,7 @@
     }
     
     @keyframes typeDot {
-
+      
       0%,
       60%,
       100% {
@@ -1182,18 +1183,19 @@
       }
     }
     
-    /* ── INPUT BAR ── */
+
     .input-area {
-      background: var(--header-bg);
-      border-top: 1px solid var(--border);
-      padding: 10px 12px;
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
-      flex-shrink: 0;
-      position: relative;z-index: 90000000000!important;
-    }
-    
+  background: var(--header-bg);
+  border-top: 1px solid var(--border);
+  padding: 10px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 100%;
+  position: relative;
+}
+
     /* Reply bar above input */
     .reply-bar {
       position: absolute;
@@ -1499,8 +1501,8 @@
       background: var(--border);
       margin: 4px 0;
     }
-
-
+    
+    
     /* ══════════════════════════════════════
    SESSION ENDED BANNER
 ══════════════════════════════════════ */
@@ -1540,7 +1542,7 @@
    MOBILE — Full-screen chat overlay
 ══════════════════════════════════════ */
     @media (max-width: 768px) {
-      .sideba{
+      .sideba {
         width: 100%;
         min-width: 0;
         position: relative;
@@ -1592,7 +1594,7 @@
       }
     }
     
-
+    
     
     /* Scrollbar for messages */
     @media (max-width: 768px) {

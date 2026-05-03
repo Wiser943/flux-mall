@@ -1362,7 +1362,7 @@ td:first-child { padding-left: 20px; }
         position: fixed;
         bottom: 54px;
         width: 95%;
-        z-index: 10;
+        z-index: 10;display: flex;
     }
 
     .page-header h1 { font-size: 18px; }
