@@ -1392,7 +1392,7 @@
     /* ── EMOJI PICKER ── */
     .emoji-picker {
       position: absolute;
-      bottom: 170px;
+      bottom: 370px;
       right: 60px;
       background: var(--card);
       border: 1px solid var(--border);
@@ -1568,7 +1568,7 @@
       .user-info-panel {
         display: none !important;
       }
-      .input-area {bottom: 100px;
+      .input-area {bottom: 300px;
 }
     }
     
