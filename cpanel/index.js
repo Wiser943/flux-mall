@@ -4347,6 +4347,7 @@ function playAdminChatSound() {
 // ─── INIT ─────────────────────────────────────────────────
 function init() {
   loadAdminChatSessions();
+  maybeRestoreChatFromUrl()
   buildEmojiGrid();
 
   document.addEventListener('click', (e) => {
@@ -4367,13 +4368,38 @@ function init() {
   });
 }
 
+//pasted
+// ─── URL HELPERS ──────────────────────────────────────────
+function getChatIdFromUrl() {
+  const hash = window.location.hash; // e.g. #/chat?chat=abc123
+  const match = hash.match(/[?&]chat=([^&]+)/);
+  return match ? match[1] : null;
+}
+
+function setChatIdInUrl(sessionId) {
+  // Preserve existing hash path (e.g. #/chat) and inject/replace ?chat=
+  const hash = window.location.hash || '#/chat';
+  const basePath = hash.split('?')[0]; // e.g. #/chat
+  const newHash = sessionId ? `${basePath}?chat=${sessionId}` : basePath;
+  history.pushState(null, '', window.location.pathname + window.location.search.split('?')[0] + newHash.replace('#', '#'));
+  // Simpler: just update the hash portion
+  window.location.hash = newHash.replace(/^#/, '');
+}
+
+function clearChatIdFromUrl() {
+  const hash = window.location.hash || '';
+  const basePath = hash.split('?')[0];
+  // Use replaceState so back button goes to "no chat" not an infinite loop
+  history.replaceState(null, '', window.location.pathname + '#' + basePath.replace(/^#/, ''));
+}
+
 // ─── LOAD SESSION LIST (real API) ────────────────────────
 window.loadAdminChatSessions = async function() {
   const list    = document.getElementById('chatList');
   const noChats = document.getElementById('noChats');
   if (!list) return;
 
-  const logo = await getAdminSiteLogo();
+  await getAdminSiteLogo();
   let data;
   try { data = await api('/api/admin/chat/sessions'); } catch(e) { data = null; }
 
@@ -4401,7 +4427,6 @@ window.loadAdminChatSessions = async function() {
     );
   }
 
-  // Sort: pinned first, then by lastMessageAt
   sessions.sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
@@ -4416,15 +4441,15 @@ window.loadAdminChatSessions = async function() {
     const timeStr   = s.lastMessageAt
       ? new Date(s.lastMessageAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
       : '';
-    const initials  = (s.username || 'U').substring(0, 2).toUpperCase();
-    const name      = q ? highlightText(escapeHtml(s.username || ''), q) : escapeHtml(s.username || '');
-    const preview   = q ? highlightText(escapeHtml(s.lastMessage || 'No messages'), q) : escapeHtml(s.lastMessage || 'No messages');
+    const initials = (s.username || 'U').substring(0, 2).toUpperCase();
+    const name     = q ? highlightText(escapeHtml(s.username || ''), q) : escapeHtml(s.username || '');
+    const preview  = q ? highlightText(escapeHtml(s.lastMessage || 'No messages'), q) : escapeHtml(s.lastMessage || 'No messages');
 
     return `
       <div class="chat-item ${hasUnread ? 'unread' : ''} ${s.pinned ? 'pinned' : ''} ${isActive ? 'active' : ''}"
         id="ci-${s._id}"
-        onclick="openChat('${s._id}', ${JSON.stringify(s).replace(/"/g, '&quot;')})"
-        oncontextmenu="chatItemCtx(event, '${s._id}', ${JSON.stringify(s).replace(/"/g, '&quot;')})"
+        onclick="openChat('${s._id}')"
+        oncontextmenu="chatItemCtx(event, '${s._id}')"
       >
         <div class="chat-avatar">
           <div class="avatar-img initials" style="border-color:var(--primary)22;">${initials}</div>
@@ -4447,111 +4472,186 @@ window.loadAdminChatSessions = async function() {
       </div>`;
   }).join('');
 
-  // Update total unread badge
   const totalUnread = data.sessions.reduce((a, s) => a + (s.unreadAdmin || 0), 0);
   const badge = document.getElementById('adminChatBadge');
   if (badge) { badge.textContent = totalUnread; badge.style.display = totalUnread > 0 ? 'flex' : 'none'; }
 };
 
-// ─── OPEN CHAT (maps to openAdminChatSession) ────────────
-window.openChat = async function(sessionId, sessionData) {
+// ─── FETCH SESSION DATA BY ID ─────────────────────────────
+async function fetchSessionById(sessionId) {
+  try {
+    // Try a direct session endpoint first
+    const data = await api(`/api/admin/chat/session/${sessionId}`);
+    if (data?.success && data.session) return data.session;
+  } catch(e) {}
+
+  // Fallback: fetch all sessions and find the matching one
+  try {
+    const data = await api('/api/admin/chat/sessions');
+    if (data?.success) {
+      return data.sessions.find(s => s._id === sessionId) || null;
+    }
+  } catch(e) {}
+
+  return null;
+}
+
+// ─── OPEN CHAT — accepts sessionId only, fetches its own data ─
+window.openChat = async function(sessionId) {
+  if (!sessionId) return;
+
+  // If same session already open, do nothing
+  if (activeSessionId === sessionId) return;
+
+  // Update URL first (so back button works immediately)
+  setChatIdInUrl(sessionId);
+
+  // Show a loading state in the header while fetching
   activeSessionId = sessionId;
   activeUserId    = sessionId;
-  activeUserData  = sessionData?.userId || sessionData || null;
-  adminChatSessionStatus = sessionData?.status || 'active';
   adminAllMessages  = [];
   adminReplyingTo   = null;
   adminEditingMsgId = null;
 
-  const status   = sessionData?.status || 'active';
-  const username = sessionData?.username || 'User';
-  const userData = sessionData?.userId || null;
+  // Show window immediately with skeleton header
+  const chatEmpty  = document.getElementById('chatEmpty');
+  const chatWindow = document.getElementById('chatWindow');
+  if (chatEmpty)  chatEmpty.style.display = 'none';
+  if (chatWindow) chatWindow.classList.add('active');
 
-  const logo = await getAdminSiteLogo();
+  const hdrName = document.getElementById('hdrName');
+  if (hdrName) hdrName.textContent = 'Loading…';
+
+  document.getElementById('chatMain')?.classList.add('mobile-open');
+
+  // Fetch session data from API
+  const sessionData = await fetchSessionById(sessionId);
+  if (!sessionData) {
+    if (hdrName) hdrName.textContent = 'Unknown chat';
+    return;
+  }
+
+  // Populate state from fetched data
+  activeUserData         = sessionData.userId || sessionData;
+  adminChatSessionStatus = sessionData.status || 'active';
+
+  const status   = sessionData.status   || 'active';
+  const username = sessionData.username || 'User';
+  const userData = sessionData.userId   || null;
+  const isEnded  = status === 'ended';
 
   // Update sidebar active state
   document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
   const ci = document.getElementById(`ci-${sessionId}`);
   if (ci) ci.classList.add('active');
 
-  // Show chat window (initial UI structure)
-  const chatEmpty = document.getElementById('chatEmpty');
-  const chatWindow = document.getElementById('chatWindow');
-  if (chatEmpty) chatEmpty.style.display = 'none';
-  if (chatWindow) chatWindow.classList.add('active');
-
-  // Set header fields (initial UI IDs)
-  const initials = username.substring(0, 2).toUpperCase();
+  // Header
+  const initials  = username.substring(0, 2).toUpperCase();
   const hdrAvatar = document.getElementById('hdrAvatar');
   if (hdrAvatar) hdrAvatar.textContent = initials;
-
-  const hdrName = document.getElementById('hdrName');
-  if (hdrName) hdrName.textContent = username;
+  if (hdrName)   hdrName.textContent   = username;
 
   const statusEl = document.getElementById('hdrStatus');
   const dotEl    = document.getElementById('hdrOnlineDot');
-  const isEnded  = status === 'ended';
   if (statusEl) {
-    statusEl.textContent  = isEnded ? 'Session Ended' : 'Active';
-    statusEl.className    = `chat-header-status ${isEnded ? '' : 'online'}`;
+    statusEl.textContent = isEnded ? 'Session Ended' : 'Active';
+    statusEl.className   = `chat-header-status ${isEnded ? '' : 'online'}`;
   }
   if (dotEl) dotEl.classList.toggle('visible', !isEnded);
 
-  // Update user info panel if available
+  // User info panel
   if (userData && typeof userData === 'object') {
-    const uipName = document.getElementById('uipName');
-    const uipEmail = document.getElementById('uipEmail');
     const uipAvatar = document.getElementById('uipAvatar');
+    const uipName   = document.getElementById('uipName');
+    const uipEmail  = document.getElementById('uipEmail');
     if (uipAvatar) uipAvatar.textContent = initials;
-    if (uipName)  uipName.textContent  = userData.username || username;
-    if (uipEmail) uipEmail.textContent = userData.email || '';
-    const uipBalance   = document.getElementById('uipBalance');
-    const uipShares    = document.getElementById('uipShares');
-    const uipDeposits  = document.getElementById('uipDeposits');
-    const uipReferrals = document.getElementById('uipReferrals');
-    if (uipBalance)   uipBalance.textContent   = userData.balance   || '—';
-    if (uipShares)    uipShares.textContent    = userData.shares    || '0';
-    if (uipDeposits)  uipDeposits.textContent  = userData.deposits  || '0';
-    if (uipReferrals) uipReferrals.textContent = userData.referrals || '0';
+    if (uipName)   uipName.textContent   = userData.username || username;
+    if (uipEmail)  uipEmail.textContent  = userData.email    || '';
+    const fields = { uipBalance: 'balance', uipShares: 'shares', uipDeposits: 'deposits', uipReferrals: 'referrals' };
+    Object.entries(fields).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = userData[key] ?? '—';
+    });
   }
 
   // Session ended bar
   const seb = document.getElementById('sessionEndedBar');
   if (seb) seb.classList.toggle('visible', isEnded);
 
-  // Input area visibility
-  const inputArea = document.getElementById('inputArea');
+  // Input area
+  const inputArea         = document.getElementById('inputArea');
   const adminChatInputBar = document.getElementById('adminChatInputBar');
-  const polarBtn  = document.getElementById('adminPolarBtn');
+  const polarBtn          = document.getElementById('adminPolarBtn');
   if (inputArea) {
-    inputArea.style.opacity        = isEnded ? '0.5' : '';
-    inputArea.style.pointerEvents  = isEnded ? 'none' : '';
+    inputArea.style.opacity       = isEnded ? '0.5' : '';
+    inputArea.style.pointerEvents = isEnded ? 'none' : '';
   }
   if (adminChatInputBar) adminChatInputBar.style.display = isEnded ? 'none' : 'flex';
-  if (polarBtn) polarBtn.style.display = isEnded ? 'none' : 'inline-block';
+  if (polarBtn)          polarBtn.style.display          = isEnded ? 'none' : 'inline-block';
 
-  // Block button state
   updateBlockBtn(userData?.status);
-
-  // Status ticker
   startStatusTicker(sessionId, status, userData?.status);
-
-  // Reset reply bar
   cancelReply();
-  cancelAdminReply();
-
-  // Mobile: slide in
-  document.getElementById('chatMain')?.classList.add('mobile-open');
 
   await loadAdminMessages(sessionId);
   startAdminChatPolling(sessionId);
   startAdminTypingPoll(sessionId);
   loadAdminChatSessions();
-
   setTimeout(initScrollToBottom, 200);
 };
 
-// ─── LOAD MESSAGES (real API, renders into initial UI IDs) ─
+// ─── CLOSE CHAT / MOBILE BACK ─────────────────────────────
+window.closeMobileChat = function() {
+  clearChatIdFromUrl();
+  _closeChatUI();
+};
+window.closeChatOnMobile = window.closeMobileChat;
+
+function _closeChatUI() {
+  stopAdminChatPolling();
+  activeSessionId = null;
+  activeUserId    = null;
+
+  document.getElementById('chatMain')?.classList.remove('mobile-open');
+  document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+
+  const chatEmpty  = document.getElementById('chatEmpty');
+  const chatWindow = document.getElementById('chatWindow');
+  if (chatEmpty)  chatEmpty.style.display = 'flex';
+  if (chatWindow) chatWindow.classList.remove('active');
+
+  // Also support dmfirst panel IDs
+  const dmEmpty  = document.getElementById('chatWindowEmpty');
+  const dmActive = document.getElementById('chatWindowActive');
+  if (dmEmpty)  dmEmpty.style.display  = 'flex';
+  if (dmActive) dmActive.style.display = 'none';
+
+  const backBtn = document.getElementById('chatBackBtn');
+  if (backBtn) backBtn.style.display = 'none';
+}
+
+// ─── HANDLE BROWSER BACK / FORWARD ───────────────────────
+window.addEventListener('popstate', () => {
+  const chatId = getChatIdFromUrl();
+  if (chatId) {
+    // Navigated forward to a chat
+    openChat(chatId);
+  } else {
+    // Navigated back to no-chat state
+    _closeChatUI();
+  }
+});
+
+// ─── AUTO-OPEN ON PAGE LOAD/REFRESH ──────────────────────
+// Called once sessions are loaded so the sidebar can highlight the active item
+async function maybeRestoreChatFromUrl() {
+  const chatId = getChatIdFromUrl();
+  if (chatId) {
+    await openChat(chatId);
+  }
+}
+
+// ─── LOAD MESSAGES ────────────────────────────────────────
 async function loadAdminMessages(sessionId) {
   const area = document.getElementById('messagesArea');
   if (!area) return;
@@ -4560,14 +4660,14 @@ async function loadAdminMessages(sessionId) {
   try { data = await api(`/api/admin/chat/messages/${sessionId}`); } catch(e) { data = null; }
   if (!data?.success) return;
 
-  adminAllMessages = data.messages;
+  adminAllMessages  = data.messages;
   adminLastMsgCount = data.messages.length;
 
   renderMessagesFromAPI(data.messages);
   setTimeout(() => updateSeenLabel(data.messages), 100);
 }
 
-// ─── RENDER MESSAGES (API data → initial UI containers) ──
+// ─── RENDER MESSAGES ─────────────────────────────────────
 function renderMessagesFromAPI(messages, highlight = '') {
   const area = document.getElementById('messagesArea');
   if (!area) return;
@@ -4582,12 +4682,11 @@ function renderMessagesFromAPI(messages, highlight = '') {
   let prevFrom = null;
 
   messages.forEach((msg, i) => {
-    // Date divider
     const dateStr = new Date(msg.createdAt).toLocaleDateString([], { weekday:'long', month:'short', day:'numeric' });
     if (dateStr !== lastDate) {
       html += `<div class="date-sep"><span class="date-sep-text">${dateStr}</span></div>`;
-      lastDate  = dateStr;
-      prevFrom  = null;
+      lastDate = dateStr;
+      prevFrom = null;
     }
 
     const isOut  = msg.sender === 'admin';
@@ -4595,7 +4694,6 @@ function renderMessagesFromAPI(messages, highlight = '') {
     const time   = new Date(msg.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
     const cls    = `msg-wrap ${isOut ? 'out' : 'in'} ${isCont ? 'continuation' : ''}`;
 
-    // Reply quote
     let replyHtml = '';
     if (msg.replyTo?.msgId) {
       const replyName = msg.replyTo.sender === 'admin' ? 'You' : 'User';
@@ -4606,7 +4704,6 @@ function renderMessagesFromAPI(messages, highlight = '') {
         </div>`;
     }
 
-    // Content
     let bubbleContent = '';
     if (msg.deleted) {
       bubbleContent = `<span style="font-style:italic;opacity:0.6;">🚫 This message was deleted</span>`;
@@ -4626,18 +4723,9 @@ function renderMessagesFromAPI(messages, highlight = '') {
       bubbleContent = `<div class="bubble-text ${isEmoji ? 'emoji-only' : ''}">${text}</div>`;
     }
 
-    // Tick status
-    let statusIcon = '';
-    if (isOut && !msg.deleted) {
-      const tickColor = msg.read ? 'read' : msg.delivered ? '' : '';
-      statusIcon = `<i class="ri-check-double-line bubble-status ${msg.read ? 'read' : ''}"></i>`;
-    }
+    const statusIcon   = isOut && !msg.deleted ? `<i class="ri-check-double-line bubble-status ${msg.read ? 'read' : ''}"></i>` : '';
+    const editedHtml   = msg.edited && !msg.deleted ? `<span style="font-size:10px;opacity:0.5;margin-left:4px;">edited</span>` : '';
 
-    // Edited
-    const editedHtml = msg.edited && !msg.deleted
-      ? `<span style="font-size:10px;opacity:0.5;margin-left:4px;">edited</span>` : '';
-
-    // Reactions
     const reactEntries = Object.entries(msg.reactions || {}).filter(([, v]) => v.length > 0);
     const reactionsHtml = reactEntries.length ? `
       <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;">
@@ -4648,10 +4736,9 @@ function renderMessagesFromAPI(messages, highlight = '') {
           </span>`).join('')}
       </div>` : '';
 
-    // Emoji/action bar (from dmfirst)
-    const emojiBarId = `aebar-${msg._id}`;
+    const emojiBarId  = `aebar-${msg._id}`;
     const emojiBarHtml = msg.deleted ? '' : `
-      <div id="${emojiBarId}" style="display:none;position:absolute;${isOut ? 'right:0' : 'left:0'};bottom:calc(100% + 4px);background:#fff;border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);gap:6px;z-index:100;white-space:nowrap;">
+      <div id="${emojiBarId}" style="display:none;position:absolute;${isOut?'right:0':'left:0'};bottom:calc(100% + 4px);background:#fff;border-radius:20px;padding:6px 10px;box-shadow:0 4px 16px rgba(0,0,0,0.15);gap:6px;z-index:100;white-space:nowrap;">
         ${ADMIN_EMOJIS.map(e => `<span onclick="adminToggleReaction('${msg._id}','${e}');adminHideEmojiBar('${emojiBarId}')" style="font-size:20px;cursor:pointer;" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${e}</span>`).join('')}
         <span onclick="startReplyFromAPI('${msg._id}');adminHideEmojiBar('${emojiBarId}')" style="font-size:18px;cursor:pointer;padding:0 3px;" title="Reply">↩️</span>
         ${isOut && !msg.deleted ? `
@@ -4661,7 +4748,7 @@ function renderMessagesFromAPI(messages, highlight = '') {
 
     html += `
       <div class="${cls}" data-msg-id="${msg._id}"
-        oncontextmenu="showCtxMenuFromAPI(event, '${msg._id}', ${JSON.stringify(msg.content || '').replace(/"/g, '&quot;')})"
+        oncontextmenu="showCtxMenuFromAPI(event,'${msg._id}',${JSON.stringify(msg.content||'').replace(/"/g,'&quot;')})"
         ontouchstart="adminHandleTouchStart(event,'${emojiBarId}')"
         ontouchend="adminHandleTouchEnd()"
         style="position:relative;"
@@ -4688,6 +4775,16 @@ function renderMessagesFromAPI(messages, highlight = '') {
   area.innerHTML = html;
   area.scrollTop = area.scrollHeight;
 }
+
+// ─── PATCH INIT TO RUN URL RESTORE ───────────────────────
+// Call this at the end of your init() or after loadAdminChatSessions() resolves on page load
+// e.g.: loadAdminChatSessions().then(maybeRestoreChatFromUrl);
+// Or inside init():
+//   await loadAdminChatSessions();
+//   await maybeRestoreChatFromUrl();
+
+//pasted
+
 
 // ─── SEND MESSAGE (real API) ──────────────────────────────
 window.sendMessage = async function() {
