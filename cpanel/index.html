@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="css/style-0.css">
   <link rel="stylesheet" href="css/style-04.css">
   <link rel="stylesheet" href="css/test.css">
-
+  
   <link rel="icon" type="image/png" href="../img/logo.png">
   <title>Responsive Dashboard | Fluxmall</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -765,238 +765,233 @@
       </div><!-- /tabs-wrap -->
     </main>
     
-        <main class="page" id="chats">
-        <div class="app">
-    
-    <!-- ════════════════ SIDEBAR ════════════════ -->
-    <div class="sideba" id="sidebar">
-      
-      <div class="sidebar-header">
-        <div class="sidebar-header-top">
-          <div class="sidebar-brand">
-            <div class="sidebar-logo"><i class="ri-customer-service-2-line"></i></div>
-            <div>
-              <span class="sidebar-title">Support</span>
-              <span class="sidebar-sub">Admin Chat Panel</span>
-            </div>
-          </div>
-          <div class="sidebar-header-actions">
-            <button class="icon-btn" onclick="toggleSort()" title="Sort" id="sortBtn"><i class="ri-sort-desc"></i></button>
-            <button class="icon-btn" title="New conversation" onclick="toast('Feature coming soon', 'info')"><i class="ri-add-line"></i></button>
-          </div>
-        </div>
+    <main class="page" id="chats">
+      <div class="app">
         
-        <div class="search-wrap">
-          <i class="ri-search-line search-icon"></i>
-          <input type="text" class="search-input" id="chatSearch" placeholder="Search by name or message..." oninput="handleChatSearch(this.value)" autocomplete="off">
-          <button class="search-clear-btn" id="searchClearBtn" onclick="clearChatSearch()">✕</button>
-        </div>
-      </div>
-      
-      <!-- Filter tabs -->
-      <div class="filter-tabs">
-        <button class="filter-tab active" onclick="setFilter('all', this)">All <span class="tab-badge" id="badge-all"></span></button>
-        <button class="filter-tab" onclick="setFilter('unread', this)">Unread <span class="tab-badge" id="badge-unread"></span></button>
-        <button class="filter-tab" onclick="setFilter('open', this)">Open</button>
-        <button class="filter-tab" onclick="setFilter('resolved', this)">Resolved</button>
-      </div>
-      
-      <!-- Chat list -->
-      <div class="chat-list" id="chatList"></div>
-      
-      <div class="no-chats" id="noChats">
-        <i class="ri-search-2-line"></i>
-        No chats found
-      </div>
-      
-      <!-- Stats footer -->
-      <div class="chat-list-footer">
-        <div class="sf-stat">
-          <span class="sf-stat-val" id="stat-open">8</span>
-          <span class="sf-stat-label">Open</span>
-        </div>
-        <div class="sf-divider"></div>
-        <div class="sf-stat">
-          <span class="sf-stat-val" id="stat-unread">3</span>
-          <span class="sf-stat-label">Unread</span>
-        </div>
-        <div class="sf-divider"></div>
-        <div class="sf-stat">
-          <span class="sf-stat-val" id="stat-resolved">24</span>
-          <span class="sf-stat-label">Resolved</span>
-        </div>
-      </div>
-      
-    </div><!-- /sidebar -->
-    
-    <!-- ════════════════ MAIN CHAT ════════════════ -->
-    <div class="chat-main" id="chatMain">
-      
-      <!-- Empty state -->
-      <div class="chat-empty" id="chatEmpty">
-        <i class="ri-message-3-line"></i>
-        <h3>Select a conversation</h3>
-        <p>Choose a chat from the list to start supporting your users</p>
-      </div>
-      
-      <!-- Chat window (shown when a chat is active) -->
-      <div class="chat-window" id="chatWindow">
-        
-        <!-- Chat header -->
-        <div class="chat-header" id="chatHeader">
-          <button class="chat-header-back" onclick="closeMobileChat()">
-            <i class="ri-arrow-left-s-line"></i>
-          </button>
-          <div class="chat-header-avatar">
-            <div class="avatar-img initials" id="hdrAvatar">U</div>
-            <div class="online-dot" id="hdrOnlineDot"></div>
-          </div>
-          <div class="chat-header-info">
-            <div class="chat-header-name" id="hdrName">User</div>
-            <div class="chat-header-status" id="hdrStatus">offline</div>
-          </div>
-          <div class="chat-header-actions">
-            <button class="icon-btn" onclick="simulateTyping()" title="Simulate typing"><i class="ri-chat-3-line"></i></button>
-            <button class="icon-btn" onclick="toggleSearch()" title="Search messages" id="msgSearchBtn"><i class="ri-search-line"></i></button>
-            <button class="icon-btn" onclick="toggleUserPanel()" title="User info" id="uipToggleBtn"><i class="ri-user-line"></i></button>
-            <button class="icon-btn" id="moreBtn" title="More options" onclick="showMoreMenu()"><i class="ri-more-2-fill"></i></button>
-                                                <button onclick="endAdminChatSession()" style="display:none;" title="End session" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
-                                      <i class="ri-stop-circle-line" style="font-size:18px;"></i>
-                                    </button>
-                                    
-                                    <!-- Delete chat -->
-                                    <button onclick="deleteAdminChatSession()" title="Delete chat" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
-                                      <i class="ri-delete-bin-line" style="font-size:18px;"></i>
-                                    </button>
-          </div>
-        </div>
-        
-        <!-- Message search bar (hidden by default) -->
-        <div style="display:none;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--header-bg);" id="msgSearchBar">
-          <div class="search-wrap">
-            <i class="ri-search-line search-icon"></i>
-            <input type="text" class="search-input" id="msgSearchInput" placeholder="Search in this chat..." oninput="searchInChat(this.value)">
-            <button class="search-clear-btn" id="msgSearchClear" onclick="closeMessageSearch()">✕</button>
-          </div>
-          <div style="font-size:0.72rem;color:var(--text-muted);margin-top:5px;" id="msgSearchCount"></div>
-        </div>
-        
-        <!-- Session ended bar -->
-        <div class="session-ended-bar" id="sessionEndedBar">
-          <i class="ri-lock-line"></i>
-          Session ended by user
-          <button onclick="reopenSession()">Reopen</button>
-        </div>
-        
-        <!-- Messages -->
-        <div class="messages-area" id="messagesArea"></div>
-        
-        <!-- Typing indicator -->
-        <div class="typing-bubble" id="typingBubble" style="padding:0 20px 4px;">
-          <div class="typing-dots">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-          </div>
-        </div>
-        
-        <!-- Quick replies popup -->
-        <div class="quick-replies" id="quickReplies">
-          <div class="qr-header">Quick Replies</div>
-          <div class="qr-item" onclick="useQuickReply('Hello! How can I assist you today? 😊')"><i class="ri-chat-smile-line"></i> Greeting</div>
-          <div class="qr-item" onclick="useQuickReply('I understand your concern. Let me look into this for you right away.')"><i class="ri-empathize-line"></i> Empathy</div>
-          <div class="qr-item" onclick="useQuickReply('Your deposit has been confirmed and credited to your wallet.')"><i class="ri-bank-card-line"></i> Deposit confirmed</div>
-          <div class="qr-item" onclick="useQuickReply('Your withdrawal request is being processed. Please allow 30–60 minutes.')"><i class="ri-arrow-up-circle-line"></i> Withdrawal processing</div>
-          <div class="qr-item" onclick="useQuickReply('Please verify your account to unlock all features. Go to Profile → Verify.')"><i class="ri-shield-check-line"></i> Verify account</div>
-          <div class="qr-item" onclick="useQuickReply('Is there anything else I can help you with?')"><i class="ri-question-line"></i> Anything else?</div>
-          <div class="qr-item" onclick="useQuickReply('This issue has been resolved. Thank you for contacting Fluxmall Support! 🙏')"><i class="ri-checkbox-circle-line"></i> Resolved</div>
-        </div>
-        
-        <!-- Reply bar -->
-        <div class="reply-bar" id="replyBar">
-          <div class="reply-bar-inner">
-            <div class="reply-bar-sender" id="replyBarSender"></div>
-            <div class="reply-bar-text" id="replyBarText"></div>
-          </div>
-          <button class="reply-bar-close" onclick="cancelReply()"><i class="ri-close-line"></i></button>
-        </div>
-        
-        <!-- Emoji picker -->
-        <div class="emoji-picker" id="emojiPicker">
-          <div class="emoji-grid" id="emojiGrid"></div>
-        </div>
-        
-        <!-- Input area -->
-        <div class="input-area" id="inputArea">
-          <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
-            <i class="ri-flashlight-line"></i>
-          </button>
-          <div class="input-field-wrap">
-            <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
-            <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
-          </div>
-          <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
-        </div>
-        
-      </div><!-- /chat-window -->
-      
-      <!-- User info panel (desktop right panel) -->
-      <div class="user-info-panel hidden" id="userInfoPanel">
-        <div class="uip-header">
-          <span class="uip-title">User Info</span>
-          <button class="icon-btn" onclick="toggleUserPanel()"><i class="ri-close-line"></i></button>
-        </div>
-        <div class="uip-body">
-          <div class="uip-avatar-wrap">
-            <div class="uip-big-avatar" id="uipAvatar">U</div>
-            <div class="uip-name" id="uipName">Username</div>
-            <div class="uip-email" id="uipEmail">user@email.com</div>
-          </div>
+        <!-- ════════════════ SIDEBAR ════════════════ -->
+        <div class="sideba" id="sidebar">
           
-          <div class="uip-stat-grid">
-            <div class="uip-stat">
-              <div class="uip-stat-val" id="uipBalance">₦0</div>
-              <div class="uip-stat-label">Balance</div>
+          <div class="sidebar-header">
+            <div class="sidebar-header-top">
+              <div class="sidebar-brand">
+                <div class="sidebar-logo"><i class="ri-customer-service-2-line"></i></div>
+                <div>
+                  <span class="sidebar-title">Support</span>
+                  <span class="sidebar-sub">Admin Chat Panel</span>
+                </div>
+              </div>
+              <div class="sidebar-header-actions">
+                <button class="icon-btn" onclick="toggleSort()" title="Sort" id="sortBtn"><i class="ri-sort-desc"></i></button>
+                <button class="icon-btn" title="New conversation" onclick="toast('Feature coming soon', 'info')"><i class="ri-add-line"></i></button>
+              </div>
             </div>
-            <div class="uip-stat">
-              <div class="uip-stat-val" id="uipShares">0</div>
-              <div class="uip-stat-label">Shares</div>
-            </div>
-            <div class="uip-stat">
-              <div class="uip-stat-val" id="uipDeposits">0</div>
-              <div class="uip-stat-label">Deposits</div>
-            </div>
-            <div class="uip-stat">
-              <div class="uip-stat-val" id="uipReferrals">0</div>
-              <div class="uip-stat-label">Referrals</div>
+            
+            <div class="search-wrap">
+              <i class="ri-search-line search-icon"></i>
+              <input type="text" class="search-input" id="chatSearch" placeholder="Search by name or message..." oninput="handleChatSearch(this.value)" autocomplete="off">
+              <button class="search-clear-btn" id="searchClearBtn" onclick="clearChatSearch()">✕</button>
             </div>
           </div>
           
-          <div class="uip-section-label">Actions</div>
-          <button class="uip-action" onclick="toast('Navigating to user profile...','info')">
-            <i class="ri-user-line"></i> View full profile
-          </button>
-          <button class="uip-action" onclick="toast('Opening transaction history...','info')">
-            <i class="ri-history-line"></i> Transaction history
-          </button>
-          <button class="uip-action" onclick="resolveSession()">
-            <i class="ri-checkbox-circle-line"></i> Resolve & close
-          </button>
-          <button class="uip-action danger" onclick="toast('User has been flagged','error')">
-            <i class="ri-flag-line"></i> Flag user
-          </button>
-          <button class="uip-action danger" onclick="toast('User banned','error')">
-            <i class="ri-forbid-line"></i> Ban user
-          </button>
-        </div>
-      </div>
+          <!-- Filter tabs -->
+          <div class="filter-tabs">
+            <button class="filter-tab active" onclick="setFilter('all', this)">All <span class="tab-badge" id="badge-all"></span></button>
+            <button class="filter-tab" onclick="setFilter('unread', this)">Unread <span class="tab-badge" id="badge-unread"></span></button>
+            <button class="filter-tab" onclick="setFilter('open', this)">Open</button>
+            <button class="filter-tab" onclick="setFilter('resolved', this)">Resolved</button>
+          </div>
+          
+          <!-- Chat list -->
+          <div class="chat-list" id="chatList"></div>
+          
+          <div class="no-chats" id="noChats">
+            <i class="ri-search-2-line"></i>
+            No chats found
+          </div>
+          
+          <!-- Stats footer -->
+          <div class="chat-list-footer">
+            <div class="sf-stat">
+              <span class="sf-stat-val" id="stat-open">8</span>
+              <span class="sf-stat-label">Open</span>
+            </div>
+            <div class="sf-divider"></div>
+            <div class="sf-stat">
+              <span class="sf-stat-val" id="stat-unread">3</span>
+              <span class="sf-stat-label">Unread</span>
+            </div>
+            <div class="sf-divider"></div>
+            <div class="sf-stat">
+              <span class="sf-stat-val" id="stat-resolved">24</span>
+              <span class="sf-stat-label">Resolved</span>
+            </div>
+          </div>
+          
+        </div><!-- /sidebar -->
+        
+        <!-- ════════════════ MAIN CHAT ════════════════ -->
+        <div class="chat-main" id="chatMain">
+          
+          <!-- Empty state -->
+          <div class="chat-empty" id="chatEmpty">
+            <i class="ri-message-3-line"></i>
+            <h3>Select a conversation</h3>
+            <p>Choose a chat from the list to start supporting your users</p>
+          </div>
+          
+          <!-- Chat window (shown when a chat is active) -->
+          <div class="chat-window" id="chatWindow">
+            
+            <!-- Chat header -->
+            <div class="chat-header" id="chatHeader">
+              <button class="chat-header-back" onclick="closeMobileChat()">
+                <i class="ri-arrow-left-s-line"></i>
+              </button>
+              <div class="chat-header-avatar">
+                <div class="avatar-img initials" id="hdrAvatar">U</div>
+                <div class="online-dot" id="hdrOnlineDot"></div>
+              </div>
+              <div class="chat-header-info">
+                <div class="chat-header-name" id="hdrName">User</div>
+                <div class="chat-header-status" id="hdrStatus">offline</div>
+              </div>
+              <div class="chat-header-actions">
+                <button class="icon-btn" onclick="simulateTyping()" title="Simulate typing"><i class="ri-chat-3-line"></i></button>
+                <button class="icon-btn" onclick="toggleSearch()" title="Search messages" id="msgSearchBtn"><i class="ri-search-line"></i></button>
+                <button onclick="endAdminChatSession()" style="display:none;" title="End session" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
+                  <i class="ri-stop-circle-line" style="font-size:18px;"></i>
+                </button> <button onclick="deleteAdminChatSession()" title="Delete chat" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
+                  <i class="ri-delete-bin-line" style="font-size:18px;"></i>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Message search bar (hidden by default) -->
+            <div style="display:none;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--header-bg);" id="msgSearchBar">
+              <div class="search-wrap">
+                <i class="ri-search-line search-icon"></i>
+                <input type="text" class="search-input" id="msgSearchInput" placeholder="Search in this chat..." oninput="searchInChat(this.value)">
+                <button class="search-clear-btn" id="msgSearchClear" onclick="closeMessageSearch()">✕</button>
+              </div>
+              <div style="font-size:0.72rem;color:var(--text-muted);margin-top:5px;" id="msgSearchCount"></div>
+            </div>
+            
+            <!-- Session ended bar -->
+            <div class="session-ended-bar" id="sessionEndedBar">
+              <i class="ri-lock-line"></i>
+              Session ended by user
+              <button onclick="reopenSession()">Reopen</button>
+            </div>
+            
+            <!-- Messages -->
+            <div class="messages-area" id="messagesArea"></div>
+            
+            <!-- Typing indicator -->
+            <div class="typing-bubble" id="typingBubble" style="padding:0 20px 4px;">
+              <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+            
+            <!-- Quick replies popup -->
+            <div class="quick-replies" id="quickReplies">
+              <div class="qr-header">Quick Replies</div>
+              <div class="qr-item" onclick="useQuickReply('Hello! How can I assist you today? 😊')"><i class="ri-chat-smile-line"></i> Greeting</div>
+              <div class="qr-item" onclick="useQuickReply('I understand your concern. Let me look into this for you right away.')"><i class="ri-empathize-line"></i> Empathy</div>
+              <div class="qr-item" onclick="useQuickReply('Your deposit has been confirmed and credited to your wallet.')"><i class="ri-bank-card-line"></i> Deposit confirmed</div>
+              <div class="qr-item" onclick="useQuickReply('Your withdrawal request is being processed. Please allow 30–60 minutes.')"><i class="ri-arrow-up-circle-line"></i> Withdrawal processing</div>
+              <div class="qr-item" onclick="useQuickReply('Please verify your account to unlock all features. Go to Profile → Verify.')"><i class="ri-shield-check-line"></i> Verify account</div>
+              <div class="qr-item" onclick="useQuickReply('Is there anything else I can help you with?')"><i class="ri-question-line"></i> Anything else?</div>
+              <div class="qr-item" onclick="useQuickReply('This issue has been resolved. Thank you for contacting Fluxmall Support! 🙏')"><i class="ri-checkbox-circle-line"></i> Resolved</div>
+            </div>
+            
+            <!-- Reply bar -->
+            <div class="reply-bar" id="replyBar">
+              <div class="reply-bar-inner">
+                <div class="reply-bar-sender" id="replyBarSender"></div>
+                <div class="reply-bar-text" id="replyBarText"></div>
+              </div>
+              <button class="reply-bar-close" onclick="cancelReply()"><i class="ri-close-line"></i></button>
+            </div>
+            
+            <!-- Emoji picker -->
+            <div class="emoji-picker" id="emojiPicker">
+              <div class="emoji-grid" id="emojiGrid"></div>
+            </div>
+            
+            <!-- Input area -->
+            <div class="input-area" id="inputArea">
+              <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
+                <i class="ri-flashlight-line"></i>
+              </button>
+              <div class="input-field-wrap">
+                <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
+                <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
+              </div>
+              <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
+            </div>
+            
+          </div><!-- /chat-window -->
+          
+          <!-- User info panel (desktop right panel) -->
+          <div class="user-info-panel hidden" id="userInfoPanel">
+            <div class="uip-header">
+              <span class="uip-title">User Info</span>
+              <button class="icon-btn" onclick="toggleUserPanel()"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="uip-body">
+              <div class="uip-avatar-wrap">
+                <div class="uip-big-avatar" id="uipAvatar">U</div>
+                <div class="uip-name" id="uipName">Username</div>
+                <div class="uip-email" id="uipEmail">user@email.com</div>
+              </div>
+              
+              <div class="uip-stat-grid">
+                <div class="uip-stat">
+                  <div class="uip-stat-val" id="uipBalance">₦0</div>
+                  <div class="uip-stat-label">Balance</div>
+                </div>
+                <div class="uip-stat">
+                  <div class="uip-stat-val" id="uipShares">0</div>
+                  <div class="uip-stat-label">Shares</div>
+                </div>
+                <div class="uip-stat">
+                  <div class="uip-stat-val" id="uipDeposits">0</div>
+                  <div class="uip-stat-label">Deposits</div>
+                </div>
+                <div class="uip-stat">
+                  <div class="uip-stat-val" id="uipReferrals">0</div>
+                  <div class="uip-stat-label">Referrals</div>
+                </div>
+              </div>
+              
+              <div class="uip-section-label">Actions</div>
+              <button class="uip-action" onclick="toast('Navigating to user profile...','info')">
+                <i class="ri-user-line"></i> View full profile
+              </button>
+              <button class="uip-action" onclick="toast('Opening transaction history...','info')">
+                <i class="ri-history-line"></i> Transaction history
+              </button>
+              <button class="uip-action" onclick="resolveSession()">
+                <i class="ri-checkbox-circle-line"></i> Resolve & close
+              </button>
+              <button class="uip-action danger" onclick="toast('User has been flagged','error')">
+                <i class="ri-flag-line"></i> Flag user
+              </button>
+              <button class="uip-action danger" onclick="toast('User banned','error')">
+                <i class="ri-forbid-line"></i> Ban user
+              </button>
+            </div>
+          </div>
+          
+        </div><!-- /chat-main -->
+        
+      </div><!-- /app -->
       
-    </div><!-- /chat-main -->
-    
-  </div><!-- /app -->
-
     </main>
-
+    
     
     <main class="page" id="users">
       <!-- ── MAIN ── -->
@@ -1717,7 +1712,7 @@
   </div>
   
   <script src="index.js"></script>
-
+  
   
   <script id="admin-campaigns-js">
     // ── Campaign data cache ──────────────────────────────────────────────────────
