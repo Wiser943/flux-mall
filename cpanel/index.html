@@ -808,7 +808,17 @@
             <i class="ri-search-2-line"></i>
             No chats found
           </div>
-          
+                      <div class="input-area" id="inputArea">
+              <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
+                <i class="ri-flashlight-line"></i>
+              </button>
+              <div class="input-field-wrap">
+                <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
+                <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
+              </div>
+              <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
+            </div>
+            
           <!-- Stats footer -->
           <div class="chat-list-footer">
             <div class="sf-stat">
@@ -858,7 +868,7 @@
               <div class="chat-header-actions">
                 <button class="icon-btn" onclick="simulateTyping()" title="Simulate typing"><i class="ri-chat-3-line"></i></button>
                 <button class="icon-btn" onclick="toggleSearch()" title="Search messages" id="msgSearchBtn"><i class="ri-search-line"></i></button>
-                <button onclick="endAdminChatSession()" style="display:none;" title="End session" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
+                <button onclick="endAdminChatSession()" style="display:flex;" title="End session" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#f39c12;cursor:pointer;">
                   <i class="ri-stop-circle-line" style="font-size:18px;"></i>
                 </button> <button onclick="deleteAdminChatSession()" title="Delete chat" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#e74c3c;cursor:pointer;">
                   <i class="ri-delete-bin-line" style="font-size:18px;"></i>
@@ -922,17 +932,7 @@
             </div>
             
             <!-- Input area -->
-            <div class="input-are" id="inputAre">
-              <button class="input-attach" onclick="toggleQuickReplies()" title="Quick replies">
-                <i class="ri-flashlight-line"></i>
-              </button>
-              <div class="input-field-wrap">
-                <textarea class="msg-input" id="msgInput" placeholder="Type a message..." rows="1" onkeydown="handleInputKey(event)" oninput="autoResize(this)"></textarea>
-                <button class="emoji-btn" onclick="toggleEmoji()"><i class="ri-emotion-line"></i></button>
-              </div>
-              <button class="send-btn" onclick="sendMessage()"><i class="ri-send-plane-fill"></i></button>
-            </div>
-            
+
           </div><!-- /chat-window -->
           
           <!-- User info panel (desktop right panel) -->
