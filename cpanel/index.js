@@ -4678,8 +4678,8 @@ function renderMessagesFromAPI(messages, highlight = '') {
             ${editedHtml}
             ${statusIcon}
           </div>
+          ${reactionsHtml}
         </div>
-        ${reactionsHtml}
       </div>`;
 
     prevFrom = msg.sender;
