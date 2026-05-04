@@ -1,126 +1,8 @@
-    /* ══════════════════════════════════════
-   VARIABLES
-══════════════════════════════════════ */
 
-    :root {
-      --green: #2E7D52;
-      --green-light: #4CAF7D;
-      --green-dark: #1B4D32;
-      --green-pale: rgba(76, 175, 125, 0.08);
-      --yellow: #f59e0b;
-      --danger: #ef4444;
-      --blue: #3b82f6;
-      --r: 14px;
-      --r-sm: 9px;
-      --ease: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    [data-theme="dark"] {
-      --bg: #0b1410;
-      --sidebar-bg: #0d1a13;
-      --chat-bg: #0a1510;
-      --surface: #101e18;
-      --card: #132018;
-      --border: #1a2e20;
-      --text: #e4f4eb;
-      --text-sub: #5a8068;
-      --text-muted: #3a5244;
-      --input-bg: #0d1a13;
-      --msg-out: #1a4030;
-      --msg-out-border: #1e4d38;
-      --msg-in: #132018;
-      --msg-in-border: #1a2e20;
-      --bubble-tail-out: #1a4030;
-      --bubble-tail-in: #132018;
-      --accent: var(--green-light);
-      --online: #22c55e;
-      --shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
-      --header-bg: #0d1a13;
-    }
-    
-    [data-theme="light"] {
-      --bg: #f0f5f2;
-      --sidebar-bg: #ffffff;
-      --chat-bg: #edf5f0;
-      --surface: #ffffff;
-      --card: #ffffff;
-      --border: #dde8e2;
-      --text: #0f2018;
-      --text-sub: #4a7060;
-      --text-muted: #9ab8aa;
-      --input-bg: #f4f9f6;
-      --msg-out: #d1f0e0;
-      --msg-out-border: #b8e8cc;
-      --msg-in: #ffffff;
-      --msg-in-border: #e4ede8;
-      --bubble-tail-out: #d1f0e0;
-      --bubble-tail-in: #ffffff;
-      --accent: #2E7D52;
-      --online: #22c55e;
-      --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-      --header-bg: #ffffff;
-    }
-    
-    /* ══════════════════════════════════════
-   RESET
-══════════════════════════════════════ */
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    html,
-    body {
-      height: 100%;
-      overflow: hidden;
-    }
-    
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      transition: background var(--ease), color var(--ease);
-    }
-    
-    button {
-      cursor: pointer;
-      font-family: inherit;
-      border: none;
-      background: none;
-    }
-    
-    input,
-    textarea {
-      font-family: inherit;
-      outline: none;
-    }
-    
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-    
-    /* ══════════════════════════════════════
-   APP SHELL — Desktop: sidebar + main
-══════════════════════════════════════ */
-    .app {
-      display: flex;
-      height: 100vh;
-      width: 100%;
-      overflow: hidden;
-    }
-    
-    /* ══════════════════════════════════════
-   SIDEBAR (Chat List)
-══════════════════════════════════════ */
-    .sideba {
+    .chat-bar{
       width: 340px;
       min-width: 340px;
-      background: var(--sidebar-bg);
-      border-right: 1px solid var(--border);
+background: var(--surface);      border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -1542,7 +1424,7 @@
    MOBILE — Full-screen chat overlay
 ══════════════════════════════════════ */
     @media (max-width: 768px) {
-      .sideba {
+      .chat-bar {
         width: 100%;
         min-width: 0;
         position: relative;

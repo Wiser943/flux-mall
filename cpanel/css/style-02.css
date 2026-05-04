@@ -1163,11 +1163,10 @@ select.form-input {
 /* Stats bar */
 .stats-bar {
   display: flex;
-  gap: 0;
+  width: 100%;
   border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
   background: var(--surface);
-  overflow-x: auto;
+  overflow-x: scroll;
   scrollbar-width: none;
 }
 
@@ -1282,18 +1281,6 @@ select.form-input {
 
   .btn {
     padding: 7px 10px;
-  }
-
-  .stats-bar {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    padding: 0;
-  }
-
-  .stat-chip {
-    min-width: 0;
-    padding: 0 5px;
-    height: 55px;
   }
 
   .stat-val {

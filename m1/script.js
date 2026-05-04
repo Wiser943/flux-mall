@@ -832,6 +832,16 @@ function addNewBank() {
     detail: `
       <div class="form-group">
         <label>Bank Name</label>
+        <input list="banks" name="bank" id="bank-choice" placeholder="Type to search bank...">
+<datalist id="banks">
+    <option value="044">Access Bank</option>
+    <option value="058">Guaranty Trust Bank</option>
+    <option value="033">United Bank for Africa (UBA)</option>
+    <option value="057">Zenith Bank</option>
+    <option value="090267">Kuda Bank</option>
+    </datalist>
+
+
         <input type="text" id="newBankName" placeholder="e.g. First Bank">
       </div>
       <div class="form-group">

@@ -1360,9 +1360,9 @@ td:first-child { padding-left: 20px; }
     .pagination,
     .chat-list-footer {
         position: fixed;
-        bottom: 54px;
+        bottom: 8%;
         width: 95%;
-        z-index: 10;display: flex;
+        z-index: 10;display: flex;background :inherit;
     }
 
     .page-header h1 { font-size: 18px; }
