@@ -858,6 +858,7 @@ function addNewBank() {
     <option value="090267">Kuda Bank</option>
     <option value="999992">OPay Digital Services</option>
     <option value="999991">PalmPay</option>
+    <option value="090389">Moniepoint MFB</option>
     <option value="090110">VFD Microfinance Bank</option>
     <option value="50211">Kredi Money MFB</option>
     <option value="090115">TCB MFB</option>
