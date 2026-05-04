@@ -832,17 +832,36 @@ function addNewBank() {
     detail: `
       <div class="form-group">
         <label>Bank Name</label>
-        <input list="banks" name="bank" id="bank-choice" placeholder="Type to search bank...">
-<datalist id="banks">
+<select name="bank_code" id="newBankName">
+    <option value="">-- e.g. First Bank</option>
     <option value="044">Access Bank</option>
-    <option value="058">Guaranty Trust Bank</option>
+    <option value="063">Access Bank (Diamond)</option>
+    <option value="050">Ecobank Nigeria</option>
+    <option value="070">Fidelity Bank</option>
+    <option value="011">First Bank of Nigeria</option>
+    <option value="214">First City Monument Bank (FCMB)</option>
+    <option value="058">Guaranty Trust Bank (GTB)</option>
+    <option value="030">Heritage Bank</option>
+    <option value="301">Jaiz Bank</option>
+    <option value="082">Keystone Bank</option>
+    <option value="076">Polaris Bank</option>
+    <option value="221">Stanbic IBTC Bank</option>
+    <option value="068">Standard Chartered Bank</option>
+    <option value="232">Sterling Bank</option>
+    <option value="100">Suntrust Bank</option>
+    <option value="032">Union Bank of Nigeria</option>
     <option value="033">United Bank for Africa (UBA)</option>
+    <option value="035">Unity Bank</option>
+    <option value="215">Unity Bank</option>
     <option value="057">Zenith Bank</option>
+
     <option value="090267">Kuda Bank</option>
-    </datalist>
-
-
-        <input type="text" id="newBankName" placeholder="e.g. First Bank">
+    <option value="999992">OPay Digital Services</option>
+    <option value="999991">PalmPay</option>
+    <option value="090110">VFD Microfinance Bank</option>
+    <option value="50211">Kredi Money MFB</option>
+    <option value="090115">TCB MFB</option>
+</select>
       </div>
       <div class="form-group">
         <label>Account Number</label>
