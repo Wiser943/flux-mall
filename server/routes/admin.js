@@ -1160,3 +1160,195 @@ router.put('/campaigns/settings', requireAdmin, async (req, res) => {
 
 
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+// ─── HELPER: Trigger Korapay Bank Transfer Payout ────────────────────────────
+// Add this function near handleReferralCommission in your admin router
+
+async function triggerKorapayPayout({ secretKey, amount, bankCode, accountNumber, accountName, reference, narration }) {
+  const response = await fetch('https://api.korapay.com/merchant/api/v1/transactions/disburse', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${secretKey}`,
+    },
+    body: JSON.stringify({
+      reference,
+      destination: {
+        type: 'bank_account',
+        amount,          // Naira, as a number
+        currency: 'NGN',
+        narration: narration || 'Withdrawal payout',
+        bank_account: {
+          bank: bankCode,          // e.g. "058" for GTBank
+          account: accountNumber,  // 10-digit NUBAN
+          account_name: accountName,
+        },
+      },
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok || !data.status) {
+    throw new Error(data.message || 'Korapay payout failed');
+  }
+  return data;
+}
+
+
+// ─── PUT /api/admin/withdrawals/:id ──────────────────────────────────────────
+// Replace your existing withdrawal PUT route entirely with this
+
+router.put('/withdrawals/:id', requireAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!['success', 'declined'].includes(status)) {
+      return res.status(400).json({ error: 'Status must be "success" or "declined".' });
+    }
+
+    // Fetch full document first — we need bankDetails
+    const withdrawal = await Withdrawal.findById(req.params.id);
+    if (!withdrawal) return res.status(404).json({ error: 'Withdrawal not found.' });
+
+    // Prevent double-processing
+    if (withdrawal.status !== 'pending') {
+      return res.status(400).json({ error: `Withdrawal already ${withdrawal.status}. Cannot reprocess.` });
+    }
+
+    // ── DECLINED: Refund user balance ────────────────────────────────────────
+    if (status === 'declined') {
+      await Withdrawal.findByIdAndUpdate(req.params.id, { status: 'declined' });
+
+      await User.findByIdAndUpdate(withdrawal.userId, { $inc: { ib: withdrawal.amount } });
+
+      await Activity.create({
+        userId: withdrawal.userId,
+        type: 'Withdrawal Declined',
+        amount: withdrawal.amount,
+        desc: `Withdrawal declined — 🪙${withdrawal.amount.toLocaleString()} FEX refunded to balance`,
+      });
+
+      await Notification.create({
+        userId: withdrawal.userId,
+        title: '❌ Withdrawal Declined',
+        message: `Your withdrawal of ₦${Number(withdrawal.netAmount || withdrawal.amount).toLocaleString()} was declined by admin. Your balance has been restored.`,
+      });
+
+      return res.json({ success: true, message: 'Withdrawal declined and balance refunded.' });
+    }
+
+    // ── APPROVED: Trigger Korapay payout ────────────────────────────────────
+    if (status === 'success') {
+      // 1. Load Korapay secret key from Settings
+      const apiKeyDoc = await Settings.findOne({ key: 'apikeys' });
+      const secretKey = apiKeyDoc?.value?.korapay_secret;
+
+      if (!secretKey) {
+        return res.status(500).json({
+          error: 'Korapay secret key not configured. Go to Admin → Settings → API Keys and add your Korapay secret key.',
+        });
+      }
+
+      // 2. Extract bank details — stored under bankDetails sub-object
+      //    bankName field actually holds the bank CODE (e.g. "058")
+      const bankCode      = withdrawal.bankDetails?.bankName;       // the bank code
+      const accountNumber = withdrawal.bankDetails?.accountNumber;
+      const accountName   = withdrawal.bankDetails?.accountName;
+      const payoutAmount  = Number(withdrawal.netAmount || withdrawal.amount);
+
+      if (!bankCode || !accountNumber || !accountName) {
+        return res.status(400).json({
+          error: 'Withdrawal is missing bank details. Cannot process payout. bankCode: ' + bankCode + ', accountNumber: ' + accountNumber + ', accountName: ' + accountName,
+        });
+      }
+
+      // 3. Unique reference — using withdrawal _id ensures idempotency
+      const reference = `WDR-${withdrawal._id.toString()}`;
+
+      // 4. Call Korapay
+      let korapayResult;
+      try {
+        korapayResult = await triggerKorapayPayout({
+          secretKey,
+          amount: payoutAmount,
+          bankCode,
+          accountNumber,
+          accountName,
+          reference,
+          narration: `FEX withdrawal payout to ${accountName}`,
+        });
+      } catch (koraErr) {
+        console.error('[Korapay Payout Error]', koraErr.message);
+
+        // Mark as failed — do NOT refund automatically (admin needs to investigate)
+        await Withdrawal.findByIdAndUpdate(req.params.id, {
+          status: 'failed',
+          korapayError: koraErr.message,
+        });
+
+        return res.status(502).json({
+          error: `Korapay payout failed: ${koraErr.message}. Withdrawal marked as "failed". User balance was NOT changed — please investigate and retry or decline manually.`,
+        });
+      }
+
+      // 5. Mark success in DB + store Korapay reference for audit trail
+      await Withdrawal.findByIdAndUpdate(req.params.id, {
+        status: 'success',
+        korapayReference: reference,
+        korapayStatus: korapayResult?.data?.status || 'processing',
+        processedAt: new Date(),
+      });
+
+      // 6. Activity + Notification
+      await Activity.create({
+        userId: withdrawal.userId,
+        type: 'Withdrawal',
+        amount: payoutAmount,
+        desc: `Withdrawal of ₦${payoutAmount.toLocaleString()} sent to ${accountName} · ${accountNumber}`,
+      });
+
+      await Notification.create({
+        userId: withdrawal.userId,
+        title: '✅ Withdrawal Approved',
+        message: `Your withdrawal of ₦${payoutAmount.toLocaleString()} has been sent to your bank account (${accountNumber}). It may take a few minutes to arrive.`,
+      });
+
+      return res.json({
+        success: true,
+        message: 'Withdrawal approved and Korapay payout initiated.',
+        korapayReference: reference,
+        korapayStatus: korapayResult?.data?.status || 'processing',
+      });
+    }
+
+  } catch (err) {
+    console.error('[Withdrawal Approval Error]', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ─── WITHDRAWAL MODEL FIELDS NEEDED ──────────────────────────────────────────
+// Make sure your Withdrawal mongoose model has these fields.
+// Add any missing ones:
+//
+// bankDetails: {
+//   bankName:      String,   // ← stores bank CODE e.g. "058" (GTBank)
+//   accountNumber: String,   // 10-digit NUBAN
+//   accountName:   String,   // verified account holder name
+// },
+// netAmount:         Number,   // payout amount after fee
+// fexRate:           Number,   // rate used e.g. 0.7
+// fee:               Number,   // fee deducted
+// korapayReference:  String,   // set after payout is triggered
+// korapayStatus:     String,   // "processing", "success", etc.
+// korapayError:      String,   // set if Korapay call fails
+// processedAt:       Date,
