@@ -2408,6 +2408,62 @@ window.filterDeposits = () => {
 
 // ═══════════════════════════════════════════════════════════
 // WITHDRAWALS
+// NIGERIAN BANK CODE → NAME MAP
+// ═══════════════════════════════════════════════════════════
+const NIGERIAN_BANKS = {
+  "044": "Access Bank",
+  "023": "Citibank",
+  "050": "Ecobank",
+  "011": "First Bank",
+  "214": "First City Monument Bank (FCMB)",
+  "070": "Fidelity Bank",
+  "058": "GTBank",
+  "030": "Heritage Bank",
+  "301": "Jaiz Bank",
+  "082": "Keystone Bank",
+  "526": "Moniepoint MFB",
+  "014": "MainStreet Bank",
+  "076": "Polaris Bank",
+  "101": "Providus Bank",
+  "221": "Stanbic IBTC",
+  "068": "Standard Chartered",
+  "232": "Sterling Bank",
+  "100": "Suntrust Bank",
+  "032": "Union Bank",
+  "033": "UBA",
+  "215": "Unity Bank",
+  "035": "Wema Bank",
+  "057": "Zenith Bank",
+  "120001": "9PSB (9 Payment Service Bank)",
+  "090115": "Airtel Smartcash PSB",
+  "090405": "Palmpay",
+  "090177": "Kuda MFB",
+  "090267": "Globus Bank",
+  "090303": "Mint MFB",
+  "090154": "VFD MFB",
+  "090110": "VBank (VFD)",
+  "090364": "Opay (OPay Digital Services)",
+  "100004": "Opay",
+  "090389": "Moniepoint MFB",
+};
+
+/**
+ * Given a value that might be a bank code or a bank name,
+ * returns: "Access Bank (044)" if code found, or just the original value.
+ */
+function resolveBankDisplay(value) {
+  if (!value) return '—';
+  const trimmed = value.trim();
+  // If it's a known code, show "Bank Name (code)"
+  if (NIGERIAN_BANKS[trimmed]) {
+    return `${NIGERIAN_BANKS[trimmed]} (${trimmed})`;
+  }
+  // Otherwise display as-is (already a name)
+  return trimmed;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WITHDRAWALS
 // ═══════════════════════════════════════════════════════════
 async function loadWithdrawals() {
   setLoading('withdrawTableBody', 7);
@@ -2441,13 +2497,13 @@ function filterWithdrawalStatus(status) {
 function renderWithdrawalsPage() {
   const tbody = document.getElementById('withdrawTableBody');
   if (!tbody) return;
-  
+
   if (!_wFiltered || !_wFiltered.length) {
     setEmpty('withdrawTableBody', 7, 'No withdrawals found');
     hidePagination('withdraw');
     return;
   }
-  
+
   const slice = paginate(_wFiltered, wPage, PER_PAGE);
   tbody.innerHTML = slice.map(w => {
     const date = w.createdAt ? new Date(w.createdAt).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -2455,7 +2511,10 @@ function renderWithdrawalsPage() {
     const fex = Number(w.amount);
     const net = Number(w.netAmount || (fex * (w.fexRate || 0.7)));
     const rate = w.fexRate || 0.7;
-    
+
+    // ── Resolve bank display ──────────────────────────────
+    const bankDisplay = resolveBankDisplay(w.bankDetails?.bankName);
+
     return `
     <tr onclick="viewWithdrawalDetail('${w._id}')" style="cursor:pointer">
       <td>
@@ -2473,7 +2532,7 @@ function renderWithdrawalsPage() {
         ${w.fee ? `<div class="amt-naira">fee: ₦${Number(w.fee).toLocaleString()}</div>` : ''}
       </td>
       <td>
-        <div class="bank-tag"><i class="ri-bank-line"></i> ${w.bankDetails?.bankName || '—'}</div>
+        <div class="bank-tag"><i class="ri-bank-line"></i> ${bankDisplay}</div>
         <div class="amt-naira" style="margin-top:3px;">${w.bankDetails?.accountNumber || '—'} · ${w.bankDetails?.accountName || ''}</div>
       </td>
       <td style="white-space:nowrap;font-size:12px;color:var(--text3);">${date}</td>
@@ -2493,7 +2552,7 @@ function renderWithdrawalsPage() {
       </td>
     </tr>`;
   }).join('');
-  
+
   renderPagination('withdraw', _wFiltered.length, wPage, (p) => {
     wPage = p;
     renderWithdrawalsPage();
@@ -2503,20 +2562,20 @@ function renderWithdrawalsPage() {
 // Called from the table button
 window.approveWithdrawal = (id) => {
   showConfirm({
-    title: 'Confirm Payment Sent?',
-    msg: 'Mark this withdrawal as paid? This cannot be undone.',
+    title: 'Confirm Payout via Korapay?',
+    msg: 'This will immediately trigger a bank transfer to the user via Korapay. This cannot be undone.',
     type: 'info',
-    yesLabel: 'Confirm Payment',
+    yesLabel: 'Approve & Pay Now',
     onYes: async () => {
       try {
         const data = await api(`/api/admin/withdrawals/${id}`, {
           method: 'PUT',
           body: JSON.stringify({ status: 'success' })
         });
-        
+
         if (data?.success) {
-          showToast('Withdrawal marked as paid!', 'success');
-          loadWithdrawals(); // Refreshes data and table
+          showToast(`Withdrawal approved! Korapay ref: ${data.korapayReference || ''}`, 'success');
+          loadWithdrawals();
         } else {
           showToast(data?.error || 'Error updating status', 'error');
         }
@@ -2526,7 +2585,6 @@ window.approveWithdrawal = (id) => {
     }
   });
 };
-
 
 window.declineWithdrawal = async (id) => {
   showConfirm({
@@ -2544,7 +2602,6 @@ window.declineWithdrawal = async (id) => {
   });
 };
 
-
 window.deleteWithdrawal = async (id) => {
   showConfirm({
     title: 'Delete Withdrawal Record?',
@@ -2559,38 +2616,53 @@ window.deleteWithdrawal = async (id) => {
   });
 };
 
-
 window.viewWithdrawalDetail = (id) => {
-  // Find the item in your global filtered array
-  const w = _wFiltered.find(item => item._id === id);
+  const w = _wFiltered.find(item => item._id === id) || _withdrawals.find(item => item._id === id);
   if (!w) return;
-  
+
   const fex = Number(w.amount);
   const rate = w.fexRate || 0.7;
   const net = Number(w.netAmount || (fex * rate));
   const isPending = w.status === 'pending';
-  
+
+  // ── Resolve bank for detail modal ─────────────────────
+  const bankDisplay = resolveBankDisplay(w.bankDetails?.bankName);
+
+  // ── Korapay payout info (if already processed) ────────
+  const korapayInfo = w.korapayReference
+    ? `<div class="dp-section">Payout Info</div>
+       <div class="dp-info-row"><span class="dp-info-key">Korapay Ref</span><span class="dp-info-val" style="font-family:monospace">${w.korapayReference}</span></div>
+       <div class="dp-info-row"><span class="dp-info-key">Payout Status</span><span class="dp-info-val">${w.korapayStatus || '—'}</span></div>`
+    : '';
+
+  const failInfo = w.korapayError
+    ? `<div class="dp-info-row" style="color:var(--danger)"><span class="dp-info-key">Payout Error</span><span class="dp-info-val">${w.korapayError}</span></div>`
+    : '';
+
   showConfirm({
     title: '<h3>Withdrawal Detail</h3>',
     msg: `
     <div class="dp-info-row"><span class="dp-info-key">User</span><span class="dp-info-val" style="font-family:monospace">${w.username || '—'}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Status</span><span class="dp-info-val">${statusBadge(w.status)}</span></div>
     <div class="dp-info-row"><span class="dp-info-key">FEX Amount</span><span class="dp-info-val">🪙 ${fex.toLocaleString()}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Rate</span><span class="dp-info-val">₦${rate}/FEX</span></div>
     <div class="dp-info-row"><span class="dp-info-key">Naira Payout</span><span class="dp-info-val">₦${net.toLocaleString()}</span></div>
+    ${w.fee ? `<div class="dp-info-row"><span class="dp-info-key">Fee</span><span class="dp-info-val">₦${Number(w.fee).toLocaleString()}</span></div>` : ''}
     <div class="dp-section">Bank Details</div>
-    <div class="dp-info-row"><span class="dp-info-key">Bank</span><span class="dp-info-val">${w.bankDetails?.bankName || '—'}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Account</span><span class="dp-info-val">${w.bankDetails?.accountNumber || '—'}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Name</span><span class="dp-info-val">${w.bankDetails?.accountName || '—'}</span></div>
-    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</span></div>`,
-    
-    type: 'warning',
-    yesLabel: isPending ? 'Confirm Payment Sent' : 'Sanctioned',
+    <div class="dp-info-row"><span class="dp-info-key">Bank</span><span class="dp-info-val">${bankDisplay}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Account No.</span><span class="dp-info-val" style="font-family:monospace">${w.bankDetails?.accountNumber || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Account Name</span><span class="dp-info-val">${w.bankDetails?.accountName || '—'}</span></div>
+    <div class="dp-info-row"><span class="dp-info-key">Date</span><span class="dp-info-val">${w.createdAt ? new Date(w.createdAt).toLocaleString() : '—'}</span></div>
+    ${korapayInfo}
+    ${failInfo}`,
+
+    type: isPending ? 'warning' : 'info',
+    yesLabel: isPending ? '✅ Approve & Pay via Korapay' : 'Close',
+    noLabel: isPending ? 'Cancel' : null,
     onYes: async () => {
-      if (isPending && typeof closeModal === 'function') {
-        closeModal();
-        setTimeout(async () => {
-          await approveWithdrawal(w._id);
-        }, 300);
+      if (isPending) {
+        if (typeof closeModal === 'function') closeModal();
+        setTimeout(() => approveWithdrawal(w._id), 300);
       }
     },
     icon: false
